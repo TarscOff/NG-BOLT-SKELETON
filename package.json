@@ -18,7 +18,8 @@
     "release:push": "git push --follow-tags origin HEAD"
   },
   "standard-version": {
-    "tagPrefix": "v"
+    "tagPrefix": "v",
+    "releaseCommitMessageFormat": "chore(release): v{{currentTag}}"
   },
   "private": true,
   "dependencies": {
