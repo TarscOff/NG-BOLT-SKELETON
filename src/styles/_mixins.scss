@@ -1,0 +1,22 @@
+// Helper: define a full M3 palette from a single hex value
+@function custom-palette($base) {
+  @return mat.define-palette((
+    0:  lighten($base, 50%),
+    10: lighten($base, 40%),
+    20: lighten($base, 30%),
+    30: lighten($base, 20%),
+    40: lighten($base, 10%),
+    50: $base,
+    60: darken($base, 10%),
+    70: darken($base, 20%),
+    80: darken($base, 30%),
+    90: darken($base, 40%),
+    95: darken($base, 45%),
+    100: darken($base, 50%),
+    contrast: (
+      0: black,
+      50: white,
+      100: white,
+    )
+  ));
+}

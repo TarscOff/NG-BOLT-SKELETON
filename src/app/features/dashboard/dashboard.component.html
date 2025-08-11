@@ -1,0 +1,54 @@
+<!-- SEO -->
+<app-seo [pageTitle]="'Dashboard | AI Product'" [description]="'This is the admin dashboard of the AI product app.'"
+  [keywords]="'dashboard, ai, analytics'" (titleChange)="onTitleChange($event)"></app-seo>
+<p>dashboard works! Version: <small class="version">v{{ version }}</small>
+ </p>
+
+
+<div>
+
+  <div>
+    <!-- DYNAMIC FORM -->
+    <app-dynamic-form [config]="fieldConfig" [form]="form"></app-dynamic-form>
+    <button mat-raised-button color="accent" (click)="submit()" [disabled]="form.invalid">{{ 'SAVE' |
+      translate}}</button>
+  </div>
+  <div>
+    <!-- Theme switcher -->
+    <button mat-raised-button (click)="theme.toggleTheme()" [matTooltip]="'Toggle Theme'" color="accetn">
+      <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
+  </div>
+  <div>
+
+    <!-- Lang swither -->
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>{{ 'LANG' | translate }}</mat-label>
+      <mat-select [value]="translate.currentLang" (selectionChange)="changeLang($event.value)">
+        <mat-option [value]="'en'">{{ "English" }}</mat-option>
+        <mat-option [value]="'fr'">{{ "Francais" }}</mat-option>
+      </mat-select>
+      <mat-hint>{{ 'LANG_HINT' | translate }}</mat-hint>
+    </mat-form-field>
+  </div>
+  <div>
+
+    <!-- Team list -->
+    <div *ngIf="members$ | async as members">
+      <h3>{{ 'TEAM_MEMBERS' | translate }}</h3>
+      <mat-list>
+        <mat-list-item *ngFor="let member of members">
+          <button mat-stroked-button (click)="editMember(member)" [class.active]="selectedMemberId === member.id"
+            style="flex: 1; text-align: left;">
+            {{ member.fullname }}
+          </button>
+
+          <button mat-icon-button (click)="removeMember(member)" matTooltip="Remove">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
+</div>

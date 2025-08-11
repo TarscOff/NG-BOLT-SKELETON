@@ -1,0 +1,5 @@
+{
+  "name": "dev",
+  "production": false,
+  "apiUrl": "https://dev.api.yourdomain.com"
+}

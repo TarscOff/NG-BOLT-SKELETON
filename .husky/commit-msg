@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx --no-install commitlint --edit "$1"
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo
+  echo "❌ Conventional Commits required: <type>(scope?): <subject>"
+  echo "   types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+  exit $status
+fi

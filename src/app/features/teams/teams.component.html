@@ -1,0 +1,21 @@
+<app-seo [pageTitle]="'Team management | AI Product'" [description]="'This is a team manager.'"
+    [keywords]="'teams, groups'" (titleChange)="onTitleChange($event)"></app-seo>
+<h1>{{ 'TEAM_MEMBERS' | translate }}</h1>
+
+
+<div>
+    <!-- Team list -->
+    <div *ngIf="members$ | async as members">
+        <mat-list>
+            <mat-list-item *ngFor="let member of members">
+                <button mat-stroked-button style="flex: 1; text-align: left;">
+                    {{ member.fullname }}
+                </button>
+
+                <button mat-icon-button (click)="removeMember(member)" matTooltip="Remove">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-list-item>
+        </mat-list>
+    </div>
+</div>

@@ -1,1 +1,66 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// Define custom themes
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette
+  ),
+  typography: (
+    brand-family: 'Roboto, "Helvetica Neue", sans-serif'
+  )
+));
+
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette
+  ),
+  typography: (
+    brand-family: 'Roboto, "Helvetica Neue", sans-serif'
+  )
+));
+
+// Apply light theme by default
+:root {
+  @include mat.all-component-themes($light-theme);
+}
+
+// Override with dark theme only when html has class "dark"
+html.dark {
+  @include mat.all-component-colors($dark-theme);
+}
+
+// Layout tokens
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+// Sidenav + Toolbar should follow theme tokens
+.mat-sidenav,
+.mat-sidenav-container,
+.mat-toolbar {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+// Optional custom overrides
+/* 
+.mat-mdc-button {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-caret-color: var(--md-sys-color-primary);
+  --mdc-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+}
+*/

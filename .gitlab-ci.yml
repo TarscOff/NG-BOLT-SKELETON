@@ -1,0 +1,34 @@
+stages:
+  - build
+  - dockerize
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+build_app:
+  image: node:18
+  stage: build
+  script:
+    - npm ci
+    - npm run lint
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
+        cp public/assets/config.prod.json public/assets/config.json
+      elif [[ "$CI_COMMIT_BRANCH" == "uat" ]]; then
+        cp public/assets/config.uat.json public/assets/config.json
+      else
+        cp public/assets/config.dev.json public/assets/config.json
+      fi
+    - npm run build -- --configuration=production
+  artifacts:
+    paths:
+      - dist/ai-product
+
+docker_build:
+  image: docker:20
+  services:
+    - docker:dind
+  stage: dockerize
+  script:
+    - VERSION=$(node -p "require('./package.json').version")
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION .

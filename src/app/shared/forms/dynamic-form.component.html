@@ -1,0 +1,10 @@
+<form [formGroup]="form" class="grid gap-4">
+  <ng-container *ngFor="let field of config">
+    <div *ngIf="!field.hidden">
+      <app-field-host
+        [field]="field"
+        [control]="controlOf(field.name)">
+      </app-field-host>
+    </div>
+  </ng-container>
+</form>
