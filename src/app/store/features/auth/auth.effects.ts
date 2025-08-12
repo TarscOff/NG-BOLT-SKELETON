@@ -15,9 +15,6 @@ export const hydrateFromKc = createEffect(() => {
       const kc = keycloak();
       if (!kc.authenticated) return Auth.authError({ error: 'not_authenticated' });
       return Auth.loginSuccess({
-        token: kc.token || '',
-        idToken: kc.idToken || '',
-        refreshToken: kc.refreshToken || null,
         profile: (kc.tokenParsed as AuthProfile) || null,
         expiresAt: ((kc.tokenParsed?.exp as number) || 0) * 1000
       });
@@ -53,8 +50,6 @@ export const refreshLoop = createEffect(() => {
         const refreshed = await kc.updateToken(60).catch(() => false);
         if (!refreshed) return null;
         return {
-          token: kc.token || '',
-          idToken: kc.idToken || '',
           refreshToken: kc.refreshToken || null,
           expiresAt: ((kc.tokenParsed?.exp as number) || 0) * 1000
         };

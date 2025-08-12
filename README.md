@@ -4,17 +4,30 @@
 
 ---
 
+## 🧭 Quick Start for Developers
+
+1. Set up a Keycloak client (Public + PKCE S256) and brokered IdPs if needed.  
+2. Update `public/assets/config.dev.json` (`auth.url/realm/clientId`).  
+3. `npm start` → app redirects to Keycloak and back.  
+4. Verify API calls include Bearer token.  
+5. For CSP, start with Report‑Only and review DevTools for violations.
+
+---
+
 ## 🧱 Project Overview
 
 This repository provides a scalable, production-ready **Angular 19** setup using best practices including:
 
 - ✅ **Standalone component architecture**
 - 🌐 **Runtime environment configuration** via `public/assets/config.json`
-- 🔄 **NgRx** for reactive global state management
-- 🧩 **Dynamic Forms** system via reusable `FieldConfig` pattern
+- 🔐 **Authentication with Keycloak (Broker, PKCE, iframe‑free)**
+- 🔒 **Strict Content Security Policy (CSP)** compatible with Keycloak (no iframes)
+- 🔄 **NgRx** for reactive global state (Store + Effects)
+- 🧩 **Dynamic Forms** via reusable `FieldConfig` pattern
 - 🌍 **Internationalization** with `@ngx-translate`
 - 🎨 **Angular Material + CDK** UI framework
-- 🦾 **CI/CD-ready** structure (Azure Pipelines & GitLab CI support)
+- 🐳 **Docker + Nginx** with runtime-templated CSP
+- 🦾 **CI/CD** examples (Azure Pipelines & GitLab CI)
 
 ---
 
@@ -78,14 +91,14 @@ npm run buildProd
 ```
 
 # Watch mode
+```
 npm run watch
-
+```
 # Testing & Linting
+```
 npm run test
 npm run lint
-
-## 🚀 CI/CD Support
-CI pipelines dynamically inject the correct config.json during build:
+```
 
 ## 🗂️ Assets And Translations (styles, i18n)
 
@@ -174,11 +187,23 @@ public/assets/config.prod.json
 
 Keep deploy-time environment in `public/assets/config.json` (copied to `/assets/config.json` at build). Example:
 
+
+**Example (`public/assets/config.dev.json`)**
 ```json
 {
   "name": "dev",
   "production": false,
-  "apiUrl": "https://dev.api.yourdomain.com"
+  "apiUrl": "https://dev.api.yourdomain.com",
+  "auth": {
+    "url": "http://localhost:8080/",
+    "realm": "my-realm",
+    "clientId": "eportal_chatbot",
+    "init": {
+      "onLoad": "login-required",
+      "checkLoginIframe": false,
+      "pkceMethod": "S256"
+    }
+  }
 }
 ```
 
@@ -223,6 +248,182 @@ await cfg.load();
 - Keep global styles & themes outside the bundle when needed.
 
 
+
+## 🔐 Authentication (Keycloak Broker, PKCE — iframe‑free)
+
+**What**: Redirect-only OIDC login with **Keycloak** in a **Broker** realm. No `silent-check-sso.html`, no session-check iframe.
+
+**Why**: Works with strict CSP. Simple SPA flow.
+
+### Keycloak prerequisites
+- Client type: **Public** with **PKCE S256**.
+- **Valid Redirect URIs**: `https://<your-app>/*`
+- **Web Origins**: `https://<your-app>`
+- Optional Identity Providers (Azure, Google, …). Their **alias** can be used via `kc_idp_hint` to jump straight to an IdP.
+
+### App behavior
+- On app start: if not authenticated, **top-level redirect** to Keycloak (no iframe).
+- After login: tokens live **in memory** and are refreshed periodically.
+- HTTP requests include `Authorization: Bearer <access_token>`.
+- Guards redirect to login when a protected route is accessed unauthenticated.
+
+### Quick references
+- **Force provider:** call login with `kc_idp_hint=<idp-alias>`.
+- **Disable iframe:** `checkLoginIframe: false` (already in config above).
+
+---
+
+## 🗃️ State Management with NgRx (Store + Effects)
+
+**Philosophy**  
+- **Single global store** for app‑wide data (auth session, UI status, features).  
+- **Feature slices** per domain (`auth`, `teamManagement`, …).  
+- **Pure reducers**, **typed actions**, **selectors** for consumption.  
+- **Functional effects** (Angular 16+) for side‑effects (HTTP, navigation, toasts).
+
+**Folder layout (suggested)**
+```
+src/app/store/
+  features/
+    auth/
+      auth.actions.ts
+      auth.reducer.ts
+      auth.selectors.ts
+      auth.effects.ts   # functional effects
+    other-feature/
+      other-feature.actions.ts
+      other-feature.reducer.ts
+      other-feature.selectors.ts
+      other-feature.effects.ts
+```
+
+**Conventions**
+- **Action names**: `[Feature] verb object` (e.g., `[Auth] Login Redirect`).  
+- **Reducers**: immutable updates, no side‑effects.  
+- **Selectors**: the only way UI reads store. Compose them.  
+- **Effects**: functional `createEffect(() => …, { functional: true })`.  
+- **Persistence**: persist only what you need (e.g., `teamManagement`) using `ngrx-store-localstorage`. Never persist tokens.
+
+**Auth in the Store**
+- On app init, a small bootstrap dispatch **hydrates** from the Keycloak instance (profile, token expiry).  
+- A periodic **refresh effect** updates `token`/`expiresAt` in store when Keycloak refreshes.  
+- **Logout** clears `auth` slice; other slices subscribe to it if they need to reset on logout.
+
+**Debugging**
+- Enable **Store DevTools** in non‑prod.  
+- Use **selectors** in components (`selectIsAuthenticated`, `selectProfile`, …).
+
+---
+## 🔒 Content Security Policy (CSP)
+
+**Goal**: Lock down what the SPA can load/run; allow only calls to your API and Keycloak; **block iframes** entirely.
+
+### Production policy (example)
+```
+Content-Security-Policy:
+  default-src 'self';
+  script-src 'self';
+  style-src  'self' 'unsafe-inline';
+  img-src    'self' data: https:;
+  font-src   'self' https: data:;
+  connect-src 'self' https://keycloak.example.com https://api.example.com;
+  frame-src 'none';
+  frame-ancestors 'none';
+  base-uri 'self';
+  object-src 'none';
+```
+
+### Dev tweaks (local only)
+```
+script-src 'self' 'unsafe-eval';
+connect-src 'self' http://localhost:8080 http://localhost:4200 ws://localhost:4200;
+```
+
+### Rollout process
+1. Start with **`Content-Security-Policy-Report-Only`** to observe violations.
+2. Exercise login + API traffic; add any missing origins to `connect-src`.
+3. Switch to enforcing **`Content-Security-Policy`** once clean.
+
+---
+
+## 🐳 Docker + Nginx (runtime‑templated CSP)
+
+We ship one Docker image for all envs. At **container start**, we render Nginx from a template using environment variables to inject CSP + origins.
+
+### Files
+```
+nginx/default.conf.template   # Nginx server + CSP header placeholder
+docker/entrypoint.sh          # Renders the template using env vars, then starts nginx
+```
+
+### Runtime environment variables
+- `KEYCLOAK_ORIGIN` — e.g. `https://keycloak.example.com`
+- `API_ORIGINS` — space-separated list: `https://api.example.com https://files.example.com`
+- `CSP_REPORT_ONLY` — `true|false` (recommend `true` in non-prod during rollout)
+
+### Run locally
+```bash
+docker run -p 8080:80   -e KEYCLOAK_ORIGIN="http://localhost:8080"   -e API_ORIGINS="http://localhost:5000"   -e CSP_REPORT_ONLY=true   myorg/ai-product:dev-1.0.0
+```
+
+> SPA fallback is enabled in Nginx (`try_files ... /index.html`).
+
+---
+
+## 🚀 CI/CD (Azure Pipelines & GitLab CI)
+
+Both pipelines do the following:
+1. **Install + lint**.
+2. **Select config** (`dev/uat/prod`) → copy to `public/assets/config.json`.
+3. **Build Angular**.
+4. **Build Docker image** with a versioned tag.
+5. *(Optional)* **CSP smoke test**: run the container with `KEYCLOAK_ORIGIN` / `API_ORIGINS` and assert CSP header is present with `curl -I`.
+
+### Azure DevOps — CSP smoke test (snippet)
+```yaml
+- script: |
+    VERSION=$(node -p "require('./package.json').version")
+    KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
+    API=$(jq -r '.apiUrl' public/assets/config.json)
+    REPORT=$([ "$(Build.SourceBranchName)" = "main" ] && echo false || echo true)
+
+    docker run -d --rm       -e KEYCLOAK_ORIGIN="$KC"       -e API_ORIGINS="$API"       -e CSP_REPORT_ONLY="$REPORT"       -p 8081:80 myapp:$(Build.SourceBranchName)-$VERSION
+
+    sleep 2
+    curl -sI http://localhost:8081 | grep -i "content-security-policy"
+  displayName: 'CSP header smoke test'
+```
+
+### GitLab CI — CSP smoke test (snippet)
+```yaml
+csp_test:
+  image: docker:20
+  services: [ docker:dind ]
+  stage: test
+  script:
+    - apk add --no-cache jq curl
+    - VERSION=$(node -p "require('./package.json').version")
+    - KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
+    - API=$(jq -r '.apiUrl' public/assets/config.json)
+    - REPORT=$([ "$CI_COMMIT_BRANCH" = "main" ] && echo false || echo true)
+    - docker run -d --rm -e KEYCLOAK_ORIGIN="$KC" -e API_ORIGINS="$API" -e CSP_REPORT_ONLY="$REPORT" -p 8081:80 $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION
+    - sleep 2
+    - curl -sI http://localhost:8081 | grep -i "content-security-policy"
+```
+
+> In deployment (Kubernetes, App Service, etc.), pass the same env vars to the container.
+
+---
+
+
+## 👤 User Menu (optional UX)
+
+Show user info (name/email/roles) and a **Logout** button in the sidenav. The app reads the profile from the JWT (e.g., `name`, `preferred_username`, `email`, `authorization` roles) and triggers `logout` to Keycloak.
+
+---
+
+
+
 ## 📁 Project Structure Highlights
 
 | Path                                                     | Purpose                                             |
@@ -261,7 +462,7 @@ public/assets/theme/
 ```
 
 
-# Commit & Release Guide
+# 🚀 Commit & Release Guide
 
 ## ✅ Commits (Conventional Commits)
 
@@ -328,7 +529,6 @@ npm run release:push
 The generated JSON includes basic stats and grouped sections (features, fixes, breaking changes, etc.) derived from Conventional Commits.
 
 
-
 ## 📐 Features Used
 
 - ✅ **Angular 19 Standalone APIs**
@@ -345,8 +545,6 @@ The generated JSON includes basic stats and grouped sections (features, fixes, b
 
 ## 📦 Future Ideas
 
-- ✅ Add **Docker support** with runtime `config.json` injection
-- 🔒 Add **Auth module** with JWT/session token handling
 - 🧪 Add **E2E tests** using Cypress or Playwright
 
 ---

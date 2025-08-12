@@ -7,8 +7,6 @@ import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { ConfigService } from './app/core/services/config.service';
 import { initKeycloak } from './app/core/services/keycloak.service';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from './app/core/auth/auth.interceptor';
 
 export function loadTheme(theme: 'light' | 'dark') {
   const href = `/assets/theme/${theme}.css`;
@@ -38,7 +36,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     ...appConfig.providers,
     ConfigService,
-    provideHttpClient(withInterceptors([authInterceptor])),
     provideAppInitializer(initConfig),
     provideAppInitializer(initTheme),
     provideAppInitializer(initAuth)

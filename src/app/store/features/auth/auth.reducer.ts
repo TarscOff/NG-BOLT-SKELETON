@@ -7,17 +7,11 @@ export const authReducer = createReducer(
   on(Auth.loginSuccess, (s, a) => ({
     ...s,
     isAuthenticated: true,
-    token: a.token,
-    idToken: a.idToken,
-    refreshToken: a.refreshToken,
     profile: a.profile,
     expiresAt: a.expiresAt
   })),
   on(Auth.tokenRefreshed, (s, a) => ({
     ...s,
-    token: a.token,
-    idToken: a.idToken,
-    refreshToken: a.refreshToken,
     expiresAt: a.expiresAt
   })),
   on(Auth.logout, () => initialAuthState)

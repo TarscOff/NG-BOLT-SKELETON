@@ -11,9 +11,6 @@ export const loginRedirect = createAction(
 export const loginSuccess = createAction(
   '[Auth] Login Success',
   props<{
-    token: string;
-    idToken: string;
-    refreshToken: string | null;
     profile: AuthProfile | null;
     expiresAt: number;
   }>()
@@ -21,7 +18,7 @@ export const loginSuccess = createAction(
 
 export const tokenRefreshed = createAction(
   '[Auth] Token Refreshed',
-  props<{ token: string; idToken: string; refreshToken: string | null; expiresAt: number }>()
+  props<{ expiresAt: number }>()
 );
 
 export const logout = createAction('[Auth] Logout');

@@ -1,24 +1,32 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { provideAppStore } from './store';
-import { HttpErrorInterceptor } from './core/services/http-error.interceptor';
 import { MatNativeDateModule } from '@angular/material/core';
 import { APP_DATE_PROVIDERS } from './shared/date-formats';
 
+import { authInterceptor } from './core/auth/auth.interceptor';
+import { httpErrorInterceptor } from './core/services/http-error.interceptor';
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Dates providers
     MatNativeDateModule,
     ...APP_DATE_PROVIDERS,
-    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
-    provideZoneChangeDetection({ eventCoalescing: true }),
+
     provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()), // Since we use standalone components this is used to intercept httprequests
+
+    provideHttpClient(
+      withInterceptors([
+        // Order matters: auth first, errors last
+        authInterceptor,
+        httpErrorInterceptor,
+      ])
+    ),
+
     provideAnimations(),
     provideTranslateService({
       loader: provideTranslateHttpLoader({
