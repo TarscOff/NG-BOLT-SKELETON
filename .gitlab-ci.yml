@@ -1,6 +1,4 @@
-stages:
-  - build
-  - dockerize
+stages: [ build, dockerize, test ]
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -21,14 +19,26 @@ build_app:
       fi
     - npm run build -- --configuration=production
   artifacts:
-    paths:
-      - dist/ai-product
+    paths: [ dist/ai-product ]
 
 docker_build:
   image: docker:20
-  services:
-    - docker:dind
+  services: [ docker:dind ]
   stage: dockerize
   script:
     - VERSION=$(node -p "require('./package.json').version")
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION .
+
+# csp_test:
+#  image: docker:20
+#  services: [ docker:dind ]
+#  stage: test
+#  script:
+#    - apk add --no-cache jq curl
+#    - VERSION=$(node -p "require('./package.json').version")
+#    - KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
+#    - API=$(jq -r '.apiUrl' public/assets/config.json)
+#    - if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then REPORT=false; else REPORT=true; fi
+#    - docker run -d --rm -e KEYCLOAK_ORIGIN="$KC" -e API_ORIGINS="$API" -e CSP_REPORT_ONLY="$REPORT" -p 8081:80 $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION
+#    - sleep 2
+#    - curl -sI http://localhost:8081 | grep -i "content-security-policy"

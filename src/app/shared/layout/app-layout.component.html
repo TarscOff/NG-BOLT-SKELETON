@@ -13,6 +13,7 @@
                 </mat-list-item>
             </ng-container>
         </mat-nav-list>
+
         <div class="switchers">
             <!-- Theme switcher using ToggleComponent -->
             <app-toggle [field]="themeField" [control]="themeControl"></app-toggle>
@@ -20,6 +21,28 @@
             <!-- Language switcher using SelectComponent -->
             <app-select [field]="langField" [control]="langControl"></app-select>
         </div>
+
+        <!-- USER PANEL -->
+        <ng-container *ngIf="profile$ | async as p">
+            <div class="user-panel" [class.collapsed]="!isOpen">
+                <button mat-button class="user-trigger" [matMenuTriggerFor]="userMenu"
+                    [attr.aria-label]="displayName(p)">
+                    <mat-icon class="avatar">account_circle</mat-icon>
+                    <div class="user-meta" *ngIf="isOpen">
+                        <div class="user-name">{{ displayName(p) }}</div>
+                        <div class="user-email">{{ p.email }}</div>
+
+                    </div>
+                </button>
+                <mat-menu #userMenu="matMenu">
+                    <p mat-menu-item *ngFor="let r of (roles$ | async)">{{ r }}</p>
+                    <button mat-menu-item (click)="logout()">
+                        <mat-icon>logout</mat-icon>
+                        <span>{{ 'Logout' | translate }}</span>
+                    </button>
+                </mat-menu>
+            </div>
+        </ng-container>
 
         <div class="version-wrapper">
             <small class="version">v{{ version }}</small>

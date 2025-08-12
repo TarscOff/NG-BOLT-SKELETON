@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AppLayoutComponent } from './shared/shared';
+import { authGuard } from './core/auth/auth.guard';
 export const routes: Routes = [
   {
     path: '',
@@ -12,11 +13,13 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'team',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/teams/teams.component').then(m => m.TeamsComponent),
       },

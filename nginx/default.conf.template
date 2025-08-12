@@ -1,0 +1,37 @@
+server {
+  listen 80 default_server;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # --- Security headers (static) ---
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-Frame-Options "DENY" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header X-XSS-Protection "0" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
+
+  # --- CSP (templated) ---
+  # Filled by entrypoint using env vars:
+  #   $CSP_HEADER_NAME (Content-Security-Policy or ...-Report-Only)
+  #   $CSP_VALUE       (the whole policy string)
+  add_header $CSP_HEADER_NAME $CSP_VALUE always;
+
+  # Gzip/static perf
+  gzip on;
+  gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+  gzip_min_length 1024;
+
+  # Cache immutable assets
+  location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|woff2?)$ {
+    expires 30d;
+    access_log off;
+    try_files $uri =404;
+  }
+
+  # SPA fallback
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

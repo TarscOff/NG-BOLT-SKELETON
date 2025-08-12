@@ -2,6 +2,8 @@ import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { loadTheme } from '../main';
+import { Store } from '@ngrx/store';
+import { hydrateFromKc } from './store/features/auth/auth.actions';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +18,14 @@ export class AppComponent {
 
   private translate = inject(TranslateService);
 
-  constructor() {
+  constructor(
+    private store: Store
+  ) {
     this.translate.addLangs(['fr', 'en']);
     this.translate.setFallbackLang('en');
     this.translate.use('en');
-    loadTheme("light")
+    loadTheme("light");
+
+    this.store.dispatch(hydrateFromKc());
   }
 }

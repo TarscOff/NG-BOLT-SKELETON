@@ -1,5 +1,15 @@
 {
   "name": "uat",
   "production": false,
-  "apiUrl": "https://uat.api.yourdomain.com"
+  "apiUrl": "https://uat.api.yourdomain.com",
+  "auth": {
+    "url": "http://localhost:8080/",
+    "realm": "my-realm",
+    "clientId": "eportal_chatbot",
+    "init": {
+      "onLoad": "login-required",
+      "checkLoginIframe": false,
+      "pkceMethod": "S256"
+    }
+  }
 }

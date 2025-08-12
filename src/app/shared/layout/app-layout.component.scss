@@ -104,3 +104,30 @@ mat-sidenav {
     padding: .75rem;
     margin-top: auto;
 }
+
+.user-panel {
+  display: flex;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+
+  .user-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .75rem;
+    text-align: left;
+  }
+
+  .user-meta {
+    display: grid;
+    gap: 2px;
+    .user-name { font-weight: 600; line-height: 1.2; }
+    .user-email { font-size: 12px; opacity: .8; }
+    .user-roles { margin-top: 4px; }
+  }
+
+  &.collapsed {
+    .user-meta { display: none; }
+  }
+}

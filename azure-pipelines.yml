@@ -1,39 +1,59 @@
 trigger:
-  branches:
-    include:
-      - main
-      - dev
-      - uat
+  branches: { include: [ main, dev, uat ] }
 
-pool:
-  vmImage: 'ubuntu-latest'
+pool: { vmImage: 'ubuntu-latest' }
 
 stages:
-  - stage: Build
-    jobs:
-      - job: BuildJob
-        steps:
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '18.x'
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+      - task: NodeTool@0
+        inputs: { versionSpec: '18.x' }
 
-          - script: |
-              npm ci
-              npm run lint
-            displayName: 'Install & Lint App'
+      - script: |
+          npm ci
+          npm run lint
+        displayName: 'Install & Lint App'
 
-          - script: |
-              if [[ "$(Build.SourceBranchName)" == "main" ]]; then
-                cp public/assets/config.prod.json public/assets/config.json
-              elif [[ "$(Build.SourceBranchName)" == "uat" ]]; then
-                cp public/assets/config.uat.json public/assets/config.json
-              else
-                cp public/assets/config.dev.json public/assets/config.json
-              fi
-              npm run build -- --configuration=production
-            displayName: 'Build Angular App'
+      - script: |
+          if [[ "$(Build.SourceBranchName)" == "main" ]]; then
+            cp public/assets/config.prod.json public/assets/config.json
+          elif [[ "$(Build.SourceBranchName)" == "uat" ]]; then
+            cp public/assets/config.uat.json public/assets/config.json
+          else
+            cp public/assets/config.dev.json public/assets/config.json
+          fi
+          npm run build -- --configuration=production
+        displayName: 'Build Angular App'
 
-          - script: |
-              VERSION=$(node -p "require('./package.json').version")
-              docker build -t myapp:$(Build.SourceBranchName)-$VERSION .
-            displayName: 'Build Docker Image with version tag'
+      - script: |
+          VERSION=$(node -p "require('./package.json').version")
+          docker build -t myapp:$(Build.SourceBranchName)-$VERSION .
+        displayName: 'Build Docker Image with version tag'
+
+      # Optional: CSP smoke test (run the container and verify header)
+      #- script: |
+      #    sudo apt-get update && sudo apt-get install -y jq curl
+      #    VERSION=$(node -p "require('./package.json').version")
+      #
+      #    # derive origins from your config.json
+      #    KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
+      #    API=$(jq -r '.apiUrl' public/assets/config.json)
+      #
+      #    # Report-Only on non-main
+      #    if [[ "$(Build.SourceBranchName)" == "main" ]]; then
+      #      REPORT=false
+      #    else
+      #      REPORT=true
+      #    fi
+      #
+      #    docker run -d --rm \
+      #      -e KEYCLOAK_ORIGIN="$KC" \
+      #      -e API_ORIGINS="$API" \
+      #      -e CSP_REPORT_ONLY="$REPORT" \
+      #      -p 8081:80 myapp:$(Build.SourceBranchName)-$VERSION
+
+      #    sleep 2
+      #    curl -sI http://localhost:8081 | grep -i "content-security-policy"
+      #  displayName: 'CSP header smoke test'

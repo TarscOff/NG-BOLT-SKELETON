@@ -9,7 +9,7 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
 import { LayoutService } from '../../core/services/layout.service';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ThemeService } from '../../core/services/theme.service';
@@ -17,6 +17,12 @@ import { FieldConfig } from '../forms/field-config.model';
 import { FormControl } from '@angular/forms';
 import { SelectComponent } from '../forms/fields/select/select.component';
 import { ToggleComponent } from '../forms/fields/toggle/toggle.component';
+import { AuthProfile } from '../../core/auth/keycloack.types';
+import { Store } from '@ngrx/store';
+import { logout } from '../../store/features/auth/auth.actions';
+import { selectProfile } from '../../store/features/auth/auth.selectors';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-layout',
@@ -33,7 +39,10 @@ import { ToggleComponent } from '../forms/fields/toggle/toggle.component';
     MatListModule,
     TranslateModule,
     SelectComponent,
-    ToggleComponent
+    ToggleComponent,
+    MatButtonModule,
+    MatMenuModule,
+    MatChipsModule,
   ],
   templateUrl: './app-layout.component.html',
   styleUrls: ['./app-layout.component.scss'],
@@ -52,12 +61,12 @@ export class AppLayoutComponent implements OnInit, AfterViewInit {
     name: 'themeSwitcher',
     label: 'form.labels.themeSwitcher',
     type: 'toggle',
-      color: 'accent',
-      toggleIcons: {
-    on: 'dark_mode',
-    off: 'light_mode',
-    position: 'start' 
-  }
+    color: 'accent',
+    toggleIcons: {
+      on: 'dark_mode',
+      off: 'light_mode',
+      position: 'start'
+    }
   };
   public themeControl!: FormControl<boolean>;
 
@@ -73,13 +82,17 @@ export class AppLayoutComponent implements OnInit, AfterViewInit {
   };
   public langControl!: FormControl<string>;
 
+  profile$!: Observable<AuthProfile | null>;
+  roles$!: Observable<string[]>;
+
   constructor(
     private layoutService: LayoutService,
     private cdr: ChangeDetectorRef,
     private configService: ConfigService,
     public translate: TranslateService,
     public theme: ThemeService,
-    private injector: Injector
+    private injector: Injector,
+    private store: Store
   ) { }
 
 
@@ -115,5 +128,18 @@ export class AppLayoutComponent implements OnInit, AfterViewInit {
     this.langControl.valueChanges.subscribe((lang) => {
       if (lang) this.translate.use(lang);
     });
+
+    // User informations
+    this.profile$ = this.store.select(selectProfile);
+    this.roles$ = this.profile$.pipe(map(p => p?.authorization ?? []))
+  }
+
+  displayName(p: AuthProfile | null): string {
+    if (!p) return '';
+    return p.name || [p.given_name, p.family_name].filter(Boolean).join(' ') || p.preferred_username || '';
+  }
+
+  logout(): void {
+    this.store.dispatch(logout());
   }
 }

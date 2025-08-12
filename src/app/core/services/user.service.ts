@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import { Observable } from 'rxjs';
 import { CreateUserDto, UpdateUserDto, User } from '../../store/features/user/user.model';
@@ -7,9 +7,10 @@ import { ConfigService } from './config.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-    private config = inject(ConfigService);
-
-    constructor(private http: HttpService) { }
+    constructor(
+        private http: HttpService,
+        private config: ConfigService
+    ) { }
 
     private get base(): string {
         const apiUrl = this.config.get('apiUrl');

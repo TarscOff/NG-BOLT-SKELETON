@@ -9,8 +9,10 @@ import { provideAppStore } from './store';
 import { HttpErrorInterceptor } from './core/services/http-error.interceptor';
 import { MatNativeDateModule } from '@angular/material/core';
 import { APP_DATE_PROVIDERS } from './shared/date-formats';
+
 export const appConfig: ApplicationConfig = {
   providers: [
+    // Dates providers
     MatNativeDateModule,
     ...APP_DATE_PROVIDERS,
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },

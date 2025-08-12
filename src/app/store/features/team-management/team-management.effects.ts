@@ -35,7 +35,7 @@ export const showDeleteToast = createEffect(() => {
     return actions$.pipe(
         ofType(TeamActions.removeTeamMember),
         tap(() => {
-            toast.show('Mamber deleted successfully');
+            toast.show('Member deleted successfully');
         })
     );
 }, { functional: true, dispatch: false });
