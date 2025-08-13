@@ -1,13 +1,10 @@
-# CONTRIBUTING
+# 🚀 Commit & Release Guide
+>_Last updated: 2025-08-13_
 
 **Core repo** for the Angular 19 + NgRx + Keycloak skeleton that powers multiple product apps.  
 This document defines **how to contribute**, **how we release**, and **how consuming projects safely adopt updates** without disrupting **prod/uat/dev**.
 
 _Last updated: 2025-08-12_
-
----
-
-# 🚀 Commit & Release Guide
 
 ## ✅ Commits (Conventional Commits)
 
@@ -341,3 +338,9 @@ A: Ship features **disabled by default**; enable per-tenant in the **BFF-served 
 ---
 
 Thank you for contributing! Keep changes small, documented, and tested. Consuming apps (and their users) will thank you.
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

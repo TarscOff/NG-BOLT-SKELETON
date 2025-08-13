@@ -1,8 +1,8 @@
 # Authentication & Security – Current SPA Setup (Angular 19 + Keycloak + NgRx)
 
-This README documents **how authentication works today**, the **benefits** of the current setup, and the main **residual risks** with non-breaking **hardening suggestions**. It reflects the *current* SPA architecture (no BFF).
+>_Last updated: 2025-08-13_
 
----
+This README documents **how authentication works today**, the **benefits** of the current setup, and the main **residual risks** with non-breaking **hardening suggestions**. It reflects the *current* SPA architecture (no BFF).
 
 ## 🧭 Architecture Summary
 
@@ -13,7 +13,6 @@ This README documents **how authentication works today**, the **benefits** of th
   > If tokens exist in the `auth` slice, they are *in-memory only* and **not persisted** unless explicitly synced to storage (we do **not** persist the `auth` slice neither tokens informations on the store , we only take user information and authentication status).
 - **CSP** is strict and **iframe-free** (`checkLoginIframe: false`, no `silent-check-sso.html`).
 
----
 
 ## 🔁 Process Flow (as-is)
 
@@ -64,7 +63,6 @@ This README documents **how authentication works today**, the **benefits** of th
 
 > **Important:** NgRx state is in memory by default. It is only persisted if we add a storage sync (we don’t for `auth`).
 
----
 
 ## 🔒 CSP Profile (prod example)
 
@@ -85,7 +83,6 @@ Content-Security-Policy:
 - Dev-only additions: `'unsafe-eval'` and local/ws origins in `connect-src`.
 - No `frame-src` needed (no iframes/silent SSO).
 
----
 
 ## ✅ Benefits of the current approach
 
@@ -97,7 +94,6 @@ Content-Security-Policy:
 - **Low operational overhead**: no extra backend layer required.
 - **IdP brokering**: easy provider jump via `kc_idp_hint`.
 
----
 
 ## ⚠️ Residual Risks / Vulnerabilities
 
@@ -116,7 +112,6 @@ Content-Security-Policy:
 - **Source maps**  
   Public source maps can help attackers find XSS. Keep off in prod (or protect).
 
----
 
 ## 🛡️ Non-Breaking Hardening (keep current architecture)
 
@@ -140,7 +135,6 @@ Content-Security-Policy:
 4) **CORS discipline (API)**
    - Allow only the SPA origin; avoid `*` with credentials
 
----
 
 ## 📌 Developer Checklist
 
@@ -153,8 +147,13 @@ Content-Security-Policy:
 - [ ] API CORS: only our frontend origin allowed
 - [ ] Source maps: disabled or protected in prod
 
----
 
 ## 🧠 Notes
 
 This is a **solid, industry-standard SPA** posture. The **main residual risk** is XSS → in-memory token theft. If that’s unacceptable for your data classification, the next step is a **BFF** (Backend-for-Frontend), which keeps tokens server-side (HttpOnly cookies to the SPA). We can revisit that architecture when needed.
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

@@ -1,10 +1,9 @@
-# Serve Config from the BFF – Implementation Process
-_Last updated: 2025-08-12_
+# ⚒️ Serve Config from the BFF – Implementation Process
+_Last updated: 2025-08-13_
 
 
 This document explains **how to move runtime configuration out of the SPA** and **serve it from the BFF**. The BFF becomes the **source of truth** for per-tenant, per-role, per-environment features and menus.
 
----
 
 ## 1) What we’re building
 - A **BFF endpoint** that returns the **effective config** for the current session/user:
@@ -176,3 +175,10 @@ variant<T>(k: string, fb?: T): T { /* lookup in any feature's variants */ return
 - CI validates canonical config; BFF validates at startup/reload.
 - ETag works; short TTL caching works.
 - No secrets in config; backend still enforces authorization.
+
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

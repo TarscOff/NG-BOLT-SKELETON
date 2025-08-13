@@ -1,6 +1,5 @@
-# Project Roadmap – Ordered Checklist (Angular 19 + NgRx + Keycloak)
-
-_Last updated: 2025-08-12_
+# 🎯 Project Roadmap – Ordered Checklist (Angular 19 + NgRx + Keycloak)
+>_Last updated: 2025-08-13_
 
 Legend: **✅ Done** · **🟡 In progress** · **❌ To do**  
 Severity: **P0 Critical**, **P1 High**, **P2 Medium**, **P3 Low**  
@@ -9,9 +8,7 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 > Update **Status**, **Owner**, and **Next Actions** as you progress. Add links to PRs or wiki when relevant.
 
 
----
-
-## Summary Table (Done → In Progress → To Do)
+## ✅ Summary Table (Done → In Progress → To Do)
 
 | Category | Item | Status | Severity | Workload | Summary | Key Files / Paths | Next Actions | Owner |
 |---|---|---:|---|---|---|---|---|---|
@@ -66,8 +63,14 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 | Keycloak | Token lifetimes + rotation | ❌ | P0 | S | Short access token; refresh rotation; revoke on reuse. | Keycloak client/realm, this is linked to BFF once implemented , tokens will be fixed | Apply settings; regression test | SEC/IDP |
 ---
 
-## Notes
+## 📓 Notes
 - **Tokens are not stored** in NgRx or browser storage. Interceptor reads from `keycloak().token` only.
 - Keep **source maps** disabled or private in prod.
 - Restrict **Keycloak** Redirect URIs/Web Origins to **exact** origins (no wildcards).
 - For high-sensitivity data, prioritize the **BFF migration**.
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

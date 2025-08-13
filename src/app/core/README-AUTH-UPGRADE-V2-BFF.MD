@@ -171,3 +171,9 @@ A: The BFF session cookie covers tabs. Server token refresh is centralized.
 - **API owner:** …
 
 **Last updated:** 2025-08-12
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

@@ -1,8 +1,8 @@
 # Dynamic Forms & Field Components Guide
+_Last updated: 2025-08-13_
 
 This document explains how to **instantiate forms** and **reuse custom field components** under `shared/forms/fields`. It covers the `DynamicFormComponent`, the `FieldHostComponent`, and the `FieldConfigService` helpers your teammates will use every day.
 
----
 
 ## TL;DR – Quick Start
 
@@ -75,7 +75,6 @@ submit() {
 MyFeature → (FormGroup + FieldConfig[]) → DynamicForm → FieldHost → Concrete Field Component
 ```
 
----
 
 ## FieldConfig – What devs need to know
 
@@ -111,7 +110,6 @@ MyFeature → (FormGroup + FieldConfig[]) → DynamicForm → FieldHost → Conc
 - `dropdown` → `SelectComponent`
 - `range` → `RangeComponent`
 
----
 
 ## Validators & Error Keys (conventions)
 
@@ -166,8 +164,6 @@ form.errors.tags.minOne
 form.errors.country.required
 form.errors.country.notAllowed
 ```
-
----
 
 ## Patterns & Examples
 
@@ -241,8 +237,6 @@ fields = [ this.fields.getRangeField('form.labels.price', 0, 200, 5) ];
 - **Set values**: `this.form.patchValue({ email: 'a@b.com' })`.
 - **Listen to changes**: `this.form.get('email')?.valueChanges.subscribe(...)`.
 
----
-
 ## Adding a New Field Type
 
 1. **Create a field component** with inputs: `field: FieldConfig` and `control: FormControl`.
@@ -255,8 +249,6 @@ fields = [ this.fields.getRangeField('form.labels.price', 0, 200, 5) ];
 
 > Keep `FieldComponent` contract: the component must bind to `control` and use metadata from `field` (label, placeholder, errors, etc.).
 
----
-
 ## Accessibility & i18n Tips
 
 - Always provide a `label` (i18n key).  
@@ -265,16 +257,12 @@ fields = [ this.fields.getRangeField('form.labels.price', 0, 200, 5) ];
 - Components set ARIA attributes (e.g., `aria-invalid`) based on control state.  
 - Use `TranslateService` pipes in templates for labels/help/errors.
 
----
-
 ## Testing Guidelines
 
 - **Reducers/validators**: unit test pure functions.  
 - **Field components**: render with a `FormControl`, assert error messages & aria attributes.  
 - **DynamicForm**: pass a small `FieldConfig[]` and assert controls exist; test group creation and default values.  
 - **Integration**: simulate user input and ensure validators trigger expected errors.
-
----
 
 ## Common Pitfalls
 
@@ -283,8 +271,6 @@ fields = [ this.fields.getRangeField('form.labels.price', 0, 200, 5) ];
 - **Datepicker**: do **not** add `Validators.pattern` (value is `Date | null`); use the `pattern` only for parsing raw input.
 - **Chips**: use `minArrayLength(1)` to enforce a non-empty selection.
 - **Autocomplete**: enforce with `optionInListValidator([...])` to restrict to known values.
-
----
 
 ## Where Things Live
 
@@ -297,7 +283,6 @@ fields = [ this.fields.getRangeField('form.labels.price', 0, 200, 5) ];
 | `core/services/field-config.service.ts`            | Field builder helpers (this file)       |
 | `shared/shared` (barrel)                           | Re-exports common symbols               |
 
----
 
 ## FAQ
 
@@ -313,3 +298,8 @@ A: Ensure your validator sets a clear error key (e.g., `invalidChars`) and provi
 ---
 
 Happy building! 🎯
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

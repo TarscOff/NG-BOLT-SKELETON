@@ -1,6 +1,6 @@
-# Feature Flags, Menus & Tenants – Installation & Operations Guide
+# ⚙️ Feature Flags, Menus & Tenants – Installation & Operations Guide
 
-_Last updated: 2025-08-12_
+_Last updated: 2025-08-13_
 
 
 This guide explains how to:
@@ -594,7 +594,9 @@ You can use **ajv-cli** to validate `config.json` against a JSON Schema:
 Keep your schema under `ci/config.schema.json`. Fail the pipeline if validation fails.
 
 ---
-# REALTIME INTEGRATION
+
+# 🕛 REALTIME INTEGRATION
+
 ## 1) App wiring (lightweight & pluggable)
 
 ### 1.1 Interface
@@ -757,3 +759,9 @@ Use your existing `jq`-based merge step and add these **env vars**:
 - CSP is as strict as possible (ideally `connect-src 'self'` with SSE or WS on same origin).
 - CI variables override config without rebuilds; schema validation in CI and BFF.
 - Per-feature overrides (`transport`, `channels`) work and are easy to test.
+
+
+## 🧑‍💻 Author
+
+**Angular Product Skeleton**  
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).
