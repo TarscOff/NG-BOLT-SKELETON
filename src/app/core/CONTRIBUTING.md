@@ -494,11 +494,11 @@ export const routes: Routes = [
 
 ```ts
 // Use barrels for features & store
-import {{ actions as AppActions, selectors as AppSelectors }} from '@store';
+import { AppActions, AppSelectors } from '@store';
 
 // Allowed deep for core/shared
-import {{ FieldConfigService }} from '@core/services';
-import {{ ConfirmDialogComponent }} from '@shared/dialog';
+import { FieldConfigService } from '@core/services';
+import { ConfirmDialogComponent } from '@shared/dialog';
 ```
 
 ---
