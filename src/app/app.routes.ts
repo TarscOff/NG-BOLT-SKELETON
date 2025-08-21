@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { UserRole } from '@core/enum';
-import { authGuard } from '@core/guards';
-import { AppLayoutComponent } from '@shared/layout/app-layout.component';
+import { UserRole } from '@cadai/pxs-ng-core/enums';
+import { authGuard } from '@cadai/pxs-ng-core/guards';
+import { AppLayoutComponent } from '@cadai/pxs-ng-core/shared';
 
 export const routes: Routes = [
   {

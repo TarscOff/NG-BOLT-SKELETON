@@ -10,10 +10,10 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
-import { AppActions, AppSelectors} from '@core';
-import { ConfirmDialogComponent, DynamicFormComponent, SeoComponent } from '@shared';
-import { FieldConfigService, LayoutService, ToastService } from '@core/services';
-import { FieldConfig, TeamMember, User } from '@core/interfaces';
+import { ConfirmDialogComponent, DynamicFormComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
+import { FieldConfigService, LayoutService, ToastService } from '@cadai/pxs-ng-core/services';
+import { FieldConfig, TeamMember, User } from '@cadai/pxs-ng-core/interfaces';
+import { AppActions, AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,9 +33,7 @@ export class DashboardComponent implements OnInit {
     public translate: TranslateService,
     private store: Store,
     private layoutService: LayoutService,
-  ) {
-
-  }
+  ) {}
 
   public selectedMemberId: number | null = null;
   @Input() name!: string;
@@ -67,7 +65,7 @@ export class DashboardComponent implements OnInit {
       this.fieldsConfigService.getChipsField("form.labels.tags"),
       this.fieldsConfigService.getAutocompleteField("form.labels.country"),
       this.fieldsConfigService.getRangeField("form.labels.price", 0, 200, 5),
-      this.fieldsConfigService.getTextAreaField("form.labels.input","form.placeholders.input"),
+      this.fieldsConfigService.getTextAreaField("form.labels.input", "form.placeholders.input"),
     ];
 
     // NGRX

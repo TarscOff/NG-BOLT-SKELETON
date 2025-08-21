@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { loadTheme } from '../main';
 import { Store } from '@ngrx/store';
-import { AppActions } from '@core';
+import { AppActions } from '@cadai/pxs-ng-core/store';
 
 @Component({
   selector: 'app-root',

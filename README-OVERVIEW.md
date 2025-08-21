@@ -12,6 +12,7 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 
 | Category | Item | Status | Severity | Workload | Summary | Key Files / Paths | Next Actions | Owner |
 |---|---|---:|---|---|---|---|---|---|
+| Core | Decoupled PXS-NG-CORE Angular Core with Best practices  and its own regisry on Azure | ✅ | P1 | XL | App uses standalone components, strict TS/ESLint. Also imports are done via barels `@cadai/pxs-ng-core/*` | `See core repository on Azure actifacts https://dev.azure.com/cadai/Socle/_artifacts/feed/PXS-NG-CORE` | — | FE |
 | Core | Angular 19 + Standalone APIs | ✅ | P2 | L | App uses standalone components, strict TS/ESLint. | `src/app/**`, `tsconfig.json`, `.eslintrc.*` | — | FE |
 | Core | Runtime Config via `config.json` + `ConfigService` | ✅ | P1 | M | Loads `/assets/config.json` at bootstrap. | `public/assets/config.*.json`, `ConfigService` | Ensure env files match Keycloak/API | FE |
 | State | NgRx Store setup | ✅ | P2 | M | Store with feature slices; functional effects enabled. | `src/app/store/**` (Barrels) | — | FE |
@@ -27,7 +28,7 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 | Routing | Guards applied on protected routes | ✅ | P2 | S | `dashboard`, `team`, etc. | `app.routes.ts` | — | FE |
 | Docker | Multi-stage build | ✅ | P2 | M | Node build → Nginx serve. | `Dockerfile` | — | DEVOPS |
 | Nginx | Runtime-templated CSP | ✅ | P1 | M | Templated `default.conf`, env-driven `connect-src`. | `nginx/default.conf.template`, `docker/entrypoint.sh` | Ensure envs set per env | DEVOPS |
-| CI/CD | Azure & GitLab pipelines | ✅ | P1 | M | Build, lint, env `config.json`, dockerize. | `azure-pipelines.yml`, `.gitlab-ci.yml` | — | DEVOPS |
+| CI/CD | Azure & GitLab pipelines |🟡 | P1 | M | Build, lint, env `config.json`, dockerize. | `azure-pipelines.yml`, `.gitlab-ci.yml` | — | DEVOPS |
 | Docs | README (core) | ✅ | P3 | S | Project overview and usage. | `docs/README.md` | Keep updated | FE |
 | Docs | Auth & Security README | ✅ | P2 | S | Current SPA posture & risks. | `docs/README-AUTH-UPGRADED.md` | — | SEC |
 | Docs | Forms Guide | ✅ | P2 | S | How to instantiate/reuse fields. | `docs/forms-guide.md` | — | FE |

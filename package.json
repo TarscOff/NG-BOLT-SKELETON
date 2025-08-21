@@ -25,7 +25,7 @@
   "dependencies": {
     "@angular/animations": "^19.2.14",
     "@angular/cdk": "^19.2.19",
-    "@angular/common": "^19.2.0",
+    "@angular/common": "^19.2.14",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/flex-layout": "^15.0.0-beta.42",
@@ -34,6 +34,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@cadai/pxs-ng-core": "^1.1.9",
     "@ngrx/effects": "^19.2.1",
     "@ngrx/store": "^19.2.1",
     "@ngrx/store-devtools": "^19.2.1",

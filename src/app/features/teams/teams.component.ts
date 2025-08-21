@@ -7,11 +7,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { ConfirmDialogComponent, SeoComponent } from '@shared';
-import { AppActions, AppSelectors } from '@core';
+import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
+import { AppActions, AppSelectors } from '@cadai/pxs-ng-core/store';
 
-import { LayoutService, ToastService } from '@core/services';
-import { TeamMember } from '@core/interfaces';
+import { LayoutService, ToastService } from '@cadai/pxs-ng-core/services';
+import { TeamMember } from '@cadai/pxs-ng-core/interfaces';
 
 @Component({
   selector: 'app-teams',

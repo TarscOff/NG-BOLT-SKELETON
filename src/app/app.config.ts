@@ -2,8 +2,9 @@ import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
-import { provideCore } from '@core';
-import { provideAppStore } from '@store';
+import { provideCore } from '@cadai/pxs-ng-core/core';
+import { provideAppStore } from '@cadai/pxs-ng-core/store';
+import pkg from '../../package.json';
 
 
 export const appConfig: ApplicationConfig = {
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
       },
       // Optionally add extra interceptors before error interceptor:
       // interceptors: [myExtraInterceptorFn],
+      appVersion: pkg.version
     }),
     ...provideAppStore(),
   ],
