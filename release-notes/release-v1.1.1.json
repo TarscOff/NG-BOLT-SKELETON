@@ -1,0 +1,196 @@
+{
+  "version": "1.1.1",
+  "tag": "v1.1.1",
+  "previousTag": "v1.1.0",
+  "date": "2025-09-02T08:21:51.480Z",
+  "stats": {
+    "features": 0,
+    "fixes": 2,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 2,
+    "chores": 2,
+    "tests": 0,
+    "others": 3,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "a3f2159",
+        "type": "fix",
+        "scope": "core",
+        "subject": "app changes implementation to angular 19 + updating module + udpating configs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1506931",
+        "type": "fix",
+        "scope": "appConfig",
+        "subject": "passing environments from hsot app to core",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "48a157f",
+        "type": "docs",
+        "scope": "docs",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "dd720c9",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "508a7cf",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.1",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "91e5548",
+        "type": "chore",
+        "scope": "coreModule",
+        "subject": "implementing PXS-NG-CORE module from our custom registry on Azure",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "6d4a320",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1365: docs(docs): updating docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b47de2d",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1352: chore: Barrels implementation + contributing docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1829eba",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1344: docs",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "508a7cf011cc82a98dcc6e801a0b8a7f93bc68ec",
+      "shortHash": "508a7cf",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a3f215926329313f7f625d6117bd4e11a79e4fdd",
+      "shortHash": "a3f2159",
+      "type": "fix",
+      "scope": "core",
+      "subject": "app changes implementation to angular 19 + updating module + udpating configs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1506931e97c295dbd108d0f0fe437bd64a45f58a",
+      "shortHash": "1506931",
+      "type": "fix",
+      "scope": "appConfig",
+      "subject": "passing environments from hsot app to core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "91e554865b45bee58dfdf6fa3d727030424e0dd0",
+      "shortHash": "91e5548",
+      "type": "chore",
+      "scope": "coreModule",
+      "subject": "implementing PXS-NG-CORE module from our custom registry on Azure",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6d4a320dfc83a7649fb11812b176b2362a2e98ef",
+      "shortHash": "6d4a320",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1365: docs(docs): updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": "docs(docs): updating docs"
+    },
+    {
+      "hash": "48a157fda832fcc9bc4cc982c57790158824bb32",
+      "shortHash": "48a157f",
+      "type": "docs",
+      "scope": "docs",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b47de2d4d554ceaa56091a9a29b4444acaf5b89e",
+      "shortHash": "b47de2d",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1352: chore: Barrels implementation + contributing docs",
+      "breaking": false,
+      "notes": [],
+      "body": "chore: Barrels implementation + contributing docs"
+    },
+    {
+      "hash": "dd720c940f34737ae6d770337bb8d3dcca7ed809",
+      "shortHash": "dd720c9",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1829eba755450312c4fe463f5c2c6b3a135aa6da",
+      "shortHash": "1829eba",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1344: docs",
+      "breaking": false,
+      "notes": [],
+      "body": "docs"
+    }
+  ]
+}
