@@ -2,96 +2,159 @@
   "HELLO": "Bonjour",
   "SAVE": "Enregistrer",
   "LANG": "Langue",
-  "LANG_HINT": "La langue utilisée",
+  "LANG_HINT": "Langue utilisée",
   "DASHBOARD_TITLE": "Tableau de bord",
-  "TEAM_MEMBERS":"Equipe",
+  "TEAM_MEMBERS": "Membres de l’équipe",
+  "quick_settings":"Paramètres rapides",
+  "confirm":"Confirmer",
+  "cancel":"Annuler",
+  "nav": {
+    "dashboard": "GenAI Tableau de bord",
+    "reports": "GenAI Rapports",
+    "team": "GenAI Équipe",
+    "genai-chat": "GenAI Chat",
+    "genai-compare": "GenAI Comparer",
+    "genai-workflows": "GenAI Flux de travail",
+    "genai-projects": "GenAI Projets",
+    "genai-admin": "GenAI Admin",
+    "admin": "Admin"
+  },
+  "ai": {
+    "chat":"Scope du chat",
+    "compare":"Scope de la comparaison",
+    "workflows":"Scope des workflows",
+    "provider":"Fournisseur",
+    "model":"Modèle",
+    "temperature":"température",
+    "max_tokens":"Tokens max",
+    "global":"Scope globale",
+    "scope":"Scope",
+    "variant":"Variante",
+    "value":"Valeur"
+  },
+  "error": {
+    "403": {
+      "title": "Accès interdit",
+      "text": "Vous n’avez pas accès à cette page."
+    },
+    "404": {
+      "title": "Page introuvable",
+      "text": "Nous n’avons pas pu trouver"
+    }
+  },
+  "common": {
+    "back": "Retour",
+    "home": "Accueil",
+    "signIn": "Se connecter"
+  },
   "form": {
     "labels": {
       "input": "Texte",
       "email": "E-mail",
       "password": "Mot de passe",
-      "notify": "Notification",
+      "notify": "Notifications",
       "role": "Rôle",
       "volume": "Volume",
       "dob": "Date de naissance",
-      "tags": "Étiquettes",
+      "tags": "Tags",
       "country": "Pays",
       "phone": "Téléphone",
-      "fullname":"Nom complet",
-      "price":"Prix",
-      "themeSwitcher":"Mode Sombre",
-      "language":"Langue"
+      "fullname": "Nom complet",
+      "price": "Prix",
+      "themeSwitcher": "Thème",
+      "language": "Langue",
+      "textarea": "Zone de texte"
     },
     "placeholders": {
-      "input": "Entrez du texte",
+      "input": "Saisissez un texte",
       "email": "Entrez votre e-mail",
       "password": "Entrez votre mot de passe",
       "notify": "Activer les notifications",
       "role": "Sélectionnez un rôle",
-      "volume": "Définir le volume",
-      "dob": "Choisissez une date",
-      "tags": "Ajoutez des étiquettes",
-      "country": "Choisissez un pays",
+      "volume": "Régler le volume",
+      "dob": "Sélectionnez une date",
+      "tags": "Ajouter des tags",
+      "country": "Sélectionnez un pays",
       "phone": "Entrez votre numéro de téléphone",
-      "fullname":"Entrez Nom complet",
-      "price":"Entrez le prix"
+      "fullname": "Entrez le nom complet",
+      "price": "Entrez le prix",
+      "textarea": "Écrivez votre texte..."
     },
     "hints": {
       "input": "Texte libre",
       "email": "Doit être une adresse e-mail valide",
-      "password": "Au moins 8 caractères, incluant un chiffre",
+      "password": "Au moins 8 caractères, dont un chiffre",
       "notify": "Recevoir des alertes et notifications",
-      "role": "Rôle dans l'application",
-      "volume": "Ajustez entre 0 et 100",
-      "dob": "Format: AAAA-MM-JJ",
-      "tags": "Séparées par des virgules",
-      "country": "Lieu de résidence actuel",
-      "phone": "Incluez l'indicatif régional"
+      "role": "Rôle de l’utilisateur dans l’application",
+      "volume": "Ajustez entre 0 et 200",
+      "dob": "Format : AAAA-MM-JJ",
+      "tags": "Séparez par des virgules",
+      "country": "Votre pays de résidence",
+      "phone": "Inclure l’indicatif du pays",
+      "textarea": "Maximum {{max}} caractères."
     },
     "errors": {
+      "input": {
+        "required": "Le champ est obligatoire.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\")."
+      },
       "email": {
-        "required": "L'adresse e-mail est requise.",
-        "invalid": "Veuillez entrer une adresse e-mail valide."
+        "required": "L’e-mail est obligatoire.",
+        "invalid": "Entrez une adresse e-mail valide.",
+        "tld": "L’extension de domaine doit comporter au moins 2 lettres.",
+        "domain": "Le domaine de l’e-mail doit contenir un point (ex. exemple.com).",
+        "maxlength": "L’e-mail ne peut pas dépasser {{requiredLength}} caractères."
       },
       "password": {
-        "required": "Le mot de passe est requis.",
-        "minlength": "Le mot de passe est trop court.",
-        "pattern": "Le mot de passe ne respecte pas le format requis."
+        "required": "Le mot de passe est obligatoire.",
+        "minlength": "Au moins {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "maxlength": "Le mot de passe ne peut pas dépasser {{requiredLength}} caractères.",
+        "uppercase": "Incluez au moins une majuscule.",
+        "digit": "Incluez au moins un chiffre.",
+        "special": "Incluez au moins un caractère spécial."
       },
       "role": {
-        "required": "Le rôle est requis."
+        "required": "Le rôle est obligatoire."
       },
       "dob": {
-        "required": "Date is required.",
-        "format": "Invalid date format: {{text}}",
-        "parse": "Invalid date: {{text}}",
-        "minDate": "Date must be on or after {{min}}",
-        "maxDate": "Date must be on or before {{max}}",
-        "dateNotAllowed": "This date is not allowed."
-      },
-      "input": {
-        "required": "This field is required.",
-        "minlength": "Minimum length is {{requiredLength}} characters.",
-        "maxlength": "Maximum length is {{requiredLength}} characters.",
-        "pattern": "Invalid format."
+        "required": "La date est obligatoire.",
+        "format": "Format de date invalide : {{text}}",
+        "pattern": "Date invalide : {{text}}",
+        "parse": "Date invalide : {{text}}",
+        "minDate": "La date doit être postérieure ou égale au {{min}}.",
+        "maxDate": "La date doit être antérieure ou égale au {{max}}.",
+        "dateNotAllowed": "Cette date n’est pas autorisée."
       },
       "phone": {
-        "required": "Le numéro de téléphone est requis.",
-        "invalid": "Veuillez entrer un numéro de téléphone valide."
+        "required": "Le numéro de téléphone est obligatoire.",
+        "invalid": "Entrez un numéro de téléphone valide (ex. +35212345678).",
+        "phoneDigitsLen": "Le numéro doit comporter entre {{min}} et {{max}} chiffres (actuellement {{actual}})."
       },
-       "country": {
-        "required": "Country is required.",
-        "invalid": "Select a country.",
-        "notAllowed":"selected value is not allowed"
+      "country": {
+        "required": "Le pays est obligatoire.",
+        "invalid": "Sélectionnez un pays.",
+        "notAllowed": "La valeur sélectionnée n’est pas autorisée."
+      },
+      "volume": {
+        "required": "Le volume est obligatoire.",
+        "min": "Le minimum est {{min}} (actuel {{actual}}).",
+        "max": "Le maximum est {{max}} (actuel {{actual}})."
       },
       "notify": {
-        "required": "Notify is required.",
-        "invalid": "Toggle On Notifications."
+        "required": "L’option de notification est obligatoire.",
+        "invalid": "Activez les notifications."
       },
       "tags": {
-        "required": "Tags is required.",
-        "invalid": "Select a tag.",
-        "minOne":"Please select at least oen"
+        "required": "Les tags sont obligatoires.",
+        "invalid": "Sélectionnez un tag.",
+        "minOne": "Veuillez en sélectionner au moins un."
+      },
+      "textarea": {
+        "minlength": "Ajoutez au moins {{requiredLength}} caractères (vous en avez {{actualLength}}).",
+        "maxlength": "Veuillez rester sous {{requiredLength}} caractères (actuellement {{actualLength}}).",
+        "invalidChars": "Caractère non pris en charge : {{char}}"
       }
     }
   }

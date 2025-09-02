@@ -11,5 +11,101 @@
       "checkLoginIframe": false,
       "pkceMethod": "S256"
     }
+  },
+  
+  "realtime": {
+    "enabled": false,
+    "order": ["sse", "websocket", "push"],
+    "transports": {
+      "sse": {
+        "enabled": false,
+        "endpoint": "/rt/events"
+      },
+      "websocket": {
+        "enabled": false,
+        "url": "wss://app.example.com/rt/ws"
+      },
+      "push": {
+        "enabled": false,
+        "vapidPublicKey": "BPuB1c…publicKey…",
+        "topics": ["alerts", "jobs"],
+        "requireUserOptIn": true
+      }
+    }
+  },
+
+  "features": {
+    "ai.chat": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": ["ROLE_user", "ROLE_admin"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "genai-chat",
+      "label": "nav.genai-chat",
+      "icon": "genai-chat",
+      "route": "/genai-chat",
+      "requireAuth": true
+    },
+    "ai.compare": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": ["ROLE_admin", "ROLE_user"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "genai-compare",
+      "label": "nav.genai-compare",
+      "icon": "genai-compare",
+      "route": "/genai-compare",
+      "requireAuth": true
+    },
+    "ai.workflows": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": ["ROLE_admin", "ROLE_user"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "genai-workflows",
+      "label": "nav.genai-workflows",
+      "icon": "genai-workflows",
+      "route": "/genai-workflows",
+      "requireAuth": true
+    },
+    "ai.projects": {
+      "enabled": true,
+      "roles": ["ROLE_admin", "ROLE_user", "ROLE_owner"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "genai-projects",
+      "label": "nav.genai-projects",
+      "icon": "genai-projects",
+      "route": "/genai-projects",
+      "requireAuth": true
+    },
+    "ai.admin": {
+      "enabled": true,
+      "roles": ["ROLE_admin"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "genai-admin",
+      "label": "nav.genai-admin",
+      "icon": "genai-admin",
+      "route": "/genai-admin",
+      "requireAuth": true
+    },
+    "admin": {
+      "enabled": false,
+      "roles": ["ROLE_admin"],
+      "allow": { "tenants": ["clarence", "other_tenant"] },
+      "key": "admin",
+      "label": "nav.admin",
+      "icon": "admin",
+      "route": "/admin",
+      "requireAuth": true
+    }
   }
 }

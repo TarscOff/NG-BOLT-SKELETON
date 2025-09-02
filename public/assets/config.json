@@ -11,5 +11,184 @@
       "checkLoginIframe": false,
       "pkceMethod": "S256"
     }
+  },
+  "realtime": {
+    "enabled": false,
+    "order": [
+      "sse",
+      "websocket",
+      "push"
+    ],
+    "transports": {
+      "sse": {
+        "enabled": false,
+        "endpoint": "/rt/events"
+      },
+      "websocket": {
+        "enabled": false,
+        "url": "wss://app.example.com/rt/ws"
+      },
+      "push": {
+        "enabled": false,
+        "vapidPublicKey": "BPuB1c…publicKey…",
+        "topics": [
+          "alerts",
+          "jobs"
+        ],
+        "requireUserOptIn": true
+      }
+    }
+  },
+  "features": {
+    "dashboard": {
+      "enabled": true,
+      "roles": [
+        "ROLE_user",
+        "ROLE_admin"
+      ],
+
+      "key": "dashboard",
+      "label": "nav.dashboard",
+      "icon": "dashboard",
+      "route": "/dashboard",
+      "requireAuth": true
+    },
+    "team": {
+      "enabled": true,
+      "roles": [
+        "ROLE_user",
+        "ROLE_admin"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "team",
+      "label": "nav.team",
+      "icon": "group",
+      "route": "/team",
+      "requireAuth": true
+    },
+    "ai.chat": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": [
+        "ROLE_user",
+        "ROLE_admin"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "genai-chat",
+      "label": "nav.genai-chat",
+      "icon": "chat",
+      "route": "/genai-chat",
+      "requireAuth": true
+    },
+    "ai.compare": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": [
+        "ROLE_admin",
+        "ROLE_user"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "genai-compare",
+      "label": "nav.genai-compare",
+      "icon": "compare",
+      "route": "/genai-compare",
+      "requireAuth": true
+    },
+    "ai.workflows": {
+      "enabled": true,
+      "variants": {
+        "ai.provider": "openai",
+        "ai.model": "gpt-4o-mini"
+      },
+      "roles": [
+        "ROLE_admin",
+        "ROLE_user"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "genai-workflows",
+      "label": "nav.genai-workflows",
+      "icon": "schema",
+      "route": "/genai-workflows",
+      "requireAuth": true
+    },
+    "ai.projects": {
+      "enabled": true,
+      "roles": [
+        "ROLE_admin",
+        "ROLE_user",
+        "ROLE_owner"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "genai-projects",
+      "label": "nav.genai-projects",
+      "icon": "source",
+      "route": "/genai-projects",
+      "requireAuth": true
+    },
+    "ai.admin": {
+      "enabled": true,
+      "roles": [
+        "ROLE_admin"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "genai-admin",
+      "label": "nav.genai-admin",
+      "icon": "psychology",
+      "route": "/genai-admin",
+      "requireAuth": true
+    },
+    "admin": {
+      "enabled": true,
+      "roles": [
+        "ROLE_admin"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "admin",
+      "label": "nav.admin",
+      "icon": "tune",
+      "route": "/admin",
+      "requireAuth": true
+    }
   }
 }

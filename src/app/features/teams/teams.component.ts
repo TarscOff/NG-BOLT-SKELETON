@@ -11,13 +11,14 @@ import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared'
 import { AppActions, AppSelectors } from '@cadai/pxs-ng-core/store';
 
 import { LayoutService, ToastService } from '@cadai/pxs-ng-core/services';
-import { TeamMember } from '@cadai/pxs-ng-core/interfaces';
+import { ConfirmDialogData, TeamMember } from '@cadai/pxs-ng-core/interfaces';
 
 @Component({
   selector: 'app-teams',
+  standalone: true,
   imports: [SeoComponent, MatIcon, TranslateModule, MatListModule, CommonModule, MatButtonModule],
   templateUrl: './teams.component.html',
-  styleUrl: './teams.component.scss'
+  styleUrls: ['./teams.component.scss']
 })
 export class TeamsComponent implements OnInit {
   public members$!: Observable<TeamMember[] | []>;
@@ -40,10 +41,15 @@ export class TeamsComponent implements OnInit {
   }
 
   public async removeMember(member: TeamMember): Promise<void> {
-    const confirmed = await firstValueFrom(this.dialog.open(ConfirmDialogComponent, {
+    const confirmed = await firstValueFrom(this.dialog.open<
+      ConfirmDialogComponent,
+      ConfirmDialogData,
+      boolean
+    >(ConfirmDialogComponent, {
       data: {
-        title: 'Delete Mamber',
-        message: 'Are you sure you want to delete this member?'
+        title: 'Delete Member',
+        message: 'Are you sure you want to delete this member?',
+        context: { member },
       }
     }).afterClosed())
 

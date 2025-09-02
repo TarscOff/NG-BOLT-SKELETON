@@ -7,7 +7,7 @@ This document defines **how to contribute**, **how we release**, and **how consu
 ### Branching
 - `main` – stable
 - `uat` – integration
-- `develop` – development and test
+- `develop` – development and test (To be checked and validated before the GO)
 - `feature/<ticket-or-topic>` – new work
 - `fix/<ticket-or-topic>` – hotfix
 - `docs/<topic>` – docs changes

@@ -5,6 +5,48 @@
   "LANG_HINT": "Used Language",
   "DASHBOARD_TITLE": "Dashboard",
   "TEAM_MEMBERS": "Team members",
+  "quick_settings":"Quick settings",
+  "confirm":"Confirm",
+  "cancel":"Cancel",
+  "nav": {
+    "dashboard": "GenAI Dashboard",
+    "reports": "GenAI Dashboard",
+    "team": "GenAI Team",
+    "genai-chat": "GenAI Chat",
+    "genai-compare": "GenAI Compare",
+    "genai-workflows": "GenAI Workflows",
+    "genai-projects": "GenAI Projects",
+    "genai-admin": "GenAI Admin",
+    "admin": "Admin"
+  },
+  "ai": {
+    "chat":"Chat Scope",
+    "compare":"Compare Scope",
+    "workflows":"Workflows Scope",
+    "provider":"Provider",
+    "model":"Model",
+    "temperature":"Temperature",
+    "max_tokens":"Max tokens",
+    "global":"Global Scope",
+    "scope":"Scope",
+    "variant":"Variant",
+    "value":"Value"
+  },
+  "error": {
+    "403": {
+      "title": "Forbidden",
+      "text": "You don’t have access to this page."
+    },
+    "404": {
+      "title": "Page not found",
+      "text": "We couldn’t find"
+    }
+  },
+  "common": {
+    "back": "Back",
+    "home": "Home",
+    "signIn": "Sign in"
+  },
   "form": {
     "labels": {
       "input": "Text",
@@ -18,7 +60,7 @@
       "country": "Country",
       "phone": "Phone",
       "fullname": "Full name",
-      "price": "price",
+      "price": "Price",
       "themeSwitcher": "Theme",
       "language": "Language",
       "textarea": "Textarea"
@@ -34,9 +76,9 @@
       "tags": "Add tags",
       "country": "Select a country",
       "phone": "Enter your phone number",
-      "fullname": "Enter the fullname",
+      "fullname": "Enter the full name",
       "price": "Enter the price",
-      "textarea": "Write your text…"
+      "textarea": "Write your text..."
     },
     "hints": {
       "input": "Free text",
@@ -56,7 +98,7 @@
         "required": "Field is required.",
         "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
         "maxlength": "Maximum {{requiredLength}} characters allowed.",
-        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: “{{char}}”)."
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
       },
       "email": {
         "required": "Email is required.",
@@ -93,7 +135,7 @@
       "country": {
         "required": "Country is required.",
         "invalid": "Select a country.",
-        "notAllowed": "selected value is not allowed"
+        "notAllowed": "Selected value is not allowed."
       },
       "volume": {
         "required": "Volume is required.",
@@ -105,9 +147,9 @@
         "invalid": "Toggle On Notifications."
       },
       "tags": {
-        "required": "Tags is required.",
+        "required": "Tags are required.",
         "invalid": "Select a tag.",
-        "minOne":"Please select at least one"
+        "minOne": "Please select at least one."
       },
       "textarea": {
         "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}}).",

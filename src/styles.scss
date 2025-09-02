@@ -64,3 +64,10 @@ html, body {
   --mdc-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
 }
 */
+
+// Darkmore overlay overrides
+.dark .cdk-overlay-backdrop.cdk-overlay-backdrop-showing { background: rgb(189 189 189 / 72%) !important }
+.dark .mat-mdc-dialog-container .mdc-dialog__surface { background: #1f2329; color: #e7e9ee; }
+
+.light .cdk-overlay-backdrop.cdk-overlay-backdrop-showing { background: rgba(0,0,0,.45) !important; }
+.light .mat-mdc-dialog-container .mdc-dialog__surface { background: #fff; color: #1d1d1f; }

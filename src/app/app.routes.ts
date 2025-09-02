@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { UserRole } from '@cadai/pxs-ng-core/enums';
-import { authGuard } from '@cadai/pxs-ng-core/guards';
+import { authGuard, featureGuard } from '@cadai/pxs-ng-core/guards';
 import { AppLayoutComponent } from '@cadai/pxs-ng-core/shared';
 
 export const routes: Routes = [
@@ -12,21 +12,24 @@ export const routes: Routes = [
   {
     path: '',
     component: AppLayoutComponent,
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'dashboard',
-        canActivate: [authGuard],
-        data: { roles: [UserRole.ROLE_admin,UserRole.ROLE_user] }, // optional
+        canActivate: [featureGuard('dashboard', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'team',
-        canActivate: [authGuard],
-        data: { roles: [UserRole.ROLE_admin,UserRole.ROLE_user] }, // optional
+        canActivate: [featureGuard('team', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
         loadComponent: () =>
           import('./features/teams/teams.component').then(m => m.TeamsComponent),
       },
+      { path: '403', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) },
+      { path: '**', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) },
     ]
   }
 ];

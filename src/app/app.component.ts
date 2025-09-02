@@ -4,6 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { loadTheme } from '../main';
 import { Store } from '@ngrx/store';
 import { AppActions } from '@cadai/pxs-ng-core/store';
+import { KeycloakService } from '@cadai/pxs-ng-core/services';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,7 @@ export class AppComponent {
   title = 'ai-product';
 
   private translate = inject(TranslateService);
+  private kc = inject(KeycloakService);
 
   constructor(
     private store: Store
@@ -25,7 +27,6 @@ export class AppComponent {
     this.translate.setFallbackLang('en');
     this.translate.use('en');
     loadTheme("light");
-
     this.store.dispatch(AppActions.AuthActions.hydrateFromKc());
   }
 }

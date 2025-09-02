@@ -1,8 +1,8 @@
 <!-- SEO -->
-<app-seo 
-  [pageTitle]="'Dashboard | AI Product'" 
+<app-seo
+  [pageTitle]="'nav.dashboard' | translate"
   [description]="'This is the admin dashboard of the AI product app.'"
-  [keywords]="'dashboard, ai, analytics'" 
+  [keywords]="'dashboard, ai, analytics'"
   (titleChange)="onTitleChange($event)">
 </app-seo>
 
@@ -11,26 +11,31 @@
     <!-- DYNAMIC FORM -->
     <app-dynamic-form [config]="fieldConfig" [form]="form"></app-dynamic-form>
     <button mat-raised-button color="accent" (click)="submit()" [disabled]="form.invalid">
-      {{ 'SAVE' | translate}}
+      {{ 'SAVE' | translate }}
     </button>
   </div>
 
   <div>
     <!-- Team list -->
-    <div *ngIf="members$ | async as members">
+    @if (members$ | async; as members) {
       <h3>{{ 'TEAM_MEMBERS' | translate }}</h3>
       <mat-list>
-        <mat-list-item *ngFor="let member of members">
-          <button mat-stroked-button (click)="editMember(member)" [class.active]="selectedMemberId === member.id"
-            style="flex: 1; text-align: left;">
-            {{ member.fullname }}
-          </button>
+        @for (member of members; track member.id) {
+          <mat-list-item>
+            <button
+              mat-stroked-button
+              (click)="editMember(member)"
+              [class.active]="selectedMemberId === member.id"
+              style="flex: 1; text-align: left;">
+              {{ member.fullname }}
+            </button>
 
-          <button mat-icon-button (click)="removeMember(member)" matTooltip="Remove">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </mat-list-item>
+            <button mat-icon-button (click)="removeMember(member)" matTooltip="Remove">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
+        }
       </mat-list>
-    </div>
+    }
   </div>
 </div>
