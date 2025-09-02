@@ -1,5 +1,5 @@
 # PSX-NG-SKELETON – Angular 19 Skeleton
->_Last updated: 2025-08-21_
+>_Last updated: 2025-09-02_
 
 > 🚀 Modern Angular 19 project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
 
@@ -91,130 +91,211 @@ Keycloak will **merge** values from both mappers into one `authorization: [...]`
 
 > If you prefer a fully custom build (e.g., renaming roles or mapping from groups), you can use a **Script Mapper** to push a curated array into `authorization`.
 
-### Sample token (after mappers)
+## Using the Core SDK in a Host App (Angular 19)
 
-```json
-{
-  "preferred_username": "alice",
-  "authorization": ["ROLE_user", "ROLE_admin"],
-  "tenant": "clarence",
-  "exp": 1712345678,
-  "iat": 1712342078
-}
-```
+This guide shows how to initialize the **Core SDK** in an Angular 19 Host Application, including runtime config loading, theming, and i18n. You can paste this directly into your Azure DevOps Wiki or keep it as `USING-CORE-IN-HOST.md` in your repo.
 
 ---
 
-## Example: RuntimeConfig (excerpt)
+### 1) Prerequisites
+
+- Angular 19 standalone app
+- Runtime config at `public/assets/config.json` (copied per environment by CI/CD), containing:
+  - `auth` (Keycloak `url`, `realm`, `clientId`, etc.)
+  - `features` (feature flags & rules)
+  - any app-specific settings (API base URLs, tenant rules, etc.)
+- Translations under `public/assets/i18n/` (`en.json`, `fr.json`, ...)
+- Theme CSS under `public/assets/theme/` (`light.css`, `dark.css`)
+
+> Ensure Keycloak token contains custom claims: `tenant` (string) and `authorization` (array of role names). See your Host README for exact mapper setup.
+
+---
+
+### 2) Install Core SDK
+
+```bash
+npm i @cadai/pxs-ng-core
+```
+
+> If you use a private registry / scope, configure your `.npmrc` accordingly.
+
+---
+
+### 3) Bootstrap in `main.ts`
+
+Paste the following into your **Host App** `main.ts`.  
+This loads your runtime config **before** bootstrapping Angular, then initializes the Core SDK via `provideCore(...)`.
+
+```ts
+/// <reference types="@angular/localize" />
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAppInitializer } from '@angular/core';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
+import { provideCore } from '@cadai/pxs-ng-core/core';
+import pkg from '../package.json';
+
+/** Simple theme loader (sync) */
+export function loadTheme(theme: 'light' | 'dark') {
+  const href = `assets/theme/${theme}.css`;
+  const existing = document.getElementById('theme-style') as HTMLLinkElement | null;
+  if (existing) { existing.href = href; return; }
+  const link = document.createElement('link');
+  link.id = 'theme-style';
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.appendChild(link);
+}
+
+(async () => {
+  // Load runtime env before bootstrapping
+  const res = await fetch('/assets/config.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to load config: ${res.status} ${res.statusText}`);
+  const env = await res.json();
+
+  await bootstrapApplication(AppComponent, {
+    providers: [
+      ...appConfig.providers!,                // router, animations, store
+      provideCore({
+        appVersion: pkg.version,
+        environments: env,                    // <- the runtime config JSON
+        theme: 'light',                       // 'light' | 'dark'
+        i18n: {
+          prefix: 'assets/i18n/',
+          suffix: '.json',
+          fallbackLang: 'en',
+          lang: 'en',
+        },
+      }),
+      provideAppInitializer(() => loadTheme('light')),
+    ],
+  });
+})().catch(err => console.error('Bootstrap failed:', err));
+```
+
+**What `provideCore(...)` wires up**
+- Reads `environments` (runtime config) and exposes it via the Core Config service
+- Initializes Keycloak (based on `auth` from the runtime config)
+- Sets up i18n (Translate loader with prefix/suffix, default & fallback lang)
+- Hooks global interceptors (auth header, error handling)
+- Registers feature/guard services
+
+---
+
+### 4) Minimal `assets/config.json` Example
 
 ```json
 {
+  "auth": {
+    "url": "https://keycloak.example.com",
+    "realm": "my-realm",
+    "clientId": "my-client"
+  },
   "features": {
-    "reports": {
+    "dashboard": {
       "enabled": true,
-      "roles": ["ROLE_user", "ROLE_admin"],
-      "allow": { "tenants": ["clarence", "other_tenant"] },
       "requireAuth": true,
-      "key": "reports",
-      "label": "nav.reports",
+      "roles": ["ROLE_user", "ROLE_admin"],
+      "allow": { "tenants": ["clarence", "acme"] },
+      "key": "dashboard",
+      "label": "nav.dashboard",
       "icon": "dashboard",
       "route": "/dashboard"
-    },
-    "ai.projects": {
-      "enabled": true,
-      "roles": ["ROLE_user", "ROLE_admin"],
-      "allow": { "tenants": ["clarence"] },
-      "requireAuth": true,
-      "key": "team",
-      "label": "nav.team",
-      "icon": "group",
-      "route": "/team"
     }
+  },
+  "api": { "baseUrl": "https://api.example.com" }
+}
+```
+
+> CI/CD should copy the right `config.*.json` into `public/assets/config.json` for each environment.
+
+---
+
+### 5) Routing & Guards (Host App)
+
+```ts
+// app.routes.ts
+import { Routes } from '@angular/router';
+import { featureGuard } from '@cadai/pxs-ng-core/core';
+import { LayoutComponent } from './layout/layout.component';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: '',
+    component: LayoutComponent,
+    canActivateChild: [featureGuard('root')],
+    children: [
+      {
+        path: 'dashboard',
+        canActivate: [featureGuard('dashboard', { forbid: '/403' })],
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+      },
+      { path: '403', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) },
+      { path: '**', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) },
+    ]
+  }
+];
+```
+
+- `featureGuard('key')` enforces rules from `config.json` (`enabled`, `requireAuth`, `roles`, `allow.tenants`).  
+- Unauthenticated users are redirected to Keycloak when `requireAuth` is true.
+
+---
+
+### 6) Dynamic Menu from Features (optional)
+
+```ts
+// in a layout or menu service/component
+import { inject } from '@angular/core';
+import { FeaturesService } from '@cadai/pxs-ng-core/core';
+
+export class AppMenuService {
+  private features = inject(FeaturesService);
+  get items() {
+    return this.features.visibleFeatures(); // returns [{ key, label, icon, route }, ...]
   }
 }
 ```
 
 ---
 
-## Where it’s used
+### 7) i18n Files
 
-### 1) App bootstrap (SDK)
-```ts
-// provideCore initializer (SDK): after Keycloak init
-const { isAuthenticated, roles, tenant } = kc.getUserCtx(); // roles from `authorization`, tenant from `tenant`
-features.setUser({ isAuthenticated, roles, tenant });
+```
+public/assets/i18n/en.json
+public/assets/i18n/fr.json
 ```
 
-### 2) Menus from features (Host or SDK layout)
-```ts
-// Build menu items once, or recompute if auth/roles change
-this.menuItems = this.features.visibleFeatures(); // uses the user set above
-```
-
-*(Optional reactive pattern: recompute after login/role changes, and re-call `setUser(getUserCtx())`.)*
-
-### 3) Routes and Guards
-
-```ts
-// app.routes.ts
-import {{ Routes }} from '@angular/router';
-import {{ authGuard, UserRole }} from '@core';
-import { AppLayoutComponent } from '@shared/layout/app-layout.component';
-
-export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  {
-    path: '',
-    component: AppLayoutComponent,
-    canActivateChild: [authGuard],
-    children: [
-      {
-        path: 'dashboard',
-        canActivate: [featureGuard('dashboard', { forbid: '/403' })],
-        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
-        loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-      },
-      {
-        path: 'team',
-        canActivate: [featureGuard('team', { forbid: '/403' })],
-        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
-        loadComponent: () =>
-          import('./features/teams/teams.component').then(m => m.TeamsComponent),
-      },
-      { path: '403', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) },
-      { path: '**', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) },
-    ]
-  },
-];
+```json
+// en.json
+{ "nav.dashboard": "Dashboard" }
 ```
 
 ---
-- If the feature has `requireAuth: true` and the user is not authenticated, the guard **invokes Keycloak login**.
-- If authenticated but not allowed (roles/tenant), it redirects to `/403` (configurable).
+
+### 8) Theming
+
+- Place CSS files under `public/assets/theme/light.css` and `public/assets/theme/dark.css`
+- Switch by calling `loadTheme('dark')` or `loadTheme('light')`
 
 ---
 
-## Edge Cases & Notes
+### 9) Common Pitfalls
 
-- If the token lacks a **tenant** and a feature has `allow.tenants`, that feature will be **hidden/forbidden** (no match).  
-  Ensure your `tenant` mapper is present for users of tenant‑scoped features.
-- **Single-tenant and multi-tenant** both work: the tenant always comes from the token; `allow.tenants` comes from config.  
-  (Backend must still enforce authorization & tenant constraints.)
-- `label` values are **i18n keys** — add them to `assets/i18n/*.json`.
+- `config.json` missing or not copied by CI/CD → app fails during bootstrap
+- Keycloak claims not present → features hidden/guards forbid (ensure `tenant` and `authorization` mappers)
+- CORS/CSP blocking `config.json` or Keycloak redirect → start with CSP **Report‑Only**
 
 ---
 
-## Quick Checklist
+### 10) TL;DR
 
-- [ ] **Keycloak**: add **User Attribute** mapper for `tenant` → claim `tenant` (string).  
-- [ ] **Keycloak**: add **User Realm Role** mapper → claim `authorization` (multivalued string).  
-- [ ] **Keycloak** *(optional)*: add **User Client Role** mapper(s) → same claim `authorization` (multivalued) to merge client roles.  
-- [ ] **RuntimeConfig**: define features with `enabled`, `roles`, `allow.tenants`, `requireAuth`, and menu fields.  
-- [ ] **SDK bootstrap**: call `features.setUser(kc.getUserCtx())`.  
-- [ ] **Host UI**: menus via `features.visibleFeatures()`, routes via `featureGuard('key')`.  
-- [ ] **Backend**: enforce roles/tenant server‑side (UI flags are not security).
-
+1. Put env at `public/assets/config.json`  
+2. Add `provideCore({...})` in `main.ts`  
+3. Define features & routes, use `featureGuard('key')`  
+4. Put translations & theme assets in the expected folders  
 
 ---
 
@@ -270,6 +351,27 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 - [[🟡] - CI/CD](./README-CI-CD.md)
 - [[✅] - Contribution Guide](./CONTRIBUTING.md)
 
+
+
+## Edge Cases & Notes
+
+- If the token lacks a **tenant** and a feature has `allow.tenants`, that feature will be **hidden/forbidden** (no match).  
+  Ensure your `tenant` mapper is present for users of tenant‑scoped features.
+- **Single-tenant and multi-tenant** both work: the tenant always comes from the token; `allow.tenants` comes from config.  
+  (Backend must still enforce authorization & tenant constraints.)
+- `label` values are **i18n keys** — add them to `assets/i18n/*.json`.
+
+---
+
+## Quick Checklist
+
+- [x] **Keycloak**: add **User Attribute** mapper for `tenant` → claim `tenant` (string).  
+- [x] **Keycloak**: add **User Realm Role** mapper → claim `authorization` (multivalued string).  
+- [x] **Keycloak** *(optional)*: add **User Client Role** mapper(s) → same claim `authorization` (multivalued) to merge client roles.  
+- [x] **RuntimeConfig**: define features with `enabled`, `roles`, `allow.tenants`, `requireAuth`, and menu fields.  
+- [x] **SDK bootstrap**: call `features.setUser(kc.getUserCtx())`.  
+- [x] **Host UI**: menus via `features.visibleFeatures()`, routes via `featureGuard('key')`.  
+- [x] **Backend**: enforce roles/tenant server‑side (UI flags are not security).
 
 
 ## 🧑‍💻 Author
