@@ -1,5 +1,5 @@
 # 🎯 Project Roadmap – Ordered Checklist (Angular 19 + NgRx + Keycloak)
->_Last updated: 2025-08-22_
+>_Last updated: 2025-09-02_
 
 Legend: **✅ Done** · **🟡 In progress** · **❌ To do**  
 Severity: **P0 Critical**, **P1 High**, **P2 Medium**, **P3 Low**  
@@ -21,8 +21,6 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 | Auth | HTTP Interceptor (Bearer) | ✅ | P1 | S | Reads live token from `keycloak().token`. | `auth/auth.interceptor.ts` | — | FE |
 | Auth | Route Guard | ✅ | P1 | S | Functional guard triggers full login redirect. | `auth/auth.guard.ts`, `app.routes.ts` | — | FE |
 | Auth | User Menu + Logout | ✅ | P3 | S | Sidenav shows user info & logout. | Layout component & template | — | FE |
-| Forms | Dynamic Forms system | ✅🟡 | P2 | L | `FieldConfigService`, `DynamicFormComponent`, `FieldHostComponent`,`field-config.service.ts`. | `shared/forms/**` (Barrels system) | Need to customize the inputs of different field generator  | FE |
-| Forms | Validators (custom + built-in) | ✅ | P2 | M | Email TLD, password strength, phone digits, etc. | `shared/forms/utils.ts` | — | FE |
 | i18n | `@ngx-translate` setup | ✅ | P2 | S | Translation files under `/assets/i18n`. | `public/assets/i18n/**`, module config | Keep keys in sync | FE |
 | UI | Theme & Language switchers | ✅ | P3 | S | Uses main components in `shared/forms/fields`. | `app/shared/*` | — | FE |
 | Routing | Guards applied on protected routes | ✅ | P2 | S | `dashboard`, `team`, etc. | `app.routes.ts` | — | FE |
@@ -42,24 +40,15 @@ Workload (est.): **S ≤1d**, **M 2–3d**, **L 4–7d**, **XL >1wk**
 | Core | Features & Menus per-tenant via config | ✅ | P1 | M | Feature flags + menu rendering per tenant/role. | `See PXS-NG-CORE module on cadai npm repository` | --- | FE |
 | Core | Single-tenant & Multi-tenant support | ✅ | P1 | M | Tenant claim + allow-list per feature.  | `See PXS-NG-CORE module on cadai npm repository` | ---| FE |
 | Core | Cloud & On-Prem compatibility | ✅ | P2 | M | Bundle external assets for offline/no-internet installs. | `public/assets/**` | Remove external URLs; vendor fonts/libs | FE |
-| CI/CD | Dependency scan (npm audit/Snyk) | 🟡 | P1 | S | Block high/critical vulns. | Pipelines | Add job & thresholds | DEVOPS/SEC |
 | UI | Fonts & External resources vendored | ❌ | P2 | M | Package fonts/libs in app for offline. | `fonts/`, external libs | Replace http URLs; ensure licensing | FE |
-| UI | Luxon Date formatting | ❌ | P2 | s | Include Luxon to manage all dates | `utils/**` | customize dates display and management | FE |
-| UI | Storybook | ❌ | P2 | M | Isolated docs/dev for components; a11y. | `.storybook/**`, `src/app/shared/forms/**` | Init Storybook; write stories; run in CI | FE |
-| UI/UX | Workflows using Flow Drag and drop | ❌ | P2 | M | Design Woprkflows | `@pxs-ng-core/core` | Implement Feature in the Core | FE |
-| UI/UX | Charts using D3 | ❌ | P2 | M | Design charts with different types | `@pxs-ng-core/core` | Implement Feature in the Core | FE |
 | Testing | Unit tests | ❌ | P1 | M | Services, guards, FeatureService, validators. Coverage gates. | `src/**/*.spec.ts`, `jest.config.ts` | Add tests; set ≥80% thresholds in CI | FE/QA |
 | Realtime | SSE / WebSocket | 🟡 | P2 | L | Realtime via BFF; SSE first, WS optional. | `See PXS-NG-CORE module on cadai npm repository` | Define event model; heartbeat; auth via session | BE/FE |
 | Realtime | Push Notifications + Service Worker | 🟡 | P2 | L | Web Push alerts + background sync. | `See PXS-NG-CORE module on cadai npm repository` | Gen SW; VAPID; opt-in UX; server endpoints | FE/BE |
-| Core | PWA Mode (optional) | ❌ | P3 | M | Offline shell + asset caching. | `ngsw-config.json`, `manifest.webmanifest` | Enable PWA; exclude auth routes from cache | FE |
 | DX/Delivery | Git strategy (pull/rebase) | ✅ | P2 | S | PRs rebase on main; protected branches. | `CONTRIBUTING.md`, `CODEOWNERS` | Document policy; enable protections | ENG |
 | DX/Delivery | Package as SDK (private npm registry) | ✅ | P1 | L | Extract reusable lib; publish to private registry. | `projects/sdk/**`, `ng-package.json` | Define public API; peerDeps; publish | FE/DEVOPS |
-| DX/Delivery | Release note & versioning | ❌ | P2 | M | Conventional Commits; SemVer; channels. | `.releaserc`/`changeset/**`, `release-notes/**` | Add tooling; auto tag & publish | DEVOPS |
-| CI/CD | Storybook build & publish | ❌ | P3 | S | Build Storybook; deploy to docs. | CI job `storybook:build` | Add job; optionally Chromatic | DEVOPS/FE |
-| CI/CD | Test & Coverage gates | ❌ | P1 | S | Run tests with thresholds in CI. | Pipelines | Add `npm test -- --code-coverage` and fail under threshold | DEVOPS |
-| CI/CD | Realtime smoke tests | ❌ | P2 | M | Verify SSE/WS in staging. | `e2e/**` | Playwright test for events; cookie-auth WS | QA |
+| DX/Delivery | Release note & versioning | ✅ | P2 | M | Conventional Commits; SemVer; channels. | `.releaserc`/`changeset/**`, `release-notes/**` | Add tooling; auto tag & publish | DEVOPS |
+| CI/CD | Storybook build & publish | ❌ | P3 | S | Build Storybook; deploy to docs. | CI job `storybook:build` | Add job; optionally Chromatic | FE |
 | Docs | SDK usage guide | ✅ | P1 | XL | How to consume SDK; | `See PXS-NG-CORE module on cadai npm repository` | Write usage & migration notes | FE |
-| Testing | E2E auth smoke (login/refresh/logout) | ❌ | P1 | M | Playwright/Cypress flows across reloads/cookies. | `e2e/**` | Add tests for auth flows | QA/FE |
 | Keycloak | Token lifetimes + rotation | ✅ | P0 | S | Short access token; refresh rotation; revoke on reuse. | Keycloak client/realm | Apply settings; regression test | SEC/IDP |
 ---
 

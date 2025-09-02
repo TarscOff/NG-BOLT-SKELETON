@@ -9,7 +9,7 @@ RUN npm run build -- --configuration=production
 # Stage 2: Nginx
 FROM nginx:alpine
 # Copy built app
-COPY --from=builder /app/dist/ai-product /usr/share/nginx/html
+COPY --from=builder /app/dist/psx-ng-skeleton /usr/share/nginx/html
 
 # Copy nginx template + entrypoint
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template

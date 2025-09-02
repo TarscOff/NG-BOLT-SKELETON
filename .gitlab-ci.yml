@@ -19,7 +19,7 @@ build_app:
       fi
     - npm run build -- --configuration=production
   artifacts:
-    paths: [ dist/ai-product ]
+    paths: [ dist/psx-ng-skeleton ]
 
 docker_build:
   image: docker:20

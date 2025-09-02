@@ -28,13 +28,13 @@ describe('AppComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it(`should have the 'ai-product' title`, () => {
-    expect(component.title).toEqual('ai-product');
+  it(`should have the 'psx-ng-skeleton' title`, () => {
+    expect(component.title).toEqual('psx-ng-skeleton');
   });
 
   it('should render title', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, ai-product');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, psx-ng-skeleton');
   });
 });

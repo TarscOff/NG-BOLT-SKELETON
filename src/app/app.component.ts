@@ -15,7 +15,7 @@ import { KeycloakService } from '@cadai/pxs-ng-core/services';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
-  title = 'ai-product';
+  title = 'psx-ng-skeleton';
 
   private translate = inject(TranslateService);
   private kc = inject(KeycloakService);

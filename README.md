@@ -1,4 +1,4 @@
-# AI Product – Angular 19 Skeleton
+# PSX-NG-SKELETON – Angular 19 Skeleton
 >_Last updated: 2025-08-21_
 
 > 🚀 Modern Angular 19 project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
