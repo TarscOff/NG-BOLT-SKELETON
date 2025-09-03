@@ -2,7 +2,9 @@
   "name": "dev",
   "production": false,
   "apiUrl": "https://dev.api.yourdomain.com",
+  "hasNgrx": true,
   "auth": {
+    "hasKeycloak": true,
     "url": "http://localhost:8080/",
     "realm": "my-realm",
     "clientId": "eportal_chatbot",
@@ -12,8 +14,6 @@
       "pkceMethod": "S256"
     }
   },
-
-  
   "realtime": {
     "enabled": false,
     "order": ["sse", "websocket", "push"],
@@ -75,11 +75,11 @@
         },
         {
           "ai.provider": "azure",
-          "ai.model": ["gpt-4o", "gpt-4o", "gpt-4o-large"]
+          "ai.model": ["az-4o", "az8-4o", "az-4o-large"]
         },
         {
           "ai.provider": "deepseek",
-          "ai.model": ["gpt-4o-large", "deep-4o", "deep-4o-large"]
+          "ai.model": ["deep-4o-large", "deep-4o", "deep-4o5-large"]
         }
       ],
       "roles": [
@@ -106,11 +106,11 @@
         },
         {
           "ai.provider": "azure",
-          "ai.model": ["az-4o", "az-4o", "az-4o-large"]
+          "ai.model": ["az-4o", "az-4o3", "az-4o-large"]
         },
         {
           "ai.provider": "google3",
-          "ai.model": ["google-4o-large", "google-4o", "google-4o-large"]
+          "ai.model": ["google-4o-large", "google-4o", "google-43o-large"]
         }
       ],
       "roles": [
@@ -137,7 +137,7 @@
         },
         {
           "ai.provider": "amazon",
-          "ai.model": ["aws-4o", "aws-4o", "aws-4o-large"]
+          "ai.model": ["aws-4o6", "aws-4o", "aws-4o-large"]
         }
       ],
       "roles": [

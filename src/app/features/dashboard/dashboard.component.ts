@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -14,17 +14,36 @@ import { ConfirmDialogComponent, DynamicFormComponent, SeoComponent } from '@cad
 import { FieldConfigService, LayoutService, ToastService } from '@cadai/pxs-ng-core/services';
 import { FieldConfig, TeamMember, User } from '@cadai/pxs-ng-core/interfaces';
 import { AppActions, AppSelectors } from '@cadai/pxs-ng-core/store';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [SeoComponent, DynamicFormComponent, MatTooltip, MatIcon, MatButtonModule, TranslatePipe, TranslateModule, MatGridListModule, MatListModule, CommonModule],
   standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,      // ✅ needed for FormBuilder/FormGroup
+    RouterModule,
+
+    // Material
+    MatDialogModule,          // ✅ needed for MatDialog service
+    MatButtonModule,
+    MatGridListModule,
+    MatListModule,
+    MatIcon,                  // (or MatIconModule if < v17)
+    MatTooltip,               // (or MatTooltipModule if < v17)
+
+    // i18n
+    TranslateModule,          // ✅ keep this; remove TranslatePipe
+
+    // your shared components (must be standalone)
+    SeoComponent,
+    DynamicFormComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class DashboardComponent implements OnInit {
-
   constructor(
     private fb: FormBuilder,
     private fieldsConfigService: FieldConfigService,
@@ -32,7 +51,7 @@ export class DashboardComponent implements OnInit {
     private dialog: MatDialog,
     private store: Store,
     private layoutService: LayoutService,
-  ) { }
+  ) {}
 
   public selectedMemberId: number | null = null;
   @Input() name!: string;
