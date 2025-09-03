@@ -1,0 +1,106 @@
+{
+  "version": "1.2.0",
+  "tag": "v1.2.0",
+  "previousTag": "v1.1.4",
+  "date": "2025-09-03T19:17:49.125Z",
+  "stats": {
+    "features": 1,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 1,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "879b79f",
+        "type": "feat",
+        "scope": "config",
+        "subject": "app fully configurable and passes items to core",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [
+      {
+        "hash": "bc77f91",
+        "type": "fix",
+        "scope": "quickSettings",
+        "subject": "fixing quick settings and conenction to NGX Store on the SDk + udpating module",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "a90a0ea",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.4",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "839c9dd",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.2.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "839c9dde47a600cb5628241b86d8d2e4008700ca",
+      "shortHash": "839c9dd",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.2.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "879b79fa9186a1246b817492ad9bec7f82008339",
+      "shortHash": "879b79f",
+      "type": "feat",
+      "scope": "config",
+      "subject": "app fully configurable and passes items to core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bc77f918b8f84123e5525d0230c04ffcfb373c27",
+      "shortHash": "bc77f91",
+      "type": "fix",
+      "scope": "quickSettings",
+      "subject": "fixing quick settings and conenction to NGX Store on the SDk + udpating module",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a90a0eac28f36ecf7d572599e8a3641ab314502c",
+      "shortHash": "a90a0ea",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
