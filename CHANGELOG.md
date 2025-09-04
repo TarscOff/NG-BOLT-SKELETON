@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.2.0...v1.3.0) (2025-09-04)
+
+
+### Features
+
+* **dynamicForms:** dynamic forms enhanced with more attributes ([93554b6](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/93554b66d361ce921f7bc998db9f4a4bbf9a7ebf))
+
 ## [1.2.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.1.4...v1.2.0) (2025-09-03)
 
 
