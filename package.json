@@ -1,6 +1,6 @@
 {
   "name": "psx-ng-skeleton",
-  "version": "1.5.0",
+  "version": "1.8.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -35,7 +35,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@cadai/pxs-ng-core": "^1.8.4",
+    "@cadai/pxs-ng-core": "^1.8.5",
     "@ngrx/effects": "^19.2.1",
     "@ngrx/store": "^19.2.1",
     "@ngrx/store-devtools": "^19.2.1",

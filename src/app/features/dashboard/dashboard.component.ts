@@ -41,8 +41,8 @@ export class DashboardComponent implements OnInit {
     { id: 'created', header: 'created', type: 'date', sortable: true, format: 'yyyy-LL-dd', draggable: false },
     {
       id: 'actions', type: 'actions', header: "actions", stickyEnd: true, draggable: false, width: 80, cellButtons: [
-        { icon: 'edit', id: 'edit', color: 'primary', tooltip: 'edit' },
-        { icon: 'delete', id: 'delete', color: 'warn', tooltip: 'delete' },
+        { icon: 'edit', id: 'edit', class: 'primary', tooltip: 'edit' },
+        { icon: 'delete', id: 'delete', class: 'accent', tooltip: 'delete' },
       ]
     }
   ];
@@ -75,17 +75,13 @@ export class DashboardComponent implements OnInit {
       icon: 'arrow_back',
       tooltip: 'back',
       class:"primary",
-      color: 'primary',
       click: () => this.location.back(),
-      variant:"icon",
-      label:'back'
     };
 
     const exportCsv: ToolbarAction = {
       id: 'export',
       icon: 'download',
       tooltip: 'export',
-      color: 'primary',
       click: () => {console.log("export")},
       variant:"flat",
       label:'export',
@@ -129,6 +125,16 @@ export class DashboardComponent implements OnInit {
 
   onRowClick(row: unknown) {
     console.log('Row clicked:', row);
+
+    // Example use cases:
+    // Navigate to detail page
+    // this.router.navigate(['/users', row.id]);
+
+    // Or open a dialog
+    // this.dialog.open(UserDetailDialog, { data: row });
+  }
+  onActionClick(action: { id: string; row: unknown }) {
+    console.log('Action clicked:', action);
 
     // Example use cases:
     // Navigate to detail page
