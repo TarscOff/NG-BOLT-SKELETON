@@ -20,11 +20,14 @@ export interface WorkflowPorts {
     inputs: WorkflowPort[];
     outputs: WorkflowPort[];
 }
-export type InspectorActionType = 'chat-basic' | 'compare' | 'summarize' | 'extract' | 'jira' | "run-panel";
+export type InspectorActionType = string;
 export type PaletteType = 'input' | 'result' | InspectorActionType;
 export interface ActionDefinitionLite {
     type: PaletteType;
-    params?: Record<string, unknown>;
+    params?: {
+      icon: string;
+      [K:string]:unknown
+    };
 }
 export interface WorkflowNodeDataBaseParams {
     icon?: string;
@@ -49,14 +52,6 @@ export interface WorkflowNode {
     data: WorkflowNodeDataBase;
     ports: WorkflowPorts;
 }
-export interface WorkflowEdgeStyle {
-    marker?: 'solid' | 'hollow' | 'round' | 'warn';
-    stroke?: string;
-    strokeWidth?: number;
-    dasharray?: string;
-    labelColor?: string;
-    label?: 'auto' | string;
-}
 export interface WorkflowEdge {
     id: string;
     source: string;
@@ -64,7 +59,6 @@ export interface WorkflowEdge {
     sourcePort: string;
     targetPort: string;
     label: string;
-    style?: WorkflowEdgeStyle;
 }
 export interface DfDataInitialNodeData extends DfDataInitialNode {
   __missingIn: boolean;
@@ -89,7 +83,7 @@ export interface StageNode {
 
 /** ===== Helpers & constants ===== */
 export const EXEC_TYPES = new Set<PaletteType>([
-  'input', 'result', 'chat-basic', 'compare', 'summarize', 'extract', 'jira'
+  'input', 'result', 'chat', 'compare', 'summarize', 'extract', 'jira'
 ]);
 
 // ---- Types ----

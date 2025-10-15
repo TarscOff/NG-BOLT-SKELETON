@@ -52,12 +52,10 @@ export class TeamsComponent implements OnInit {
         name: 'fullName',
         label: 'form.labels.fullname',
         placeholder: 'form.placeholders.fullname',
-        // swap/extend validation easily:
         validators: [Validators.required, Validators.minLength(2), Validators.maxLength(80)],
         errorMessages: { required: 'form.errors.fullname.required' },
         color: "primary",
         layoutClass: "primary",
-
       }),
 
       this.fieldsConfigService.getEmailField({
@@ -72,7 +70,6 @@ export class TeamsComponent implements OnInit {
         name: 'password',
         label: 'form.labels.password',
         placeholder: 'form.placeholders.password',
-        // example: enforce special char as well (SDK default allows you to replace)
         validators: [
           Validators.required,
           Validators.maxLength(128),

@@ -112,3 +112,33 @@
 .form {
   padding: 10px;
 }
+
+.quick-add {
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+    min-width: 220px;
+    max-height: 320px;
+    overflow: auto;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.quick-title {
+    font-weight: 600;
+    padding: 6px 8px;
+    opacity: .8;
+}
+
+.quick-item {
+    justify-content: flex-start;
+}
+
+.quick-empty {
+    padding: 8px;
+    opacity: .7;
+    font-style: italic;
+}

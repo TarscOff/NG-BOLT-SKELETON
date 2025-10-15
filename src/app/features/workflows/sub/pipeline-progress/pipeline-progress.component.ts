@@ -97,37 +97,12 @@ export class PipelineProgressComponent {
     return this._run()[id] ?? 'queued';
   };
 
-  canCancelStage = (i: number): boolean => {
-    const col = this.stages()[i] ?? [];
-    return col
-      .filter(n => this.isActionable(n.type))
-      .some(n => ['queued', 'running'].includes(this.statusOf(n.id)));
-  };
-
   canCancelPipeline = (): boolean => {
     const wf = this._wf(); if (!wf) return false;
     return wf.nodes
       .filter(n => this.isActionable(n.type))
       .some(n => ['queued', 'running'].includes(this.statusOf(n.id)));
   };
-
-  onCancelStage(i: number): void {
-    const actionableIds = (this.stages()[i] ?? [])
-      .filter(n => this.isActionable(n.type))
-      .map(n => n.id);
-
-    this.stageCancel.emit({ index: i, nodeIds: actionableIds });
-
-    if (!this.applyCancelLocally) return;
-
-    const next = { ...this._run() };
-    for (const id of actionableIds) {
-      if (['queued', 'running'].includes(next[id] ?? 'queued')) {
-        next[id] = 'skipped';
-      }
-    }
-    this._run.set(next);
-  }
 
   onCancelPipeline(): void {
     this.pipelineCancel.emit();

@@ -1,71 +1,79 @@
 <div class="wf-node" [attr.data-node-id]="nodeId" [class.input]="visualType() === 'input'"
     [class.result]="visualType() === 'result'" [class.action]="visualType()!=='input' && visualType()!=='result'"
     [attr.data-missing]="hasMissingIn() + '-' + hasMissingOut()" [class.error-in]="hasMissingIn()"
-    [class.error-out]="hasMissingOut()"
-    [class.invalid]="hasInvalidParams()">
+    [class.error-out]="hasMissingOut()" [class.invalid]="hasInvalidParams()">
 
     <!-- Left ports -->
     <div class="ports left">
         @for (p of inPorts(); track p.id) {
-        <df-input [position]="positions.Left"
-            [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-input>
+            <df-input [position]="positions.Left" class="port-input" [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: true }"></df-input>
         }
     </div>
 
     <!-- Right ports -->
     <div class="ports right">
         @for (p of outPorts(); track p.id) {
-        <df-output [position]="positions.Right"
-            [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-output>
+            <df-output [position]="positions.Right" class="port-input" [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-output>
+
+            <div class="out-port">
+                <button class="success" color="success" mat-icon-button (click)="openQuickAdd(p, $event)"
+                    [matTooltip]="'workflow.labels.quickAdd' | translate">
+                    <mat-icon color="success">cable</mat-icon>
+                </button>
+            </div>
         }
     </div>
-    @if(visualType() === 'input') {
-    <div class="inline-editor" [class.hidden]="!expanded()">
-        <app-dynamic-form [form]="formInputs" [config]="configInputs">
-        </app-dynamic-form>
-
-    </div>
-    }
-
 
     <!-- Header -->
     <div class="header">
-        @if(visualType() !== 'input' && visualType() !== 'result') {
         <div class="title">
-            @if (hasInvalidParams()){
-            <button mat-icon-button class="warn" extended color="warn"
-                  [matTooltip]="('workflow.errors.invalid_fields' | translate) +' : '+ getInvalidFieldLabels().join(', ') "
-                (click)="$event.stopPropagation()">
-                <mat-icon>error</mat-icon>
-            </button>
+            @if( visualType() !== 'result') {
+                @if (hasInvalidParams()){
+                    <button mat-icon-button class="warn" extended color="warn"
+                        [matTooltip]="('workflow.errors.invalid_fields' | translate) +' : '+ getInvalidFieldLabels().join(', ') "
+                        (click)="$event.stopPropagation()">
+                        <mat-icon>error</mat-icon>
+                    </button>
+                }
+                @if(visualType() === 'input') {
+                    <button mat-mini-fab class="play success" color="success" aria-label="start" matTooltip="play workflow"
+                        (click)="runSchedule()" [disabled]="runDisabled()" [attr.aria-disabled]="runDisabled()">
+                        <mat-icon>play_arrow</mat-icon>
+                    </button>
+                }
+                @if(getIcon()) {
+                    <mat-icon class="icon">{{getIcon()}}</mat-icon>
+                }
+                {{ displayLabel() | translate }}
+                
             }
-            <mat-icon class="icon">{{getIcon()}}</mat-icon>
-            {{ displayLabel() | translate }}
         </div>
-        }
 
         @if(visualType() === 'input') {
-        <button mat-mini-fab class="success" color="success" aria-label="start" matTooltip="play workflow"
-            (click)="runSchedule()" [disabled]="runDisabled()" [attr.aria-disabled]="runDisabled()">
-            <mat-icon>play_arrow</mat-icon>
-        </button>
+            <button mat-icon-button type="button" (click)="toggleExpanded()" [attr.aria-expanded]="expanded()">
+                <mat-icon>{{ expanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
         } @else if(visualType() === 'result') {
-        <button mat-mini-fab class="primary" color="neutral" aria-label="results" matTooltip="Go to results"
-            (click)="displayRUnsPanel($event)">
-            <mat-icon>forward</mat-icon>
-        </button>
+            <button mat-mini-fab class="primary" color="neutral" aria-label="results" matTooltip="{{'workflow.runPanel.title' | translate}} "
+                (click)="displayRUnsPanel($event)">
+                <mat-icon>forward</mat-icon>
+            </button>
         } @else {
-        <button mat-icon-button type="button" (click)="toggleExpanded()" [attr.aria-expanded]="expanded()">
-            <mat-icon>{{ expanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
-        </button>
+            <button mat-icon-button type="button" (click)="toggleExpanded()" [attr.aria-expanded]="expanded()">
+                <mat-icon>{{ expanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
         }
     </div>
 
+    @if(visualType() === 'input') {
+        <div class="inline-editor" [class.hidden]="!expanded()">
+            <app-dynamic-form [form]="formInputs" [config]="configInputs"></app-dynamic-form>
+        </div>
+    }
     @if(visualType() !== 'input' && visualType() !== 'result') {
-    <div class="inline-editor" [class.hidden]="!expanded()">
-        <app-dynamic-form [form]="form" [config]="config">
-        </app-dynamic-form>
-    </div>
+        <div class="inline-editor" [class.hidden]="!expanded()">
+            <app-dynamic-form [form]="form" [config]="config"></app-dynamic-form>
+        </div>
     }
 
 </div>

@@ -46,33 +46,38 @@
                     }
 
                     <div class="stage-actions">
-                        <button mat-mini-fab class="accent" (click)="onCancelStage(i)" [disabled]="!canCancelStage(i)"
-                            [matTooltip]="'workflow.runPanel.cancel_stage' | translate">
-                            <mat-icon>block</mat-icon>
+                        <button mat-icon-button color="success" class="success"
+                            [disabled]="statusOf(n.id) !== 'success' && statusOf(n.id) !== 'error' && statusOf(n.id) !== 'skipped'"
+                            [matTooltip]="'workflow.runPanel.results' | translate" [matMenuTriggerFor]="menu">
+                            <mat-icon>more_horiz</mat-icon>
                         </button>
+                        <mat-menu #menu="matMenu">
+                            @if(n.label ==="chat"){
+                            <button mat-menu-item>
+                                <mat-icon>chat_paste_go</mat-icon>
+                                <span>{{ 'workflow.runPanel.go_chat' | translate }}</span>
+                            </button>
+                            }
+                            <button mat-menu-item>
+                                <mat-icon>archive</mat-icon>
+                                <span>{{ 'workflow.runPanel.artifacts' | translate }}</span>
+                            </button>
+                        </mat-menu>
                     </div>
                     } @else {
                     @if (n.type === 'result') {
-                    <button mat-mini-fab color="primary" class="primary" (click)="onCancelStage(i)"
+                    <button mat-icon-button color="primary" class="primary"
                         [matTooltip]="'workflow.runPanel.results' | translate" [matMenuTriggerFor]="menu">
                         <mat-icon>more_horiz</mat-icon>
                     </button>
-                    }
-
                     <mat-menu #menu="matMenu">
-                        <button mat-menu-item>
-                            <mat-icon>chat_paste_go</mat-icon>
-                            <span>{{ 'workflow.runPanel.go_chat' | translate }}</span>
-                        </button>
-                        <button mat-menu-item>
-                            <mat-icon>save_as</mat-icon>
-                            <span>{{ 'workflow.runPanel.export' | translate }}</span>
-                        </button>
                         <button mat-menu-item>
                             <mat-icon>delete</mat-icon>
                             <span>{{ 'delete' | translate }}</span>
                         </button>
                     </mat-menu>
+                    }
+
                     }
                 </div>
                 }

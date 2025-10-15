@@ -35,10 +35,53 @@
     <ng-draw-flow #flowEl #flow class="pxs-wf-canvas" [ngModel]="dfModel()" (ngModelChange)="onModelChange($event)"
       (nodeSelected)="onNodeSelected($event)" (nodeMoved)="onNodeMoved($event)"
       (connectionCreated)="onConnectionCreated($event)" (connectionDeleted)="onConnectionDeleted($event)"
-      (connectionSelected)="onConnectionSelected($event)" (scale)="onScale($event)"
-      (nodeDeleted)="onDeleteNode($event)" cdkDropList #canvasList="cdkDropList"
-      [cdkDropListDisabled]="!isPaletteDragging()" [cdkDropListData]="{}" (cdkDropListDropped)="onDrop($any($event))">
+      (connectionSelected)="onConnectionSelected($event)" (scale)="onScale($event)" (nodeDeleted)="onDeleteNode($event)"
+      cdkDropList #canvasList="cdkDropList" [cdkDropListDisabled]="!isPaletteDragging()" [cdkDropListData]="{}"
+      (cdkDropListDropped)="onDrop($any($event))">
     </ng-draw-flow>
     <p>{{ 'workflow_help' | translate }}</p>
+
+    <span cdkOverlayOrigin #qaOrigin="cdkOverlayOrigin"
+      style="position: fixed; width: 0; height: 0; pointer-events: none;" [style.left.px]="qaClient?.x || 0"
+      [style.top.px]="qaClient?.y || 0">
+    </span>
+
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOpen]="quickAddOpen" [cdkConnectedOverlayOrigin]="qaOrigin"
+      [cdkConnectedOverlayHasBackdrop]="true" (backdropClick)="quickAddOpen=false" (detach)="quickAddOpen=false"
+      [cdkConnectedOverlayPositions]="[
+      {originX:'end', originY:'center', overlayX:'start', overlayY:'center'},
+      {originX:'start', originY:'center', overlayX:'end', overlayY:'center'}
+      ]">
+      <div class="quick-add">
+        <div class="quick-title">{{ 'workflow.labels.quickAdd' | translate }}</div>
+
+        <button *ngFor="let a of quickAddItems" class="quick-item" mat-button (click)="pickQuickAction(a)">
+          <mat-icon *ngIf="a.icon">{{a.icon}}</mat-icon>
+          <span>{{ a.label | translate }}</span>
+        </button>
+
+        <button mat-button [matMenuTriggerFor]="menu" class="quick-item">
+          <mat-icon>more_vert</mat-icon>
+          <span>{{"workflow.labels.already_dropped" | translate}}</span>
+        </button>
+
+        <mat-menu #menu="matMenu" xPosition="after">
+          <button mat-menu-item *ngFor="let n of existingTargets" (click)="linkToExisting(n.id)">
+            <mat-icon *ngIf="n.icon">{{ n.icon }}</mat-icon>
+            <span>{{ n.label | translate}}</span>
+          </button>
+
+          <button mat-menu-item disabled *ngIf="!existingTargets.length">
+            <mat-icon>info</mat-icon>
+            <span>{{ 'workflow.errors.noCompatibleActions' | translate }}</span>
+          </button>
+        </mat-menu>
+
+        <div *ngIf="!quickAddItems.length" class="quick-empty">
+          {{ 'workflow.errors.noCompatibleActions' | translate }}
+        </div>
+      </div>
+    </ng-template>
   </div>
+
 </div>

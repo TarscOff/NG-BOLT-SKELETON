@@ -45,12 +45,12 @@ workflows/
 
 ```ts
 // types
-type InspectorActionType = 'chat-basic' | 'compare' | 'summarize' | 'extract';
+type InspectorActionType = string;
 type PaletteType         = 'input' | 'result' | InspectorActionType;
 
 // palette (what appears as draggable pills)
 availableActions: ActionDefinitionLite[] = [
-  { type: 'chat-basic' },
+  { type: 'chat' },
   { type: 'compare' },
   { type: 'summarize' },
   { type: 'extract' },
@@ -74,7 +74,7 @@ availableActions: ActionDefinitionLite[] = [
     }];
     edges: WorkflowEdge[] = [];
     availableActions: ActionDefinitionLite[] = [
-        { type: 'chat-basic' },
+        { type: 'chat' },
         { type: 'compare' },
         { type: 'summarize' },
         { type: 'extract' },
@@ -94,7 +94,7 @@ providers: [
     nodes: {
       input: WfNodeComponent,
       result: WfNodeComponent,
-      'chat-basic': WfNodeComponent,
+      'chat': WfNodeComponent,
       compare: WfNodeComponent,
       summarize: WfNodeComponent,
       extract: WfNodeComponent,

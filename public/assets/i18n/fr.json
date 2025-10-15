@@ -28,7 +28,7 @@
   "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d’un nœud (source), puis sur le port gauche d’un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options.",
   "input": "Entrée",
   "result": "Résultat",
-  "chat-basic": "Chat",
+  "chat": "Chat",
   "compare": "Comparer",
   "summarize": "Résumer",
   "extract": "Extraire",
@@ -107,7 +107,7 @@
       "cancel_stage":"Annuler",
       "results":"Résultats",
       "go_chat":"Aller au chat",
-      "export":"Exporter"
+      "artifacts":"Artéfacts"
     },
     "errors": {
       "exactlyOneInput": "Le workflow doit comporter exactement un nœud d’entrée.",
@@ -117,7 +117,12 @@
       "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
       "saveFailed": "Échec de l’enregistrement du workflow.",
       "noDirectInputToResult":"Vous ne pouvez pas joindre ces deux éléments.",
-      "invalid_fields":"Il reste des champs invalides"
+      "invalid_fields":"Il reste des champs invalides",
+      "noCompatibleActions":"Pas de noeur disponible"
+    },
+    "labels": {
+      "quickAdd":"Connections",
+      "already_dropped":"Noeuds existants"
     }
   },
   "form": {

@@ -28,7 +28,7 @@
   "workflow_help": "Drag from the palette. Click a node’s right port (source) then another node’s left port (target) to connect. Right-click nodes for options.",
   "input": "Input",
   "result": "Result",
-  "chat-basic": "Chat",
+  "chat": "Chat",
   "compare": "Compare",
   "summarize": "Summarize",
   "extract": "Extract",
@@ -107,7 +107,7 @@
       "cancel_stage":"Cancel stage",
       "results":"View results",
       "go_chat":"Go to chat",
-      "export":"Export"
+      "artifacts":"Artifacts"
     },
     "errors": {
       "exactlyOneInput": "The workflow must have exactly one Input node.",
@@ -117,7 +117,12 @@
       "cycleDetected": "There is a cycle in the workflow. Please remove it.",
       "saveFailed": "Failed to save the workflow.",
       "noDirectInputToResult":"You cannot connect Input directly to Result.",
-      "invalid_fields":"Node has invalid fields"
+      "invalid_fields":"Node has invalid fields",
+      "noCompatibleActions":"No node available"
+    },
+    "labels": {
+      "quickAdd":"Connections",
+      "already_dropped":"Existing nodes"
     }
   },
   "form": {

@@ -17,7 +17,6 @@
     --node-radius: 30px;
     --node-pad-y: 8px;
     --node-pad-x: 10px;
-    --gap-x: 24px;
     --gap-y: 10px;
 
     color: var(--c-fg);
@@ -39,7 +38,6 @@
     --node-radius: 30px;
     --node-pad-y: 6px;
     --node-pad-x: 8px;
-    --gap-x: 20px;
     --gap-y: 8px;
 }
 
@@ -106,13 +104,16 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: var(--gap-x);
 }
 
 .stage {
     position: relative;
     display: flex;
     flex-direction: column;
+
+    &:not(:first-child) {
+        margin-right:20px;
+    }
 }
 
 .stage-actions {

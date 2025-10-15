@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { WorkflowNodeDataBaseParams } from '@cadai/pxs-ng-core/interfaces';
-import { PipelineWorkflowDTO } from './workflow.interface';
+import { PipelineWorkflowDTO, WorkflowNodeDataBaseParams } from './workflow.interface';
 
 
 @Injectable({ providedIn: 'root' })
@@ -18,4 +17,17 @@ export class WfCanvasBus {
   toggleRunPanel$ = new Subject<{ anchorNodeId?: string }>();
   nodeFormStatus$ = new Subject<{ nodeId: string; invalid: boolean; invalidFields?: string[] }>();
   nodeFlagsPatch$ = new Subject<{ nodeId: string; flags: Record<string, unknown> }>();
+    openQuickAdd$ = new Subject<{
+    nodeId: string;
+    portId: string;
+    portType?: string;
+    anchorEl: HTMLElement;    
+  }>();
+
+  quickAddPick$ = new Subject<{
+    sourceNodeId: string;
+    sourcePortId: string;
+    actionType: string;
+    icon:string;
+  }>();
 }

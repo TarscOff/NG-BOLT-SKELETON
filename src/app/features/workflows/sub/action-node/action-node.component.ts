@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal, OnInit, DoCheck } from '@angular/core';
+import { Component, OnDestroy, inject, signal, OnInit, DoCheck, Input } from '@angular/core';
 import {
   DfConnectorPosition,
   DfInputComponent,
@@ -6,7 +6,6 @@ import {
   DrawFlowBaseNode,
 } from '@ng-draw-flow/core';
 import {
-  InspectorActionType,
   PaletteType,
   WorkflowNodeDataBase,
   WorkflowNodeDataBaseParams,
@@ -18,7 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
 import { WfCanvasBus } from '../utils/wf-canvas-bus';
-import { ACTION_FORMS, makeFallback } from '../utils/action-forms';
+import { ActionFormSpec, makeFallback } from '../utils/action-forms';
 import { debounceTime, distinctUntilChanged, map, startWith, Subscription } from 'rxjs';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
@@ -64,6 +63,9 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   missingInSig = signal<boolean>(false);
   missingOutSig = signal<boolean>(false);
   private formFlags = { invalid: false };
+
+  @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
+
   ngOnInit(): void {
     queueMicrotask(() => this.tryBuildFromModel());
 
@@ -98,6 +100,8 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
         this.markForCheck();
       })
     );
+
+    this.actionsNodes = this.model?.['actionsNodes'];
   }
 
   ngDoCheck(): void {
@@ -125,6 +129,17 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+  }
+
+  openQuickAdd(p: { id: string; type?: string }, ev: MouseEvent) {
+    ev.stopPropagation();
+    const anchorEl = (ev.currentTarget as HTMLElement) ?? (ev.target as HTMLElement);
+    this.bus.openQuickAdd$.next({
+      nodeId: this.nodeId,
+      portId: p.id,
+      portType: p?.type,
+      anchorEl,
+    });
   }
 
   private wireFormToCanvas(form: FormGroup | null) {
@@ -156,7 +171,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     const data = (raw ?? {}) as WorkflowNodeDataBase;
     const type = (data.type ?? data.aiType ?? 'input') as PaletteType;
     const ports = data.ports;
-    return { type, ports, params: data.params, aiType: data.aiType, label: data.label, position: data?.['position'] };
+    return { type, ports, params: data.params, aiType: data.aiType, label: data.label, position: data?.['position'], actionsNodes: data?.['actionsNodes'] };
   }
 
   visualType(): PaletteType | undefined {
@@ -165,18 +180,16 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
   displayLabel(): string {
     const t = (this.safeModel.type ?? '').toLowerCase();
-    if (t === 'input' || t === 'result') return t.charAt(0).toUpperCase() + t.slice(1);
-    const nice: Record<InspectorActionType, string> = {
-      'chat-basic': 'chat-basic',
-      compare: 'compare', summarize: 'summarize', extract: 'extract', jira: 'jira', "run-panel": "run-panel"
-    };
-    return nice[t as InspectorActionType];
+    if (t === 'input' || t === 'result') return this.safeModel.label || "";
+
+    return t;
   }
 
-  getIcon(): string {
+  getIcon(): string | null {
     const data = this.safeModel;
-    return data?.params?.icon ?? '';
+    return data?.params?.icon ?? null;
   }
+
   inPorts(): WorkflowPorts['inputs'] {
     return this.safeModel.ports?.inputs ?? [];
   }
@@ -201,7 +214,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
   runDisabled(): boolean {
     const graphInvalid = !this.graphValidSig();
-    const anyMissing   = this.hasMissingIn() || this.hasMissingOut();
+    const anyMissing = this.hasMissingIn() || this.hasMissingOut();
     return graphInvalid || anyMissing;
   }
 
@@ -220,20 +233,43 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
           label: 'form.labels.files',
           multiple: true,
           accept: '.pdf,.docx,image/*',
-          required: false
-        })
+          required: false,
+          validators: undefined
+        }),
+        this.fields.getDropdownField({
+          name: 'workflowas',
+          label: 'Based on workflow',
+          placeholder: 'form.placeholders.role',
+          options: [
+            { label: 'WF1', value: 'WF1' },
+            { label: 'WF2', value: 'WF2' },
+          ],
+          multiple: false,
+          required: false,
+          color: "primary",
+          layoutClass: "primary",
+          validators: undefined
+        }),
+        this.fields.getToggleField({
+          name: 'file_mandatory',
+          label: 'Files mandatory',
+          helperText: undefined,
+          required: false,
+          validators: undefined,
+          color: "primary",
+          layoutClass: "primary",
+        }),
       ];
       this.wireFormToCanvas(this.formInputs);
       this.lastModelRef = this.model;
       this.lastModelKey = '';
       return;
     }
-
     const key = this.resolveActionKey();
     this.lastModelRef = this.model;
     this.lastModelKey = key;
 
-    const spec = ACTION_FORMS[key];
+    const spec = this.actionsNodes[key];
     if (!spec) {
       this.config = makeFallback(this.fields);
     } else {
@@ -255,6 +291,8 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     if (Object.keys(initial).length) {
       queueMicrotask(() => this.form.patchValue(initial, { emitEvent: false }));
     }
+
+    console.log("h4")
 
     if (!this.valueChangesHooked) {
       this.valueChangesHooked = true;
@@ -280,6 +318,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       this.wireFormToCanvas(this.form);
     }
 
+    console.log("h5")
 
     this.markForCheck();
   }

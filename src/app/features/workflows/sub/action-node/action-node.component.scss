@@ -14,9 +14,9 @@
     background-color: var(--md-sys-color-surface);
     display: flex;
     flex-direction: column;
-    align-items: end;
+    align-items: start;
     justify-content: space-between;
-    min-width: 40px;
+    width: 420px;
 }
 
 .wf-node.result {
@@ -31,7 +31,7 @@
     background-color: var(--md-sys-color-surface);
     border: 2px solid var(--mat-primary, #1976d2);
 
-    &.invalid{
+    &.invalid {
         border-color: var(--mat-warn);
     }
 }
@@ -46,6 +46,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    width: 100%;
 }
 
 .title {
@@ -63,20 +64,31 @@
 .ports.left,
 .ports.right {
     position: absolute;
-    top: 17px;
+    top: 20px;
     bottom: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     height: 15px;
+    width: 15px;
+    height: 15px;
+
+    .port-input::after,
+    .port-input::before {
+        inline-size: 1rem;
+        block-size: 1rem;
+        top: 36%;
+    }
 }
 
 .ports.left {
     left: -8px;
+    --df-connector-color: var(--mat-accent);
 }
 
 .ports.right {
     right: -8px;
+    --df-connector-color: var(--mat-success);
 }
 
 .inline-editor {
@@ -94,15 +106,9 @@
 .wf-node.error-out {
     border: 2px solid #e53935 !important;
     box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.15);
+    position: relative;
 }
 
-.wf-node.error-in .ports.left {
-    filter: drop-shadow(0 0 2px rgba(229, 57, 53, 0.8));
-}
-
-.wf-node.error-out .ports.right {
-    filter: drop-shadow(0 0 2px rgba(229, 57, 53, 0.8));
-}
 
 .wf-node.error-in::before,
 .wf-node.error-out::after {
@@ -120,4 +126,14 @@
 
 .wf-node.error-out::after {
     right: -6px;
+}
+
+.out-port {
+    position: fixed;
+    top: 10px;
+    right: 65px;
+}
+
+.play {
+    margin-right: 15px;
 }
