@@ -83,7 +83,7 @@ export interface StageNode {
 
 /** ===== Helpers & constants ===== */
 export const EXEC_TYPES = new Set<PaletteType>([
-  'input', 'result', 'chat', 'compare', 'summarize', 'extract', 'jira'
+  'input', 'result',
 ]);
 
 // ---- Types ----
@@ -123,4 +123,20 @@ export type Sanitized<T> =
 export interface NodeParamsChangedEvent<T extends WithFiles | undefined = WithFiles | undefined> {
   nodeId: string;
   params: T;
+};
+
+export interface SimCtx  {
+  running: boolean;
+  indeg: Map<string, number>;
+  ready: string[];
+  timers: Map<string, number>;
+  cancelled: Set<string>;
+  pipelineCancelled: boolean;
+};
+
+export interface RunEntry {
+  id: string;
+  startedAt: number;
+  workflow: PipelineWorkflowDTO;
+  state: Record<string, Status>;
 };

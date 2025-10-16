@@ -44,7 +44,10 @@ import {
   PaletteType,
   PipelineWorkflowDTO,
   ReplaceBinary,
+  RunEntry,
   Sanitized,
+  SimCtx,
+  Status,
   WithFiles,
   WithParams,
   WorkflowEdge,
@@ -122,7 +125,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
     if (this.suppressExternal) return;
 
-    const incoming = (value ?? []).filter(this.isExecutableNode);
+    const incoming = (value ?? []).filter(n => this.isExecutableNode(n));
 
     // ignore accidental clears
     if (incoming.length === 0 && this.execNodes().length > 0) return;
@@ -178,7 +181,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
     // recompute UI flags using *all* nodes:
     const nodesWithUi = this.withUiConnectivity(this.allNodes(), incoming);
-    const nextExec = nodesWithUi.filter(this.isExecutableNode);
+    const nextExec = nodesWithUi.filter(n => this.isExecutableNode(n));
     const nextUi = nodesWithUi.filter(n => !this.isExecutableNode(n));
     this.execNodes.set(nextExec);
     this.uiNodes.set(nextUi);
@@ -187,7 +190,11 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     this.publishGraphValidity();
   }
 
-  @Input({required: true}) actionsNodes!: Record<string, ActionFormSpec>;
+  @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
+  @Input({ required: true }) 
+  set executableNodes(value:Set<PaletteType>){
+    this.executableNodesSig.set(value)
+  };
 
   @Input() set disabled(value: boolean) {
     this.disabledSig.set(!!value);
@@ -201,6 +208,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
   disabledSig = signal<boolean>(false);
   availableActionsSig = signal<ActionDefinitionLite[]>([]);
+  executableNodesSig = signal<Set<PaletteType>>(new Set());
   isPaletteDragging = signal<boolean>(false);
   showPalette = signal(false);
 
@@ -220,14 +228,10 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
   pipelineDto = signal<PipelineWorkflowDTO | null>(null);
   runState = signal<Record<string, 'queued' | 'running' | 'success' | 'error' | 'skipped'>>({});
-  private sim = {
-    running: false,
-    indeg: new Map<string, number>(),
-    ready: [] as string[],
-    timers: new Map<string, number>(),
-    cancelled: new Set<string>(),
-    pipelineCancelled: false,
-  };
+
+  private sims = new Map<string, SimCtx>();
+  private currentRunId: string | null = null;
+  runs = signal<RunEntry[]>([]);
 
   private lastIncomingSig = '';
   private lastTopoSig = '';
@@ -259,7 +263,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
       const paramsUi = n.data?.params?.ui ?? {};
 
-      const dataForDf = { ...n.data , actionsNodes: this.actionsNodes};
+      const dataForDf = { ...n.data, actionsNodes: this.actionsNodes };
 
       return {
         id: n.id,
@@ -491,7 +495,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
       this.uiNodes.set(nextUi);
 
       const withUi = this.withUiConnectivity(this.allNodes(), this._edges());
-      this.execNodes.set(withUi.filter(this.isExecutableNode));
+      this.execNodes.set(withUi.filter(n => this.isExecutableNode(n)));
       this.uiNodes.set(withUi.filter(n => !this.isExecutableNode(n)));
       return;
     }
@@ -509,7 +513,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     this.uiNodes.set([...ui, rp]);
 
     const withUi = this.withUiConnectivity(this.allNodes(), this._edges());
-    this.execNodes.set(withUi.filter(this.isExecutableNode));
+    this.execNodes.set(withUi.filter(n => this.isExecutableNode(n)));
     this.uiNodes.set(withUi.filter(n => !this.isExecutableNode(n)));
   }
 
@@ -529,7 +533,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     nodesArg: WorkflowNode[] | null | undefined,
     edgesArg: WorkflowEdge[] | null | undefined
   ): string | null {
-    const nodes = (nodesArg ?? []).filter(this.isExecutableNode);
+    const nodes = (nodesArg ?? []).filter(n => this.isExecutableNode(n));
     const edges = (edgesArg ?? []).filter(e =>
       nodes.some(n => n.id === e.source) && nodes.some(n => n.id === e.target)
     );
@@ -706,7 +710,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
       return { id: raw.id, type, x: pos.x, y: pos.y, data, ports };
     });
 
-    const dfExec = fromDf.filter(this.isExecutableNode);
+    const dfExec = fromDf.filter(n => this.isExecutableNode(n));
 
     const mergeMap = new Map<string, WorkflowNode>(fromDf.map(n => [n.id, n] as [string, WorkflowNode]));
     const mergeById = (list: WorkflowNode[]) => list.map(n => mergeMap.get(n.id) ?? n);
@@ -742,14 +746,14 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     this.setSelectedNode(nodeId);
   }
 
-  onNodeMoved(_evt: unknown): void {
+  onNodeMoved(_evt: unknown): unknown {
     const event = _evt;
-    console.log("Moved---->", event)
+    return event;
   }
 
-  onConnectionSelected(_evt: unknown): void {
+  onConnectionSelected(_evt: unknown): unknown {
     const event = _evt;
-    console.log("Moved---->", event)
+    return event;
   }
 
   private tryRemoveDfConnection(
@@ -949,135 +953,133 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     }
   }
 
-  simulateRun(): void {
-    const wf = this.pipelineDto();
-    if (!wf) return;
 
-    this.sim.running = true;
-    this.sim.indeg.clear();
-    this.sim.ready.length = 0;
-    this.sim.timers.forEach(id => clearTimeout(id));
-    this.sim.timers.clear();
-    this.sim.cancelled.clear();
-    this.sim.pipelineCancelled = false;
+  private updateRunState(runId: string, mut: (s: Record<string, Status>) => void) {
+    const runs = this.runs();
+    const idx = runs.findIndex(r => r.id === runId);
+    if (idx < 0) return;
+    const cur = { ...runs[idx].state };
+    mut(cur);
+    const next = runs.slice();
+    next[idx] = { ...runs[idx], state: cur };
+    this.runs.set(next);
+    this.emitRuns();
 
-    const next = { ...this.runState() };
-    wf.nodes.forEach(n => next[n.id] = 'queued');
-    this.runState.set(next);
-    this.bus.runState$.next(next);
+    // keep old single-run bindings in sync for the latest run only
+    if (this.currentRunId === runId) {
+      this.runState.set(cur);
+      this.bus.runState$.next(cur);
+    }
+  }
 
-    wf.nodes.forEach(n => this.sim.indeg.set(n.id, 0));
-    wf.edges.forEach(e => this.sim.indeg.set(e.target, (this.sim.indeg.get(e.target) ?? 0) + 1));
-    this.sim.ready.push(...wf.nodes.filter(n => (this.sim.indeg.get(n.id) ?? 0) === 0).map(n => n.id));
+
+  private simulateRun(runId: string, wf: PipelineWorkflowDTO): void {
+    const sim = this.sims.get(runId);
+    if (!sim) return;
+
+    sim.running = true;
+    sim.indeg.clear();
+    sim.ready.length = 0;
+    sim.timers.forEach(id => clearTimeout(id));
+    sim.timers.clear();
+    sim.cancelled.clear();
+    sim.pipelineCancelled = false;
+
+    wf.nodes.forEach(n => sim.indeg.set(n.id, 0));
+    wf.edges.forEach(e => sim.indeg.set(e.target, (sim.indeg.get(e.target) ?? 0) + 1));
+    sim.ready.push(...wf.nodes.filter(n => (sim.indeg.get(n.id) ?? 0) === 0).map(n => n.id));
 
     const unlockChildren = (u: string) => {
       for (const e of wf.edges) {
         if (e.source === u) {
-          const d = (this.sim.indeg.get(e.target) ?? 0) - 1;
-          this.sim.indeg.set(e.target, d);
-          if (d === 0) this.sim.ready.push(e.target);
+          const d = (sim.indeg.get(e.target) ?? 0) - 1;
+          sim.indeg.set(e.target, d);
+          if (d === 0) sim.ready.push(e.target);
         }
       }
     };
 
     const step = () => {
-      if (!this.sim.running) return;
-      if (this.sim.pipelineCancelled) return;
-      if (this.sim.ready.length === 0) { this.sim.running = false; return; }
+      if (!sim.running || sim.pipelineCancelled) return;
+      if (sim.ready.length === 0) { sim.running = false; return; }
 
-      const id = this.sim.ready.shift()!;
-      if (this.sim.cancelled.has(id)) {
-        const cur = { ...this.runState() };
-        cur[id] = 'skipped';
-        this.runState.set(cur);
-        this.bus.runState$.next(cur);
+      const id = sim.ready.shift()!;
+
+      if (sim.cancelled.has(id)) {
+        this.updateRunState(runId, s => s[id] = 'skipped');
         unlockChildren(id);
         queueMicrotask(step);
         return;
       }
 
-      {
-        const cur = { ...this.runState() };
-        cur[id] = 'running';
-        this.runState.set(cur);
-        this.bus.runState$.next(cur);
-      }
+      this.updateRunState(runId, s => s[id] = 'running');
 
       const to = window.setTimeout(() => {
-        this.sim.timers.delete(id);
-        if (this.sim.pipelineCancelled || this.sim.cancelled.has(id)) {
-          const cur = { ...this.runState() };
-          cur[id] = 'skipped';
-          this.runState.set(cur);
-          this.bus.runState$.next(cur);
+        sim.timers.delete(id);
+        if (sim.pipelineCancelled || sim.cancelled.has(id)) {
+          this.updateRunState(runId, s => s[id] = 'skipped');
         } else {
-          const cur = { ...this.runState() };
-          cur[id] = 'success';
-          this.runState.set(cur);
-          this.bus.runState$.next(cur);
+          this.updateRunState(runId, s => s[id] = 'success'); // or randomize success/error
         }
         unlockChildren(id);
         step();
       }, 1400);
 
-      this.sim.timers.set(id, to);
+      sim.timers.set(id, to);
     };
 
     step();
   }
 
-  handleStageCancel(e: { index: number; nodeIds: string[] }) {
-    const wf = this.pipelineDto();
-    if (!wf || !e?.nodeIds?.length) return;
+  handleStageCancel(e: { index: number; nodeIds: string[]; runId?: string }) {
+    const runId = e.runId ?? this.currentRunId; if (!runId) return;
+    const sim = this.sims.get(runId); if (!sim) return;
 
-    const state = { ...this.runState() };
+    const wf = this.runs().find(r => r.id === runId)?.workflow; if (!wf) return;
+
     const removeFromReady = (id: string) => {
-      const idx = this.sim.ready.indexOf(id);
-      if (idx >= 0) this.sim.ready.splice(idx, 1);
+      const idx = sim.ready.indexOf(id);
+      if (idx >= 0) sim.ready.splice(idx, 1);
     };
     const unlockChildren = (u: string) => {
       for (const edge of wf.edges) {
         if (edge.source === u) {
-          const d = (this.sim.indeg.get(edge.target) ?? 0) - 1;
-          this.sim.indeg.set(edge.target, d);
-          if (d === 0) this.sim.ready.push(edge.target);
+          const d = (sim.indeg.get(edge.target) ?? 0) - 1;
+          sim.indeg.set(edge.target, d);
+          if (d === 0) sim.ready.push(edge.target);
         }
       }
     };
 
-    for (const id of e.nodeIds) {
-      this.sim.cancelled.add(id);
-      const to = this.sim.timers.get(id);
-      if (to) {
-        clearTimeout(to);
-        this.sim.timers.delete(id);
-      }
-      removeFromReady(id);
-
-      if (state[id] === 'queued' || state[id] === 'running') {
-        state[id] = 'skipped';
-        unlockChildren(id);
-      }
-    }
-    this.runState.set(state);
-    this.bus.runState$.next(state);
-  }
-
-  handlePipelineCancel() {
-    this.sim.pipelineCancelled = true;
-    this.sim.timers.forEach(id => clearTimeout(id));
-    this.sim.timers.clear();
-
-    const state = { ...this.runState() };
-    Object.keys(state).forEach(id => {
-      if (state[id] === 'queued' || state[id] === 'running') {
-        state[id] = 'skipped';
+    this.updateRunState(runId, state => {
+      for (const id of e.nodeIds) {
+        sim.cancelled.add(id);
+        const to = sim.timers.get(id);
+        if (to) { clearTimeout(to); sim.timers.delete(id); }
+        removeFromReady(id);
+        if (state[id] === 'queued' || state[id] === 'running') {
+          state[id] = 'skipped';
+          unlockChildren(id);
+        }
       }
     });
-    this.runState.set(state);
-    this.bus.runState$.next(state);
+  }
 
-    this.sim.running = false;
+  handlePipelineCancel(runId?: string) {
+    const rid = runId ?? this.currentRunId; if (!rid) return;
+    const sim = this.sims.get(rid); if (!sim) return;
+
+    sim.pipelineCancelled = true;
+    sim.timers.forEach(id => clearTimeout(id));
+    sim.timers.clear();
+
+    this.updateRunState(rid, state => {
+      Object.keys(state).forEach(id => {
+        if (state[id] === 'queued' || state[id] === 'running') state[id] = 'skipped';
+      });
+    });
+
+    sim.running = false;
   }
 
   private startPipelineFromCurrent() {
@@ -1091,17 +1093,33 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
       meta: { createdAt: new Date().toISOString(), version: "1" },
     };
 
+    const runId = crypto?.randomUUID?.() ?? `run_${Date.now()}`;
+    this.currentRunId = runId;
+
+    // create initial state for this run
+    const initial: Record<string, Status> = {};
+    for (const n of cleanNodes) initial[n.id] = 'queued';
+
+    // store run
+    const run: RunEntry = { id: runId, startedAt: Date.now(), workflow: dto, state: initial };
+    this.runs.set([run, ...this.runs()]); // newest first
+    this.emitRuns();
+    console.log("run------>",run)
+    // keep old single-run signals feeding the existing panel pieces
     this.pipelineDto.set(dto);
     this.bus.pipeline$.next(dto);
-
-    const initial: Record<string, 'queued' | 'running' | 'success' | 'error' | 'skipped'> = {};
-    for (const n of cleanNodes) initial[n.id] = 'queued';
     this.runState.set(initial);
     this.bus.runState$.next(initial);
 
-    this.simulateRun();
+    // sim context and kick
+    this.sims.set(runId, this.newSim());
+    this.simulateRun(runId, dto);
+    queueMicrotask(() => this.bus.formsReset$.next({ includeInputs: true }));
   }
 
+  private emitRuns() {
+    this.bus.runs$.next(this.runs());
+  }
   private makeEdgeId(srcNode: string, srcPort: string, tgtNode: string, tgtPort: string) {
     return `e-${srcNode}__${srcPort}--${tgtNode}__${tgtPort}`;
   }
@@ -1143,7 +1161,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
   private refreshConnectivityAndValidity() {
     const withUi = this.withUiConnectivity(this.allNodes(), this._edges());
-    this.execNodes.set(withUi.filter(this.isExecutableNode));
+    this.execNodes.set(withUi.filter(n => this.isExecutableNode(n)));
     this.uiNodes.set(withUi.filter(n => !this.isExecutableNode(n)));
     this.publishGraphValidity();
   }
@@ -1204,10 +1222,10 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
   }
 
   private defaultPortsFor(type: string): WorkflowNode['ports'] {
-    const inputRandomKey= crypto?.randomUUID?.() ?? 'input-' + Math.random().toString(36).slice(2, 9);
-    const resultRandomKey= crypto?.randomUUID?.() ?? 'result-' + Math.random().toString(36).slice(2, 9);
-    const nodeInRandomKey= crypto?.randomUUID?.() ?? 'node-in-' + Math.random().toString(36).slice(2, 9);
-    const nodeOutRandomKey= crypto?.randomUUID?.() ?? 'node-out-' + Math.random().toString(36).slice(2, 9);
+    const inputRandomKey = crypto?.randomUUID?.() ?? 'input-' + Math.random().toString(36).slice(2, 9);
+    const resultRandomKey = crypto?.randomUUID?.() ?? 'result-' + Math.random().toString(36).slice(2, 9);
+    const nodeInRandomKey = crypto?.randomUUID?.() ?? 'node-in-' + Math.random().toString(36).slice(2, 9);
+    const nodeOutRandomKey = crypto?.randomUUID?.() ?? 'node-out-' + Math.random().toString(36).slice(2, 9);
     if (type === 'input') return { inputs: [], outputs: [{ id: inputRandomKey, label: 'out', type: 'json' }] };
     if (type === 'result') return { inputs: [{ id: resultRandomKey, label: 'in', type: 'json' }], outputs: [] };
     if (type === 'run-panel') return { inputs: [], outputs: [] };
@@ -1218,14 +1236,19 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
   }
 
   private isExecutableNode(n: WorkflowNode): boolean {
-    return EXEC_TYPES.has(n.type as PaletteType);
+    const groupedSets = new Set<PaletteType>([
+      ...EXEC_TYPES,
+      ...this.executableNodesSig()
+    ]);
+
+    return groupedSets.has(n.type as PaletteType);
   }
 
   private filterForRuntime(
     nodes: WorkflowNode[],
     edges: WorkflowEdge[]
   ): { nodes: WorkflowNode[]; edges: WorkflowEdge[] } {
-    const keptNodes = nodes.filter(this.isExecutableNode);
+    const keptNodes = nodes.filter(n => this.isExecutableNode(n));
     const keepIds = new Set(keptNodes.map(n => n.id));
     const keptEdges = edges.filter(e => keepIds.has(e.source) && keepIds.has(e.target));
     return { nodes: keptNodes, edges: keptEdges };
@@ -1317,7 +1340,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     }
 
     const r = this.quickAddCtx?.anchorRect;
-    const client = { x: (r?.right || 0) + 12, y:( r?.top ||0) + (r?.height || 0) / 2 };
+    const client = { x: (r?.right || 0) + 12, y: (r?.top || 0) + (r?.height || 0) / 2 };
     const world = this.clientToWorld(client);
     const pos = { x: world.x + 160, y: world.y - 12 };
 
@@ -1455,5 +1478,16 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     queueMicrotask(() => (this.suppressExternal = false));
 
     this.quickAddOpen = false;
+  }
+
+  private newSim(): SimCtx {
+    return {
+      running: true,
+      indeg: new Map<string, number>(),
+      ready: [],
+      timers: new Map<string, number>(),
+      cancelled: new Set<string>(),
+      pipelineCancelled: false,
+    };
   }
 }

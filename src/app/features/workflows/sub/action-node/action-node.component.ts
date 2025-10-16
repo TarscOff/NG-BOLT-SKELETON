@@ -101,6 +101,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       })
     );
 
+    this.subs.add(
+      this.bus.formsReset$.subscribe(({ includeInputs }) => this.resetFormsAfterRun(!!includeInputs))
+    );
+
     this.actionsNodes = this.model?.['actionsNodes'];
   }
 
@@ -162,6 +166,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   getInvalidFieldLabels(): string[] {
     if (!this.form) return [];
     const labelsByName = new Map(this.config.map(f => [f.name, f.label]));
+
     return Object.entries(this.form.controls)
       .filter(([, c]) => { return !c.valid })
       .map(([name]) => labelsByName.get(name) ?? name);
@@ -292,8 +297,6 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       queueMicrotask(() => this.form.patchValue(initial, { emitEvent: false }));
     }
 
-    console.log("h4")
-
     if (!this.valueChangesHooked) {
       this.valueChangesHooked = true;
       this.subs.add(
@@ -318,7 +321,26 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       this.wireFormToCanvas(this.form);
     }
 
-    console.log("h5")
+    this.markForCheck();
+  }
+
+  private resetFormsAfterRun(includeInputs: boolean) {
+    const vt = this.visualType();
+
+    if (vt === 'result') return;
+
+    const targetForm = vt === 'input' ? this.formInputs : this.form;
+
+    if (vt === 'input' && !includeInputs) return;
+
+    targetForm.reset({}, { emitEvent: false });
+    targetForm.markAsPristine();
+    targetForm.markAsUntouched();
+    targetForm.updateValueAndValidity({ emitEvent: false });
+
+    this.wireFormToCanvas(targetForm);
+
+    this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: {} });
 
     this.markForCheck();
   }

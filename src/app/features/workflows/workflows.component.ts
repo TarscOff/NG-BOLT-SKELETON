@@ -7,7 +7,7 @@ import { ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { WorkflowCanvasDfComponent } from './sub/workflow-canvas.component';
-import { ActionDefinitionLite, WorkflowEdge, WorkflowNode } from './sub/utils/workflow.interface';
+import { ActionDefinitionLite, PaletteType, WorkflowEdge, WorkflowNode } from './sub/utils/workflow.interface';
 import { Validators } from '@angular/forms';
 import { ActionFormSpec } from './sub/utils/action-forms';
 
@@ -271,6 +271,10 @@ export class WorkflowsComponent {
         { type: 'extract', params: { icon: "tag" } },
         { type: 'jira', params: { icon: "confirmation_number", class: "warn" } },
     ];
+    
+    ExecNodes = new Set<PaletteType>([
+        'chat', 'compare', 'summarize', 'extract', 'jira'
+    ]);
 
     constructor(
         private layoutService: LayoutService

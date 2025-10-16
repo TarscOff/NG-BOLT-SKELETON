@@ -7,11 +7,24 @@
         </button>
     </div>
 
-    @if (pipeline(); as pipe) {
-    <div class="body">
-        <app-pipeline-progress [workflow]="pipe" [runState]="runState()" (stageCancel)="stageCancel($event)"
-            (pipelineCancel)="pipelineCancel()">
-        </app-pipeline-progress>
+
+    @if (runs().length) {
+    <div class="body" style="display:flex; flex-direction:column; gap:16px;">
+        @for (r of runs(); track r.id; let i = $index) {
+        <div class="run-block">
+            <div class="run-block__header">
+                <div class="run-meta">
+                    <strong>Run #{{ runs().length - i }}</strong>
+                    <span>• {{ r.startedAt | date:'short' }}</span>
+                    <span>• {{ r.workflow.name }}</span>
+                </div>
+            </div>
+
+            <app-pipeline-progress [workflow]="r.workflow" [runState]="r.state"
+                (stageCancel)="stageCancel(r.id, $event)" (pipelineCancel)="pipelineCancel(r.id)">
+            </app-pipeline-progress>
+        </div>
+        }
     </div>
     } @else {
     <div class="empty">
