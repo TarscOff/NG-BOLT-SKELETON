@@ -143,8 +143,15 @@ export interface RunEntry {
 
 export type ReservedKeys = '__missingIn' | '__missingOut' | 'ui';
 
-export type StripReserved<T> =
-  T extends readonly (infer U)[] ? readonly StripReserved<U>[] :
+export type StripReservedShallow<T> =
   T extends object
-    ? Omit<{ [K in keyof T]: StripReserved<T[K]> }, ReservedKeys>
+    ? { [K in keyof T as K extends ReservedKeys ? never : K]: T[K] }
     : T;
+
+export const isObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null;
+
+export const hasProp = <K extends string>(
+  o: unknown,
+  k: K
+): o is Record<K, unknown> => isObject(o) && k in o;

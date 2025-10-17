@@ -6,6 +6,8 @@ import {
   DrawFlowBaseNode,
 } from '@ng-draw-flow/core';
 import {
+  hasProp,
+  isObject,
   PaletteType,
   WorkflowNodeDataBase,
   WorkflowNodeDataBaseParams,
@@ -22,7 +24,7 @@ import { debounceTime, distinctUntilChanged, startWith, Subscription } from 'rxj
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import type { ReplaceBinary, ReservedKeys, StripReserved } from '../utils/workflow.interface';
+import type { ReplaceBinary, ReservedKeys, StripReservedShallow } from '../utils/workflow.interface';
 
 @Component({
   selector: 'app-wf-node',
@@ -314,9 +316,9 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
     const dataAny = (this.safeModel?.params ?? {}) as WorkflowNodeDataBaseParams;
     const defaults = spec?.defaults ?? {};
-    const RESERVED= new Set<ReservedKeys>(['ui', '__missingIn', '__missingOut']);
+    const RESERVED = new Set(['ui', '__missingIn', '__missingOut']);
     const current = Object.fromEntries(
-      Object.entries(dataAny).filter(([k]) => !RESERVED.has(k as ReservedKeys))
+      Object.entries(dataAny).filter(([k]) => !RESERVED.has(k))
     );
     const initial = { ...defaults, ...current };
 
@@ -401,20 +403,42 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     this.bus.toggleRunPanel$.next({ anchorNodeId: this.nodeId });
   }
 
+
+// ---- type-guards (no `any`) ----
+private isLikeFile(v: unknown): v is File {
+  if (!isObject(v)) return false;
+
+  if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
+  if (!hasProp(v, 'size')  || typeof v?.['size']  !== 'number')   return false;
+  if (!hasProp(v, 'type')  || typeof v?.['type']  !== 'string')   return false;
+  if (!hasProp(v, 'name')  || typeof v?.['name']  !== 'string')   return false;
+
+  return true;
+}
+
+private isLikeBlob(v: unknown): v is Blob {
+  if (!isObject(v)) return false;
+
+  if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
+  if (!hasProp(v, 'size')  || typeof v?.['size']  !== 'number')   return false;
+  if (!hasProp(v, 'type')  || typeof v?.['type']  !== 'string')   return false;
+
+  if (hasProp(v, 'name') && typeof v?.['name'] === 'string') return false;
+
+  return true;
+}
   private normalizeForCompare<T>(v: T): ReplaceBinary<T> {
-    if (typeof File !== 'undefined' && v instanceof File) {
+    if (this.isLikeFile(v)) {
       const f = v as unknown as File;
       return { __file: true, name: f.name, size: f.size, type: f.type } as ReplaceBinary<T>;
     }
-    if (typeof Blob !== 'undefined' && v instanceof Blob) {
+    if (this.isLikeBlob(v)) {
       const b = v as unknown as Blob;
       return { __blob: true, size: b.size, type: b.type } as ReplaceBinary<T>;
     }
-
     if (Array.isArray(v)) {
       return (v as unknown[]).map(x => this.normalizeForCompare(x)) as ReplaceBinary<T>;
     }
-
     if (v !== null && typeof v === 'object') {
       const out: Record<string, unknown> = {};
       for (const k of Object.keys(v as Record<string, unknown>)) {
@@ -422,32 +446,22 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       }
       return out as ReplaceBinary<T>;
     }
-
     return v as ReplaceBinary<T>;
   }
 
   private valuesEqual<T>(a: T, b: T): boolean {
-    const na = this.normalizeForCompare(a);
-    const nb = this.normalizeForCompare(b);
-    return JSON.stringify(na) === JSON.stringify(nb);
+    return JSON.stringify(this.normalizeForCompare(a)) === JSON.stringify(this.normalizeForCompare(b));
   }
 
-  private stripReserved<T>(obj: T): StripReserved<T> {
+  private stripReserved<T>(obj: T): StripReservedShallow<T> {
     if (obj === null || typeof obj !== 'object') {
-      return obj as StripReserved<T>;
+      return obj as StripReservedShallow<T>;
     }
-
-    if (Array.isArray(obj)) {
-      return obj.map((x) => this.stripReserved(x)) as StripReserved<T>;
-    }
-
     const RESERVED = new Set<ReservedKeys>(['ui', '__missingIn', '__missingOut']);
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-      if (!RESERVED.has(k as ReservedKeys)) {
-        out[k] = this.stripReserved(v);
-      }
-    }
-    return out as StripReserved<T>;
+    const entries = Object
+      .entries(obj as Record<string, unknown>)
+      .filter(([k]) => !RESERVED.has(k as ReservedKeys));
+
+    return Object.fromEntries(entries) as StripReservedShallow<T>;
   }
 }
