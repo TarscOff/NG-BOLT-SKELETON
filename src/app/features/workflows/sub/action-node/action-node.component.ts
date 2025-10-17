@@ -404,29 +404,30 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   }
 
 
-// ---- type-guards (no `any`) ----
-private isLikeFile(v: unknown): v is File {
-  if (!isObject(v)) return false;
+  // ---- type-guards (no `any`) ----
+  private isLikeFile(v: unknown): v is File {
+    if (!isObject(v)) return false;
 
-  if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
-  if (!hasProp(v, 'size')  || typeof v?.['size']  !== 'number')   return false;
-  if (!hasProp(v, 'type')  || typeof v?.['type']  !== 'string')   return false;
-  if (!hasProp(v, 'name')  || typeof v?.['name']  !== 'string')   return false;
+    if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
+    if (!hasProp(v, 'size') || typeof v?.['size'] !== 'number') return false;
+    if (!hasProp(v, 'type') || typeof v?.['type'] !== 'string') return false;
+    if (!hasProp(v, 'name') || typeof v?.['name'] !== 'string') return false;
 
-  return true;
-}
+    return true;
+  }
 
-private isLikeBlob(v: unknown): v is Blob {
-  if (!isObject(v)) return false;
+  private isLikeBlob(v: unknown): v is Blob {
+    if (!isObject(v)) return false;
 
-  if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
-  if (!hasProp(v, 'size')  || typeof v?.['size']  !== 'number')   return false;
-  if (!hasProp(v, 'type')  || typeof v?.['type']  !== 'string')   return false;
+    if (!hasProp(v, 'slice') || typeof v?.['slice'] !== 'function') return false;
+    if (!hasProp(v, 'size') || typeof v?.['size'] !== 'number') return false;
+    if (!hasProp(v, 'type') || typeof v?.['type'] !== 'string') return false;
 
-  if (hasProp(v, 'name') && typeof v?.['name'] === 'string') return false;
+    if (hasProp(v, 'name') && typeof v?.['name'] === 'string') return false;
 
-  return true;
-}
+    return true;
+  }
+  
   private normalizeForCompare<T>(v: T): ReplaceBinary<T> {
     if (this.isLikeFile(v)) {
       const f = v as unknown as File;
