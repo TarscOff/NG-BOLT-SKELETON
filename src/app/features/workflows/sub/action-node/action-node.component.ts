@@ -18,10 +18,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
 import { WfCanvasBus } from '../utils/wf-canvas-bus';
 import { ActionFormSpec, makeFallback } from '../utils/action-forms';
-import { debounceTime, distinctUntilChanged, map, startWith, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, startWith, Subscription } from 'rxjs';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import type { ReplaceBinary, ReservedKeys, StripReserved } from '../utils/workflow.interface';
 
 @Component({
   selector: 'app-wf-node',
@@ -52,7 +53,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   configInputs: FieldConfig[] = [];
   private subs = new Subscription();
   private valueChangesHooked = false;
-
+  private inputValueChangesHooked = false;
   private lastModelRef: unknown = null;
   private lastModelKey = '';
   private lastFlagsKey = '';
@@ -242,7 +243,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
           validators: undefined
         }),
         this.fields.getDropdownField({
-          name: 'workflowas',
+          name: 'workflows',
           label: 'Based on workflow',
           placeholder: 'form.placeholders.role',
           options: [
@@ -265,11 +266,37 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
           layoutClass: "primary",
         }),
       ];
+
+      this.formInputs.reset({}, { emitEvent: false });
+      queueMicrotask(() => {
+
+        const payload = this.stripReserved(this.formInputs.getRawValue());
+        this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
+      });
+
       this.wireFormToCanvas(this.formInputs);
+
+      if (!this.inputValueChangesHooked) {
+        this.inputValueChangesHooked = true;
+        this.subs.add(
+          this.formInputs.valueChanges
+            .pipe(
+              debounceTime(150),
+              distinctUntilChanged((a, b) => this.valuesEqual(a, b))
+            )
+            .subscribe(params => {
+              if (!params || typeof params !== 'object') return;
+              const payload = this.stripReserved(params);
+              this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
+            })
+        );
+      }
+
       this.lastModelRef = this.model;
       this.lastModelKey = '';
       return;
     }
+
     const key = this.resolveActionKey();
     this.lastModelRef = this.model;
     this.lastModelKey = key;
@@ -287,14 +314,24 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
     const dataAny = (this.safeModel?.params ?? {}) as WorkflowNodeDataBaseParams;
     const defaults = spec?.defaults ?? {};
-    const RESERVED = new Set(['ui', '__missingIn', '__missingOut']);
+    const RESERVED= new Set<ReservedKeys>(['ui', '__missingIn', '__missingOut']);
     const current = Object.fromEntries(
-      Object.entries(dataAny).filter(([k]) => !RESERVED.has(k))
+      Object.entries(dataAny).filter(([k]) => !RESERVED.has(k as ReservedKeys))
     );
     const initial = { ...defaults, ...current };
+
     this.form.reset({}, { emitEvent: false });
+
     if (Object.keys(initial).length) {
-      queueMicrotask(() => this.form.patchValue(initial, { emitEvent: false }));
+      queueMicrotask(() => {
+        this.form.patchValue(initial, { emitEvent: false });
+
+        const payload = this.stripReserved(initial);
+        const currentParams = (this.safeModel?.params ?? {});
+        if (!this.valuesEqual(currentParams, payload)) {
+          this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
+        }
+      });
     }
 
     if (!this.valueChangesHooked) {
@@ -302,18 +339,12 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       this.subs.add(
         this.form.valueChanges
           .pipe(
-            map(v => JSON.stringify(v ?? {})),
-            distinctUntilChanged(),
             debounceTime(150),
-            map(json => JSON.parse(json))
+            distinctUntilChanged((prev, curr) => this.valuesEqual(prev, curr))
           )
           .subscribe(params => {
             if (!params || typeof params !== 'object') return;
-            const RESERVED = new Set(['ui', '__missingIn', '__missingOut']);
-            const payload = Object.fromEntries(
-              Object.entries(params).filter(([k]) => !RESERVED.has(k))
-            );
-
+            const payload = this.stripReserved(params);
             this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
           })
       );
@@ -332,12 +363,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     const targetForm = vt === 'input' ? this.formInputs : this.form;
 
     if (vt === 'input' && !includeInputs) return;
-
     targetForm.reset({}, { emitEvent: false });
     targetForm.markAsPristine();
     targetForm.markAsUntouched();
     targetForm.updateValueAndValidity({ emitEvent: false });
-
     this.wireFormToCanvas(targetForm);
 
     this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: {} });
@@ -370,5 +399,55 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   displayRUnsPanel(ev?: MouseEvent): void {
     ev?.stopPropagation();
     this.bus.toggleRunPanel$.next({ anchorNodeId: this.nodeId });
+  }
+
+  private normalizeForCompare<T>(v: T): ReplaceBinary<T> {
+    if (typeof File !== 'undefined' && v instanceof File) {
+      const f = v as unknown as File;
+      return { __file: true, name: f.name, size: f.size, type: f.type } as ReplaceBinary<T>;
+    }
+    if (typeof Blob !== 'undefined' && v instanceof Blob) {
+      const b = v as unknown as Blob;
+      return { __blob: true, size: b.size, type: b.type } as ReplaceBinary<T>;
+    }
+
+    if (Array.isArray(v)) {
+      return (v as unknown[]).map(x => this.normalizeForCompare(x)) as ReplaceBinary<T>;
+    }
+
+    if (v !== null && typeof v === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const k of Object.keys(v as Record<string, unknown>)) {
+        out[k] = this.normalizeForCompare((v as Record<string, unknown>)[k]);
+      }
+      return out as ReplaceBinary<T>;
+    }
+
+    return v as ReplaceBinary<T>;
+  }
+
+  private valuesEqual<T>(a: T, b: T): boolean {
+    const na = this.normalizeForCompare(a);
+    const nb = this.normalizeForCompare(b);
+    return JSON.stringify(na) === JSON.stringify(nb);
+  }
+
+  private stripReserved<T>(obj: T): StripReserved<T> {
+    if (obj === null || typeof obj !== 'object') {
+      return obj as StripReserved<T>;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((x) => this.stripReserved(x)) as StripReserved<T>;
+    }
+
+    const RESERVED = new Set<ReservedKeys>(['ui', '__missingIn', '__missingOut']);
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      if (!RESERVED.has(k as ReservedKeys)) {
+        out[k] = this.stripReserved(v);
+      }
+    }
+    return out as StripReserved<T>;
   }
 }

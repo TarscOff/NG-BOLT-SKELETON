@@ -18,7 +18,7 @@ import pkg from '../package.json';
       provideCore({
         appVersion: pkg.version,
         environments: env,
-        theme: 'light',
+        theme: 'dark',
         i18n: {
           prefix: 'assets/i18n/',
           suffix: '.json',

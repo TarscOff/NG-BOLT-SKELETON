@@ -1,7 +1,7 @@
 <div class="run-panel">
     <div class="header">
         <div class="title">{{ 'workflow.runPanel.title' | translate : { default: 'Run' } }}</div>
-        <button mat-stroked-button color="primary" (click)="triggerRun()" [disabled]="!graphOk()">
+        <button mat-flat-button color="success" (click)="triggerRun()" [disabled]="!graphOk()">
             <mat-icon>play_arrow</mat-icon>
             <span class="ml-2">{{ 'workflow.runPanel.run' | translate : { default: 'Run simulation' } }}</span>
         </button>

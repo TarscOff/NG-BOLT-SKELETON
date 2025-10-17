@@ -101,7 +101,6 @@ export class WorkflowsComponent {
                     required: true,
                     errorMessages: { required: "form.errors.threshold" },
                     placeholder: "form.placeholders.threshold",
-                    defaultValue: 20
                 }),
             ],
             defaults: {

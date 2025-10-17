@@ -105,9 +105,10 @@
       "cancel_pipe":"Annuler la pipeline",
       "now_stages":"Pas de file.",
       "cancel_stage":"Annuler",
-      "results":"Résultats",
+      "options":"Options",
       "go_chat":"Aller au chat",
-      "artifacts":"Artéfacts"
+      "artifacts":"Artéfacts",
+      "details":"Détails"
     },
     "errors": {
       "exactlyOneInput": "Le workflow doit comporter exactement un nœud d’entrée.",

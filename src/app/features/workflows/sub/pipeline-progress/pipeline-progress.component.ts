@@ -5,7 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatMenuModule } from '@angular/material/menu';
-import { PipelineWorkflowDTO, StageNode, Status, WorkflowNodeDataBase } from '../utils/workflow.interface';
+import { PipelineWorkflowDTO, StageNode, Status } from '../utils/workflow.interface';
 
 @Component({
   selector: 'app-pipeline-progress',
@@ -28,7 +28,7 @@ export class PipelineProgressComponent {
   private _wf = signal<PipelineWorkflowDTO | null>(null);
   private _run = signal<Record<string, Status>>({});
 
-  private readonly EXCLUDED = new Set(['input', 'result']);
+  private readonly EXCLUDED = new Set(['input']);
 
   private isActionable = (t: string) => !this.EXCLUDED.has(t);
 
@@ -39,9 +39,7 @@ export class PipelineProgressComponent {
     const allNodes = wf.nodes;
     const allEdges = wf.edges;
 
-    const inputs = allNodes.filter(n => n.type === 'input');
-    const results = allNodes.filter(n => n.type === 'result');
-    const actions = allNodes.filter(n => this.isActionable(n.type));
+    const actions = allNodes;
     const actionIds = new Set(actions.map(n => n.id));
 
     const edges = allEdges.filter(e => actionIds.has(e.source) && actionIds.has(e.target));
@@ -80,12 +78,6 @@ export class PipelineProgressComponent {
       layers.push([...remaining].map(id => ({ id, label: labelOf(id), type: typeOf(id) })));
     }
 
-    const mk = (n: { id: string; type: string; data?: WorkflowNodeDataBase; }): StageNode =>
-      ({ id: n.id, type: n.type, label: (n.data?.label ?? n.id) });
-
-    if (inputs.length) layers.unshift(inputs.map(mk));
-    if (results.length) layers.push(results.map(mk));
-
     return layers;
   });
 
@@ -118,5 +110,9 @@ export class PipelineProgressComponent {
       }
     }
     this._run.set(next);
+  }
+
+  seeDetails() {
+    return;
   }
 }

@@ -31,7 +31,7 @@ export interface ActionDefinitionLite {
 }
 export interface WorkflowNodeDataBaseParams {
     icon?: string;
-    ui?: { expanded: boolean }
+    ui?: { expanded?: boolean }
     __missingIn?: boolean;
     __missingOut?: boolean;
     [k: string]: unknown;
@@ -71,7 +71,7 @@ export interface PipelineWorkflowDTO {
   name: string;
   nodes: { id: string; type: string; data?: WorkflowNodeDataBase }[];
   edges: { id: string; source: string; target: string }[];
-  meta?: {createdAt: string, version:string};
+  meta?: {createdAt: string, version:string; filesByNode: Record<string, Record<string, Binary | Binary[]>>};
 }
 
 export interface StageNode {
@@ -140,3 +140,11 @@ export interface RunEntry {
   workflow: PipelineWorkflowDTO;
   state: Record<string, Status>;
 };
+
+export type ReservedKeys = '__missingIn' | '__missingOut' | 'ui';
+
+export type StripReserved<T> =
+  T extends readonly (infer U)[] ? readonly StripReserved<U>[] :
+  T extends object
+    ? Omit<{ [K in keyof T]: StripReserved<T[K]> }, ReservedKeys>
+    : T;

@@ -44,6 +44,7 @@ import {
   PaletteType,
   PipelineWorkflowDTO,
   ReplaceBinary,
+  ReservedKeys,
   RunEntry,
   Sanitized,
   SimCtx,
@@ -62,7 +63,7 @@ import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { WfCanvasBus } from './utils/wf-canvas-bus';
 import { MatIconModule } from '@angular/material/icon';
 import { WfRunPanelNodeComponent } from './run-panel/run-panel-node.component';
-import { FieldConfig, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
+import { FieldConfig, ToolbarAction, WorkflowNodeDataBaseParams } from '@cadai/pxs-ng-core/interfaces';
 import { map, Subscription } from 'rxjs';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { MatMenuModule } from '@angular/material/menu';
@@ -94,7 +95,6 @@ import { ActionFormSpec } from './utils/action-forms';
         input: WfNodeComponent,
         result: WfNodeComponent,
         'chat': WfNodeComponent,
-        'chat-on-file': WfNodeComponent,
         compare: WfNodeComponent,
         summarize: WfNodeComponent,
         extract: WfNodeComponent,
@@ -191,8 +191,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
   }
 
   @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
-  @Input({ required: true }) 
-  set executableNodes(value:Set<PaletteType>){
+  @Input({ required: true })
+  set executableNodes(value: Set<PaletteType>) {
     this.executableNodesSig.set(value)
   };
 
@@ -227,7 +227,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
   selectedNodeId = signal<string | null>(null);
 
   pipelineDto = signal<PipelineWorkflowDTO | null>(null);
-  runState = signal<Record<string, 'queued' | 'running' | 'success' | 'error' | 'skipped'>>({});
+  runState = signal<Record<string,Status>>({});
 
   private sims = new Map<string, SimCtx>();
   private currentRunId: string | null = null;
@@ -247,6 +247,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     const nodes = this.allNodes() ?? [];
     const edges = this._edges() ?? [];
     const outDeg = new Map<string, number>(), inDeg = new Map<string, number>();
+    
     nodes.forEach(n => { outDeg.set(n.id, 0); inDeg.set(n.id, 0); });
     edges.forEach(e => {
       outDeg.set(e.source, (outDeg.get(e.source) ?? 0) + 1);
@@ -701,17 +702,24 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     const prevById = new Map<string, WorkflowNode>([...prevExec, ...prevUi].map(n => [n.id, n]));
     const fromDf: WorkflowNode[] = noNodes ? [] : m.nodes!.map(raw => {
       const prev = prevById.get(raw.id);
-      const rawData = (raw as DfDataNode).data ?? {};
+      const rawData = raw.data ?? {};
       const pos = (raw as DfDataNode).position ?? { x: prev?.x ?? 0, y: prev?.y ?? 0 };
-      const type = rawData.type as PaletteType ?? prev?.type;
+      const type = (rawData.type as PaletteType) ?? prev?.type;
       const ports = rawData?.['ports'] ?? prev?.ports ?? this.defaultPortsFor(type);
+      const prevParams = (prev?.data?.params ?? {}) as Record<string, unknown>;
+      const rawParams = (rawData?.['params'] ?? {}) as Record<string, unknown>;
 
-      const data = { ...(prev?.data ?? {}), ...rawData, type };
+      const mergedUi = {
+        ...(prevParams?.['ui'] as Record<string, unknown> ?? {}),
+        ...(rawParams?.['ui'] as Record<string, unknown> ?? {})
+      };
+
+      const params = { ...prevParams, ...rawParams, ui: mergedUi };
+      const data = { ...(prev?.data ?? {}), ...rawData, params, type };
+
       return { id: raw.id, type, x: pos.x, y: pos.y, data, ports };
     });
-
     const dfExec = fromDf.filter(n => this.isExecutableNode(n));
-
     const mergeMap = new Map<string, WorkflowNode>(fromDf.map(n => [n.id, n] as [string, WorkflowNode]));
     const mergeById = (list: WorkflowNode[]) => list.map(n => mergeMap.get(n.id) ?? n);
     let nextExec = mergeById(prevExec);
@@ -726,7 +734,6 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     const byId = new Map(withUi.map(n => [n.id, n]));
     nextExec = nextExec.map(n => byId.get(n.id) ?? n);
     nextUi = nextUi.map(n => byId.get(n.id) ?? n);
-
     this.execNodes.set(nextExec);
     this.uiNodes.set(nextUi);
     this.emitConnectivity(withUi, nextEdges);
@@ -923,16 +930,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const { cleanNodes, cleanEdges } = this.normalize(nodes, edges);
-
-    const dto = {
-      name: this.form.value.workflowName as string,
-      nodes: cleanNodes,
-      edges: cleanEdges,
-      meta: { createdAt: new Date().toISOString(), version: 1 },
-    };
-
-    console.log(dto);
+    const dto = this.buildWorkflowDTO(nodes, edges);
+    console.log("dto---------->",dto)
   }
 
   private emitConnectivity(nodes: WorkflowNode[], edges: WorkflowEdge[]): void {
@@ -1084,34 +1083,24 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
   private startPipelineFromCurrent() {
     const filtered = this.filterForRuntime(this.execNodes(), this._edges());
-    const { cleanNodes, cleanEdges } = this.normalize(filtered.nodes, filtered.edges);
+    const { cleanNodes } = this.normalize(filtered.nodes, filtered.edges);
 
-    const dto: PipelineWorkflowDTO = {
-      name: (this.form.value.workflowName as string) || 'Untitled workflow',
-      nodes: cleanNodes,
-      edges: cleanEdges,
-      meta: { createdAt: new Date().toISOString(), version: "1" },
-    };
-
+    const dto = this.buildWorkflowDTO(filtered.nodes, filtered.edges);
     const runId = crypto?.randomUUID?.() ?? `run_${Date.now()}`;
     this.currentRunId = runId;
 
-    // create initial state for this run
     const initial: Record<string, Status> = {};
     for (const n of cleanNodes) initial[n.id] = 'queued';
 
-    // store run
     const run: RunEntry = { id: runId, startedAt: Date.now(), workflow: dto, state: initial };
-    this.runs.set([run, ...this.runs()]); // newest first
+    this.runs.set([run, ...this.runs()]);
     this.emitRuns();
-    console.log("run------>",run)
-    // keep old single-run signals feeding the existing panel pieces
+
     this.pipelineDto.set(dto);
     this.bus.pipeline$.next(dto);
     this.runState.set(initial);
     this.bus.runState$.next(initial);
 
-    // sim context and kick
     this.sims.set(runId, this.newSim());
     this.simulateRun(runId, dto);
     queueMicrotask(() => this.bus.formsReset$.next({ includeInputs: true }));
@@ -1188,7 +1177,6 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     }
 
     const files: Record<string, Binary | Binary[]> = {};
-
     const walk = (obj: unknown, path: string[] = []): unknown => {
       if (this.isFile(obj) || this.isBlob(obj) || this.isArrayOfFiles(obj)) {
         const key = path.join('.');
@@ -1207,6 +1195,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
     };
 
     const sanitized = walk(params) as ReplaceBinary<NonNullable<T>>;
+
     if (Object.keys(files).length) this.fileCache.set(nodeId, files);
     return sanitized;
   }
@@ -1489,5 +1478,45 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
       cancelled: new Set<string>(),
       pipelineCancelled: false,
     };
+  }
+
+  private stripReservedDTO(obj:  WorkflowNodeDataBaseParams | undefined): WorkflowNodeDataBaseParams | undefined {
+    if (!obj || typeof obj !== 'object') return obj;
+    const RESERVED = new Set<ReservedKeys>(["ui",'__missingIn', '__missingOut']);
+    const out : WorkflowNodeDataBaseParams = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (RESERVED.has(k as ReservedKeys)) continue;
+      out[k] = v;
+    }
+    return out;
+  }
+
+  private buildWorkflowDTO(fromNodes: WorkflowNode[], fromEdges: WorkflowEdge[]): PipelineWorkflowDTO {
+    const { cleanNodes, cleanEdges } = this.normalize(fromNodes, fromEdges);
+
+    const nodesSansReserved = cleanNodes.map(n => ({
+      ...n,
+      data: {
+        ...n.data,
+        params: this.stripReservedDTO(n.data?.params)
+      }
+    }));
+
+    const filesByNode: Record<string, Record<string, Binary | Binary[]>> = {};
+    for (const n of nodesSansReserved) {
+      const files = this.fileCache.get(n.id);
+      if (files && Object.keys(files).length) filesByNode[n.id] = files;
+    }
+    const dto: PipelineWorkflowDTO = {
+      name: (this.form?.value?.workflowName as string) || 'Untitled workflow',
+      nodes: nodesSansReserved,
+      edges: cleanEdges,
+      meta: {
+        createdAt: new Date().toISOString(),
+        version: "1",
+        filesByNode,
+      }
+    };
+    return dto;
   }
 }

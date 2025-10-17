@@ -105,9 +105,10 @@
       "cancel_pipe":"Cancel pipeline",
       "now_stages":"No stages to show.",
       "cancel_stage":"Cancel stage",
-      "results":"View results",
+      "options":"View options",
       "go_chat":"Go to chat",
-      "artifacts":"Artifacts"
+      "artifacts":"Artifacts",
+      "details":"Details"
     },
     "errors": {
       "exactlyOneInput": "The workflow must have exactly one Input node.",

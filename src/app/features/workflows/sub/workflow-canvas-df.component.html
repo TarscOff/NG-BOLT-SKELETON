@@ -1,7 +1,7 @@
 <div class="flex flex-wrap workflow-zone">
   <app-dynamic-form class="form" [config]="fieldConfig" [form]="form"></app-dynamic-form>
   <button mat-fab extended class="palette-toggle primary" color="primary" (click)="showPalette.set(!showPalette())"
-    [attr.aria-expanded]="showPalette()" matTooltip="Display tools">
+    [attr.aria-expanded]="showPalette()" matTooltip='{{"toolbox" | translate}}'>
     <mat-icon>{{ showPalette() ? 'close' : 'apps' }}</mat-icon>
     {{"toolbox" | translate}}
   </button>
@@ -12,7 +12,7 @@
 
     <div class="pxs-wf-palette-items flex flex-col" #paletteHost>
       @for (a of availableActionsSig(); track a.type) {
-      <button mat-flat-button class="pxs-wf-pill {{a.params?.['class']}}" cdkDrag [cdkDragData]="a"
+      <button mat-flat-button class="pxs-wf-pill {{a.params?.['class']?? 'primary'}}" cdkDrag [cdkDragData]="a"
         [disabled]="disabledSig()" cdkDragRootElement=".pxs-wf-pill" (cdkDragStarted)="isPaletteDragging.set(true)"
         (cdkDragEnded)="isPaletteDragging.set(false)">
         <mat-icon>{{a.params?.["icon"] ?? null}}</mat-icon>{{ a.type | translate }}
@@ -55,12 +55,12 @@
       <div class="quick-add">
         <div class="quick-title">{{ 'workflow.labels.quickAdd' | translate }}</div>
 
-        <button *ngFor="let a of quickAddItems" class="quick-item" mat-button (click)="pickQuickAction(a)">
+        <button *ngFor="let a of quickAddItems" class="quick-item primary" mat-button (click)="pickQuickAction(a)">
           <mat-icon *ngIf="a.icon">{{a.icon}}</mat-icon>
           <span>{{ a.label | translate }}</span>
         </button>
 
-        <button mat-button [matMenuTriggerFor]="menu" class="quick-item">
+        <button mat-button [matMenuTriggerFor]="menu" class="quick-item accent">
           <mat-icon>more_vert</mat-icon>
           <span>{{"workflow.labels.already_dropped" | translate}}</span>
         </button>

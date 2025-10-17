@@ -6,7 +6,7 @@
     <!-- Left ports -->
     <div class="ports left">
         @for (p of inPorts(); track p.id) {
-            <df-input [position]="positions.Left" class="port-input" [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: true }"></df-input>
+            <df-input [position]="positions.Left" class="port-input" [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-input>
         }
     </div>
 
