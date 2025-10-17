@@ -141,7 +141,9 @@ export interface RunEntry {
   state: Record<string, Status>;
 };
 
-export type ReservedKeys = '__missingIn' | '__missingOut' | 'ui';
+
+export const RESERVED_KEYS = ['ui', '__missingIn', '__missingOut'] as const;
+export type ReservedKeys = typeof RESERVED_KEYS[number];
 
 export type StripReservedShallow<T> =
   T extends object

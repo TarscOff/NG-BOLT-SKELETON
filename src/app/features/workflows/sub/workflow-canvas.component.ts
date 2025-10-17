@@ -44,6 +44,7 @@ import {
   PaletteType,
   PipelineWorkflowDTO,
   ReplaceBinary,
+  RESERVED_KEYS,
   ReservedKeys,
   RunEntry,
   Sanitized,
@@ -1483,10 +1484,11 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy {
 
   private stripReservedDTO(obj:  WorkflowNodeDataBaseParams | undefined): WorkflowNodeDataBaseParams | undefined {
     if (!obj || typeof obj !== 'object') return obj;
-    const RESERVED = new Set<ReservedKeys>(["ui",'__missingIn', '__missingOut']);
+    const  RESERVED_SET: ReadonlySet<ReservedKeys> = new Set(RESERVED_KEYS);
+
     const out : WorkflowNodeDataBaseParams = {};
     for (const [k, v] of Object.entries(obj)) {
-      if (RESERVED.has(k as ReservedKeys)) continue;
+      if (RESERVED_SET.has(k as ReservedKeys)) continue;
       out[k] = v;
     }
     return out;

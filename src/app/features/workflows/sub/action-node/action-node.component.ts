@@ -9,6 +9,7 @@ import {
   hasProp,
   isObject,
   PaletteType,
+  RESERVED_KEYS,
   WorkflowNodeDataBase,
   WorkflowNodeDataBaseParams,
   WorkflowPorts,
@@ -427,7 +428,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
     return true;
   }
-  
+
   private normalizeForCompare<T>(v: T): ReplaceBinary<T> {
     if (this.isLikeFile(v)) {
       const f = v as unknown as File;
@@ -458,10 +459,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     if (obj === null || typeof obj !== 'object') {
       return obj as StripReservedShallow<T>;
     }
-    const RESERVED = new Set<ReservedKeys>(['ui', '__missingIn', '__missingOut']);
+    const RESERVED_SET: ReadonlySet<ReservedKeys> = new Set(RESERVED_KEYS);
+
     const entries = Object
       .entries(obj as Record<string, unknown>)
-      .filter(([k]) => !RESERVED.has(k as ReservedKeys));
+      .filter(([k]) => !RESERVED_SET.has(k as ReservedKeys));
 
     return Object.fromEntries(entries) as StripReservedShallow<T>;
   }
