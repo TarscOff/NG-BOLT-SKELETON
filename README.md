@@ -354,6 +354,7 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 - [[✅] - Change log](./CHANGELOG.md)
 - [[✅] - Theming, Assets and translattions](./README-ASSETS-TRANSLATIONS.md)
 - [[✅] - Smart Tables](./README-SMARTABLES.md)
+- [[✅] - WorkflowBuilder Flow Designer](./README-WORKFLOWBUILDER.md)
 - [[✅] - Charts](./README-CHARTS.md)
 - [[🟡] - CI/CD](./README-CI-CD.md)
 - [[✅] - Contribution Guide](./CONTRIBUTING.md)

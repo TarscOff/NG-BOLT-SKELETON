@@ -7,18 +7,35 @@
   "TEAM_MEMBERS": "Team members",
   "quick_settings": "Quick settings",
   "confirm": "Confirm",
-  "cancel": "Cancel",
   "navigationTitle": "Navigation",
   "selection": "Selection",
   "name": "Name",
   "role": "Role",
   "created": "Created at",
-  "actions": "Actions",
+  "toolbox": "Toolbox",
   "delete": "Delete",
+  "close": "Close",
+  "configure": "Configure",
+  "apply": "Apply",
   "edit": "Edit",
   "back": "Back",
   "export": "Export",
-  "refresh":"Refresh",
+  "refresh": "Refresh",
+  "new_workflow": "New Workflow",
+  "tip": "Tip",
+  "in": "Input",
+  "out": "Output",
+  "workflow_help": "Drag from the palette. Click a node’s right port (source) then another node’s left port (target) to connect. Right-click nodes for options.",
+  "input": "Input",
+  "result": "Result",
+  "chat": "Chat",
+  "compare": "Compare",
+  "summarize": "Summarize",
+  "extract": "Extract",
+  "run-panel": "Run panel",
+  "threshold":"Threshold",
+        "toggle":"Fold",
+"untoggle":"Unfold",
   "table": {
     "paginator": {
       "itemsPerPage": "Items per page",
@@ -77,8 +94,58 @@
     "home": "Home",
     "signIn": "Sign in"
   },
-  "form": {
+  "workflow": {
+    "runPanel": {
+      "title": "Runs panel",
+      "run": "Run workflow",
+      "empty": "No workflow available.",
+      "queued":"Queued",
+      "running":"Running",
+      "success":"Success",
+      "error":"Error",
+      "skipped":"Skipped",
+      "cancel_pipe":"Cancel pipeline",
+      "now_stages":"No stages to show.",
+      "cancel_stage":"Cancel stage",
+      "options":"View options",
+      "go_chat":"Go to chat",
+      "artifacts":"Artifacts",
+      "details":"Details",
+      "results":"Results",
+      "auto":"Auto",
+      "params":"Params",
+      "logs":"Logs"
+    },
+    "errors": {
+      "exactlyOneInput": "The workflow must have exactly one Input node.",
+      "exactlyOneResult": "The workflow must have exactly one Result node.",
+      "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
+      "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
+      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
+      "saveFailed": "Failed to save the workflow.",
+      "noDirectInputToResult":"You cannot connect Input directly to Result.",
+      "invalid_fields":"Node has invalid fields",
+      "noCompatibleActions":"No node available"
+    },
     "labels": {
+      "quickAdd":"Connections",
+      "already_dropped":"Existing nodes"
+    }
+  },
+  "form": {
+    "files": {
+      "count": "{{count}} Files"
+    },
+    "actions": {
+      "browse": "Browse Files",
+      "addFiles": "Add files",
+      "clear": "Empty",
+      "remove": "Delete",
+      "replaceFile": "Replace file"
+    },
+    "labels": {
+      "files": "Files",
+      "file": "File",
       "input": "Text",
       "email": "Email",
       "password": "Password",
@@ -93,9 +160,12 @@
       "price": "Price",
       "themeSwitcher": "Theme",
       "language": "Language",
-      "textarea": "Textarea"
+      "textarea": "Textarea",
+      "name": "Name",
+      "threshold":"Threshold"
     },
     "placeholders": {
+      "file": "Upload file(s)",
       "input": "Enter text",
       "email": "Enter your email",
       "password": "Enter your password",
@@ -108,15 +178,19 @@
       "phone": "Enter your phone number",
       "fullname": "Enter the full name",
       "price": "Enter the price",
-      "textarea": "Write your text..."
+      "textarea": "Write your text...",
+      "name": "Name...",
+      "threshold":"Threshold ..."
     },
     "hints": {
+      "file": "Select a File",
       "input": "Free text",
       "email": "Must be a valid email address",
       "password": "At least 8 characters, including a number",
       "notify": "Receive alerts and notifications",
       "role": "User role in the app",
       "volume": "Adjust between 0 and 200",
+      "threshold": "Adjust between 0 and 100",
       "dob": "Format: YYYY-MM-DD",
       "tags": "Separate with commas",
       "country": "Your current country of residence",
@@ -124,6 +198,32 @@
       "textarea": "Max {{max}} characters."
     },
     "errors": {
+      "fixFields": "Please fix the highlighted fields.",
+      "prompt": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "name": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "fullname": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "file": {
+        "accept": "Field only accepts the following types: {{requiredTypes}}.",
+        "required": "Field is required.",
+        "maxFiles": "Maximum {{requiredLength}} file(s) allowed (you selected {{actualLength}}).",
+        "maxFileSize": "Maximum file size {{requiredLength}} allowed.",
+        "maxTotalSize": "Maximum total size {{requiredLength}} allowed."
+      },
       "input": {
         "required": "Field is required.",
         "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
@@ -180,6 +280,9 @@
         "required": "Tags are required.",
         "invalid": "Select a tag.",
         "minOne": "Please select at least one."
+      },
+      "threshold": {
+        "required": "Threshold is required."
       },
       "textarea": {
         "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}}).",

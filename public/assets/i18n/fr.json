@@ -14,10 +14,28 @@
   "role": "Rôle",
   "created": "Crée a",
   "delete": "Supprimer",
+  "close": "Fermer",
+  "configure": "Configurer",
+  "apply": "Appliquer",
   "edit": "Modifier",
   "back": "Retour",
   "export": "Exporter",
-  "refresh":"Rafraichir",
+  "refresh": "Rafraichir",
+  "new_workflow": "Nouveau Workflow",
+  "in": "entrée",
+  "out": "sortie",
+  "tip": "Astuce",
+  "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d’un nœud (source), puis sur le port gauche d’un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options.",
+  "input": "Entrée",
+  "result": "Résultat",
+  "chat": "Chat",
+  "compare": "Comparer",
+  "summarize": "Résumer",
+  "extract": "Extraire",
+  "run-panel": "Panneau d'éxécutions",
+  "threshold":"Threshold",
+    "toggle":"Plier",
+"untoggle":"Déplier",
   "table": {
     "paginator": {
       "itemsPerPage": "Éléments par page",
@@ -36,7 +54,7 @@
     },
     "searchPlaceholder": "Rechercher…"
   },
-  "actions": "Actions",
+  "toolbox": "Boite a outils",
   "nav": {
     "dashboard": "GenAI Tableau de bord",
     "reports": "GenAI Rapports",
@@ -77,8 +95,58 @@
     "home": "Accueil",
     "signIn": "Se connecter"
   },
-  "form": {
+  "workflow": {
+    "runPanel": {
+      "title": "Panneau d'éxécutions",
+      "run": "Lancer le workflow",
+      "empty": "Pas de workflow disponible.",
+      "queued": "En file d’attente",
+      "running": "En cours d’exécution",
+      "success": "Réussite",
+      "error": "Erreur",
+      "skipped": "Sauté",
+      "cancel_pipe":"Annuler la pipeline",
+      "now_stages":"Pas de file.",
+      "cancel_stage":"Annuler",
+      "options":"Options",
+      "go_chat":"Aller au chat",
+      "artifacts":"Artéfacts",
+      "details":"Détails",
+      "results":"Résultats",
+      "params":"Paramètres",
+      "logs":"Logs",
+      "auto":"Auto"
+    },
+    "errors": {
+      "exactlyOneInput": "Le workflow doit comporter exactement un nœud d’entrée.",
+      "exactlyOneResult": "Le workflow doit comporter exactement un nœud de résultat.",
+      "nodeMissingInput": "Le nœud \"{{id}}\" n’a pas de connexion entrante.",
+      "nodeMissingOutput": "Le nœud \"{{id}}\" n’a pas de connexion sortante.",
+      "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
+      "saveFailed": "Échec de l’enregistrement du workflow.",
+      "noDirectInputToResult":"Vous ne pouvez pas joindre ces deux éléments.",
+      "invalid_fields":"Il reste des champs invalides",
+      "noCompatibleActions":"Pas de noeur disponible"
+    },
     "labels": {
+      "quickAdd":"Connections",
+      "already_dropped":"Noeuds existants"
+    }
+  },
+  "form": {
+    "files": {
+      "count": "{{count}} Fichiers"
+    },
+    "actions": {
+      "browse": "Séléctionnez des fichiers",
+      "addFiles": "Ajouter des fichiers",
+      "clear": "Vider",
+      "remove": "Supprimer",
+      "replaceFile": "Remplacer le fichier"
+    },
+    "labels": {
+      "files": "Fichiers",
+      "file": "Fichier",
       "input": "Texte",
       "email": "E-mail",
       "password": "Mot de passe",
@@ -93,9 +161,12 @@
       "price": "Prix",
       "themeSwitcher": "Thème",
       "language": "Langue",
-      "textarea": "Zone de texte"
+      "textarea": "Zone de texte",
+      "name": "Nom",
+      "threshold":"Sensibilité"
     },
     "placeholders": {
+      "file": "Charger un(des) fichier",
       "input": "Saisissez un texte",
       "email": "Entrez votre e-mail",
       "password": "Entrez votre mot de passe",
@@ -108,15 +179,19 @@
       "phone": "Entrez votre numéro de téléphone",
       "fullname": "Entrez le nom complet",
       "price": "Entrez le prix",
-      "textarea": "Écrivez votre texte..."
+      "textarea": "Écrivez votre texte...",
+      "name": "Nom...",
+      "threshold":"Sensibilité ..."
     },
     "hints": {
+      "file": "Séléction de fichiers",
       "input": "Texte libre",
       "email": "Doit être une adresse e-mail valide",
       "password": "Au moins 8 caractères, dont un chiffre",
       "notify": "Recevoir des alertes et notifications",
       "role": "Rôle de l’utilisateur dans l’application",
       "volume": "Ajustez entre 0 et 200",
+      "threshold": "Ajustez entre 0 et 100",
       "dob": "Format : AAAA-MM-JJ",
       "tags": "Séparez par des virgules",
       "country": "Votre pays de résidence",
@@ -124,6 +199,32 @@
       "textarea": "Maximum {{max}} caractères."
     },
     "errors": {
+      "fixFields": "Veuillez fixer les blocks surlignés.",
+      "name": {
+        "required": "Le champ est obligatoire.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\")."
+      },
+      "prompt": {
+        "required": "Le champ est obligatoire.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\")."
+      },
+      "fullname": {
+        "required": "Le champ est obligatoire.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\")."
+      },
+      "file": {
+        "accept": "Ce champ accepte uniquement les types suivants : {{requiredTypes}}.",
+        "required": "Ce champ est obligatoire.",
+        "maxFiles": "Nombre maximal de fichiers autorisés : {{requiredLength}} (vous en avez sélectionné {{actualLength}}).",
+        "maxFileSize": "Taille maximale de fichier autorisée : {{requiredLength}}.",
+        "maxTotalSize": "Taille totale maximale autorisée : {{requiredLength}}."
+      },
       "input": {
         "required": "Le champ est obligatoire.",
         "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
@@ -180,6 +281,9 @@
         "required": "Les tags sont obligatoires.",
         "invalid": "Sélectionnez un tag.",
         "minOne": "Veuillez en sélectionner au moins un."
+      },
+      "threshold": {
+        "required": "Sensibilité requise."
       },
       "textarea": {
         "minlength": "Ajoutez au moins {{requiredLength}} caractères (vous en avez {{actualLength}}).",

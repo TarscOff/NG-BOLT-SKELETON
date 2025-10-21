@@ -4,20 +4,19 @@
 :root {
   --mat-primary: #5c2d91;
   --mat-primary-variant: #470e7c;
-  --mat-accent: #ff418c;
+  --mat-accent: #ff202b;
   --mat-warn: #ec9a00ff;
   --mat-neutral: #c1c1c3;
-  --mat-success: #66d2cc;
+  --mat-success: #4caf50;
 }
 
-/* For dark theme, override under a body class, e.g.: */
 html.dark {
-  --mat-primary: #4cc6ff;
-  --mat-primary-variant: #4cc6ff;
-  --mat-accent: #ff202b;
-  --mat-warn: #ef9a9a;
-  --mat-neutral: #bdbdbd;
-  --mat-success: #4caf50;
+  --mat-primary: #8534c2;
+  --mat-primary-variant: #8534c2;
+  --mat-accent: #ff418c;
+  --mat-warn: #ef7000;
+  --mat-neutral: #f1ebeb;
+  --mat-success: #1aa21e;
 }
 
 .flex {
@@ -52,7 +51,6 @@ html.dark {
   align-items: center;
 }
 
-
 .grid {
   display: grid;
 }
@@ -64,7 +62,7 @@ html.dark {
 .mat-primary,
 .primary,
 :root,
-html.dark  {
+html.dark {
   --mat-sys-primary: var(--mat-primary);
   --md-sys-color-primary: var(--mat-primary);
   --md-sys-color-surface-tint: var(--mat-primary);
@@ -90,7 +88,6 @@ html.dark  {
   --mdc-switch-selected-hover-track-color: var(--mat-primary);
   --mdc-switch-selected-pressed-track-color: var(--mat-primary);
   --mdc-switch-selected-track-track-color: var(--mat-primary);
-  --mdc-switch-selected-icon-color: var(--mat-primary);
   --mdc-outlined-text-field-caret-color: var(--mat-primary);
   --mdc-outlined-text-field-focus-outline-color: var(--mat-primary);
   --mdc-outlined-text-field-focus-label-text-color: var(--mat-primary);
@@ -131,7 +128,12 @@ html.dark  {
   --mdc-icon-button-icon-color: var(--mat-primary);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mdc-filled-button-label-text-color: #fff;
+  --mdc-switch-selected-handle-color: #fff;
+  --mdc-switch-selected-hover-handle-color: #fff;
+  --mdc-switch-selected-pressed-handle-color: #fff;
 }
+
 
 .mat-accent,
 .accent {
@@ -201,7 +203,7 @@ html.dark  {
 }
 
 .mat-warn,
-.warn{
+.warn {
   --mat-primary: var(--mat-warn);
   --md-sys-color-primary: var(--mat-warn);
   --md-sys-color-surface-tint: var(--mat-warn);
@@ -268,7 +270,7 @@ html.dark  {
 }
 
 .mat-success,
-.success{
+.success {
   --mat-primary: var(--mat-success);
   --md-sys-color-primary: var(--mat-success);
   --md-sys-color-surface-tint: var(--mat-success);
@@ -336,7 +338,7 @@ html.dark  {
 
 .mat-neutral,
 .neutral {
-  --mat-primary: var(--mat-neutral);
+  //--mat-primary: var(--mat-neutral);
   --md-sys-color-primary: var(--mat-neutral);
   --md-sys-color-surface-tint: var(--mat-neutral);
   --md-sys-color-primary-container: var(--mat-neutral);
@@ -399,4 +401,25 @@ html.dark  {
   --mdc-icon-button-icon-color: var(--mat-neutral);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+}
+
+
+html.dark {
+  --mdc-switch-selected-handle-color: #fff;
+  --mdc-switch-selected-hover-handle-color: #fff;
+
+  .mdc-button.neutral {
+    --mdc-filled-button-label-text-color: var(--mat-primary);
+  }
+
+  .mdc-button,
+  .mdc-fab {
+    --mdc-list-list-item-label-text-color: var(--mat-neutral);
+    --mat-fab-foreground-color: var(--mat-neutral);
+    --mdc-text-button-label-text-color: var(--mat-neutral);
+    --mdc-switch-selected-icon-color: var(--mat-neutral);
+    --mdc-chip-selected-label-text-color: var(--mat-neutral);
+    --mdc-chip-with-icon-selected-icon-color: var(--mat-neutral);
+    --mdc-filled-button-label-text-color: var(--mat-neutral);
+  }
 }

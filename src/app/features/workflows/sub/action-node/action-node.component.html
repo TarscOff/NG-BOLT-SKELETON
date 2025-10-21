@@ -1,0 +1,88 @@
+<div class="wf-node" [attr.data-node-id]="nodeId" [class.input]="visualType() === 'input'"
+    [class.result]="visualType() === 'result'" [class.action]="visualType()!=='input' && visualType()!=='result'"
+    [attr.data-missing]="hasMissingIn() + '-' + hasMissingOut()" [class.error-in]="hasMissingIn()"
+    [class.error-out]="hasMissingOut()" [class.invalid]="hasInvalidParams()">
+
+    <!-- Left ports -->
+    <div class="ports left">
+        @for (p of inPorts(); track p.id) {
+        <df-input [position]="positions.Left" class="port-input"
+            [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-input>
+        }
+    </div>
+
+    <!-- Right ports -->
+    <div class="ports right">
+        @for (p of outPorts(); track p.id) {
+        <df-output [position]="positions.Right" class="port-input"
+            [connectorData]="{ nodeId: nodeId, connectorId: p.id, single: false }"></df-output>
+
+        <div class="out-port">
+            <button class="success" mat-icon-button (click)="openQuickAdd(p, $event)"
+                [color]="(isDark$ |async) ?'neutral': 'success' " [matTooltip]="'workflow.labels.quickAdd' | translate">
+                <mat-icon>cable</mat-icon>
+            </button>
+        </div>
+        }
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="title">
+            @if(visualType() !== 'result') {
+            @if (hasInvalidParams()){
+            <button mat-icon-button class="warn" extended color="warn"
+                [matTooltip]="('workflow.errors.invalid_fields' | translate) +' : '+ getInvalidFieldLabels().join(', ') "
+                (click)="$event.stopPropagation()">
+                <mat-icon>error</mat-icon>
+            </button>
+            }
+            @if(visualType() === 'input') {
+            <button mat-mini-fab class="play success" color="success" aria-label="start"
+                matTooltip="{{'workflow.runPanel.run' | translate}} " (click)="runSchedule()" [disabled]="runDisabled()"
+                [attr.aria-disabled]="runDisabled()">
+                <mat-icon>play_arrow</mat-icon>
+            </button>
+            }
+            @if(getIcon()) {
+            <mat-icon class="icon">{{getIcon()}}</mat-icon>
+            }
+            {{ displayLabel() | translate }}
+            <button mat-icon-button (click)="expanded.set(!expanded())"
+                [color]="(isDark$ |async) ?'neutral': 'primary' "
+                [matTooltip]="(expanded() ? 'untoggle' : 'toggle') | translate">
+                <mat-icon>{{ expanded() ? 'expand_more' : 'expand_less' }}</mat-icon>
+            </button>
+            } @else {
+            <button mat-mini-fab class="primary" color="neutral" matTooltip="{{'workflow.runPanel.title' | translate}} "
+                (click)="displayRUnsPanel($event)">
+                <mat-icon>forward</mat-icon>
+            </button>
+            }
+        </div>
+
+
+        @if(visualType() !== 'input' && visualType() !== 'result') {
+        <button mat-icon-button (click)="closePanel()" [matTooltip]="'close' | translate"
+            [color]="(isDark$ |async) ?'neutral': 'primary' ">
+            <mat-icon>{{'close'}}</mat-icon>
+        </button>
+        }
+    </div>
+
+    @if(visualType() === 'input') {
+    <div class="inline-editor" [class.hidden]="!expanded()">
+        <app-dynamic-form [form]="formInputs" [config]="configInputs" (keydown.delete)="$event.stopPropagation()"
+            (keydown.backspace)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()"
+            (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()"></app-dynamic-form>
+    </div>
+    }
+    @if(visualType() !== 'input' && visualType() !== 'result') {
+    <div class="inline-editor" [class.hidden]="!expanded()">
+        <app-dynamic-form [form]="form" [config]="config" (keydown.delete)="$event.stopPropagation()"
+            (keydown.backspace)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()"
+            (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()"></app-dynamic-form>
+    </div>
+    }
+
+</div>

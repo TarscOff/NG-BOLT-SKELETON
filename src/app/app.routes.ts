@@ -22,6 +22,14 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
+        path: 'genai-workflows',
+        canActivate: [featureGuard('ai.workflows', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
+        loadComponent: () =>
+          import('./features/workflows/workflows.component')
+            .then(m => m.WorkflowsComponent)
+      },
+      {
         path: 'team',
         canActivate: [featureGuard('team', { forbid: '/403' })],
         data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },

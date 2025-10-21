@@ -1,0 +1,83 @@
+<div class="pipe" [class.compact]="compact">
+    @if (stages().length) {
+    <div class="stages">
+        @for (col of stages(); track $index; let i = $index) {
+        <div class="stage">
+            <div class="nodes">
+                @for (n of col; track n.id) {
+                <div class="node" [class.is-input]="n.type === 'input'" [class.is-result]="n.type === 'result'"
+                    [class.queued]="statusOf(n.id) === 'queued'" [class.running]="statusOf(n.id) === 'running'"
+                    [class.success]="statusOf(n.id) === 'success'" [class.error]="statusOf(n.id) === 'error'"
+                    [class.skipped]="statusOf(n.id) === 'skipped'" [matTooltip]="statusOf(n.id) | translate">
+
+                    @if (n.type !== 'result') {
+                    <div class="emblem">
+                        <span class="dot"></span>
+                        @if (statusOf(n.id) === 'queued') { <mat-icon class="icon">hourglass_empty</mat-icon> }
+                        @if (statusOf(n.id) === 'running') { <mat-icon class="icon">play_arrow</mat-icon> }
+                        @if (statusOf(n.id) === 'success') { <mat-icon class="icon">check_circle</mat-icon> }
+                        @if (statusOf(n.id) === 'error') { <mat-icon class="icon">error</mat-icon> }
+                    </div>
+
+                    <div class="label">{{ n.label | translate }}</div>
+
+                    @if (statusOf(n.id) === 'running') {
+                    <div class="run-shimmer"></div>
+                    }
+
+                    <div class="stage-actions">
+                        <button mat-icon-button color="neutral" class="neutral"
+                            [disabled]="statusOf(n.id) !== 'success' && statusOf(n.id) !== 'error' && statusOf(n.id) !== 'skipped'"
+                            [matTooltip]="'workflow.runPanel.options' | translate" [matMenuTriggerFor]="menu">
+                            <mat-icon>more_horiz</mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="seeDetails(n,'auto')">
+                                <mat-icon>details</mat-icon>
+                                <span>{{ 'workflow.runPanel.details' | translate }}</span>
+                            </button>
+                            <button mat-menu-item (click)="seeDetails(n,'artifacts')">
+                                <mat-icon>archive</mat-icon>
+                                <span>{{ 'workflow.runPanel.artifacts' | translate }}</span>
+                            </button>
+                            @if(n.label ==="chat"){
+                            <button mat-menu-item>
+                                <mat-icon>chat_paste_go</mat-icon>
+                                <span>{{ 'workflow.runPanel.go_chat' | translate }}</span>
+                            </button>
+                            }
+                        </mat-menu>
+                    </div>
+
+                    } @else {
+                    @if (n.type === 'result') {
+                    <button mat-icon-button [matTooltip]="'workflow.runPanel.options' | translate" class="primary"
+                        [matMenuTriggerFor]="menu">
+                        <mat-icon>more_horiz</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item>
+                            <mat-icon>delete</mat-icon>
+                            <span>{{ 'delete' | translate }}</span>
+                        </button>
+                        <button mat-menu-item (click)="onCancelPipeline()" [disabled]="!canCancelPipeline()"
+                            [matTooltip]="'workflow.runPanel.cancel_pipe' | translate">
+                            <mat-icon>cancel</mat-icon>
+                            {{ 'workflow.runPanel.cancel_pipe' | translate }}
+                        </button>
+                    </mat-menu>
+
+                    }
+
+                    }
+                </div>
+
+                }
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="empty">{{ 'no_stages' | translate }}</div>
+    }
+</div>

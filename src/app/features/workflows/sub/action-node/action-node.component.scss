@@ -1,0 +1,138 @@
+.wf-node {
+    --df-connector-color: var(--mat-accent);
+    --df-connector-color-hover: #ffe066;
+    min-height: 44px;
+    min-width: 420px;
+    border-radius: 10px;
+    padding: 8px 12px 10px;
+    position: relative;
+    user-select: none;
+}
+
+.wf-node.input {
+    border: 3px solid var(--mat-success, #2e7d32);
+    background-color: var(--md-sys-color-surface);
+}
+
+.wf-node.result {
+    background: var(--mat-success, #7b1fa2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 30px;
+}
+
+.wf-node.action {
+    background-color: var(--md-sys-color-surface);
+    border: 2px solid var(--mat-primary, #1976d2);
+
+    &.invalid {
+        border-color: var(--mat-warn);
+    }
+}
+
+.wf-node.is-selected {
+    outline: 2px solid #42a5f5;
+    outline-offset: 5px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.title {
+    font-weight: 600;
+    color: var(--mat-primary, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: start
+}
+
+html.dark .title {
+    color: var(--mat-neutral, #fff);
+}
+
+.title .icon {
+    margin-right: 5px;
+}
+
+.ports.left,
+.ports.right {
+    position: absolute;
+    top: 20px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 15px;
+    width: 15px;
+    height: 15px;
+
+    .port-input::after,
+    .port-input::before {
+        inline-size: 1rem;
+        block-size: 1rem;
+        top: 36%;
+    }
+}
+
+.ports.left {
+    left: -8px;
+    --df-connector-color: var(--mat-accent);
+}
+
+.ports.right {
+    right: -8px;
+    --df-connector-color: var(--mat-success);
+}
+
+.inline-editor {
+    margin-top: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.inline-editor.hidden {
+    display: none;
+}
+
+.wf-node.error-in,
+.wf-node.error-out {
+    border: 2px solid #e53935 !important;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.15);
+    position: relative;
+}
+
+
+.wf-node.error-in::before,
+.wf-node.error-out::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #e53935;
+}
+
+.wf-node.error-in::before {
+    left: -6px;
+}
+
+.wf-node.error-out::after {
+    right: -6px;
+}
+
+.out-port {
+    position: fixed;
+    top: 10px;
+    right: 65px;
+}
+
+.play {
+    margin-right: 15px;
+}
