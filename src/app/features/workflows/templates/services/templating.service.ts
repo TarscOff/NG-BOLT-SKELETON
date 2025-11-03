@@ -198,8 +198,6 @@ export class TemplatingService {
           config: {
             allowedFileTypes: ['.pdf', '.docx', '.txt'],
             maxFileSize: 10 * 1024 * 1024,
-            showProgress: true,
-            enableExport: true,
           },
         },
         {
@@ -217,8 +215,6 @@ export class TemplatingService {
             allowedFileTypes: ['.pdf', '.docx', '.txt', '.md'],
             maxFileSize: 10 * 1024 * 1024,
             maxFiles: 5,
-            showProgress: true,
-            enableExport: true,
             defaultLength: 'medium',
             defaultStyle: 'paragraph',
             defaultLanguage: 'en',

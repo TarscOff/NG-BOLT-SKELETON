@@ -32,7 +32,6 @@ export interface SummarizeConfig {
   allowedFileTypes?: string[];
   maxFileSize?: number;
   maxFiles?: number;
-  showProgress?: boolean;
   defaultLength?: SummaryLength;
   defaultStyle?: SummaryStyle;
   defaultLanguage?: string;

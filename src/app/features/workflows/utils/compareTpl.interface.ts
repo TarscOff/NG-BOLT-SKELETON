@@ -31,11 +31,6 @@ export interface ComparisonDifference {
 export interface CompareConfig {
   allowedFileTypes?: string[];
   maxFileSize?: number; // in bytes
-  showProgress?: boolean;
-  enableExport?: boolean;
-  detectMoves?: boolean;
-  ignoreWhitespace?: boolean;
-  compareMetadata?: boolean;
 }
 export interface CompareMode {
   mode: 'upload' | 'preloaded';
@@ -51,11 +46,6 @@ export interface CompareUploadRequest {
 export interface CompareStartRequest {
   file1Key: string;
   file2Key: string;
-  options?: {
-    detectMoves?: boolean;
-    ignoreWhitespace?: boolean;
-    compareMetadata?: boolean;
-  };
 }
 
 export interface CompareUploadResponse {

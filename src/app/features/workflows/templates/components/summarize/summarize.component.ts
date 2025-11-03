@@ -201,7 +201,6 @@ export class SummarizeComponent implements OnInit, OnDestroy {
             allowedFileTypes: ['.pdf', '.docx', '.txt', '.json', '.md'],
             maxFileSize: 10 * 1024 * 1024,
             maxFiles: 5,
-            showProgress: true,
             defaultLength: 'medium',
             defaultStyle: 'paragraph',
             defaultLanguage: 'en',

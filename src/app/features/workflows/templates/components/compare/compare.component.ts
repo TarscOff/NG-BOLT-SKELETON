@@ -208,11 +208,6 @@ export class CompareComponent implements OnInit, OnDestroy {
     return {
       allowedFileTypes: ['.pdf', '.docx', '.txt', '.json'],
       maxFileSize: 10 * 1024 * 1024, // 10MB
-      showProgress: true,
-      enableExport: true,
-      detectMoves: true,
-      ignoreWhitespace: false,
-      compareMetadata: true,
     };
   }
 
@@ -426,11 +421,6 @@ export class CompareComponent implements OnInit, OnDestroy {
         {
           file1Key: file1.key,
           file2Key: file2.key,
-          options: {
-            detectMoves: config.detectMoves,
-            ignoreWhitespace: config.ignoreWhitespace,
-            compareMetadata: config.compareMetadata,
-          },
         },
         this._endpoints()
       )

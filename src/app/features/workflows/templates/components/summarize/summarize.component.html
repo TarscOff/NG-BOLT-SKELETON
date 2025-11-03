@@ -64,7 +64,7 @@
     </div>
 
     <!-- Progress Section -->
-    @if (config$().showProgress && (isUploading$() || isSummarizing$())) {
+    @if ((isUploading$() || isSummarizing$())) {
     <div class="summarize-progress-section">
         @if (isUploading$()) {
         <div class="progress-info">

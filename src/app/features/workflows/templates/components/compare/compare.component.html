@@ -154,7 +154,7 @@
     }
 
     <!-- Progress Section -->
-    @if (config$().showProgress && (isUploading$() || isComparing$())) {
+    @if ((isUploading$() || isComparing$())) {
       <div class="compare-progress-section">
         @if (isUploading$()) {
           <div class="progress-info">
