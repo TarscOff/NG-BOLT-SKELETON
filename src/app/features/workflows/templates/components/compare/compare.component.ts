@@ -414,8 +414,6 @@ export class CompareComponent implements OnInit, OnDestroy {
     this._comparisonProgress.set(0);
     this.comparisonStarted.emit();
 
-    const config = this._config();
-
     this.compareService
       .startComparison(
         {
