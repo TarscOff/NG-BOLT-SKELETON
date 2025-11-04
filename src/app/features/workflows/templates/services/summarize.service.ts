@@ -12,7 +12,7 @@ import {
   SummarizeStatusResponse,
   SummaryStyle,
   SummaryLength
-} from '../../utils/summarizeTpl.interface';
+} from '../utils/summarizeTpl.interface';
 
 @Injectable({
   providedIn: 'root',

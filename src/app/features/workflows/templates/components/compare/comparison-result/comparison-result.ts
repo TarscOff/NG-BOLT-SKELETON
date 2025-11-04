@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslateModule } from '@ngx-translate/core';
-import { ComparisonResult } from '../../../../utils/compareTpl.interface';
+import { ComparisonResult } from '../../../utils/compareTpl.interface';
 
 @Component({
   selector: 'app-comparison-result-tpl',

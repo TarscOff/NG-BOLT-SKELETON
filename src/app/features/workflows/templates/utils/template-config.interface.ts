@@ -1,9 +1,9 @@
-import { ChatConfig, ChatEndpoints, ChatMessage, ChatSender } from '@features/workflows/utils/chatTpl.interface';
-import { CompareConfig, CompareEndpoints, ComparisonResult } from '@features/workflows/utils/compareTpl.interface';
-import { SummarizeConfig, SummarizeEndpoints, SummaryResult } from '@features/workflows/utils/summarizeTpl.interface';
-import { CompareComponent } from '../templates/components/compare/compare.component';
-import { SummarizeComponent } from '../templates/components/summarize/summarize.component';
-import { ChatComponent } from '../templates/components/chat/chat.component';
+import { ChatConfig, ChatEndpoints, ChatMessage, ChatSender } from '@features/workflows/templates/utils/chatTpl.interface';
+import { CompareConfig, CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/compareTpl.interface';
+import { SummarizeConfig, SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/summarizeTpl.interface';
+import { CompareComponent } from '../components/compare/compare.component';
+import { SummarizeComponent } from '../components/summarize/summarize.component';
+import { ChatComponent } from '../components/chat/chat.component';
 
 /**
  * Type union for all template component instances

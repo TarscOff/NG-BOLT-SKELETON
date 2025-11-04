@@ -12,19 +12,20 @@ import {
   ReservedKeys,
   RunNodeDTO,
   StripReservedShallow,
-} from '../../utils/workflow.interface';
+} from '../../templates/utils/workflow.interface';
 
-import { WfCanvasBus } from '../../utils/wf-canvas-bus';
+import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { ChatComponent } from '@features/workflows/templates/components/chat/chat.component';
-import { ComparisonResult } from '@features/workflows/utils/compareTpl.interface';
+import { ComparisonResult } from '@features/workflows/templates/utils/compareTpl.interface';
 import { CompareComponent } from '@features/workflows/templates/components/compare/compare.component';
-import { SummaryResult } from '@features/workflows/utils/summarizeTpl.interface';
+import { SummaryResult } from '@features/workflows/templates/utils/summarizeTpl.interface';
 import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
-import { ChatMessage } from '@features/workflows/utils/chatTpl.interface';
+import { ChatMessage } from '@features/workflows/templates/utils/chatTpl.interface';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
+import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS } from '@features/workflows/templates/utils/constants';
 
 @Component({
   selector: 'app-wf-preview-node',
@@ -136,16 +137,22 @@ import { TemplatingService } from '@features/workflows/templates/services/templa
             @case ('chat') {
               <app-chat-tpl
                 [mode]="{ mode: 'preloaded', messages: chatMessages() }"
+                [config]="chatConfig()"
+                [endpoints]="chatEndpoints()"
               />
             }
             @case ('compare') {
               <app-compare-tpl
                 [mode]="{ mode: 'preloaded', result: comparisonResult() }"
+                [config]="comparisonConfig()"
+                [endpoints]="comparisonEndpoints()"
               />
             }
             @case ('summarize') {
               <app-summarize-tpl
                 [mode]="{ mode: 'preloaded', result: summaryResult() }"
+                [config]="summarizeConfig()"
+                [endpoints]="summarizeEndpoints()"
               />
             }
             @default {
@@ -218,6 +225,27 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     return this.templatingService.getMockChatMessages();
   });
 
+  chatConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return CHAT_CONFIG;
+  });
+  chatEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return CHAT_ENDPOINTS;
+  });
+
   /**
    * Computed signal for comparison result
    */
@@ -229,6 +257,26 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
 
     return this.templatingService.getMockComparisonResult();
+  });
+  comparisonConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return COMPARE_CONFIG;
+  });
+  comparisonEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return COMPARE_ENDPOINTS;
   });
 
   /**
@@ -242,6 +290,26 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
 
     return this.templatingService.getMockSummaryResult();
+  });
+  summarizeConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return SUMMARIZE_CONFIG;
+  });
+  summarizeEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return SUMMARIZE_ENDPOINTS;
   });
 
   ngOnInit(): void {

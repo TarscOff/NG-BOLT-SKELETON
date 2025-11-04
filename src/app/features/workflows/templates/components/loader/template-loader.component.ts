@@ -29,16 +29,16 @@ import {
   SummarizeTemplateConfig,
   TemplateComponentInstance,
   TemplateResult
-} from '../../../utils/template-config.interface';
+} from '../../utils/template-config.interface';
 import { TemplatingService } from '../../services/templating.service';
 
 // Import component types for type checking
 import { ChatComponent } from '../chat/chat.component';
 import { CompareComponent } from '../compare/compare.component';
 import { SummarizeComponent } from '../summarize/summarize.component';
-import { CompareConfig, CompareFile } from '@features/workflows/utils/compareTpl.interface';
-import { ChatConfig } from '@features/workflows/utils/chatTpl.interface';
-import { SummarizeConfig } from '@features/workflows/utils/summarizeTpl.interface';
+import { CompareConfig, CompareFile } from '@features/workflows/templates/utils/compareTpl.interface';
+import { ChatConfig } from '@features/workflows/templates/utils/chatTpl.interface';
+import { SummarizeConfig } from '@features/workflows/templates/utils/summarizeTpl.interface';
 
 @Component({
   selector: 'app-template-loader',

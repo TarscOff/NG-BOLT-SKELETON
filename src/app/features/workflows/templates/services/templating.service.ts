@@ -8,14 +8,15 @@ import { CORE_OPTIONS } from '@cadai/pxs-ng-core/tokens';
 import { 
   TemplateType, 
   TemplatePageResponse 
-} from '../../utils/template-config.interface';
+} from '../utils/template-config.interface';
 import { ChatComponent } from '../components/chat/chat.component';
 import { CompareComponent } from '../components/compare/compare.component';
 import { SummarizeComponent } from '../components/summarize/summarize.component';
-import { ChatEndpoints, ChatMessage } from '@features/workflows/utils/chatTpl.interface';
-import { CompareEndpoints, ComparisonResult } from '@features/workflows/utils/compareTpl.interface';
-import { SummarizeEndpoints, SummaryResult } from '@features/workflows/utils/summarizeTpl.interface';
+import { ChatEndpoints, ChatMessage } from '@features/workflows/templates/utils/chatTpl.interface';
+import { CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/compareTpl.interface';
+import { SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/summarizeTpl.interface';
 import { ChatService } from './chat.service';
+import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS } from '../utils/constants';
 
 
 @Injectable({
@@ -165,65 +166,22 @@ export class TemplatingService {
             name: 'You',
             type: 'user',
           },
-          endpoints: {
-            sendMessage: '/api/chat/send',
-            getMessages: '/api/chat/messages',
-            deleteMessage: '/api/chat/message',
-            editMessage: '/api/chat/message',
-            clearChat: '/api/chat/clear',
-          },
-          config: {
-            showTimestamps: true,
-            showAvatars: true,
-            allowMarkdown: true,
-            allowEdit: true,
-            allowDelete: true,
-            maxLength: 4000,
-            placeholder: 'Type your message...',
-            enableAttachments: false,
-            autoScroll: true,
-          },
+          endpoints: CHAT_ENDPOINTS,
+          config: CHAT_CONFIG,
         },
         {
           type: 'compare',
           mode: 'upload',
-          endpoints: {
-            uploadFiles: '/api/compare/upload',
-            startComparison: '/api/compare/start',
-            getComparison: '/api/compare/result',
-            cancelComparison: '/api/compare/cancel',
-            exportComparison: '/api/compare/export',
-          },
+          endpoints: COMPARE_ENDPOINTS,
           result:this.getMockComparisonResult(),
-          config: {
-            allowedFileTypes: ['.pdf', '.docx', '.txt'],
-            maxFileSize: 10 * 1024 * 1024,
-          },
+          config: COMPARE_CONFIG,
         },
         {
           type: 'summarize',
           mode: 'upload',
-          endpoints: {
-            uploadFile: '/api/summarize/upload',
-            startSummarization: '/api/summarize/start',
-            getSummary: '/api/summarize/result',
-            cancelSummary: '/api/summarize/cancel',
-            exportSummary: '/api/summarize/export',
-          },
+          endpoints: SUMMARIZE_ENDPOINTS,
           result:this.getMockSummaryResult(),
-          config: {
-            allowedFileTypes: ['.pdf', '.docx', '.txt', '.md'],
-            maxFileSize: 10 * 1024 * 1024,
-            maxFiles: 5,
-            defaultLength: 'medium',
-            defaultStyle: 'paragraph',
-            defaultLanguage: 'en',
-            availableLanguages: [
-              { label: 'English', value: 'en' },
-              { label: 'French', value: 'fr' },
-              { label: 'Dutch', value: 'nl' },
-            ],
-          },
+          config: SUMMARIZE_CONFIG,
         },
       ],
       metadata: {

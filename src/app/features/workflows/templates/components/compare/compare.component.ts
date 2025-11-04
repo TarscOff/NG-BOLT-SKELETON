@@ -33,14 +33,14 @@ import {
   CompareConfig,
   CompareMode,
   CompareEndpoints,
-} from '../../../utils/compareTpl.interface';
+} from '../../utils/compareTpl.interface';
 import { CompareService } from '../../services/compare.service';
 import { ComparisonResultComponent } from './comparison-result/comparison-result';
-import { iconFor } from '@features/workflows/utils/fileIcon';
-import { ExportFormat } from '@features/workflows/utils/document-export.interface';
+import { iconFor } from '@features/workflows/templates/utils/fileIcon';
+import { ExportFormat } from '@features/workflows/templates/utils/document-export.interface';
 import { ExportOverlayComponent } from '../export-overlay/export-overlay.component';
 import { DocumentExportService } from '../../services/document-export.service';
-import { ComparisonExportAdapter } from '@features/workflows/utils/comparison-export.adapter';
+import { ComparisonExportAdapter } from '@features/workflows/templates/utils/comparison-export.adapter';
 
 @Component({
   selector: 'app-compare-tpl',

@@ -10,7 +10,7 @@ import { ToastService } from '@cadai/pxs-ng-core/services';
 
 import { TemplateLoaderComponent } from '@features/workflows/templates/components/loader/template-loader.component';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
-import { TemplateConfig, TemplatePageResponse } from '@features/workflows/utils/template-config.interface';
+import { TemplateConfig, TemplatePageResponse } from '@features/workflows/templates/utils/template-config.interface';
 
 @Component({
   selector: 'app-chat',

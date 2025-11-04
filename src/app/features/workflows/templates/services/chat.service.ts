@@ -7,7 +7,7 @@ import {
     ChatSender,
     ChatEndpoints,
     ChatConfig,
-} from '../../utils/chatTpl.interface';
+} from '../utils/chatTpl.interface';
 
 interface SendMessageRequest {
     content: string;

@@ -5,8 +5,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatMenuModule } from '@angular/material/menu';
-import { PipelineWorkflowDTO, PreferredTab, StageNode, Status, WorkflowNode } from '../../utils/workflow.interface';
-import { WfCanvasBus } from '../../utils/wf-canvas-bus';
+import { PipelineWorkflowDTO, PreferredTab, StageNode, Status, WorkflowNode } from '../../templates/utils/workflow.interface';
+import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
 import {  DrawFlowBaseNode } from '@ng-draw-flow/core';
 
 @Component({

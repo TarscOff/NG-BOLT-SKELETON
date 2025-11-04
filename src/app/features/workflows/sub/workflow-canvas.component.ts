@@ -59,20 +59,20 @@ import {
   WorkflowNode,
   RunNodeDTO,
   WorkflowNodeDataBaseParams
-} from '../utils/workflow.interface';
+} from '../templates/utils/workflow.interface';
 import { FieldConfigService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { WfNodeComponent } from './action-node/action-node.component';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
-import { WfCanvasBus } from '../utils/wf-canvas-bus';
+import { WfCanvasBus } from '../templates/utils/wf-canvas-bus';
 import { MatIconModule } from '@angular/material/icon';
 import { WfRunPanelNodeComponent } from './run-panel/run-panel-node.component';
 import { FieldConfig, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
 import { map, Subscription } from 'rxjs';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { MatMenuModule } from '@angular/material/menu';
-import { ActionFormSpec } from '../utils/action-forms';
+import { ActionFormSpec } from '../templates/utils/action-forms';
 import { WfDetailsNodeComponent } from './details-node/detail-node.component';
 import { WfPreviewNodeComponent } from './preview-node/preview-node.compoennt';
 

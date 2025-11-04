@@ -37,12 +37,12 @@ import {
     SummaryLength,
     SummaryStyle,
     SummarizeEndpoints,
-} from '../../../utils/summarizeTpl.interface';
+} from '../../utils/summarizeTpl.interface';
 import { SummarizeService } from '../../services/summarize.service';
-import { iconFor } from '@features/workflows/utils/fileIcon';
+import { iconFor } from '@features/workflows/templates/utils/fileIcon';
 import { SummaryResultComponent } from './summarize-result/summarize-result.component';
-import { ExportFormat } from '@features/workflows/utils/document-export.interface';
-import { SummaryExportAdapter } from '@features/workflows/utils/summary-export.adapter';
+import { ExportFormat } from '@features/workflows/templates/utils/document-export.interface';
+import { SummaryExportAdapter } from '@features/workflows/templates/utils/summary-export.adapter';
 import { ExportOverlayComponent } from '../export-overlay/export-overlay.component';
 import { DocumentExportService } from '../../services/document-export.service';
 

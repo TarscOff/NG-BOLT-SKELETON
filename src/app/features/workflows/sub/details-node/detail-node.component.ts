@@ -15,9 +15,9 @@ import {
   ReservedKeys,
   RunNodeDTO,
   StripReservedShallow,
-} from '../../utils/workflow.interface';
+} from '../../templates/utils/workflow.interface';
 
-import { WfCanvasBus } from '../../utils/wf-canvas-bus';
+import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';

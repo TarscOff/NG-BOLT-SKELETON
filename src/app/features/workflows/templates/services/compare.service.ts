@@ -8,7 +8,7 @@ import {
   CompareStartRequest,
   CompareUploadResponse,
   CompareStatusResponse
-} from '../../utils/compareTpl.interface';
+} from '../utils/compareTpl.interface';
 
 @Injectable({
   providedIn: 'root',

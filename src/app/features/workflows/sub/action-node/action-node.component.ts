@@ -13,19 +13,19 @@ import {
   RunNodeDTO,
   WorkflowNodeDataBaseParams,
   WorkflowPorts,
-} from '../../utils/workflow.interface';
+} from '../../templates/utils/workflow.interface';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
-import { WfCanvasBus } from '../../utils/wf-canvas-bus';
-import { ActionFormSpec, makeFallback } from '../../utils/action-forms';
+import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
+import { ActionFormSpec, makeFallback } from '../../templates/utils/action-forms';
 import { debounceTime, distinctUntilChanged, Observable, startWith, Subscription } from 'rxjs';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import type { ReplaceBinary, ReservedKeys, StripReservedShallow } from '../../utils/workflow.interface';
+import type { ReplaceBinary, ReservedKeys, StripReservedShallow } from '../../templates/utils/workflow.interface';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { CommonModule } from '@angular/common';
