@@ -19,13 +19,15 @@ import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { ChatComponent } from '@features/workflows/templates/components/chat/chat.component';
-import { ComparisonResult } from '@features/workflows/templates/utils/compareTpl.interface';
+import { ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
 import { CompareComponent } from '@features/workflows/templates/components/compare/compare.component';
-import { SummaryResult } from '@features/workflows/templates/utils/summarizeTpl.interface';
+import { SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
 import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
-import { ChatMessage } from '@features/workflows/templates/utils/chatTpl.interface';
+import { ChatMessage } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
-import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS } from '@features/workflows/templates/utils/constants';
+import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS, EXTRACT_CONFIG, EXTRACT_ENDPOINTS } from '@features/workflows/templates/utils/constants';
+import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
+import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 
 @Component({
   selector: 'app-wf-preview-node',
@@ -38,7 +40,8 @@ import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARI
     TranslateModule,
     ChatComponent,
     CompareComponent,
-    SummarizeComponent
+    SummarizeComponent,
+    ExtractComponent
   ],
   styles: [`
     :host { display:block; min-width:320px; max-width:760px; }
@@ -87,7 +90,8 @@ import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARI
     }
     .body app-chat-tpl,
     .body app-compare-tpl,
-    .body app-summarize-tpl {
+    .body app-summarize-tpl,
+    .body app-extract-tpl {
       min-height: 100%;
       flex: 1;
     }
@@ -155,6 +159,13 @@ import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARI
                 [endpoints]="summarizeEndpoints()"
               />
             }
+            @case ('extract') {
+              <app-extract-tpl
+                [mode]="{ mode: 'preloaded', result: extractionResult() }"
+                [config]="extractConfig()"
+                [endpoints]="extractEndpoints()"
+              />
+            }
             @default {
               <div class="no-preview">
                 <mat-icon>info</mat-icon>
@@ -195,6 +206,8 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
         return 'compare';
       case 'summarize':
         return 'summarize';
+      case 'extract':
+        return 'extract';
       default:
         return null;
     }
@@ -310,6 +323,39 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
       // TODO: implement right logic
     }
     return SUMMARIZE_ENDPOINTS;
+  });
+
+  /**
+   * Computed signal for extraction result
+   */
+  extractionResult = computed((): ExtractionResult => {
+    const currentDto = this.dto();
+
+    if (currentDto?.result && this.isExtractionResult(currentDto.result)) {
+      return currentDto.result as ExtractionResult;
+    }
+
+    return this.templatingService.getMockExtractionResult();
+  });
+  extractConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return EXTRACT_CONFIG;
+  });
+  extractEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return EXTRACT_ENDPOINTS;
   });
 
   ngOnInit(): void {
@@ -446,4 +492,13 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     );
   }
 
+  private isExtractionResult(obj: unknown): obj is ExtractionResult {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      'entities' in obj &&
+      'totalEntitiesFound' in obj &&
+      'status' in obj
+    );
+  }
 }

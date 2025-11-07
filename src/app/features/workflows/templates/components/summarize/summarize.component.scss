@@ -5,12 +5,13 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--mat-sys-level2);
-  height:100%
+  height: 100%
 }
 
 :host {
-    height:100%
+  height: 100%
 }
+
 .summarize-header {
   display: flex;
   justify-content: space-between;
@@ -19,7 +20,7 @@
   border-bottom: 1px solid var(--mat-neutral);
   flex-shrink: 0;
 
-  
+
   .summarize-header-info {
     display: flex;
     align-items: center;
@@ -141,14 +142,14 @@
 
 .summarize-results-section {
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: auto;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-    min-height: 0; // Critical for flex child scrolling
+  min-height: 0;
   max-height: 100%;
-  
+
   // Make scrollbar more visible
   &::-webkit-scrollbar {
     width: 10px; // Slightly wider
@@ -162,7 +163,7 @@
   &::-webkit-scrollbar-thumb {
     background: var(--mat-primary); // Use primary color
     border-radius: 5px;
-    
+
     &:hover {
       background: var(--mat-primary-dark);
     }
@@ -184,6 +185,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

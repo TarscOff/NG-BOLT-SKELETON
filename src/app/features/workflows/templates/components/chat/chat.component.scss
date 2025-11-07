@@ -45,7 +45,7 @@
 
 .chat-messages {
   flex: 1 1 auto; // Allow flex grow and shrink
-  overflow-y: scroll; // Always show scrollbar (use 'scroll' instead of 'auto')
+  overflow-y: auto; // Always show scrollbar (use 'scroll' instead of 'auto')
   overflow-x: hidden; // Prevent horizontal scroll
   padding: 16px;
   display: flex;

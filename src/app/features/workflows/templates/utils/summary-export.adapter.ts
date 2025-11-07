@@ -1,5 +1,5 @@
 import { DocxContentSection, ExportableContent, PdfContentSection } from "./document-export.interface";
-import { SummaryResult } from "./summarizeTpl.interface";
+import { SummaryResult } from "./tplsInterfaces/summarizeTpl.interface";
 
 
 /**

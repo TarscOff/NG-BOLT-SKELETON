@@ -27,18 +27,21 @@ import {
   ChatTemplateConfig,
   CompareTemplateConfig,
   SummarizeTemplateConfig,
+  ExtractTemplateConfig,
   TemplateComponentInstance,
   TemplateResult
 } from '../../utils/template-config.interface';
 import { TemplatingService } from '../../services/templating.service';
 
-// Import component types for type checking
 import { ChatComponent } from '../chat/chat.component';
 import { CompareComponent } from '../compare/compare.component';
 import { SummarizeComponent } from '../summarize/summarize.component';
-import { CompareConfig, CompareFile } from '@features/workflows/templates/utils/compareTpl.interface';
-import { ChatConfig } from '@features/workflows/templates/utils/chatTpl.interface';
-import { SummarizeConfig } from '@features/workflows/templates/utils/summarizeTpl.interface';
+import { ExtractComponent } from '../extract/extract.component';
+
+import { CompareConfig, CompareFile } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
+import { ChatConfig } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
+import { SummarizeConfig } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
+import { ExtractConfig, ExtractFile } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 
 @Component({
   selector: 'app-template-loader',
@@ -233,6 +236,9 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
       case 'summarize':
         this.configureSummarizeComponent(instance as SummarizeComponent, this.config as SummarizeTemplateConfig);
         break;
+      case 'extract':
+        this.configureExtractComponent(instance as ExtractComponent, this.config as ExtractTemplateConfig);
+        break;
       default:
         console.warn(`No configuration handler for template type: ${this.config}`);
     }
@@ -267,7 +273,6 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     if (config.endpoints) {
       instance.endpoints = config.endpoints;
     }
-
 
     // Wire outputs to forward events
     instance.messageSent.subscribe((content: string) => {
@@ -315,7 +320,6 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     if (config.endpoints) {
       instance.endpoints = config.endpoints;
     }
-
 
     // Wire outputs
     instance.comparisonCompleted.subscribe((result) => {
@@ -385,6 +389,54 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     instance.summarizeStarted.subscribe(() => {
+      this.context?.events?.onStarted?.();
+    });
+  }
+
+  /**
+   * Configure Extract component - pass all inputs and wire outputs
+   */
+  private configureExtractComponent(instance: ExtractComponent, config: ExtractTemplateConfig): void {
+    // Set mode
+    if (config.mode === 'preloaded' && config.result) {
+      instance.mode = {
+        mode: 'preloaded',
+        result: config.result
+      };
+    } else {
+      instance.mode = { mode: 'upload' };
+    }
+
+    // Set configuration
+    if (config.config) {
+      instance.config = config.config as ExtractConfig || {};
+    }
+
+    // Set endpoints
+    if (config.endpoints) {
+      instance.endpoints = config.endpoints;
+    }
+
+    // Wire outputs
+    instance.extractionCompleted.subscribe((result) => {
+      const templateResult: TemplateResult = {
+        type: 'extract',
+        result,
+      };
+      this.resultCompleted.emit(templateResult);
+      this.context?.events?.onSuccess?.(result);
+    });
+
+    instance.extractionError.subscribe((error) => {
+      this.context?.events?.onError?.(error);
+      this.templateError.emit(error);
+    });
+
+    instance.fileUploaded.subscribe((file: ExtractFile) => {
+      this.context?.events?.onFileUploaded?.(file);
+    });
+
+    instance.extractionStarted.subscribe(() => {
       this.context?.events?.onStarted?.();
     });
   }

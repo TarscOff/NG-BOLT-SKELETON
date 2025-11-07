@@ -3,7 +3,6 @@ import {
     ChangeDetectionStrategy,
     Input,
     inject,
-    signal,
     OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -14,8 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { TranslateModule } from '@ngx-translate/core';
-import { Clipboard } from '@angular/cdk/clipboard';
-import { SummarizeFile, SummaryResult } from '../../../utils/summarizeTpl.interface';
+import { SummarizeFile, SummaryResult } from '../../../utils/tplsInterfaces/summarizeTpl.interface';
 import { iconFor } from '@features/workflows/templates/utils/fileIcon';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
@@ -39,7 +37,6 @@ import { Observable } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SummaryResultComponent implements OnInit {
-    private clipboard = inject(Clipboard);
     isDark$!: Observable<boolean>;
     private store = inject(Store);
 
@@ -50,7 +47,6 @@ export class SummaryResultComponent implements OnInit {
         this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
     }
 
-    copied = signal(false);
 
     getFileIcon(file: SummarizeFile): string {
         return iconFor(file);
@@ -82,33 +78,7 @@ export class SummaryResultComponent implements OnInit {
         return icons[this.result.length] || 'subject';
     }
 
-    copyToClipboard(): void {
-        const text = this.formatSummaryForExport();
-        const success = this.clipboard.copy(text);
-
-        if (success) {
-            this.copied.set(true);
-            setTimeout(() => this.copied.set(false), 2000);
-        }
-    }
-
-    private formatSummaryForExport(): string {
-        let text = `${this.result.summary}\n\n`;
-
-        if (this.result.keyPoints.length > 0) {
-            text += 'Key Points:\n';
-            this.result.keyPoints.forEach((point, index) => {
-                text += `${index + 1}. ${point}\n`;
-            });
-        }
-
-        text += `\n---\n`;
-        text += `Original: ${this.result.wordCount.original} words\n`;
-        text += `Summary: ${this.result.wordCount.summary} words\n`;
-        text += `Reduction: ${this.result.wordCount.reduction}%\n`;
-
-        return text;
-    }
+   
 
     getReductionColor(): string {
         const reduction = this.result.wordCount.reduction;

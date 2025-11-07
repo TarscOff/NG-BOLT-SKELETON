@@ -55,6 +55,7 @@ export class TeamsComponent implements OnInit {
         validators: [Validators.required, Validators.minLength(2), Validators.maxLength(80)],
         errorMessages: { required: 'form.errors.fullname.required' },
         color: "primary",
+        required: true,
         layoutClass: "primary",
       }),
 

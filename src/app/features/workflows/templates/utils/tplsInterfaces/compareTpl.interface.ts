@@ -12,7 +12,7 @@ export interface ComparisonResult {
   file2: CompareFile;
   differences: ComparisonDifference[];
   similarity: number;
-  status: 'pending' | 'processing' | 'completed' | 'error';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   createdAt: Date;
   completedAt?: Date;
   error?: string;

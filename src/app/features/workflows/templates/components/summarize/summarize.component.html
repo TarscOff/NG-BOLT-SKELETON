@@ -7,34 +7,40 @@
             <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">summarize</mat-icon>
             <span class="summarize-title">{{ 'summarizeTpl.title' | translate }}</span>
         </div>
-        @if (isPreloadedMode$()) {
         <div class="result-actions">
+            @if (result$()) {
             <!-- Export Actions -->
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'" (click)="handleExport({ format: 'pdf', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)" 
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'pdf', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
                 matTooltip="{{ 'summarizeTpl.exportPdf' | translate }}">
                 <mat-icon>picture_as_pdf</mat-icon>
             </button>
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'" (click)="handleExport({ format: 'docx', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)" 
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'docx', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
                 matTooltip="{{ 'summarizeTpl.exportDocx' | translate }}">
                 <mat-icon>description</mat-icon>
             </button>
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"  (click)="handleExport({ format: 'txt', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)" 
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'txt', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
                 matTooltip="{{ 'summarizeTpl.exportTxt' | translate }}">
                 <mat-icon>notes</mat-icon>
             </button>
-        </div>
-        }
-        @if (!isPreloadedMode$()) {
-        <div class="summarize-header-actions">
-            <button mat-icon-button [matTooltip]="'summarizeTpl.clear' | translate" (click)="clearAll()"
-                [disabled]="files$().length === 0 && !result$()" [color]="(isDark$ | async) ? 'neutral' : 'accent'">
-                <mat-icon>clear_all</mat-icon>
+            <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+                (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
+                <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
             </button>
-        </div>
+            @if (!isPreloadedMode$()) {
+                <button mat-icon-button [matTooltip]="'summarizeTpl.clear' | translate" (click)="clearAll()"
+                    [disabled]="!isUploading$() && !isSummarizing$() &&  !(formFiles.get('files')?.value || formOptions.get('length')?.value || formOptions.get('style')?.value || formOptions.get('language')?.value)"
+                    [color]="(isDark$ | async) ? 'neutral' : 'accent'">
+                    <mat-icon>clear_all</mat-icon>
+                </button>
+            }
         }
+        </div>
     </div>
 
     <!-- Upload Section -->
@@ -51,7 +57,7 @@
         </div>
 
         <!-- Options -->
-        @if (!isPreloadedMode$() && files$().length > 0) {
+        @if (!isPreloadedMode$()) {
         <div class="options-area">
             <div class="section-header">
                 <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">settings</mat-icon>
@@ -85,9 +91,10 @@
     }
 
     <!-- Summarize Action -->
-    @if (!isPreloadedMode$() && files$().length > 0) {
+    @if (!isPreloadedMode$()) {
     <div class="summarize-action">
-        <button mat-flat-button class="primary" [disabled]="!canSummarize$() || isSummarizing$()"
+        <button mat-flat-button class="primary"
+            [disabled]="!(formFiles.valid && formOptions.valid) && !isSummarizing$() && !isUploading$()"
             (click)="triggerSummarize()" class="summarize-btn">
             @if (isSummarizing$()) {
             <mat-icon class="spinner-icon">
@@ -105,7 +112,6 @@
     <!-- Results Section -->
     @if (result$()) {
     <div class="summarize-results-section">
-
         <app-summary-result-tpl [result]="result$()!" [showDetails]="true" #summaryResultContainer />
     </div>
     }

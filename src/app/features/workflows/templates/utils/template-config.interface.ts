@@ -1,34 +1,47 @@
-import { ChatConfig, ChatEndpoints, ChatMessage, ChatSender } from '@features/workflows/templates/utils/chatTpl.interface';
-import { CompareConfig, CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/compareTpl.interface';
-import { SummarizeConfig, SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/summarizeTpl.interface';
+import { ChatConfig, ChatEndpoints, ChatMessage, ChatSender } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
+import { CompareConfig, CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
+import { SummarizeConfig, SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
+import { ExtractConfig, ExtractEndpoints, ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 import { CompareComponent } from '../components/compare/compare.component';
 import { SummarizeComponent } from '../components/summarize/summarize.component';
 import { ChatComponent } from '../components/chat/chat.component';
+import { ExtractComponent } from '../components/extract/extract.component';
 
 /**
  * Type union for all template component instances
  */
-export type TemplateComponentInstance = ChatComponent | CompareComponent | SummarizeComponent;
+export type TemplateComponentInstance = ChatComponent | CompareComponent | SummarizeComponent | ExtractComponent;
 
 /**
  * Result event types
  */
 export interface TemplateResult {
   type: TemplateType;
-  result: ChatMessage[] | ComparisonResult | SummaryResult;
+  result: ChatMessage[] | ComparisonResult | SummaryResult | ExtractionResult;
 }
 
 /**
  * Template type discriminator
  */
-export type TemplateType = 'chat' | 'compare' | 'summarize';
+export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract';
 
 /**
  * Base template configuration
  */
 export interface BaseTemplateConfig {
-  config?: Partial<ChatConfig | CompareConfig | SummarizeConfig>;
+  config?: Partial<ChatConfig | CompareConfig | SummarizeConfig | ExtractConfig>;
   context?: TemplateContext;
+}
+
+/**
+ * Extract template configuration
+ */
+export interface ExtractTemplateConfig extends BaseTemplateConfig {
+  type: 'extract';
+  mode?: 'upload' | 'preloaded';
+  result?: ExtractionResult;
+  config?: Partial<ExtractConfig>;
+  endpoints?: Partial<ExtractEndpoints>;
 }
 
 /**
@@ -64,7 +77,7 @@ export interface SummarizeTemplateConfig extends BaseTemplateConfig {
 /**
  * Union type for all template configurations
  */
-export type TemplateConfig = ChatTemplateConfig | CompareTemplateConfig | SummarizeTemplateConfig;
+export type TemplateConfig = ChatTemplateConfig | CompareTemplateConfig | SummarizeTemplateConfig | ExtractTemplateConfig;
 
 /**
  * API Response structure
@@ -87,7 +100,7 @@ export interface TemplatePageResponse {
 export interface TemplateContext {
   config: TemplateConfig;
   events?: {
-    onSuccess?: (result: ComparisonResult | SummaryResult | ChatMessage[]) => void;
+    onSuccess?: (result: ComparisonResult | SummaryResult | ChatMessage[]| ExtractionResult) => void;
     onError?: (error: Error) => void;
     onStarted?: () => void;
     onProgress?: (progress: number) => void;

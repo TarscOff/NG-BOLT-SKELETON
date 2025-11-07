@@ -32,7 +32,7 @@ import {
   ChatMode,
   ChatConfig,
   ChatEndpoints,
-} from '../../utils/chatTpl.interface';
+} from '../../utils/tplsInterfaces/chatTpl.interface';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({

@@ -1,13 +1,15 @@
-import { ChatConfig } from "./chatTpl.interface"
-import { CompareConfig } from "./compareTpl.interface"
-import { SummarizeConfig } from "./summarizeTpl.interface"
+import { ChatConfig, ChatEndpoints } from "./tplsInterfaces/chatTpl.interface"
+import { CompareConfig, CompareEndpoints } from "./tplsInterfaces/compareTpl.interface"
+import { ExtractConfig, ExtractEndpoints } from "./tplsInterfaces/extractTpl.interface"
+import { SummarizeConfig, SummarizeEndpoints } from "./tplsInterfaces/summarizeTpl.interface"
 
-export const CHAT_ENDPOINTS = {
+export const CHAT_ENDPOINTS: ChatEndpoints = {
     sendMessage: '/api/chat/send',
     getMessages: '/api/chat/messages',
     deleteMessage: '/api/chat/message',
     editMessage: '/api/chat/message',
     clearChat: '/api/chat/clear',
+    uploadAttachment: '/api/chat/upload',
 }
 export const CHAT_CONFIG: ChatConfig = {
     showTimestamps: true,
@@ -20,7 +22,7 @@ export const CHAT_CONFIG: ChatConfig = {
     enableAttachments: false,
     autoScroll: true,
 }
-export const COMPARE_ENDPOINTS = {
+export const COMPARE_ENDPOINTS: CompareEndpoints = {
     uploadFiles: '/api/compare/upload',
     startComparison: '/api/compare/start',
     getComparison: '/api/compare/result',
@@ -31,7 +33,7 @@ export const COMPARE_CONFIG: CompareConfig = {
     allowedFileTypes: ['.pdf', '.docx', '.txt'],
     maxFileSize: 10 * 1024 * 1024,
 }
-export const SUMMARIZE_ENDPOINTS = {
+export const SUMMARIZE_ENDPOINTS: SummarizeEndpoints = {
     uploadFile: '/api/summarize/upload',
     startSummarization: '/api/summarize/start',
     getSummary: '/api/summarize/result',
@@ -42,12 +44,16 @@ export const SUMMARIZE_CONFIG: SummarizeConfig = {
     allowedFileTypes: ['.pdf', '.docx', '.txt', '.md'],
     maxFileSize: 10 * 1024 * 1024,
     maxFiles: 5,
-    defaultLength: 'medium',
-    defaultStyle: 'paragraph',
-    defaultLanguage: 'en',
-    availableLanguages: [
-        { label: 'English', value: 'en' },
-        { label: 'French', value: 'fr' },
-        { label: 'Dutch', value: 'nl' },
-    ],
+}
+export const EXTRACT_ENDPOINTS: ExtractEndpoints = {
+    uploadExtract: '/api/extract/upload',
+    startExtract: '/api/extract/start',
+    cancelExtract: '/api/extract/result',
+    exportExtract: '/api/extract/cancel',
+    statusExtract: '/api/extract/export',
+}
+export const EXTRACT_CONFIG: ExtractConfig = {
+    allowedFileTypes: ['.pdf', '.docx', '.txt', '.md'],
+    maxFileSize: 10 * 1024 * 1024,
+    maxFiles: 5,
 }

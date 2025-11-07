@@ -41,7 +41,6 @@ export class ChatPageComponent implements OnInit {
   // Computed
   enabledTemplates = computed(() => {
     const config = this.pageConfig();
-    console.log("config*******>",config)
     if (!config) return [];
     return config.templates;
   });
