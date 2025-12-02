@@ -22,6 +22,7 @@ variables:
   DOCKER_REPOSITORY: 'pxs-ng-starter-app'
   DOCKER_SERVICE_CONNECTION: 'FrontSocleServiceConn'
   PKG_PATH: 'package.json'
+  APP_NAME: 'pxs-ng-starter-app'
 
 stages:
 # ---------- Build & Test & Docker ----------
@@ -128,7 +129,7 @@ stages:
 
             PKG_PATH="$(PKG_PATH)"
             VERSION=$(node -p "require('./$PKG_PATH').version")
-            TAG="${{ steps.image_meta.outputs.repo }}@$VERSION"
+            TAG="$(APP_NAME)@$VERSION"
 
             echo "Detected version: $VERSION"
             echo "Proposed tag:    $TAG"
