@@ -14,8 +14,8 @@ env:
   NODE_VERSION: '20'
   PKG_PATH: 'package.json'
   CR_REGISTRY: ghcr.io
-  # e.g. ghcr.io/owner/repo
-  CR_REPOSITORY: ${{ github.repository }}
+  # ghcr repo; to be safe we lowercase it
+  CR_REPOSITORY: ${{ github.repository | toLower }}
 
 jobs:
   # ---------- Build + Lint + Angular ----------
@@ -107,16 +107,13 @@ jobs:
 
       - name: Build and push image
         uses: docker/build-push-action@v6
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          BRANCH_NAME: ${{ github.ref_name }}
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.CR_REGISTRY }}/${{ env.CR_REPOSITORY }}:${{ env.BRANCH_NAME }}-${{ env.VERSION }}
-            ${{ env.CR_REGISTRY }}/${{ env.CR_REPOSITORY }}:latest-${{ env.BRANCH_NAME }}
+            ${{ env.CR_REGISTRY }}/${{ env.CR_REPOSITORY }}:${{ github.ref_name }}-${{ steps.version.outputs.version }}
+            ${{ env.CR_REGISTRY }}/${{ env.CR_REPOSITORY }}:latest-${{ github.ref_name }}
 
   # ---------- CSP smoke test ----------
   csp_test:
