@@ -1,0 +1,2249 @@
+{
+  "version": "1.9.6",
+  "tag": "v1.9.6",
+  "previousTag": null,
+  "date": "2025-12-02T16:11:21.072Z",
+  "stats": {
+    "features": 19,
+    "fixes": 10,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 23,
+    "chores": 45,
+    "tests": 0,
+    "others": 26,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "9162ea3",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cddd33a",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "13064a9",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c3b251a",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "de351f3",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "51af30c",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic workflow builder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6f88d64",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e81e562",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "325d284",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "36dd9d5",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2461a5d",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c314382",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflow builder instance",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c6d09a",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflow builder instance",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6961312",
+        "type": "feat",
+        "scope": "components",
+        "subject": "charts, tables, layout, components finalized",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "93554b6",
+        "type": "feat",
+        "scope": "dynamicForms",
+        "subject": "dynamic forms enhanced with more attributes",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "879b79f",
+        "type": "feat",
+        "scope": "config",
+        "subject": "app fully configurable and passes items to core",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "187a0cd",
+        "type": "feat",
+        "scope": "documentation",
+        "subject": "adding documentation and relative paths for each",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8b63154",
+        "type": "feat",
+        "scope": "keycloack",
+        "subject": "keycloak init and guards implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6b56b4f",
+        "type": "feat",
+        "scope": "components",
+        "subject": "custom components + form builder OK",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [
+      {
+        "hash": "c17debb",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9a31fd0",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b2d82fd",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c1dcba7",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f904f77",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "37f56f8",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "29c7cc9",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "workflows fix",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bc77f91",
+        "type": "fix",
+        "scope": "quickSettings",
+        "subject": "fixing quick settings and conenction to NGX Store on the SDk + udpating module",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "a3f2159",
+        "type": "fix",
+        "scope": "core",
+        "subject": "app changes implementation to angular 19 + updating module + udpating configs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1506931",
+        "type": "fix",
+        "scope": "appConfig",
+        "subject": "passing environments from hsot app to core",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "ed56e55",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e7f8b2b",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "779f7f2",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "63748c1",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "02283a4",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.5.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1e53438",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.3.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ed70e65",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.2.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "a90a0ea",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "0092b4a",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.3",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b94283f",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9452664",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.1",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "48a157f",
+        "type": "docs",
+        "scope": "docs",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "dd720c9",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.1.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "3e7956d",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.8",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cf1fdc2",
+        "type": "docs",
+        "scope": "docs",
+        "subject": "splitting docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2df1694",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.7",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e805cc7",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.6",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "eef7273",
+        "type": "docs",
+        "scope": "documentation",
+        "subject": "adding documentation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e69d104",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4295e93",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "092e375",
+        "type": "docs",
+        "scope": "documentation",
+        "subject": "adding documentation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "a6b2f8e",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.3",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "48f82e9",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.0.2",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "cc9ba13",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.6",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8e2a660",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7dd130b",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7451657",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9998fbe",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d479d06",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f1d0d0d",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5074668",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8c20534",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c3d45fd",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b70a5a3",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "11bb76c",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b405268",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c2b87d",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bf1e11b",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c816ec",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fa02b5f",
+        "type": "chore",
+        "scope": "core",
+        "subject": "rebasing on develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f1c363a",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fcf3b35",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bab9262",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cf8ddaa",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "a61b9c4",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8fa7473",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f8fb4f2",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.5.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4466b77",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.3.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "839c9dd",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.2.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "3aed530",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2204755",
+        "type": "chore",
+        "scope": "docs",
+        "subject": "update docs and app version",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4a0cd23",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.3",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "99fd4d8",
+        "type": "chore",
+        "scope": "core",
+        "subject": "update app core name + update docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "88a7673",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "508a7cf",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.1",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "91e5548",
+        "type": "chore",
+        "scope": "coreModule",
+        "subject": "implementing PXS-NG-CORE module from our custom registry on Azure",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f6f3e9f",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.1.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cc6fe94",
+        "type": "chore",
+        "scope": "barrelConfig",
+        "subject": "barrel config + docs improvement for contributions",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "939560f",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.8",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "54d86a4",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.7",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2344341",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.6",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "890aa3a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2d9774f",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ad553df",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.3",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9306e98",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.0.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ac402fb",
+        "type": "chore",
+        "scope": "skeleton",
+        "subject": "fix release version validator",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c9ce85a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "1.0.1",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "96a50f6",
+        "type": "chore",
+        "scope": "skeleton",
+        "subject": "first commit",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "801cedf",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #20 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "60a638c",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #19 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "67b2f09",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #18 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4488656",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #17 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1b42fa0",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #16 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4716e04",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #15 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "a01c00e",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #14 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2e9dc95",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #13 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "36e2a0f",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #12 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "36d3163",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #11 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c4f3a6a",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #10 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "351b678",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #9 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "0562e7f",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #8 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "19c0a59",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #7 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9e14230",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #6 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4b98157",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #5 from TarikHaddadi/master",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "84c2cfc",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #4 from TarikHaddadi/develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d85bb75",
+        "type": "other",
+        "scope": null,
+        "subject": "Create main.yml",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "0b81471",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #3 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "533fb13",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #2 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5d14649",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #1 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6d4a320",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1365: docs(docs): updating docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b47de2d",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1352: chore: Barrels implementation + contributing docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1829eba",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1344: docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "32686f7",
+        "type": "other",
+        "scope": null,
+        "subject": "first commit",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5691127",
+        "type": "other",
+        "scope": null,
+        "subject": "initial commit",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "cc9ba135ea97125282c012b23c0dc116cb493533",
+      "shortHash": "cc9ba13",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.6",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "801cedf5be3016cefb4a0a898a9577f882455b67",
+      "shortHash": "801cedf",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #20 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "c17debbace7c9d54b2f5b7a39859703171e2a61d",
+      "shortHash": "c17debb",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "60a638cc453159b97057777b33ca4b17c603832a",
+      "shortHash": "60a638c",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #19 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "9a31fd0be61f3c1db64ef5c20a88913a6b1147af",
+      "shortHash": "9a31fd0",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "67b2f09a6e4fb0106425044a707799561f4addb2",
+      "shortHash": "67b2f09",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #18 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "b2d82fdaa53b0875194094de46d1cc9c6eb53967",
+      "shortHash": "b2d82fd",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c1dcba7d2ede94ac30ff8793968d94cf94c1c735",
+      "shortHash": "c1dcba7",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4488656f5059a7708d2df4be53531b59af58f69f",
+      "shortHash": "4488656",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #17 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "f904f77db076652d697046c936d7ae0cee7f4aa9",
+      "shortHash": "f904f77",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "37f56f84bc56bbc2e3315d73e08ccee895047c6b",
+      "shortHash": "37f56f8",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1b42fa051a76c571798f91d8694f7166615cbe5f",
+      "shortHash": "1b42fa0",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #16 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config + docs"
+    },
+    {
+      "hash": "8e2a660e041dc0b61b3f52fbfcf8001e8aa5e7b3",
+      "shortHash": "8e2a660",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4716e046afc8c01e6d5a46c34ff25ced71249bdb",
+      "shortHash": "4716e04",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #15 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "ed56e557504ff0e84309f090094ce689c5906e95",
+      "shortHash": "ed56e55",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "7dd130b279a274dbd9c74c00c43acd1412659626",
+      "shortHash": "7dd130b",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "745165721b4d0d9134e53bd5de01fb379f39d79d",
+      "shortHash": "7451657",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a01c00e2b472388c53b8c5c56ac7a9f83ba9daf1",
+      "shortHash": "a01c00e",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #14 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config + docs"
+    },
+    {
+      "hash": "9998fbeb9460f9ad92d08442b8bd92e2087649ef",
+      "shortHash": "9998fbe",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2e9dc95c751d170628370726a730317de711c8ea",
+      "shortHash": "2e9dc95",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #13 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "d479d0600e690fdc5fec3778e3bda08c549410d4",
+      "shortHash": "d479d06",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f1d0d0d6ccacfe83f9411d2d9a285990ef160461",
+      "shortHash": "f1d0d0d",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5074668c0647738da610290d529144bf86e458f6",
+      "shortHash": "5074668",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "36e2a0fdddcb08463e07f3bdf9b8a3fe0f5d3175",
+      "shortHash": "36e2a0f",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #12 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "8c20534fd47aeb2eed2ca422aa0ed1b2aa7ca455",
+      "shortHash": "8c20534",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c3d45fd0edbe9fd30bafb07ec1023c4a34bac81c",
+      "shortHash": "c3d45fd",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "36d3163702b09a04fb2cae2fabbec817f63acfab",
+      "shortHash": "36d3163",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #11 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "b70a5a32d627dce53377c486d5bca922f88d9b41",
+      "shortHash": "b70a5a3",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "11bb76c685e988d7f3ebc2b9f28d8e17c5d38c62",
+      "shortHash": "11bb76c",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c4f3a6ad56c0a39affd9be1ae91a3760709674fb",
+      "shortHash": "c4f3a6a",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #10 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config"
+    },
+    {
+      "hash": "b405268e8ed92923e0c64ea37f15db9dfb137ee4",
+      "shortHash": "b405268",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "351b678a08c6f809938940b4b6b444bac8826cd5",
+      "shortHash": "351b678",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #9 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config"
+    },
+    {
+      "hash": "4c2b87d07611894b0b6ba2455ae39cdb5830ef3d",
+      "shortHash": "4c2b87d",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0562e7f0b1635e47f9a2f95f1447f835150d9718",
+      "shortHash": "0562e7f",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #8 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config"
+    },
+    {
+      "hash": "bf1e11b86fdb41228d8ed091c9910bb79fbcf197",
+      "shortHash": "bf1e11b",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "19c0a59b62911cf0e05acf47070b02d77bdc72c0",
+      "shortHash": "19c0a59",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #7 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing github config"
+    },
+    {
+      "hash": "4c816ece47482affc539ad2ffc0b7aad7f38a7c2",
+      "shortHash": "4c816ec",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9e1423081e688c0c71d8d077957c6915399efaf9",
+      "shortHash": "9e14230",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #6 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): rebasing on develop"
+    },
+    {
+      "hash": "fa02b5ff9dc64c003484140f7952b0571951234e",
+      "shortHash": "fa02b5f",
+      "type": "chore",
+      "scope": "core",
+      "subject": "rebasing on develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4b9815749d7dd89ee9c30b922322ef695f2f0fef",
+      "shortHash": "4b98157",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #5 from TarikHaddadi/master",
+      "breaking": false,
+      "notes": [],
+      "body": "merge"
+    },
+    {
+      "hash": "84c2cfc1a0113adc565c24e9ee3fb2b2e5bca75d",
+      "shortHash": "84c2cfc",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #4 from TarikHaddadi/develop",
+      "breaking": false,
+      "notes": [],
+      "body": "Develop"
+    },
+    {
+      "hash": "d85bb75fc6f1850b8f207fbb706464de64a9d8cb",
+      "shortHash": "d85bb75",
+      "type": "other",
+      "scope": null,
+      "subject": "Create main.yml",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0b81471c1addf7ceb80b66411b8174c27e5402c3",
+      "shortHash": "0b81471",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #3 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "f1c363aec3a814d3f8d2751a547f329575e438e3",
+      "shortHash": "f1c363a",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fcf3b35705119c529b90c47609480bdce38d749e",
+      "shortHash": "fcf3b35",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bab92621dc27a13f3c59f173144bf69a980ee980",
+      "shortHash": "bab9262",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9162ea3f2d71285f4c58014b0027dc9badf48294",
+      "shortHash": "9162ea3",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cddd33a98a84c932e2673c8220416476925937f5",
+      "shortHash": "cddd33a",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "533fb1388dc213f2b7e92943fc3aff48affdf8d4",
+      "shortHash": "533fb13",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #2 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "13064a9f7d91c2ecd598668bb8314c592b7c145b",
+      "shortHash": "13064a9",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e7f8b2b6c6acb3a5d1ee2d6986f6b36e8eb26e2b",
+      "shortHash": "e7f8b2b",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cf8ddaaef9227c217ec5179a255104d504d5d174",
+      "shortHash": "cf8ddaa",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c3b251aad093c62efcb75401c06da27bf35e2d19",
+      "shortHash": "c3b251a",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "de351f34bfe79113b6ff687ef632bdb1419f9af9",
+      "shortHash": "de351f3",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5d146494ae79770cc423c8876131a46302b54efc",
+      "shortHash": "5d14649",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #1 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "779f7f2d543a17baacd093500e8619f5415c1a53",
+      "shortHash": "779f7f2",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a61b9c42676a7c74a81694d54e39dadab77ee470",
+      "shortHash": "a61b9c4",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "51af30ce14b30b73ba633283c49c88774eaa634f",
+      "shortHash": "51af30c",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic workflow builder",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6f88d649c2499c346e08e1693b4247f3499334f4",
+      "shortHash": "6f88d64",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e81e56224bc4851b870ea4098c860121ad98a593",
+      "shortHash": "e81e562",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "325d28470cf48b13521bd7fbcd25afe4765c7487",
+      "shortHash": "325d284",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "36dd9d53f48e51aac777e9b1943bfd1dfff69288",
+      "shortHash": "36dd9d5",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2461a5dbd26419129de12533e182f87a589791e1",
+      "shortHash": "2461a5d",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "29c7cc94f8665433d61ca989114b032b34802279",
+      "shortHash": "29c7cc9",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "workflows fix",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c314382e79d099206f2f655836b7ca1f1ad40c70",
+      "shortHash": "c314382",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflow builder instance",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4c6d09acb7a1ad7e207b78efd606b59a605a3517",
+      "shortHash": "4c6d09a",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflow builder instance",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "63748c1b1ba603754d6326e5976e756a1f2a8202",
+      "shortHash": "63748c1",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "8fa747370b54bb0a042883c8651cdf0d31528706",
+      "shortHash": "8fa7473",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6961312b15b8e16a2f6b159839a5e58f89ee185c",
+      "shortHash": "6961312",
+      "type": "feat",
+      "scope": "components",
+      "subject": "charts, tables, layout, components finalized",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "02283a4741fadfff1d773130f413f26a8b87e7f5",
+      "shortHash": "02283a4",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.5.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f8fb4f2870fde3c615bdbead1cac7861c9b53466",
+      "shortHash": "f8fb4f2",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.5.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1e534383213fc55370ed58d0c36e4cae971c16be",
+      "shortHash": "1e53438",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.3.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4466b778a131b10c2a3257448feb74460a46b149",
+      "shortHash": "4466b77",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.3.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "93554b66d361ce921f7bc998db9f4a4bbf9a7ebf",
+      "shortHash": "93554b6",
+      "type": "feat",
+      "scope": "dynamicForms",
+      "subject": "dynamic forms enhanced with more attributes",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ed70e65e86e7c1694380b83507d75205eaf38ba1",
+      "shortHash": "ed70e65",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.2.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "839c9dde47a600cb5628241b86d8d2e4008700ca",
+      "shortHash": "839c9dd",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.2.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "879b79fa9186a1246b817492ad9bec7f82008339",
+      "shortHash": "879b79f",
+      "type": "feat",
+      "scope": "config",
+      "subject": "app fully configurable and passes items to core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bc77f918b8f84123e5525d0230c04ffcfb373c27",
+      "shortHash": "bc77f91",
+      "type": "fix",
+      "scope": "quickSettings",
+      "subject": "fixing quick settings and conenction to NGX Store on the SDk + udpating module",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a90a0eac28f36ecf7d572599e8a3641ab314502c",
+      "shortHash": "a90a0ea",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "3aed530c412b6d67bf3e77c13f655e6357859883",
+      "shortHash": "3aed530",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "22047554c39ac5d0fad0b7b816f70b0dc7427c98",
+      "shortHash": "2204755",
+      "type": "chore",
+      "scope": "docs",
+      "subject": "update docs and app version",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0092b4a15307f8965b8633a91d86f384e6bb2e5d",
+      "shortHash": "0092b4a",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4a0cd2309f862269a38801b848dc013e098743e3",
+      "shortHash": "4a0cd23",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "99fd4d8eaf58f6931999002e2ec17daf2f71a664",
+      "shortHash": "99fd4d8",
+      "type": "chore",
+      "scope": "core",
+      "subject": "update app core name + update docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b94283f71ac1699f4c36a2105c52976c125c650d",
+      "shortHash": "b94283f",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "88a7673abdb9316f4ce95057715c995be6492b18",
+      "shortHash": "88a7673",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9452664d51362679a1a4bcbaf84bf4ff8fb1ed54",
+      "shortHash": "9452664",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "508a7cf011cc82a98dcc6e801a0b8a7f93bc68ec",
+      "shortHash": "508a7cf",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a3f215926329313f7f625d6117bd4e11a79e4fdd",
+      "shortHash": "a3f2159",
+      "type": "fix",
+      "scope": "core",
+      "subject": "app changes implementation to angular 19 + updating module + udpating configs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1506931e97c295dbd108d0f0fe437bd64a45f58a",
+      "shortHash": "1506931",
+      "type": "fix",
+      "scope": "appConfig",
+      "subject": "passing environments from hsot app to core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "91e554865b45bee58dfdf6fa3d727030424e0dd0",
+      "shortHash": "91e5548",
+      "type": "chore",
+      "scope": "coreModule",
+      "subject": "implementing PXS-NG-CORE module from our custom registry on Azure",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6d4a320dfc83a7649fb11812b176b2362a2e98ef",
+      "shortHash": "6d4a320",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1365: docs(docs): updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": "docs(docs): updating docs"
+    },
+    {
+      "hash": "48a157fda832fcc9bc4cc982c57790158824bb32",
+      "shortHash": "48a157f",
+      "type": "docs",
+      "scope": "docs",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b47de2d4d554ceaa56091a9a29b4444acaf5b89e",
+      "shortHash": "b47de2d",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1352: chore: Barrels implementation + contributing docs",
+      "breaking": false,
+      "notes": [],
+      "body": "chore: Barrels implementation + contributing docs"
+    },
+    {
+      "hash": "dd720c940f34737ae6d770337bb8d3dcca7ed809",
+      "shortHash": "dd720c9",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.1.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f6f3e9ff0aef93813ad465406ba568a7d0a0fc9d",
+      "shortHash": "f6f3e9f",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.1.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cc6fe940b11a8ecb16f307946c885cf5d05c98c0",
+      "shortHash": "cc6fe94",
+      "type": "chore",
+      "scope": "barrelConfig",
+      "subject": "barrel config + docs improvement for contributions",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1829eba755450312c4fe463f5c2c6b3a135aa6da",
+      "shortHash": "1829eba",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1344: docs",
+      "breaking": false,
+      "notes": [],
+      "body": "docs"
+    },
+    {
+      "hash": "3e7956dc9e892cde808b6f3bae0678d26f6e68a8",
+      "shortHash": "3e7956d",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.8",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "939560f9063f9548720e413d91dcac9b14755fbd",
+      "shortHash": "939560f",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.8",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cf1fdc291ba540836aae88294c92220e550662e3",
+      "shortHash": "cf1fdc2",
+      "type": "docs",
+      "scope": "docs",
+      "subject": "splitting docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2df169449f61c4222419a86503b08d0aeaef2584",
+      "shortHash": "2df1694",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.7",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "54d86a42b6b800ca66811a7e2d7a84c9c8a069c2",
+      "shortHash": "54d86a4",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.7",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "187a0cdc5819afc16a34d81ec8e2c9d8c7a3fc38",
+      "shortHash": "187a0cd",
+      "type": "feat",
+      "scope": "documentation",
+      "subject": "adding documentation and relative paths for each",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e805cc74556bc34623097a7201af12ccd3c3422d",
+      "shortHash": "e805cc7",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.6",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "23443418519a2bcba072578d05ece9afdf250da1",
+      "shortHash": "2344341",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.6",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "eef7273cecb6d911ba0efe11659b1d3fd2917507",
+      "shortHash": "eef7273",
+      "type": "docs",
+      "scope": "documentation",
+      "subject": "adding documentation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e69d10405de218256607666c36e09b52d9528919",
+      "shortHash": "e69d104",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "890aa3a8e360de727b4467e5b276ea0aa865eeb2",
+      "shortHash": "890aa3a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4295e93a0d3849f91b2151bee516feab087c294d",
+      "shortHash": "4295e93",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2d9774f7f40133625078f628d804d40e55038b7e",
+      "shortHash": "2d9774f",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "092e3757e2fe8db48c488ed27e49541e66e0c12a",
+      "shortHash": "092e375",
+      "type": "docs",
+      "scope": "documentation",
+      "subject": "adding documentation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "8b631541f5bd1e03923b29b6d283270c699025df",
+      "shortHash": "8b63154",
+      "type": "feat",
+      "scope": "keycloack",
+      "subject": "keycloak init and guards implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "a6b2f8e1ae6d6e45e271f6b501687885a84e8a5c",
+      "shortHash": "a6b2f8e",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ad553dfebd1f8c6583a396029753a8d693d974d5",
+      "shortHash": "ad553df",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6b56b4f43b111923c3b60f5ae7b746551b34aca0",
+      "shortHash": "6b56b4f",
+      "type": "feat",
+      "scope": "components",
+      "subject": "custom components + form builder OK",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "48f82e96346f2518d6917d7abcc622c789bc74d0",
+      "shortHash": "48f82e9",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.0.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9306e98e44186c0a18c80f9b840481d4928ce772",
+      "shortHash": "9306e98",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.0.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ac402fb6ef11e9706863305240763f784bde77ad",
+      "shortHash": "ac402fb",
+      "type": "chore",
+      "scope": "skeleton",
+      "subject": "fix release version validator",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c9ce85aa0821317c3c1b3e7a2bf41fe88c68c49b",
+      "shortHash": "c9ce85a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "1.0.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "96a50f6160e6ad4eaafa646c5fe5e1d4a7135849",
+      "shortHash": "96a50f6",
+      "type": "chore",
+      "scope": "skeleton",
+      "subject": "first commit",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "32686f7766d3ba4bd1d8183b686bb1a268cc05ef",
+      "shortHash": "32686f7",
+      "type": "other",
+      "scope": null,
+      "subject": "first commit",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "569112753a7307856a64b63b8350d2062710da24",
+      "shortHash": "5691127",
+      "type": "other",
+      "scope": null,
+      "subject": "initial commit",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
