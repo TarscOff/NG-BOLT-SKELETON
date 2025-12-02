@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.4...v1.9.5) (2025-12-02)
+
+
+### Features
+
+* **templating:** creating workflows dynanic templates + refactoring code ([9162ea3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/9162ea3f2d71285f4c58014b0027dc9badf48294))
+* **templating:** creating workflows dynanic templates + refactoring code ([cddd33a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/cddd33a98a84c932e2673c8220416476925937f5))
+* **templating:** creating workflows dynanic templates + refactoring code ([13064a9](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/13064a9f7d91c2ecd598668bb8314c592b7c145b))
+
 ### [1.9.4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.2...v1.9.4) (2025-11-03)
 
 
