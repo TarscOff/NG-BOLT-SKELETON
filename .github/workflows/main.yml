@@ -37,7 +37,6 @@ jobs:
         run: |
           if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
             echo "Configuring npm for Azure Artifacts into project .npmrc"
-            # Append token to the existing .npmrc (which already has registry config)
             {
               echo ""
               echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
@@ -85,6 +84,7 @@ jobs:
           name: dist
           path: dist/psx-ng-skeleton
 
+  # ---------- Docker build & push (GHCR) ----------
   docker_build:
     runs-on: ubuntu-latest
     needs: build_app
@@ -92,6 +92,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -128,13 +134,14 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         with:
-          context: .
+          context: .          # includes dist/ from artifact
           file: ./Dockerfile
           push: true
           tags: |
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-${{ env.VERSION }}
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-${{ steps.image_meta.outputs.branch }}
 
+  # ---------- CSP smoke test ----------
   csp_test:
     runs-on: ubuntu-latest
     needs: docker_build
@@ -193,6 +200,7 @@ jobs:
           sleep 5
           curl -sI http://localhost:8081 | grep -i "content-security-policy"
 
+  # ---------- Tag on main ----------
   tag_release:
     runs-on: ubuntu-latest
     needs: docker_build
