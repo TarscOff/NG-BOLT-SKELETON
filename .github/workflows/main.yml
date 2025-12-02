@@ -64,7 +64,7 @@ jobs:
 
       - name: Run patch release on develop (no push)
         run: |
-          npm run release:patch:nopush -- -m "chore(release): v%s – automated develop merge"
+          npm run release:patch:nopush
 
       - name: Push branch and tags
         run: |
