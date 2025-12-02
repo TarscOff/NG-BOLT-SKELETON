@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: .
+          path: dist
 
   # ---------- Docker build & push (GHCR) ----------
   docker_build:
@@ -97,7 +97,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: dist
+          path: .
 
       - name: Setup Node
         uses: actions/setup-node@v4

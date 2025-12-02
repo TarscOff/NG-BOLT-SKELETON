@@ -26,6 +26,7 @@ variables:
 
 stages:
 
+
 # ---------- Auto patch release on develop ----------
 - stage: auto_release_develop
   displayName: 'Auto patch release on develop'
@@ -55,15 +56,28 @@ stages:
         - script: |
             set -euo pipefail
 
+            # Auth for pushing back to Azure Repos
+            git config --global http.https://dev.azure.com/.extraheader "AUTHORIZATION: bearer $(System.AccessToken)"
             git config user.email "build-bot@ci"
             git config user.name  "Build Bot"
+            git config --global safe.directory $(Build.SourcesDirectory)
 
             # standard-version / release scripts need deps
             npm ci
 
-            echo "Running npm run release:patch on develop"
-            npm run release:patch -- -m "chore(release): v%s – automated develop merge"
-          displayName: 'Run auto patch release'
+            echo "Running npm run release:patch:nopush on develop"
+            npm run release:patch:nopush -- -m "chore(release): v%s – automated develop merge"
+
+            # Push branch + tags manually
+            BRANCH_REF="$BUILD_SOURCEBRANCH"          # e.g. refs/heads/develop
+            BRANCH_NAME="${BRANCH_REF#refs/heads/}"   # develop
+
+            echo "Pushing branch $BRANCH_NAME and tags"
+            git push origin "HEAD:$BRANCH_NAME"
+            git push origin --tags
+          displayName: 'Run auto patch release and push'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 # ---------- Build & Test & Docker ----------
    
