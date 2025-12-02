@@ -141,6 +141,53 @@ jobs:
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-${{ env.VERSION }}
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-${{ steps.image_meta.outputs.branch }}
 
+  # ---------- Auto release on develop (patch bump) ----------
+  auto_release_develop:
+    runs-on: ubuntu-latest
+    needs: docker_build
+    # Only on develop, and skip if this push is already a release commit
+    if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Run patch release on develop
+        run: |
+          npm run release:patch -- -m "chore(release): v%s – automated develop merge"
+
   # ---------- CSP smoke test ----------
   csp_test:
     runs-on: ubuntu-latest
@@ -199,51 +246,3 @@ jobs:
 
           sleep 5
           curl -sI http://localhost:8081 | grep -i "content-security-policy"
-
-  # ---------- Tag on main ----------
-  tag_release:
-    runs-on: ubuntu-latest
-    needs: docker_build
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Read version
-        id: version
-        env:
-          PKG_PATH: ${{ env.PKG_PATH }}
-        run: |
-          VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Create and push tag
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          TAG="${{ steps.image_meta.outputs.repo }}@$VERSION"
-          echo "Detected version: $VERSION"
-          echo "Proposed tag:    $TAG"
-
-          git fetch --tags
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists. Nothing to do."
-            exit 0
-          fi
-
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-          git tag -a "$TAG" -m "release: $TAG"
-          git push origin "$TAG"

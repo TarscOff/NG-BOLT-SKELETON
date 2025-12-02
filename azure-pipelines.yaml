@@ -25,10 +25,52 @@ variables:
   APP_NAME: 'pxs-ng-starter-app'
 
 stages:
-# ---------- Build & Test & Docker ----------
 
+# ---------- Auto patch release on develop ----------
+- stage: auto_release_develop
+  displayName: 'Auto patch release on develop'
+  condition: and(
+      succeeded(),
+      eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+      ne(variables['Build.Reason'], 'PullRequest')
+    )
+  jobs:
+    - job: release_job
+      displayName: 'Run npm patch release on develop'
+      steps:
+        - checkout: self
+          persistCredentials: true
+
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '$(NODE_VERSION)'
+          displayName: 'Use Node.js'
+
+        # (re)authenticate for npm in case release script ever needs deps
+        - task: npmAuthenticate@0
+          displayName: 'Authenticate to Azure Artifacts (npm) for release'
+          inputs:
+            workingFile: '.npmrc'
+
+        - script: |
+            set -euo pipefail
+
+            git config user.email "build-bot@ci"
+            git config user.name  "Build Bot"
+
+            # standard-version / release scripts need deps
+            npm ci
+
+            echo "Running npm run release:patch on develop"
+            npm run release:patch -- -m "chore(release): v%s – automated develop merge"
+          displayName: 'Run auto patch release'
+
+# ---------- Build & Test & Docker ----------
+   
 - stage: build_test_docker
   displayName: 'Build, Test & Dockerize Starter App'
+  dependsOn:
+    - auto_release_develop
   jobs:
   - job: build
     displayName: 'Build Angular & Docker'
@@ -101,50 +143,3 @@ stages:
           tags: |
             $(Build.SourceBranchName)-$(APP_VERSION)
             latest-$(Build.SourceBranchName)
-
-- stage: tag_on_main
-  displayName: "Create git tag for Starter from package version"
-  dependsOn:
-    - build_test_docker
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  jobs:
-    - job: tag_job
-      displayName: "Tag repo with @<version>"
-      steps:
-        - checkout: self
-          persistCredentials: true
-
-        - task: NodeTool@0
-          inputs:
-            versionSpec: '$(NODE_VERSION)'
-          displayName: 'Use Node.js'
-
-        - script: |
-            set -euo pipefail
-
-            git config --global http.https://dev.azure.com/.extraheader "AUTHORIZATION: bearer $(System.AccessToken)"
-            git config --global user.email "build-bot@ci"
-            git config --global user.name  "Build Bot"
-            git config --global safe.directory $(Build.SourcesDirectory)
-
-            PKG_PATH="$(PKG_PATH)"
-            VERSION=$(node -p "require('./$PKG_PATH').version")
-            TAG="$(APP_NAME)@$VERSION"
-
-            echo "Detected version: $VERSION"
-            echo "Proposed tag:    $TAG"
-
-            git fetch --tags --force
-
-            if git rev-parse "$TAG" >/dev/null 2>&1; then
-              echo "Tag $TAG already exists. Nothing to do."
-              exit 0
-            fi
-
-            git tag -a "$TAG" -m "release: $TAG"
-            git push origin "$TAG"
-            echo "Created and pushed tag $TAG"
-          displayName: 'Create & push tag from package version'
-          env:
-            PKG_PATH: $(PKG_PATH)
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
