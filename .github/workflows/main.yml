@@ -34,9 +34,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Configure npm for Azure Artifacts
-        if: ${{ secrets.AZURE_ARTIFACTS_PAT != '' }}
+        if: ${{ secrets.BOLT_SECRET != '' }}
         env:
-          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+          AZURE_ARTIFACTS_PAT: ${{ secrets.BOLT_SECRET }}
         run: |
           echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}" > ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
