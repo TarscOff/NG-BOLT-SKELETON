@@ -66,7 +66,7 @@ stages:
             npm ci
 
             echo "Running npm run release:patch:nopush on develop"
-            npm run release:patch:nopush -- -m "chore(release): v%s – automated develop merge"
+            npm run release:patch:nopush
 
             # Push branch + tags manually
             BRANCH_REF="$BUILD_SOURCEBRANCH"          # e.g. refs/heads/develop
