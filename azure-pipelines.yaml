@@ -22,7 +22,7 @@ variables:
   # Name of the Docker repository inside your registry (e.g. pxs-ng-starter-app)
   DOCKER_REPOSITORY: 'pxs-ng-starter-app'
   # Name of the Docker registry service connection in Azure DevOps
-  DOCKER_SERVICE_CONNECTION: 'pxs-ng-starter-app-acr'
+  DOCKER_SERVICE_CONNECTION: 'FrontSocleServiceConn'
   # Path to package.json of the starter app (if not at root)
   PKG_PATH: 'package.json'
 
