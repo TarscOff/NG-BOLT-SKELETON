@@ -19,7 +19,7 @@ export interface SummaryResult {
   style: SummaryStyle;
   length: SummaryLength;
   language: string;
-  status: 'pending' | 'processing' | 'completed' | 'error';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   createdAt: Date;
   completedAt?: Date;
   error?: string;
@@ -32,10 +32,6 @@ export interface SummarizeConfig {
   allowedFileTypes?: string[];
   maxFileSize?: number;
   maxFiles?: number;
-  defaultLength?: SummaryLength;
-  defaultStyle?: SummaryStyle;
-  defaultLanguage?: string;
-  availableLanguages?: { label: string; value: string }[];
 }
 
 export interface SummarizeMode {

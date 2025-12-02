@@ -12,19 +12,22 @@ import {
   ReservedKeys,
   RunNodeDTO,
   StripReservedShallow,
-} from '../../utils/workflow.interface';
+} from '../../templates/utils/workflow.interface';
 
-import { WfCanvasBus } from '../../utils/wf-canvas-bus';
+import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { ChatComponent } from '@features/workflows/templates/components/chat/chat.component';
-import { ComparisonResult } from '@features/workflows/utils/compareTpl.interface';
+import { ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
 import { CompareComponent } from '@features/workflows/templates/components/compare/compare.component';
-import { SummaryResult } from '@features/workflows/utils/summarizeTpl.interface';
+import { SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
 import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
-import { ChatMessage } from '@features/workflows/utils/chatTpl.interface';
+import { ChatMessage } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
+import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS, EXTRACT_CONFIG, EXTRACT_ENDPOINTS } from '@features/workflows/templates/utils/constants';
+import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
+import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 
 @Component({
   selector: 'app-wf-preview-node',
@@ -37,7 +40,8 @@ import { TemplatingService } from '@features/workflows/templates/services/templa
     TranslateModule,
     ChatComponent,
     CompareComponent,
-    SummarizeComponent
+    SummarizeComponent,
+    ExtractComponent
   ],
   styles: [`
     :host { display:block; min-width:320px; max-width:760px; }
@@ -86,7 +90,8 @@ import { TemplatingService } from '@features/workflows/templates/services/templa
     }
     .body app-chat-tpl,
     .body app-compare-tpl,
-    .body app-summarize-tpl {
+    .body app-summarize-tpl,
+    .body app-extract-tpl {
       min-height: 100%;
       flex: 1;
     }
@@ -136,16 +141,29 @@ import { TemplatingService } from '@features/workflows/templates/services/templa
             @case ('chat') {
               <app-chat-tpl
                 [mode]="{ mode: 'preloaded', messages: chatMessages() }"
+                [config]="chatConfig()"
+                [endpoints]="chatEndpoints()"
               />
             }
             @case ('compare') {
               <app-compare-tpl
                 [mode]="{ mode: 'preloaded', result: comparisonResult() }"
+                [config]="comparisonConfig()"
+                [endpoints]="comparisonEndpoints()"
               />
             }
             @case ('summarize') {
               <app-summarize-tpl
                 [mode]="{ mode: 'preloaded', result: summaryResult() }"
+                [config]="summarizeConfig()"
+                [endpoints]="summarizeEndpoints()"
+              />
+            }
+            @case ('extract') {
+              <app-extract-tpl
+                [mode]="{ mode: 'preloaded', result: extractionResult() }"
+                [config]="extractConfig()"
+                [endpoints]="extractEndpoints()"
               />
             }
             @default {
@@ -188,6 +206,8 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
         return 'compare';
       case 'summarize':
         return 'summarize';
+      case 'extract':
+        return 'extract';
       default:
         return null;
     }
@@ -218,6 +238,27 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     return this.templatingService.getMockChatMessages();
   });
 
+  chatConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return CHAT_CONFIG;
+  });
+  chatEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return CHAT_ENDPOINTS;
+  });
+
   /**
    * Computed signal for comparison result
    */
@@ -229,6 +270,26 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
 
     return this.templatingService.getMockComparisonResult();
+  });
+  comparisonConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return COMPARE_CONFIG;
+  });
+  comparisonEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return COMPARE_ENDPOINTS;
   });
 
   /**
@@ -242,6 +303,59 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
 
     return this.templatingService.getMockSummaryResult();
+  });
+  summarizeConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return SUMMARIZE_CONFIG;
+  });
+  summarizeEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return SUMMARIZE_ENDPOINTS;
+  });
+
+  /**
+   * Computed signal for extraction result
+   */
+  extractionResult = computed((): ExtractionResult => {
+    const currentDto = this.dto();
+
+    if (currentDto?.result && this.isExtractionResult(currentDto.result)) {
+      return currentDto.result as ExtractionResult;
+    }
+
+    return this.templatingService.getMockExtractionResult();
+  });
+  extractConfig = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return EXTRACT_CONFIG;
+  });
+  extractEndpoints = computed(() => {
+    // TODO Map with passed data in the DTO
+    const currentDto = this.dto();
+
+    // Try to get messages from DTO result
+    if (currentDto?.result) {
+      // TODO: implement right logic
+    }
+    return EXTRACT_ENDPOINTS;
   });
 
   ngOnInit(): void {
@@ -378,4 +492,13 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     );
   }
 
+  private isExtractionResult(obj: unknown): obj is ExtractionResult {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      'entities' in obj &&
+      'totalEntitiesFound' in obj &&
+      'status' in obj
+    );
+  }
 }

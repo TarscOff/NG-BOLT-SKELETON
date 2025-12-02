@@ -3,16 +3,6 @@
   <div class="result-header">
     <div class="header-row">
       <h3 class="result-title">{{ 'summarizeTpl.results' | translate }}</h3>
-      <div class="export-actions">
-        <button
-          mat-icon-button
-          [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
-          (click)="copyToClipboard()"
-          [color]="(isDark$ | async) ? 'neutral' : 'primary'"
-        >
-          <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
-        </button>
-      </div>
     </div>
 
     <!-- Metadata Chips -->

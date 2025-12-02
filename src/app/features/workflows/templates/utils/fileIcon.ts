@@ -1,5 +1,5 @@
-import { CompareFile } from "./compareTpl.interface";
-import { SummarizeFile } from "./summarizeTpl.interface";
+import { CompareFile } from "./tplsInterfaces/compareTpl.interface";
+import { SummarizeFile } from "./tplsInterfaces/summarizeTpl.interface";
 
 export function iconFor(f: CompareFile | SummarizeFile): string {
     const mime = f.mime?.toLowerCase();

@@ -1,44 +1,124 @@
-stages: [ build, dockerize, test ]
+stages:
+  - build
+  - dockerize
+  - test
+  - tag
 
 variables:
   DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 build_app:
-  image: node:18
+  image: node:20
   stage: build
+  before_script:
+    # Azure Artifacts PAT stored as GitLab CI variable AZURE_ARTIFACTS_PAT
+    - |
+      if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+        echo "//pkgs.dev.azure.com/cadai/:_authToken=$AZURE_ARTIFACTS_PAT" > ~/.npmrc
+        echo "always-auth=true" >> ~/.npmrc
+      fi
   script:
     - npm ci
     - npm run lint
     - |
       if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
+        echo "Using PROD config"
         cp public/assets/config.prod.json public/assets/config.json
+        NG_CONFIG="production"
       elif [[ "$CI_COMMIT_BRANCH" == "uat" ]]; then
+        echo "Using UAT config"
         cp public/assets/config.uat.json public/assets/config.json
+        NG_CONFIG="uat"
       else
+        echo "Using DEV config"
         cp public/assets/config.dev.json public/assets/config.json
+        NG_CONFIG="development"
       fi
-    - npm run build -- --configuration=production
+
+      echo "Building Angular with configuration: $NG_CONFIG"
+      npm run build -- --configuration=$NG_CONFIG
   artifacts:
-    paths: [ dist/psx-ng-skeleton ]
+    paths:
+      - dist/psx-ng-skeleton
+    expire_in: 1 week
 
 docker_build:
   image: docker:20
-  services: [ docker:dind ]
   stage: dockerize
+  services:
+    - docker:20-dind
+  needs: ["build_app"]
   script:
-    - VERSION=$(node -p "require('./package.json').version")
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION .
+    - apk add --no-cache jq
+    - VERSION=$(jq -r .version package.json)
+    - echo "App version: $VERSION"
 
-# csp_test:
-#  image: docker:20
-#  services: [ docker:dind ]
-#  stage: test
-#  script:
-#    - apk add --no-cache jq curl
-#    - VERSION=$(node -p "require('./package.json').version")
-#    - KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
-#    - API=$(jq -r '.apiUrl' public/assets/config.json)
-#    - if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then REPORT=false; else REPORT=true; fi
-#    - docker run -d --rm -e KEYCLOAK_ORIGIN="$KC" -e API_ORIGINS="$API" -e CSP_REPORT_ONLY="$REPORT" -p 8081:80 $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH-$VERSION
-#    - sleep 2
-#    - curl -sI http://localhost:8081 | grep -i "content-security-policy"
+    - echo "Logging into GitLab registry $CI_REGISTRY"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+    - IMAGE_TAG="$CI_COMMIT_BRANCH-$VERSION"
+    - LATEST_TAG="latest-$CI_COMMIT_BRANCH"
+    - echo "Building $CI_REGISTRY_IMAGE:$IMAGE_TAG and $CI_REGISTRY_IMAGE:$LATEST_TAG"
+
+    - docker build \
+        -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" \
+        -t "$CI_REGISTRY_IMAGE:$LATEST_TAG" .
+
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY_IMAGE:$LATEST_TAG"
+
+csp_test:
+  image: docker:20
+  stage: test
+  services:
+    - docker:20-dind
+  needs: ["docker_build"]
+  script:
+    - apk add --no-cache jq curl
+    - VERSION=$(jq -r .version package.json)
+    - IMAGE_TAG="$CI_COMMIT_BRANCH-$VERSION"
+
+    - KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
+    - API=$(jq -r '.apiUrl' public/assets/config.json)
+    - if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then REPORT=false; else REPORT=true; fi
+
+    - docker run -d --rm \
+        -e KEYCLOAK_ORIGIN="$KC" \
+        -e API_ORIGINS="$API" \
+        -e CSP_REPORT_ONLY="$REPORT" \
+        -p 8081:80 "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+
+    - sleep 5
+    - curl -sI http://localhost:8081 | grep -i "content-security-policy"
+
+tag_release:
+  image: alpine:3.19
+  stage: tag
+  needs: ["docker_build"]
+  only:
+    - main
+  script:
+    - apk add --no-cache git jq nodejs npm
+    # configure git with CI job token so we can push tags
+    - git config --global user.email "build-bot@ci"
+    - git config --global user.name "Build Bot"
+    - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+    # read version from package.json
+    - VERSION=$(jq -r .version package.json)
+    - TAG="PXS-NG-STARTER-APP@$VERSION"
+    - echo "Detected version: $VERSION"
+    - echo "Proposed tag:    $TAG"
+
+    - git fetch --tags
+
+    # skip if tag already exists
+    - |
+      if git rev-parse "$TAG" >/dev/null 2>&1; then
+        echo "Tag $TAG already exists. Nothing to do."
+        exit 0
+      fi
+
+    - git tag -a "$TAG" -m "release: $TAG"
+    - git push origin "$TAG"

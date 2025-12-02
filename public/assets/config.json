@@ -34,7 +34,6 @@
       }
     }
   },
-
   "features": {
     "dashboard": {
       "enabled": true,
@@ -42,7 +41,6 @@
         "ROLE_user",
         "ROLE_admin"
       ],
-
       "key": "dashboard",
       "label": "nav.dashboard",
       "icon": "dashboard",

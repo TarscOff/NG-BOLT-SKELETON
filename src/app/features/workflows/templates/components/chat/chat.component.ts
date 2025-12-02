@@ -32,7 +32,7 @@ import {
   ChatMode,
   ChatConfig,
   ChatEndpoints,
-} from '../../../utils/chatTpl.interface';
+} from '../../utils/tplsInterfaces/chatTpl.interface';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
@@ -154,7 +154,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   canEditDelete$ = computed(() => {
     const mode = this._mode();
     const config = this._config();
+    const disabled = this.disabled;
 
+    if(disabled) return false;
     if (mode.mode === 'preloaded') {
       return config.allowEdit !== false && config.allowDelete !== false;
     }
@@ -239,6 +241,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   onSendMessage(content: string): void {
+    console.log("here1")
     if (!this.canSendMessage$()) {
       return;
     }
@@ -257,6 +260,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const endpoints = {
       ...this._endpoints(),
     };
+    console.log("here2",endpoints)
 
     this.chatService
       .sendMessage(

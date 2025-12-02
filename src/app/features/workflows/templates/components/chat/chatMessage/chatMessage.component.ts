@@ -17,7 +17,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
-import { ChatMessage } from '../../../../utils/chatTpl.interface';
+import { ChatMessage } from '../../../utils/tplsInterfaces/chatTpl.interface';
 
 @Component({
   selector: 'app-chat-message-tpl',

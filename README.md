@@ -3,7 +3,11 @@
 
 > 🚀 Modern Angular 19 project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
 
+# NPMRC
 
+Use the following so you can push to registry
+
+```vsts-npm-auth -config .npmrc```
 ---
 
 ## 🧭 Quick Start for Developers

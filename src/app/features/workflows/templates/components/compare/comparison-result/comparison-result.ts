@@ -2,13 +2,21 @@ import {
   Component,
   ChangeDetectionStrategy,
   Input,
+  inject,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslateModule } from '@ngx-translate/core';
-import { ComparisonResult } from '../../../../utils/compareTpl.interface';
+import { CompareFile, ComparisonResult } from '../../../utils/tplsInterfaces/compareTpl.interface';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { AppSelectors } from '@cadai/pxs-ng-core/store';
+import { iconFor } from '@features/workflows/templates/utils/fileIcon';
 
 @Component({
   selector: 'app-comparison-result-tpl',
@@ -19,10 +27,73 @@ import { ComparisonResult } from '../../../../utils/compareTpl.interface';
     MatExpansionModule,
     MatChipsModule,
     TranslateModule,
+    MatTooltipModule,
+    MatButtonModule,
   ],
   template: `
     <div class="comparison-result-container">
+
       @if (result) {
+        <!-- PRELOADED MODE: Show loaded files -->
+        <div class="preloaded-files-section">
+          <div class="preloaded-files-header">
+            <mat-icon color="primary">folder_open</mat-icon>
+            <span>{{ 'compareTpl.loadedFiles' | translate }}</span>                
+          </div>
+          <div class="preloaded-files-grid">
+            <!-- File 1 -->
+            @if (result.file1) {
+              <div class="file-card">
+                <div class="file-card-header">
+                  <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">
+                    {{ getFileIcon(result.file1!) }}
+                  </mat-icon>
+                  <span class="file-badge">{{ 'compareTpl.file1' | translate }}</span>
+                </div>
+                <div class="file-card-body">
+                  <div class="file-name" [matTooltip]="result.file1!.name">
+                    {{ result.file1!.name }}
+                  </div>
+                  <div class="file-details">
+                    <span class="file-size">{{ formatFileSize(result.file1!.size) }}</span>
+                    @if (result.file1!.uploadDate) {
+                      <span class="file-date">{{ result.file1!.uploadDate | date: 'short' }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- VS Divider -->
+            <div class="files-divider">
+              <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">compare_arrows</mat-icon>
+            </div>
+
+            <!-- File 2 -->
+            @if (result.file2) {
+              <div class="file-card">
+                <div class="file-card-header">
+                  <mat-icon [color]="(isDark$ | async) ? 'success' : 'accent'">
+                    {{ getFileIcon(result.file2!) }}
+                  </mat-icon>
+                  <span class="file-badge accent">{{ 'compareTpl.file2' | translate }}</span>
+                </div>
+                <div class="file-card-body">
+                  <div class="file-name" [matTooltip]="result.file2!.name">
+                    {{ result.file2!.name }}
+                  </div>
+                  <div class="file-details">
+                    <span class="file-size">{{ formatFileSize(result.file2!.size) }}</span>
+                    @if (result.file2!.uploadDate) {
+                      <span class="file-date">{{ result.file2!.uploadDate | date: 'short' }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
         <!-- Summary -->
         <div class="result-summary">
           <div class="summary-item">
@@ -94,6 +165,145 @@ import { ComparisonResult } from '../../../../utils/compareTpl.interface';
     </div>
   `,
   styles: [`
+    .preloaded-files-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+
+      .preloaded-files-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+        mat-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+        }
+
+        span {
+          font-size: 18px;
+          font-weight: 500;
+          color: var(--mat-sys-on-surface);
+        }
+      }
+
+      .preloaded-files-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 24px;
+        align-items: center;
+
+        .files-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 16px;
+
+          mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+          }
+        }
+      }
+    }
+    
+    .file-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px;
+      border: 2px solid var(--mat-primary);
+      border-radius: 12px;
+      background: var(--mat-sys-surface-container);
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--mat-sys-primary);
+        box-shadow: var(--mat-sys-level1);
+      }
+
+      .file-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+        mat-icon {
+          font-size: 50px;
+          width: 50px;
+          height: 50px;
+          color: var(--mat-primary)
+        }
+
+        .file-badge {
+          padding: 4px 12px;
+          border-radius: 12px;
+          background: var(--mat-sys-primary-container);
+          color: var(--mat-sys-on-primary-container);
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+
+          &.accent {
+            background: var(--mat-sys-secondary-container);
+            color: var(--mat-sys-on-secondary-container);
+          }
+        }
+      }
+
+      .file-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .file-name {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--mat-sys-on-surface);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .file-details {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 12px;
+          color: var(--mat-sys-on-surface-variant);
+
+          .file-size {
+            font-weight: 500;
+          }
+
+          .file-date {
+            opacity: 0.8;
+          }
+        }
+      }
+    }
+
+
+
+    @media (max-width: 768px) {
+      .preloaded-files-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+
+        .files-divider {
+          padding: 0;
+
+          mat-icon {
+            transform: rotate(90deg);
+          }
+        }
+      }
+    }
     .comparison-result-container {
       display: flex;
       flex-direction: column;
@@ -240,9 +450,16 @@ import { ComparisonResult } from '../../../../utils/compareTpl.interface';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ComparisonResultComponent {
+export class ComparisonResultComponent implements OnInit {
   @Input() result!: ComparisonResult;
   @Input() showDetails = true;
+
+  isDark$!: Observable<boolean>;
+  private store = inject(Store);
+
+  ngOnInit(): void {
+    this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
+  }
 
   getCountByType(type: 'added' | 'removed' | 'modified'): number {
     return this.result.differences.filter(d => d.type === type).length;
@@ -255,6 +472,25 @@ export class ComparisonResultComponent {
       modified: { icon: 'edit', class: 'modified', color: "primary" },
     };
     return icons[type];
+  }
+
+
+  /**
+   * Get file icon
+   */
+  getFileIcon(file: CompareFile): string {
+    return iconFor(file);
+  }
+
+  /**
+   * Format file size for display
+   */
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
 }

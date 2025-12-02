@@ -5,34 +5,38 @@ import { CoreOptions } from '@cadai/pxs-ng-core/interfaces';
 import { HttpService } from '@cadai/pxs-ng-core/services';
 import { CORE_OPTIONS } from '@cadai/pxs-ng-core/tokens';
 
-import { 
-  TemplateType, 
-  TemplatePageResponse 
-} from '../../utils/template-config.interface';
+import {
+  TemplateType,
+  TemplatePageResponse
+} from '../utils/template-config.interface';
 import { ChatComponent } from '../components/chat/chat.component';
 import { CompareComponent } from '../components/compare/compare.component';
 import { SummarizeComponent } from '../components/summarize/summarize.component';
-import { ChatEndpoints, ChatMessage } from '@features/workflows/utils/chatTpl.interface';
-import { CompareEndpoints, ComparisonResult } from '@features/workflows/utils/compareTpl.interface';
-import { SummarizeEndpoints, SummaryResult } from '@features/workflows/utils/summarizeTpl.interface';
+import { ChatEndpoints, ChatMessage } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
+import { CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
+import { SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
 import { ChatService } from './chat.service';
+import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, EXTRACT_CONFIG, EXTRACT_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS } from '../utils/constants';
+import { ExtractionResult } from '../utils/tplsInterfaces/extractTpl.interface';
+import { ExtractComponent } from '../components/extract/extract.component';
 
 
 @Injectable({
   providedIn: 'root',
 })
 export class TemplatingService {
-    chatService = inject(ChatService)
+  chatService = inject(ChatService)
   private readonly componentRegistry = new Map<TemplateType, Type<unknown>>([
     ['chat', ChatComponent],
     ['compare', CompareComponent],
     ['summarize', SummarizeComponent],
+    ['extract', ExtractComponent],
   ]);
 
   constructor(
     private http: HttpService,
     @Inject(CORE_OPTIONS) private readonly coreOpts: Required<CoreOptions>,
-  ) {}
+  ) { }
 
   /**
    * Get base API URL for templates
@@ -138,14 +142,14 @@ export class TemplatingService {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    
+
     // Use configured API URL from core options
     const apiUrl = this.coreOpts.environments.apiUrl;
     if (!apiUrl) {
       console.warn('API URL not configured, using relative URL');
       return url;
     }
-    
+
     return `${apiUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
@@ -165,65 +169,29 @@ export class TemplatingService {
             name: 'You',
             type: 'user',
           },
-          endpoints: {
-            sendMessage: '/api/chat/send',
-            getMessages: '/api/chat/messages',
-            deleteMessage: '/api/chat/message',
-            editMessage: '/api/chat/message',
-            clearChat: '/api/chat/clear',
-          },
-          config: {
-            showTimestamps: true,
-            showAvatars: true,
-            allowMarkdown: true,
-            allowEdit: true,
-            allowDelete: true,
-            maxLength: 4000,
-            placeholder: 'Type your message...',
-            enableAttachments: false,
-            autoScroll: true,
-          },
+          endpoints: CHAT_ENDPOINTS,
+          config: CHAT_CONFIG,
         },
         {
           type: 'compare',
           mode: 'upload',
-          endpoints: {
-            uploadFiles: '/api/compare/upload',
-            startComparison: '/api/compare/start',
-            getComparison: '/api/compare/result',
-            cancelComparison: '/api/compare/cancel',
-            exportComparison: '/api/compare/export',
-          },
-          result:this.getMockComparisonResult(),
-          config: {
-            allowedFileTypes: ['.pdf', '.docx', '.txt'],
-            maxFileSize: 10 * 1024 * 1024,
-          },
+          endpoints: COMPARE_ENDPOINTS,
+          result: this.getMockComparisonResult(),
+          config: COMPARE_CONFIG,
         },
         {
           type: 'summarize',
           mode: 'upload',
-          endpoints: {
-            uploadFile: '/api/summarize/upload',
-            startSummarization: '/api/summarize/start',
-            getSummary: '/api/summarize/result',
-            cancelSummary: '/api/summarize/cancel',
-            exportSummary: '/api/summarize/export',
-          },
-          result:this.getMockSummaryResult(),
-          config: {
-            allowedFileTypes: ['.pdf', '.docx', '.txt', '.md'],
-            maxFileSize: 10 * 1024 * 1024,
-            maxFiles: 5,
-            defaultLength: 'medium',
-            defaultStyle: 'paragraph',
-            defaultLanguage: 'en',
-            availableLanguages: [
-              { label: 'English', value: 'en' },
-              { label: 'French', value: 'fr' },
-              { label: 'Dutch', value: 'nl' },
-            ],
-          },
+          endpoints: SUMMARIZE_ENDPOINTS,
+          result: this.getMockSummaryResult(),
+          config: SUMMARIZE_CONFIG,
+        },
+        {
+          type: 'extract',
+          mode: 'upload',
+          endpoints: EXTRACT_ENDPOINTS,
+          result: this.getMockExtractionResult(),
+          config: EXTRACT_CONFIG,
         },
       ],
       metadata: {
@@ -235,7 +203,7 @@ export class TemplatingService {
   }
 
 
-  
+
   /**
    * Mock data generators
    */
@@ -333,47 +301,121 @@ export class TemplatingService {
   }
 
   getMockChatMessages(): ChatMessage[] {
-  return [
-    {
-      id: 'msg-1',
-      content: 'Hello! I need help with document analysis.',
-      sender: {
-        id: 'user-1',
-        name: 'John Doe',
-        type: 'user',
+    return [
+      {
+        id: 'msg-1',
+        content: 'Hello! I need help with document analysis.',
+        sender: {
+          id: 'user-1',
+          name: 'John Doe',
+          type: 'user',
+        },
+        timestamp: new Date('2025-11-03T10:00:00'),
       },
-      timestamp: new Date('2025-11-03T10:00:00'),
-    },
-    {
-      id: 'msg-2',
-      content: 'Hello! I\'d be happy to help you with document analysis. What would you like to know?',
-      sender: {
-        id: 'assistant',
-        name: 'AI Assistant',
-        type: 'assistant',
+      {
+        id: 'msg-2',
+        content: 'Hello! I\'d be happy to help you with document analysis. What would you like to know?',
+        sender: {
+          id: 'assistant',
+          name: 'AI Assistant',
+          type: 'assistant',
+        },
+        timestamp: new Date('2025-11-03T10:00:15'),
       },
-      timestamp: new Date('2025-11-03T10:00:15'),
-    },
-    {
-      id: 'msg-3',
-      content: 'Can you help me compare two contracts and identify the key differences?',
-      sender: {
-        id: 'user-1',
-        name: 'John Doe',
-        type: 'user',
+      {
+        id: 'msg-3',
+        content: 'Can you help me compare two contracts and identify the key differences?',
+        sender: {
+          id: 'user-1',
+          name: 'John Doe',
+          type: 'user',
+        },
+        timestamp: new Date('2025-11-03T10:01:00'),
       },
-      timestamp: new Date('2025-11-03T10:01:00'),
-    },
-    {
-      id: 'msg-4',
-      content: 'Certainly! I can help you compare contracts. Please upload the two contract documents you\'d like to compare, and I\'ll identify the key differences for you.',
-      sender: {
-        id: 'assistant',
-        name: 'AI Assistant',
-        type: 'assistant',
+      {
+        id: 'msg-4',
+        content: 'Certainly! I can help you compare contracts. Please upload the two contract documents you\'d like to compare, and I\'ll identify the key differences for you.',
+        sender: {
+          id: 'assistant',
+          name: 'AI Assistant',
+          type: 'assistant',
+        },
+        timestamp: new Date('2025-11-03T10:01:20'),
       },
-      timestamp: new Date('2025-11-03T10:01:20'),
-    },
-  ];
-}
+    ];
+  }
+
+  getMockExtractionResult(): ExtractionResult {
+    return {
+      id: crypto.randomUUID(),
+      files: [
+        {
+          key: crypto.randomUUID(),
+          name: 'business-proposal.pdf',
+          size: 1024000,
+          type: 'application/pdf',
+          ext: 'pdf',
+          url: 'https://example.com/files/business-proposal.pdf',
+          uploadDate: new Date('2025-11-01'),
+        },
+        {
+          key: crypto.randomUUID(),
+          name: 'meeting-notes.docx',
+          size: 512000,
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          ext: 'docx',
+          url: 'https://example.com/files/meeting-notes.docx',
+          uploadDate: new Date('2025-11-02'),
+        },
+      ],
+      entities: [
+        {
+          type: 'person',
+          value: 'John Doe',
+          context: 'John Doe will lead the project management team.',
+        },
+        {
+          type: 'person',
+          value: 'Jane Smith',
+          context: 'Jane Smith is the senior consultant for this engagement.',
+        },
+        {
+          type: 'organization',
+          value: 'Proximus',
+          context: 'Proximus has been our strategic partner since 2020.',
+        },
+        {
+          type: 'organization',
+          value: 'Microsoft',
+          context: 'The solution will be deployed on Microsoft Azure.',
+        },
+        {
+          type: 'location',
+          value: 'Brussels',
+          context: 'The headquarters are located in Brussels, Belgium.',
+        },
+        {
+          type: 'location',
+          value: 'Antwerp',
+          context: 'Regional office opening in Antwerp next quarter.',
+        },
+        {
+          type: 'date',
+          value: 'November 15, 2025',
+          context: 'Project kickoff meeting scheduled for November 15, 2025.',
+        },
+        {
+          type: 'email',
+          value: 'contact@proximus.be',
+          context: 'For inquiries, please contact contact@proximus.be.',
+        },
+      ],
+      text: `This is a comprehensive business proposal outlining the digital transformation strategy for Proximus. 
+    John Doe will lead the project management team, working closely with Jane Smith, our senior consultant. 
+    The solution will be deployed on Microsoft Azure with headquarters in Brussels and a regional office in Antwerp. 
+    Project kickoff is scheduled for November 15, 2025. For inquiries, contact contact@proximus.be.`,
+      totalEntitiesFound: 8,
+      status: 'completed',
+    };
+  }
 }

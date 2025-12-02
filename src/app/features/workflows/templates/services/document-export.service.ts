@@ -14,7 +14,7 @@ import {
   ExportResult,
   PdfContentSection,
   DocxContentSection,
-} from '../../utils/document-export.interface';
+} from '../utils/document-export.interface';
 
 @Injectable({
   providedIn: 'root',

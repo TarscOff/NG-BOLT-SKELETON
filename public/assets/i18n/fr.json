@@ -1,4 +1,9 @@
 {
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français",
+    "nl": "Néerlandais"
+  },
   "HELLO": "Bonjour",
   "SAVE": "Enregistrer",
   "LANG": "Langue",
@@ -245,7 +250,6 @@
     }
   },
   "exportTpl": {
-    
     "exporting": "Exporting Document...",
     "stages": {
       "initializing": "Initialisation de l'exportation...",
@@ -275,6 +279,47 @@
       "txt": "Échec de l'exportation du fichier texte",
       "copy": "Échec de la copie dans le presse-papiers"
     }
+  },
+  "extractTpl": {
+    "title": "Extraction d'Entités",
+    "uploadFiles": "Télécharger des Fichiers",
+    "options": "Options d'Extraction",
+    "text": "Saisie de Texte",
+    "textPlaceholder": "Saisissez ou collez le texte pour extraire les entités...",
+    "entities": "Types d'Entités",
+    "entitiesPlaceholder": "personne, organisation, lieu, date, email",
+    "entitiesHelper": "Saisissez les types d'entités séparés par des virgules",
+    "entitiesRequired": "Au moins un type d'entité est requis",
+    "format": "Format de Sortie",
+    "selectFormat": "Sélectionnez le format de sortie",
+    "uploading": "Téléchargement des fichiers...",
+    "processing": "Extraction des entités...",
+    "start": "Extraire les Entités",
+    "clear": "Tout Effacer",
+    "exportPdf": "Exporter en PDF",
+    "exportDocx": "Exporter en DOCX",
+    "exportTxt": "Exporter en TXT",
+    "noFilesOrText": "Veuillez télécharger des fichiers ou saisir du texte",
+    "noEntities": "Veuillez spécifier les types d'entités",
+    "uploadError": "Échec du téléchargement du fichier",
+    "extractionError": "L'extraction a échoué",
+    "filesRequired": "Au moins un fichier ou du texte est requis"
+  },
+  "extractResult": {
+    "title": "Résultats de l'Extraction",
+    "details": "Détails de l'Extraction",
+    "status": "Statut",
+    "totalEntities": "Total des Entités",
+    "filesProcessed": "Fichiers Traités",
+    "entityTypes": "Types d'Entités",
+    "sourceText": "Texte Source",
+    "noEntitiesFound": "Aucune entité trouvée",
+    "viewContext": "Voir le Contexte",
+    "exportResults": "Exporter les Résultats",
+    "pending": "En Attente",
+    "processing": "En Cours",
+    "completed": "Terminé",
+    "failed": "Échec"
   },
   "form": {
     "files": {

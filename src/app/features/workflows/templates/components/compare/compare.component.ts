@@ -13,15 +13,15 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
@@ -33,14 +33,14 @@ import {
   CompareConfig,
   CompareMode,
   CompareEndpoints,
-} from '../../../utils/compareTpl.interface';
+} from '../../utils/tplsInterfaces/compareTpl.interface';
 import { CompareService } from '../../services/compare.service';
 import { ComparisonResultComponent } from './comparison-result/comparison-result';
-import { iconFor } from '@features/workflows/utils/fileIcon';
-import { ExportFormat } from '@features/workflows/utils/document-export.interface';
+import { ExportFormat } from '@features/workflows/templates/utils/document-export.interface';
 import { ExportOverlayComponent } from '../export-overlay/export-overlay.component';
 import { DocumentExportService } from '../../services/document-export.service';
-import { ComparisonExportAdapter } from '@features/workflows/utils/comparison-export.adapter';
+import { ComparisonExportAdapter } from '@features/workflows/templates/utils/comparison-export.adapter';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Component({
   selector: 'app-compare-tpl',
@@ -64,7 +64,6 @@ import { ComparisonExportAdapter } from '@features/workflows/utils/comparison-ex
 })
 export class CompareComponent implements OnInit, OnDestroy {
   private store = inject(Store);
-  private translate = inject(TranslateService);
   private compareService = inject(CompareService);
   private fb = inject(FormBuilder);
   private fields = inject(FieldConfigService);
@@ -81,16 +80,11 @@ export class CompareComponent implements OnInit, OnDestroy {
   configFile1: FieldConfig[] = [];
   configFile2: FieldConfig[] = [];
 
-  // Subscriptions
-  private formSubscriptions: Subscription[] = [];
-
   // Inputs
   @Input() set mode(value: CompareMode) {
     this._mode.set(value);
     if (value.mode === 'preloaded' && value.result) {
       this._result.set(value.result);
-      this._file1.set(value.result.file1);
-      this._file2.set(value.result.file2);
     }
   }
 
@@ -115,8 +109,6 @@ export class CompareComponent implements OnInit, OnDestroy {
   private _mode = signal<CompareMode>({ mode: 'upload' });
   private _config = signal<CompareConfig>(this.defaultConfig);
   private _endpoints = signal<Partial<CompareEndpoints>>({});
-  private _file1 = signal<CompareFile | null>(null);
-  private _file2 = signal<CompareFile | null>(null);
   private _result = signal<ComparisonResult | null>(null);
   private _isUploading = signal<boolean>(false);
   private _isComparing = signal<boolean>(false);
@@ -128,8 +120,6 @@ export class CompareComponent implements OnInit, OnDestroy {
   mode$ = computed(() => this._mode());
   config$ = computed(() => this._config());
   endpoints$ = computed(() => this._endpoints());
-  file1$ = computed(() => this._file1());
-  file2$ = computed(() => this._file2());
   result$ = computed(() => this._result());
   isUploading$ = computed(() => this._isUploading());
   isComparing$ = computed(() => this._isComparing());
@@ -139,70 +129,10 @@ export class CompareComponent implements OnInit, OnDestroy {
   isDark$!: Observable<boolean>;
   lang$!: Observable<string>;
 
-  canCompare$ = computed(() => {
-    const file1 = this._file1();
-    const file2 = this._file2();
-    const mode = this._mode();
-    const isUploading = this._isUploading();
-    const isComparing = this._isComparing();
-
-    return !!(
-      file1 &&
-      file2 &&
-      mode.mode === 'upload' &&
-      !isUploading &&
-      !isComparing &&
-      !this.disabled
-    );
-  });
-
   isPreloadedMode$ = computed(() => this._mode().mode === 'preloaded');
 
-  hasFile1$ = computed(() => !!this._file1());
-  hasFile2$ = computed(() => !!this._file2());
-
-  canClearFile1$ = computed(() => {
-    const mode = this._mode();
-    const file1 = this._file1();
-    const isUploading = this._isUploading();
-    const isComparing = this._isComparing();
-
-    return !!(
-      file1 &&
-      mode.mode === 'upload' &&
-      !isUploading &&
-      !isComparing
-    );
-  });
-
-  canClearFile2$ = computed(() => {
-    const mode = this._mode();
-    const file2 = this._file2();
-    const isUploading = this._isUploading();
-    const isComparing = this._isComparing();
-
-    return !!(
-      file2 &&
-      mode.mode === 'upload' &&
-      !isUploading &&
-      !isComparing
-    );
-  });
-
-  canClearAll$ = computed(() => {
-    const mode = this._mode();
-    const file1 = this._file1();
-    const file2 = this._file2();
-    const isUploading = this._isUploading();
-    const isComparing = this._isComparing();
-
-    return !!(
-      (file1 || file2) &&
-      mode.mode === 'upload' &&
-      !isUploading &&
-      !isComparing
-    );
-  });
+  private clipboard = inject(Clipboard);
+  copied = signal(false);
 
   private get defaultConfig(): CompareConfig {
     return {
@@ -226,17 +156,12 @@ export class CompareComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.formSubscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   private initializeForms(): void {
     const config = this._config();
     const acceptTypes = config.allowedFileTypes?.join(',') || '*';
     const isPreloaded = this.isPreloadedMode$();
-
-    // Clear previous subscriptions
-    this.formSubscriptions.forEach((sub) => sub.unsubscribe());
-    this.formSubscriptions = [];
 
     // Form for File 1
     this.formFile1 = this.fb.group({});
@@ -246,10 +171,10 @@ export class CompareComponent implements OnInit, OnDestroy {
         label: 'compareTpl.file1',
         multiple: false,
         accept: acceptTypes,
-        required: false,
+        required: true,
         fileVariant: 'dropzone',
         disabled: isPreloaded,
-        validators: undefined,
+        validators: [Validators.required],
         errorMessages: { required: 'compareTpl.fileRequired' },
       }),
     ];
@@ -262,73 +187,13 @@ export class CompareComponent implements OnInit, OnDestroy {
         label: 'compareTpl.file2',
         multiple: false,
         accept: acceptTypes,
-        required: false,
+        required: true,
         fileVariant: 'dropzone',
         disabled: isPreloaded,
-        validators: undefined,
+        validators: [Validators.required],
         errorMessages: { required: 'compareTpl.fileRequired' },
       }),
     ];
-
-    // Setup subscriptions after forms are created
-    this.setupFormValueChanges();
-  }
-
-  private setupFormValueChanges(): void {
-    // Use setTimeout to ensure form controls are created by DynamicFormComponent
-    setTimeout(() => {
-      // Watch File 1 changes
-      const file1Control = this.formFile1.get('file1');
-      if (file1Control) {
-        const file1Sub = file1Control.valueChanges.subscribe(
-          (files: File | File[] | FileList) => {
-            if (files) {
-              const file = this.extractFile(files);
-              if (file && this.validateFile(file)) {
-                // Store file reference temporarily
-                this._file1.set({
-                  key: crypto.randomUUID(),
-                  name: file.name,
-                  size: file.size,
-                  mime: file.type,
-                  ext: file.name.split('.').pop()?.toLowerCase() || '',
-                  uploadDate: new Date(),
-                  url: '',
-                  file: file, // Temporary storage
-                });
-              }
-            }
-          }
-        );
-        this.formSubscriptions.push(file1Sub);
-      }
-
-      // Watch File 2 changes
-      const file2Control = this.formFile2.get('file2');
-      if (file2Control) {
-        const file2Sub = file2Control.valueChanges.subscribe(
-          (files: File | File[] | FileList) => {
-            if (files) {
-              const file = this.extractFile(files);
-              if (file && this.validateFile(file)) {
-                // Store file reference temporarily
-                this._file2.set({
-                  key: crypto.randomUUID(),
-                  name: file.name,
-                  size: file.size,
-                  mime: file.type,
-                  ext: file.name.split('.').pop()?.toLowerCase() || '',
-                  uploadDate: new Date(),
-                  url: '',
-                  file: file, // Temporary storage
-                });
-              }
-            }
-          }
-        );
-        this.formSubscriptions.push(file2Sub);
-      }
-    }, 100);
   }
 
   private extractFile(files: File | File[] | FileList | null): File | null {
@@ -349,8 +214,46 @@ export class CompareComponent implements OnInit, OnDestroy {
    * Trigger comparison - uploads files first, then performs comparison
    */
   triggerComparison(): void {
-    const file1 = this._file1();
-    const file2 = this._file2();
+    let file1: CompareFile | null = null;
+    let file2: CompareFile | null = null;
+
+    const file1Control = this.formFile1.get('file1');
+    if (file1Control) {
+      const filesValue: File | File[] | FileList = file1Control.value;
+
+      const file = this.extractFile(filesValue);
+      if (file) {
+        file1 = {
+          key: crypto.randomUUID(),
+          name: file.name,
+          size: file.size,
+          mime: file.type,
+          ext: file.name.split('.').pop()?.toLowerCase() || '',
+          uploadDate: new Date(),
+          url: '',
+          file: file,
+        };
+      }
+    }
+
+    const file2Control = this.formFile2.get('file2');
+    if (file2Control) {
+      const filesValue: File | File[] | FileList = file2Control.value;
+
+      const file = this.extractFile(filesValue);
+      if (file) {
+        file2 = {
+          key: crypto.randomUUID(),
+          name: file.name,
+          size: file.size,
+          mime: file.type,
+          ext: file.name.split('.').pop()?.toLowerCase() || '',
+          uploadDate: new Date(),
+          url: '',
+          file: file,
+        };
+      }
+    }
 
     if (!file1 || !file2) {
       console.warn('Both files must be selected before comparison');
@@ -384,8 +287,8 @@ export class CompareComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           // Update files with uploaded data
-          this._file1.set(response.file1);
-          this._file2.set(response.file2);
+          this.formFile1.get('file1')?.setValue(response.file1);
+          this.formFile2.get('file2')?.setValue(response.file2);
 
           // Emit upload events
           this.fileUploaded.emit({ slot: 1, file: response.file1 });
@@ -462,7 +365,7 @@ export class CompareComponent implements OnInit, OnDestroy {
               clearInterval(pollInterval);
               this._comparisonProgress.set(100);
               this.handleComparisonComplete(result);
-            } else if (result.status === 'error') {
+            } else if (result.status === 'failed') {
               clearInterval(pollInterval);
               this._isComparing.set(false);
               this._comparisonProgress.set(0);
@@ -502,10 +405,8 @@ export class CompareComponent implements OnInit, OnDestroy {
     }
 
     if (slot === 1) {
-      this._file1.set(null);
       this.formFile1.get('file1')?.reset();
     } else {
-      this._file2.set(null);
       this.formFile2.get('file2')?.reset();
     }
 
@@ -524,8 +425,6 @@ export class CompareComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this._file1.set(null);
-    this._file2.set(null);
     this._result.set(null);
     this._comparisonId.set(null);
     this._uploadProgress.set(0);
@@ -536,88 +435,104 @@ export class CompareComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Validate file
-   */
-  private validateFile(file: File): boolean {
-    const config = this._config();
-
-    // Check file size
-    if (config.maxFileSize && file.size > config.maxFileSize) {
-      const maxSizeMB = config.maxFileSize / (1024 * 1024);
-      const error = new Error(`File size exceeds ${maxSizeMB}MB limit`);
-      this.comparisonError.emit(error);
-      return false;
-    }
-
-    // Check file type
-    if (config.allowedFileTypes && config.allowedFileTypes.length > 0) {
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      if (!config.allowedFileTypes.includes(fileExtension)) {
-        const error = new Error(
-          `File type ${fileExtension} not allowed. Allowed types: ${config.allowedFileTypes.join(', ')}`
-        );
-        this.comparisonError.emit(error);
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Format file size for display
-   */
-  formatFileSize(bytes?: number): string {
-    if (!bytes || bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  }
-
-  /**
-   * Get file icon
-   */
-  getFileIcon(file: CompareFile): string {
-    return iconFor(file);
-  }
-
-  /**
-   * Export comparison result using DocumentExportService
-   * This method is called from the HTML template via the export overlay
-   */
-  /**
  * Export comparison result using DocumentExportService
  * This method is called from the HTML template via the export overlay
  */
-async exportComparison(event: {
-  format: ExportFormat;
-  result: ComparisonResult;
-}): Promise<void> {
-  const { format, result } = event;
-  
-  if (!result || !this.comparisonResultContainer) {
-    console.warn('No comparison result or container available for export');
-    return;
+  async exportComparison(event: {
+    format: ExportFormat;
+    result: ComparisonResult;
+  }): Promise<void> {
+    const { format, result } = event;
+
+    if (!result || !this.comparisonResultContainer) {
+      console.warn('No comparison result or container available for export');
+      return;
+    }
+
+    // Create adapter for the comparison result
+    const adapter = new ComparisonExportAdapter(result);
+
+    // Export using service with proper options
+    await this.exportService.export(adapter, {
+      format,
+      filename: `comparison-${result.id}.${format === 'docx' ? 'docx' : format === 'pdf' ? 'pdf' : 'txt'}`,
+      includeScreenshot: format === 'pdf' || format === 'docx',
+      screenshotElement: this.comparisonResultContainer,
+      screenshotSelector: '.comparison-result-container',
+      metadata: {
+        'File 1': result.file1.name,
+        'File 2': result.file2.name,
+        'Similarity': `${result.similarity}%`,
+        'Differences': result.differences.length.toString(),
+        'Comparison Date': new Date(result.createdAt).toLocaleDateString(),
+      },
+    });
   }
 
-  // Create adapter for the comparison result
-  const adapter = new ComparisonExportAdapter(result);
+  
+  copyToClipboard(): void {
+    const text = this.formatComparisonForExport();
+    if(text) {
 
-  // Export using service with proper options
-  await this.exportService.export(adapter, {
-    format,
-    filename: `comparison-${result.id}.${format === 'docx' ? 'docx' : format === 'pdf' ? 'pdf' : 'txt'}`,
-    includeScreenshot: format === 'pdf' || format === 'docx',
-    screenshotElement: this.comparisonResultContainer,
-    screenshotSelector: '.comparison-result-container',
-    metadata: {
-      'File 1': result.file1.name,
-      'File 2': result.file2.name,
-      'Similarity': `${result.similarity}%`,
-      'Differences': result.differences.length.toString(),
-      'Comparison Date': new Date(result.createdAt).toLocaleDateString(),
-    },
-  });
-}
+      const success = this.clipboard.copy(text);
+      
+      if (success) {
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 2000);
+      }
+    }
+  }
+
+  private formatComparisonForExport(): string | null {
+    let text = `Comparison Results\n\n`;
+    const results = this.result$();
+    if (results) {
+      // Add file information
+      text += `Files:\n`;
+      if (results.file1) {
+        text += `File 1:\n`;
+        text += `  - Name: ${results.file1.name}\n`;
+        if (results.file1.uploadDate) {
+          text += `  - Upload Date: ${new Date(results.file1.uploadDate).toLocaleString()}\n`;
+        }
+      }
+      if (results.file2) {
+        text += `File 2:\n`;
+        text += `  - Name: ${results.file2.name}\n`;
+        if (results.file2.uploadDate) {
+          text += `  - Upload Date: ${new Date(results.file2.uploadDate).toLocaleString()}\n`;
+        }
+      }
+      text += `\n`;
+
+      text += `Summary:\n`;
+      text += `- Added: ${results.differences.filter(d => d.type === 'added').length}\n`;
+      text += `- Removed: ${results.differences.filter(d => d.type === 'removed').length}\n`;
+      text += `- Modified: ${results.differences.filter(d => d.type === 'modified').length}\n\n`;
+
+      if (results.differences.length > 0) {
+        text += `Differences:\n\n`;
+        results.differences.forEach((diff, index) => {
+          text += `${index + 1}. [${diff.type.toUpperCase()}] ${diff.section}\n`;
+          text += `   ${diff.description}\n`;
+          if (diff.lineNumber) {
+            text += `   Line: ${diff.lineNumber}\n`;
+          }
+          if (diff.file1Content) {
+            text += `   File 1: ${diff.file1Content}\n`;
+          }
+          if (diff.file2Content) {
+            text += `   File 2: ${diff.file2Content}\n`;
+          }
+          text += `\n`;
+        });
+      } else {
+        text += `No differences found.\n`;
+      }
+
+      return text;
+    } else {
+      return null;
+    }
+  }
 }

@@ -1,4 +1,9 @@
 {
+  "languages": {
+    "en": "English",
+    "fr": "French",
+    "nl": "Dutch"
+  },
   "HELLO": "Hello",
   "SAVE": "Save",
   "LANG": "Language",
@@ -273,6 +278,47 @@
       "txt": "Failed to export text file",
       "copy": "Failed to copy to clipboard"
     }
+  },
+  "extractTpl": {
+    "title": "Entity Extraction",
+    "uploadFiles": "Upload Files",
+    "options": "Extraction Options",
+    "text": "Text Input",
+    "textPlaceholder": "Enter or paste text to extract entities from...",
+    "entities": "Entity Types",
+    "entitiesPlaceholder": "person, organization, location, date, email",
+    "entitiesHelper": "Enter entity types separated by commas",
+    "entitiesRequired": "At least one entity type is required",
+    "format": "Output Format",
+    "selectFormat": "Select output format",
+    "uploading": "Uploading files...",
+    "processing": "Extracting entities...",
+    "start": "Extract Entities",
+    "clear": "Clear All",
+    "exportPdf": "Export as PDF",
+    "exportDocx": "Export as DOCX",
+    "exportTxt": "Export as TXT",
+    "noFilesOrText": "Please upload files or enter text",
+    "noEntities": "Please specify entity types",
+    "uploadError": "Failed to upload file",
+    "extractionError": "Extraction failed",
+    "filesRequired": "At least one file or text is required"
+  },
+  "extractResult": {
+    "title": "Extraction Results",
+    "details": "Extraction Details",
+    "status": "Status",
+    "totalEntities": "Total Entities",
+    "filesProcessed": "Files Processed",
+    "entityTypes": "Entity Types",
+    "sourceText": "Source Text",
+    "noEntitiesFound": "No entities found",
+    "viewContext": "View Context",
+    "exportResults": "Export Results",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed"
   },
   "form": {
     "files": {

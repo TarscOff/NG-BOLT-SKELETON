@@ -1,4 +1,4 @@
-import { ComparisonResult } from "./compareTpl.interface";
+import { ComparisonResult } from "./tplsInterfaces/compareTpl.interface";
 import { DocxContentSection, ExportableContent, PdfContentSection } from "./document-export.interface";
 
 /**
