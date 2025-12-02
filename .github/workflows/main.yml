@@ -224,7 +224,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          TAG="PXS-NG-STARTER-APP@$VERSION"
+          TAG="${{ steps.image_meta.outputs.repo }}@$VERSION"
           echo "Detected version: $VERSION"
           echo "Proposed tag:    $TAG"
 

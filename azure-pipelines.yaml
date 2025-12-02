@@ -19,11 +19,8 @@ pool:
 
 variables:
   NODE_VERSION: '20.x'
-  # Name of the Docker repository inside your registry (e.g. pxs-ng-starter-app)
   DOCKER_REPOSITORY: 'pxs-ng-starter-app'
-  # Name of the Docker registry service connection in Azure DevOps
   DOCKER_SERVICE_CONNECTION: 'FrontSocleServiceConn'
-  # Path to package.json of the starter app (if not at root)
   PKG_PATH: 'package.json'
 
 stages:
@@ -111,7 +108,7 @@ stages:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs:
     - job: tag_job
-      displayName: "Tag repo with PXS-NG-STARTER-APP@<version>"
+      displayName: "Tag repo with @<version>"
       steps:
         - checkout: self
           persistCredentials: true
@@ -131,7 +128,7 @@ stages:
 
             PKG_PATH="$(PKG_PATH)"
             VERSION=$(node -p "require('./$PKG_PATH').version")
-            TAG="PXS-NG-STARTER-APP@$VERSION"
+            TAG="${{ steps.image_meta.outputs.repo }}@$VERSION"
 
             echo "Detected version: $VERSION"
             echo "Proposed tag:    $TAG"
