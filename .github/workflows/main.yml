@@ -16,9 +16,69 @@ env:
   CR_REGISTRY: ghcr.io
 
 jobs:
+# ---------- Auto release on develop (patch bump) ----------
+  auto_release_develop:
+    runs-on: ubuntu-latest
+    needs: docker_build
+    # Only on develop, and skip if this push is already a release commit
+    if: github.ref == 'refs/heads/develop' && !startsWith(github.event.head_commit.message, 'chore(release):')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity & remote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "Build Bot"
+          git config user.email "build-bot@ci"
+          # Make sure pushes use the token
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Run patch release on develop (no push)
+        run: |
+          npm run release:patch:nopush -- -m "chore(release): v%s – automated develop merge"
+
+      - name: Push branch and tags
+        run: |
+          set -euo pipefail
+          BRANCH_NAME="${GITHUB_REF_NAME}"   # 'develop'
+          echo "Pushing branch ${BRANCH_NAME} and tags"
+          git push origin "HEAD:${BRANCH_NAME}"
+          git push origin --tags
+
   # ---------- Build + Lint + Angular ----------
   build_app:
     runs-on: ubuntu-latest
+    needs: auto_release_develop
 
     steps:
       - name: Checkout
@@ -140,53 +200,6 @@ jobs:
           tags: |
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-${{ env.VERSION }}
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-${{ steps.image_meta.outputs.branch }}
-
-  # ---------- Auto release on develop (patch bump) ----------
-  auto_release_develop:
-    runs-on: ubuntu-latest
-    needs: docker_build
-    # Only on develop, and skip if this push is already a release commit
-    if: github.ref == 'refs/heads/develop'
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
-        env:
-          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
-        run: |
-          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
-            echo "Configuring npm for Azure Artifacts into project .npmrc"
-            {
-              echo ""
-              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
-              echo "always-auth=true"
-            } >> .npmrc
-          else
-            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
-          fi
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Configure git identity
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-      - name: Run patch release on develop
-        run: |
-          npm run release:patch -- -m "chore(release): v%s – automated develop merge"
 
   # ---------- CSP smoke test ----------
   csp_test:

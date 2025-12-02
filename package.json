@@ -15,6 +15,9 @@
     "release:patch": "node ./scripts/release.js patch && npm run release:push",
     "release:minor": "node ./scripts/release.js minor && npm run release:push",
     "release:major": "node ./scripts/release.js major && npm run release:push",
+    "release:patch:nopush": "node ./scripts/release.js patch",
+    "release:minor:nopush": "node ./scripts/release.js minor",
+    "release:major:nopush": "node ./scripts/release.js major",
     "release:push": "git push --follow-tags origin HEAD",
     "deps:check": "node ./scripts/remove-unused.mjs",
     "deps:apply": "node ./scripts/remove-unused.mjs --apply"
