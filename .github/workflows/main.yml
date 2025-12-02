@@ -31,16 +31,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Configure npm for Azure Artifacts (using BOLT_SECRET)
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
         env:
-          AZURE_ARTIFACTS_PAT: ${{ secrets.BOLT_SECRET }}
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
         run: |
           if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
             echo "Configuring npm for Azure Artifacts"
             echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}" > ~/.npmrc
             echo "always-auth=true" >> ~/.npmrc
           else
-            echo "BOLT_SECRET is empty, skipping Azure Artifacts config"
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
           fi
 
       - name: Install dependencies & lint
