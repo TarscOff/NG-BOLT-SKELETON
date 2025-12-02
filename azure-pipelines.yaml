@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
       - main
-      - development
+      - develop
       - staging
       - uat
 
@@ -10,7 +10,7 @@ pr:
   branches:
     include:
       - main
-      - development
+      - develop
       - staging
       - uat
 
