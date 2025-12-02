@@ -1,0 +1,64 @@
+.chat-input-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  background: var(--mat-sys-surface); // Ensure background
+}
+
+.chat-input-form {
+  flex: 1;
+
+  ::ng-deep {
+    // Remove margins from dynamic form
+    app-dynamic-form {
+      .form-field-wrapper {
+        margin-bottom: 0 !important;
+      }
+
+      // Ensure textarea takes full width
+      mat-form-field {
+        width: 100%;
+      }
+
+      // Style the textarea for chat
+      textarea {
+        min-height: 48px !important;
+        max-height: 120px !important;
+        line-height: 1.5 !important;
+        font-size: 14px !important;
+      }
+
+      // Hide label if present
+      .mat-mdc-form-field-label {
+        display: none;
+      }
+      
+      // Adjust form field subscript
+      .mat-mdc-form-field-subscript-wrapper {
+        height: auto;
+        min-height: 16px;
+      }
+    }
+  }
+}
+
+.chat-input-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  .send-button {
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .chat-input-container {
+    padding: 12px;
+  }
+}

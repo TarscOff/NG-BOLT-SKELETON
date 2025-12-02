@@ -1,0 +1,250 @@
+:host {
+    margin: 18px;
+    display: block;
+  
+}
+
+.pipe {
+    --c-muted: #cfd8dc;
+    --c-fg: #263238;
+    --c-bg: #ffffff;
+
+    --c-queued: var(--mat-neutral);
+    --c-running: rgb(23, 105, 206);
+    --c-ok: var(--mat-success);
+    --c-err: var(--mat-accent);
+    --c-skip: var(--mat-warn);
+
+    --node-radius: 30px;
+    --node-pad-y: 8px;
+    --node-pad-x: 10px;
+    --gap-y: 10px;
+
+    color: var(--c-fg);
+
+      --df-connector-color: var(--mat-accent);
+    --df-connector-color-hover: #ffe066;
+    position: relative;
+}
+
+:host-context(.dark) .pipe {
+    --c-bg: #0f1115;
+    --c-fg: #e3eaf1;
+    --c-muted: #33424e;
+    --c-queued: var(--mat-neutral);
+    --c-running: rgb(23, 105, 206);
+    --c-ok: var(--mat-success);
+    --c-err: var(--mat-accent);
+    --c-skip: var(--mat-warn);
+    border-color: #2a3640;
+}
+
+.pipe.compact {
+    --node-radius: 30px;
+    --node-pad-y: 6px;
+    --node-pad-x: 8px;
+    --gap-y: 8px;
+}
+
+.title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.stages {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    &:not(:first-child) {
+        margin-right:20px;
+    }
+}
+
+.stage-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.stage-title {
+    font-size: 1--2px;
+    color: #607d8b;
+    font-weight: 600;
+}
+
+.nodes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-y);
+    position: relative;
+    z-index: 2;
+}
+
+.node {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--node-radius);
+    padding: 0 0 0 var(--node-pad-x);
+    background: var(--c-bg);
+    overflow: hidden;
+}
+
+.node .emblem {
+    flex: 0 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.node .emblem .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c-muted);
+}
+
+.node .emblem .icon {
+    font-size: 23px;
+    width: 28px;
+    height: 28px;
+    opacity: .9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node .label {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 18px;
+}
+
+.run-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, rgba(30, 136, 229, .06) 35%, transparent 70%);
+    animation: shimmer 1.2s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* status */
+.node.queued {
+    border-color: color-mix(in srgb, var(--c-queued) 45%, #e0e0e0);
+}
+
+.node.running {
+    border-color: var(--c-running);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-running) 20%, transparent);
+}
+
+.node.success {
+    border-color: var(--c-ok);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-ok) 18%, transparent);
+}
+
+.node.error {
+    border-color: var(--c-err);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-err) 18%, transparent);
+}
+
+.node.skipped {
+    border-color: var(--c-skip);
+    color: #616161;
+    opacity: .9;
+}
+
+.node.queued .bar,
+.node.queued .emblem .dot {
+    background: var(--c-queued);
+}
+
+.node.running .bar,
+.node.running .emblem .dot {
+    background: var(--c-running);
+}
+
+.node.success .bar,
+.node.success .emblem .dot {
+    background: var(--c-ok);
+}
+
+.node.error .bar,
+.node.error .emblem .dot {
+    background: var(--c-err);
+}
+
+.node.skipped .bar,
+.node.skipped .emblem .dot {
+    background: var(--c-skip);
+}
+
+.node.is-input {
+    margin-right:20px;
+}
+
+.node.is-result {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible
+}
+
+.empty {
+    color: #78909c;
+    font-style: italic;
+}
+
+.ports.left,
+.ports.right {
+    position: absolute;
+    top: 15px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 15px;
+    width: 15px;
+    height: 15px;
+
+    .port-input::after,
+    .port-input::before {
+        inline-size: 1rem;
+        block-size: 1rem;
+        top: 36%;
+    }
+}
+
+.ports.left {
+    left: -8px;
+    --df-connector-color: var(--mat-accent);
+}
+
+.ports.right {
+    right: -8px;
+    --df-connector-color: var(--mat-success);
+}

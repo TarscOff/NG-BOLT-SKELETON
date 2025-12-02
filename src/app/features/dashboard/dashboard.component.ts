@@ -88,6 +88,16 @@ export class DashboardComponent implements OnInit {
       class:"primary"
     };
 
+    const newP: ToolbarAction = {
+      id: 'newP',
+      icon: 'add',
+      tooltip: 'new',
+      click: () => {console.log("export")},
+      variant:"flat",
+      label:'New',
+      class:"success"
+    };
+
     const deleteSel: ToolbarAction = {
       id: 'delete',
       icon: 'delete',
@@ -111,7 +121,7 @@ export class DashboardComponent implements OnInit {
     };
 
     // Publish actions for this page and auto-clear on destroy
-    this.toolbar.scope(this.destroyRef, [back, exportCsv, deleteSel, refreshSel]);
+    this.toolbar.scope(this.destroyRef, [newP,back, exportCsv, deleteSel, refreshSel]);
   }
 
   public ngOnInit(): void {

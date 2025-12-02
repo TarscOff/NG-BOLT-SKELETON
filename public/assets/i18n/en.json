@@ -1,4 +1,9 @@
 {
+  "languages": {
+    "en": "English",
+    "fr": "French",
+    "nl": "Dutch"
+  },
   "HELLO": "Hello",
   "SAVE": "Save",
   "LANG": "Language",
@@ -7,18 +12,51 @@
   "TEAM_MEMBERS": "Team members",
   "quick_settings": "Quick settings",
   "confirm": "Confirm",
-  "cancel": "Cancel",
   "navigationTitle": "Navigation",
   "selection": "Selection",
   "name": "Name",
   "role": "Role",
   "created": "Created at",
-  "actions": "Actions",
+  "toolbox": "Toolbox",
   "delete": "Delete",
+  "close": "Close",
+  "configure": "Configure",
+  "apply": "Apply",
   "edit": "Edit",
   "back": "Back",
   "export": "Export",
-  "refresh":"Refresh",
+  "refresh": "Refresh",
+  "new_workflow": "New Workflow",
+  "tip": "Tip",
+  "in": "Input",
+  "out": "Output",
+  "workflow_help": "Drag from the palette. Click a node’s right port (source) then another node’s left port (target) to connect. Right-click nodes for options.",
+  "input": "Input",
+  "result": "Result",
+  "compare": "Compare",
+  "summarize": "Summarize",
+  "extract": "Extract",
+  "run-panel": "Run panel",
+  "threshold": "Threshold",
+  "toggle": "Fold",
+  "untoggle": "Unfold",
+  "jump_to_view": "Go to view",
+  "chatPage": {
+    "loading": "Loading templates...",
+    "reload": "Reload",
+    "retry": "Retry",
+    "error": {
+      "title": "Failed to Load"
+    },
+    "noTemplates": {
+      "title": "No Templates Available",
+      "description": "No templates are currently enabled or configured"
+    },
+    "templateLoader": {
+      "loading": "Loading template...",
+      "error": "Failed to load template"
+    }
+  },
   "table": {
     "paginator": {
       "itemsPerPage": "Items per page",
@@ -77,8 +115,228 @@
     "home": "Home",
     "signIn": "Sign in"
   },
-  "form": {
+  "chat": "chat",
+  "chatTpl": {
+    "name": "chat",
+    "title": "Chat",
+    "placeholder": "Type your message...",
+    "empty": "No messages yet. Start a conversation!",
+    "typing": "Typing...",
+    "send": "Send message",
+    "edit": "Edit message",
+    "delete": "Delete message",
+    "save": "Save",
+    "cancel": "Cancel",
+    "clear": "Clear chat",
+    "scrollToBottom": "Scroll to bottom",
+    "input": "Message input",
+    "editMessage": "Edit message",
+    "messages": "Chat messages",
+    "editContent": "Edit content"
+  },
+  "workflow": {
+    "runPanel": {
+      "title": "Runs panel",
+      "run": "Run workflow",
+      "empty": "No workflow available.",
+      "queued": "Queued",
+      "running": "Running",
+      "success": "Success",
+      "error": "Error",
+      "skipped": "Skipped",
+      "cancel_pipe": "Cancel pipeline",
+      "now_stages": "No stages to show.",
+      "cancel_stage": "Cancel stage",
+      "options": "View options",
+      "go_chat": "Go to chat",
+      "artifacts": "Artifacts",
+      "details": "Details",
+      "results": "Results",
+      "auto": "Auto",
+      "params": "Params",
+      "logs": "Logs",
+      "preview": "Preview"
+    },
+    "errors": {
+      "exactlyOneInput": "The workflow must have exactly one Input node.",
+      "exactlyOneResult": "The workflow must have exactly one Result node.",
+      "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
+      "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
+      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
+      "saveFailed": "Failed to save the workflow.",
+      "noDirectInputToResult": "You cannot connect Input directly to Result.",
+      "invalid_fields": "Node has invalid fields",
+      "noCompatibleActions": "No node available"
+    },
     "labels": {
+      "quickAdd": "Connections",
+      "already_dropped": "Existing nodes"
+    }
+  },
+  "compareTpl": {
+    "title": "Document Comparison",
+    "file1": "First Document",
+    "file2": "Second Document",
+    "clear": "Clear All",
+    "clearFile": "Remove File",
+    "fileRequired": "File is required",
+    "uploading": "Uploading file...",
+    "comparing": "Comparing documents...",
+    "start": "Compare Documents",
+    "results": "Comparison Results",
+    "similar": "similar",
+    "added": "Added",
+    "removed": "Removed",
+    "modified": "Modified",
+    "line": "Line",
+    "noDifferences": "No differences found! Documents are identical.",
+    "loadedFiles": "Loaded Documents"
+  },
+  "summarizeTpl": {
+    "title": "Document Summary",
+    "uploadFiles": "Upload Documents",
+    "addMore": "Add More Files",
+    "removeFile": "Remove File",
+    "filesRequired": "At least one file is required",
+    "uploading": "Uploading files...",
+    "processing": "Generating summary...",
+    "start": "Generate Summary",
+    "results": "Summary Results",
+    "keyPoints": "Key Points",
+    "summaryText": "Summary",
+    "wordCount": {
+      "original": "Original Words",
+      "summary": "Summary Words",
+      "reduction": "Reduction"
+    },
+    "statistics": "Statistics",
+    "sourceFiles": "Source Documents",
+    "processedIn": "Processed in",
+    "clear": "Clear All",
+    "newSummary": "New Summary",
+    "options": "Summary Options",
+    "length": "Summary Length",
+    "style": "Summary Style",
+    "language": "Language",
+    "selectLength": "Select length",
+    "selectStyle": "Select style",
+    "selectLanguage": "Select language",
+    "lengths": {
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Detailed"
+    },
+    "styles": {
+      "bullets": "Bullet Points",
+      "paragraph": "Paragraph",
+      "executive": "Executive Summary"
+    },
+    "copy": "Copy to Clipboard",
+    "copied": "Copied!",
+    "exportPdf": "Export as PDF",
+    "exportDocx": "Export as DOCX",
+    "exportTxt": "Export as TXT",
+    "exportSuccess": {
+      "copy": "Summary copied to clipboard!",
+      "pdf": "Summary exported as PDF successfully!",
+      "docx": "Summary exported as DOCX successfully!",
+      "txt": "Summary exported as TXT successfully!"
+    },
+    "exportError": {
+      "pdf": "Failed to export PDF. Please try again.",
+      "docx": "Failed to export DOCX. Please try again.",
+      "txt": "Failed to export TXT. Please try again."
+    }
+  },
+  "exportTpl": {
+    "exporting": "Exporting Document...",
+    "stages": {
+      "initializing": "Initializing export...",
+      "preparing": "Preparing document...",
+      "capturing": "Capturing screenshot...",
+      "processing": "Processing content...",
+      "formatting": "Formatting document...",
+      "embedding": "Embedding images...",
+      "adding_content": "Adding content...",
+      "adding_keypoints": "Adding key points...",
+      "building_document": "Building document structure...",
+      "creating_file": "Creating file...",
+      "finalizing": "Finalizing...",
+      "saving": "Saving file...",
+      "copying": "Copying to clipboard...",
+      "complete": "Export complete!"
+    },
+    "success": {
+      "pdf": "PDF exported successfully!",
+      "docx": "Word document exported successfully!",
+      "txt": "Text file exported successfully!",
+      "copy": "Content copied to clipboard!"
+    },
+    "error": {
+      "pdf": "Failed to export PDF",
+      "docx": "Failed to export Word document",
+      "txt": "Failed to export text file",
+      "copy": "Failed to copy to clipboard"
+    }
+  },
+  "extractTpl": {
+    "title": "Entity Extraction",
+    "uploadFiles": "Upload Files",
+    "options": "Extraction Options",
+    "text": "Text Input",
+    "textPlaceholder": "Enter or paste text to extract entities from...",
+    "entities": "Entity Types",
+    "entitiesPlaceholder": "person, organization, location, date, email",
+    "entitiesHelper": "Enter entity types separated by commas",
+    "entitiesRequired": "At least one entity type is required",
+    "format": "Output Format",
+    "selectFormat": "Select output format",
+    "uploading": "Uploading files...",
+    "processing": "Extracting entities...",
+    "start": "Extract Entities",
+    "clear": "Clear All",
+    "exportPdf": "Export as PDF",
+    "exportDocx": "Export as DOCX",
+    "exportTxt": "Export as TXT",
+    "noFilesOrText": "Please upload files or enter text",
+    "noEntities": "Please specify entity types",
+    "uploadError": "Failed to upload file",
+    "extractionError": "Extraction failed",
+    "filesRequired": "At least one file or text is required"
+  },
+  "extractResult": {
+    "title": "Extraction Results",
+    "details": "Extraction Details",
+    "status": "Status",
+    "totalEntities": "Total Entities",
+    "filesProcessed": "Files Processed",
+    "entityTypes": "Entity Types",
+    "sourceText": "Source Text",
+    "noEntitiesFound": "No entities found",
+    "viewContext": "View Context",
+    "exportResults": "Export Results",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "form": {
+    "files": {
+      "count": "{{count}} Files"
+    },
+    "actions": {
+      "browse": "Browse Files",
+      "addFiles": "Add files",
+      "clear": "Empty",
+      "remove": "Delete",
+      "replaceFile": "Replace file",
+      "dropHere": "Drop files here",
+      "dropFilesHere": "Drop files here (or click to browse)",
+      "or": "or"
+    },
+    "labels": {
+      "files": "Files",
+      "file": "File",
       "input": "Text",
       "email": "Email",
       "password": "Password",
@@ -93,9 +351,12 @@
       "price": "Price",
       "themeSwitcher": "Theme",
       "language": "Language",
-      "textarea": "Textarea"
+      "textarea": "Textarea",
+      "name": "Name",
+      "threshold": "Threshold"
     },
     "placeholders": {
+      "file": "Upload file(s)",
       "input": "Enter text",
       "email": "Enter your email",
       "password": "Enter your password",
@@ -108,22 +369,53 @@
       "phone": "Enter your phone number",
       "fullname": "Enter the full name",
       "price": "Enter the price",
-      "textarea": "Write your text..."
+      "textarea": "Write your text...",
+      "name": "Name...",
+      "threshold": "Threshold ..."
     },
     "hints": {
+      "file": "Select a File",
       "input": "Free text",
       "email": "Must be a valid email address",
       "password": "At least 8 characters, including a number",
       "notify": "Receive alerts and notifications",
       "role": "User role in the app",
       "volume": "Adjust between 0 and 200",
+      "threshold": "Adjust between 0 and 100",
       "dob": "Format: YYYY-MM-DD",
       "tags": "Separate with commas",
       "country": "Your current country of residence",
       "phone": "Include country code",
-      "textarea": "Max {{max}} characters."
+      "textarea": "Max {{max}} characters.",
+      "dropAccepted": "Accepted: {{types}}"
     },
     "errors": {
+      "fixFields": "Please fix the highlighted fields.",
+      "prompt": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "name": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "fullname": {
+        "required": "Field is required.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
+      },
+      "file": {
+        "accept": "Field only accepts the following types: {{requiredTypes}}.",
+        "required": "Field is required.",
+        "maxFiles": "Maximum {{requiredLength}} file(s) allowed (you selected {{actualLength}}).",
+        "maxFileSize": "Maximum file size {{requiredLength}} allowed.",
+        "maxTotalSize": "Maximum total size {{requiredLength}} allowed."
+      },
       "input": {
         "required": "Field is required.",
         "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
@@ -180,6 +472,9 @@
         "required": "Tags are required.",
         "invalid": "Select a tag.",
         "minOne": "Please select at least one."
+      },
+      "threshold": {
+        "required": "Threshold is required."
       },
       "textarea": {
         "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}}).",

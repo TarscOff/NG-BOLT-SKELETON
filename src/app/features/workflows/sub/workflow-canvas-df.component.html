@@ -1,0 +1,93 @@
+<div class="flex flex-wrap workflow-zone">
+  <app-dynamic-form class="form" [config]="fieldConfig" [form]="form"></app-dynamic-form>
+    <button mat-fab extended class="run-panel-btn" color="warn" (click)="toggleRunPanel()"
+    [attr.aria-expanded]="showRunPanel()" matTooltip="{{showRunPanel() ? 'close' : 'open' }}">
+    <mat-icon>{{ showRunPanel() ? 'visibility_off' : 'visibility' }}</mat-icon>
+    {{"run-panel" | translate}}
+  </button>
+
+  <button mat-fab extended class="palette-toggle" color="primary" (click)="showPalette.set(!showPalette())"
+    [attr.aria-expanded]="showPalette()" matTooltip="{{showPalette() ? 'close' : 'open' }}">
+    <mat-icon>{{ showPalette() ? 'close' : 'apps' }}</mat-icon>
+    {{"toolbox" | translate}}
+  </button>
+
+  @if (availableActionsSig().length) {
+  <div class="pxs-wf-palette overlay" [class.hidden]="!showPalette()" cdkDropList [cdkDropListSortingDisabled]="true"
+    [cdkDropListConnectedTo]="[canvasList]" [cdkDropListData]="availableActionsSig()">
+
+    <div class="pxs-wf-palette-items flex flex-col" #paletteHost>
+      @for (a of availableActionsSig(); track a.type) {
+      <button mat-flat-button class="pxs-wf-pill {{a.params?.['class']?? 'primary'}}" cdkDrag [cdkDragData]="a"
+        [disabled]="disabledSig()" cdkDragRootElement=".pxs-wf-pill" (cdkDragStarted)="isPaletteDragging.set(true)"
+        (cdkDragEnded)="isPaletteDragging.set(false)">
+        <mat-icon>{{a.params?.["icon"] ?? null}}</mat-icon>{{ a.type | translate }}
+        <ng-template cdkDragPreview>
+          <button mat-flat-button class="pxs-wf-pill preview">
+            <mat-icon>{{a.params?.["icon"] ?? null}}</mat-icon>{{ a.type | translate }}
+          </button>
+        </ng-template>
+        <ng-template cdkDragPlaceholder>
+          <div class="pxs-wf-pill placeholder"></div>
+        </ng-template>
+      </button>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Canvas wrapper is the drop target -->
+  <div class="pxs-wf-canvas-wrap">
+    <ng-draw-flow #flowEl #flow class="pxs-wf-canvas" [ngModel]="dfModel()" (ngModelChange)="onModelChange($event)"
+      (nodeSelected)="onNodeSelected($event)" (nodeMoved)="onNodeMoved($event)"
+      (connectionCreated)="onConnectionCreated($event)" (connectionDeleted)="onConnectionDeleted($event)"
+      (connectionSelected)="onConnectionSelected($event)" (scale)="onScale($event)" (nodeDeleted)="onDeleteNode($event.target.id)"
+      cdkDropList #canvasList="cdkDropList" [cdkDropListDisabled]="!isPaletteDragging()" [cdkDropListData]="{}"
+      (cdkDropListDropped)="onDrop($any($event))">
+    </ng-draw-flow>
+    <p>{{ 'workflow_help' | translate }}</p>
+
+    <span cdkOverlayOrigin #qaOrigin="cdkOverlayOrigin"
+      style="position: fixed; width: 0; height: 0; pointer-events: none;" [style.left.px]="qaClient?.x || 0"
+      [style.top.px]="qaClient?.y || 0">
+    </span>
+
+    <ng-template cdkConnectedOverlay [cdkConnectedOverlayOpen]="quickAddOpen" [cdkConnectedOverlayOrigin]="qaOrigin"
+      [cdkConnectedOverlayHasBackdrop]="true" (backdropClick)="quickAddOpen=false" (detach)="quickAddOpen=false"
+      [cdkConnectedOverlayPositions]="[
+      {originX:'end', originY:'center', overlayX:'start', overlayY:'center'},
+      {originX:'start', originY:'center', overlayX:'end', overlayY:'center'}
+      ]">
+      <div class="quick-add">
+        <div class="quick-title">{{ 'workflow.labels.quickAdd' | translate }}</div>
+
+        <button *ngFor="let a of quickAddItems" class="quick-item primary" mat-button (click)="pickQuickAction(a)">
+          <mat-icon *ngIf="a.icon">{{a.icon}}</mat-icon>
+          <span>{{ a.label | translate }}</span>
+        </button>
+
+        <button mat-button [matMenuTriggerFor]="menu" class="quick-item accent">
+          <mat-icon>more_vert</mat-icon>
+          <span>{{"workflow.labels.already_dropped" | translate}}</span>
+        </button>
+
+        <mat-menu #menu="matMenu" xPosition="after">
+          <button mat-menu-item *ngFor="let n of existingTargets" (click)="linkToExisting(n.id)">
+            <mat-icon *ngIf="n.icon">{{ n.icon }}</mat-icon>
+            <span>{{ n.label | translate}}</span>
+          </button>
+
+          <button mat-menu-item disabled *ngIf="!existingTargets.length">
+            <mat-icon>info</mat-icon>
+            <span>{{ 'workflow.errors.noCompatibleActions' | translate }}</span>
+          </button>
+        </mat-menu>
+
+        <div *ngIf="!quickAddItems.length" class="quick-empty">
+          {{ 'workflow.errors.noCompatibleActions' | translate }}
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

@@ -1,0 +1,105 @@
+<div [class]="getMessageClasses()">
+  @if (shouldShowAvatar()) {
+    <div class="message-avatar">
+      @if (message.sender.avatar) {
+        <img [src]="message.sender.avatar" [alt]="message.sender.name" />
+      } @else {
+        <div class="avatar-placeholder">
+          {{ getAvatarText() }}
+        </div>
+      }
+    </div>
+  }
+
+  <div class="message-content-wrapper">
+    @if (!isSystem()) {
+      <div class="message-header">
+        <span class="message-sender">{{ message.sender.name }}</span>
+        @if (shouldShowTimestamp()) {
+          <span class="message-timestamp">
+            {{ message.timestamp | date: 'short' }}
+            @if (message.edited) {
+              <span class="edited-badge" [matTooltip]="'chatTpl.edited' | translate">
+                ({{ 'chatTpl.edited' | translate }})
+              </span>
+            }
+          </span>
+        }
+      </div>
+    }
+
+    <div class="message-content">
+      @if (!isEditing()) {
+        @if (shouldRenderCode()) {
+          <pre><code>{{ message.content }}</code></pre>
+        } @else if (shouldRenderMarkdown()) {
+          <div class="markdown-content" [innerHTML]="message.content"></div>
+        } @else if (shouldRenderPlainText()) {
+          <p>{{ message.content }}</p>
+        }
+      } @else {
+        <div class="edit-form">
+          <app-dynamic-form 
+            [config]="editFieldConfig" 
+            [form]="editForm"
+            (keydown.enter)="onEditKeyDown($any($event))"
+            (keydown.escape)="cancelEdit()"
+            (keydown.delete)="$event.stopPropagation()"
+            (keydown.backspace)="$event.stopPropagation()"
+            (pointerdown)="$event.stopPropagation()"
+            (mousedown)="$event.stopPropagation()"
+            (touchstart)="$event.stopPropagation()"
+          />
+        </div>
+      }
+    </div>
+
+    @if (canEdit() || canDelete()) {
+      <div class="message-actions">
+        @if (!isEditing()) {
+          @if (canEdit()) {
+            <button
+              mat-icon-button
+              [matTooltip]="'chatTpl.edit' | translate"
+              (click)="startEdit()"
+              class="primary"
+              color="primary"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+          @if (canDelete()) {
+            <button
+              mat-icon-button
+              [matTooltip]="'chatTpl.delete' | translate"
+              (click)="onDelete()"
+              class="primary"
+              color="warn"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        } @else {
+          <button
+            mat-icon-button
+            [matTooltip]="'chatTpl.save' | translate"
+            [disabled]="!editForm.valid || !editForm.get('editContent')?.value?.trim()"
+            (click)="saveEdit()"
+            class="action-btn save-btn"
+            color="primary"
+          >
+            <mat-icon>check</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            [matTooltip]="'chatTpl.cancel' | translate"
+            (click)="cancelEdit()"
+            class="action-btn cancel-btn"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+    }
+  </div>
+</div>

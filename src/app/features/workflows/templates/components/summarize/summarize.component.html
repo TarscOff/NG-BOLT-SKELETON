@@ -1,0 +1,118 @@
+<div class="summarize-container">
+    <app-export-overlay-tpl />
+
+    <!-- Header -->
+    <div class="summarize-header">
+        <div class="summarize-header-info">
+            <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">summarize</mat-icon>
+            <span class="summarize-title">{{ 'summarizeTpl.title' | translate }}</span>
+        </div>
+        <div class="result-actions">
+            @if (result$()) {
+            <!-- Export Actions -->
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'pdf', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
+                matTooltip="{{ 'summarizeTpl.exportPdf' | translate }}">
+                <mat-icon>picture_as_pdf</mat-icon>
+            </button>
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'docx', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
+                matTooltip="{{ 'summarizeTpl.exportDocx' | translate }}">
+                <mat-icon>description</mat-icon>
+            </button>
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'txt', result: result$()! })"
+                [disabled]="(exportService.isExporting$ | async)"
+                matTooltip="{{ 'summarizeTpl.exportTxt' | translate }}">
+                <mat-icon>notes</mat-icon>
+            </button>
+            <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+                (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
+                <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+            </button>
+            @if (!isPreloadedMode$()) {
+                <button mat-icon-button [matTooltip]="'summarizeTpl.clear' | translate" (click)="clearAll()"
+                    [disabled]="!isUploading$() && !isSummarizing$() &&  !(formFiles.get('files')?.value || formOptions.get('length')?.value || formOptions.get('style')?.value || formOptions.get('language')?.value)"
+                    [color]="(isDark$ | async) ? 'neutral' : 'accent'">
+                    <mat-icon>clear_all</mat-icon>
+                </button>
+            }
+        }
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    @if (!result$()) {
+    <div class="summarize-upload-section">
+        <!-- File Upload -->
+        <div class="upload-area">
+            <div class="section-header">
+                <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">upload_file</mat-icon>
+                <span class="section-title">{{ 'summarizeTpl.uploadFiles' | translate }}</span>
+            </div>
+
+            <app-dynamic-form [form]="formFiles" [config]="configFiles" />
+        </div>
+
+        <!-- Options -->
+        @if (!isPreloadedMode$()) {
+        <div class="options-area">
+            <div class="section-header">
+                <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">settings</mat-icon>
+                <span class="section-title">{{ 'summarizeTpl.options' | translate }}</span>
+            </div>
+
+            <app-dynamic-form [form]="formOptions" [config]="configOptions" />
+        </div>
+        }
+    </div>
+
+    <!-- Progress Section -->
+    @if ((isUploading$() || isSummarizing$())) {
+    <div class="summarize-progress-section">
+        @if (isUploading$()) {
+        <div class="progress-info">
+            <span class="progress-label">{{ 'summarizeTpl.uploading' | translate }}</span>
+            <span class="progress-value">{{ uploadProgress$() }}%</span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="uploadProgress$()" color="primary" />
+        }
+
+        @if (isSummarizing$()) {
+        <div class="progress-info">
+            <span class="progress-label">{{ 'summarizeTpl.processing' | translate }}</span>
+            <span class="progress-value">{{ summarizeProgress$() }}%</span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="summarizeProgress$()" color="accent" />
+        }
+    </div>
+    }
+
+    <!-- Summarize Action -->
+    @if (!isPreloadedMode$()) {
+    <div class="summarize-action">
+        <button mat-flat-button class="primary"
+            [disabled]="!(formFiles.valid && formOptions.valid) && !isSummarizing$() && !isUploading$()"
+            (click)="triggerSummarize()" class="summarize-btn">
+            @if (isSummarizing$()) {
+            <mat-icon class="spinner-icon">
+                <span class="material-icons rotating">sync</span>
+            </mat-icon>
+            } @else {
+            <mat-icon>auto_awesome</mat-icon>
+            }
+            <span>{{ (isSummarizing$() ? 'summarizeTpl.processing' : 'summarizeTpl.start') | translate }}</span>
+        </button>
+    </div>
+    }
+    }
+
+    <!-- Results Section -->
+    @if (result$()) {
+    <div class="summarize-results-section">
+        <app-summary-result-tpl [result]="result$()!" [showDetails]="true" #summaryResultContainer />
+    </div>
+    }
+</div>

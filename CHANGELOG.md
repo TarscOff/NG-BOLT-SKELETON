@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.2...v1.9.4) (2025-11-03)
+
+
+### Features
+
+* **templating:** creating workflows dynanic templates ([de351f3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/de351f34bfe79113b6ff687ef632bdb1419f9af9))
+* **templating:** creating workflows dynanic templates + refactoring code ([c3b251a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c3b251aad093c62efcb75401c06da27bf35e2d19))
+
+### [1.9.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.2...v1.9.3) (2025-11-03)
+
+
+### Features
+
+* **templating:** creating workflows dynanic templates ([de351f3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/de351f34bfe79113b6ff687ef632bdb1419f9af9))
+* **templating:** creating workflows dynanic templates + refactoring code ([c3b251a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c3b251aad093c62efcb75401c06da27bf35e2d19))
+
+### [1.9.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.0...v1.9.2) (2025-10-20)
+
+
+### Features
+
+* **workflows:** workflow builder instance ([c314382](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c314382e79d099206f2f655836b7ca1f1ad40c70))
+* **workflows:** workflow builder instance ([4c6d09a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/4c6d09acb7a1ad7e207b78efd606b59a605a3517))
+* **wortkflow:** dynamic entrypoints enabled ([6f88d64](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/6f88d649c2499c346e08e1693b4247f3499334f4))
+* **wortkflow:** dynamic entrypoints enabled ([e81e562](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/e81e56224bc4851b870ea4098c860121ad98a593))
+* **wortkflow:** dynamic entrypoints enabled ([325d284](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/325d28470cf48b13521bd7fbcd25afe4765c7487))
+* **wortkflow:** dynamic entrypoints enabled ([36dd9d5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/36dd9d53f48e51aac777e9b1943bfd1dfff69288))
+* **wortkflow:** dynamic entrypoints enabled ([2461a5d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2461a5dbd26419129de12533e182f87a589791e1))
+* **wortkflow:** dynamic workflow builder ([51af30c](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/51af30ce14b30b73ba633283c49c88774eaa634f))
+
+
+### Bug Fixes
+
+* **workflows:** workflows fix ([29c7cc9](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/29c7cc94f8665433d61ca989114b032b34802279))
+
+### [1.9.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.0...v1.9.1) (2025-10-20)
+
+
+### Features
+
+* **workflows:** workflow builder instance ([c314382](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c314382e79d099206f2f655836b7ca1f1ad40c70))
+* **workflows:** workflow builder instance ([4c6d09a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/4c6d09acb7a1ad7e207b78efd606b59a605a3517))
+* **wortkflow:** dynamic entrypoints enabled ([6f88d64](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/6f88d649c2499c346e08e1693b4247f3499334f4))
+* **wortkflow:** dynamic entrypoints enabled ([e81e562](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/e81e56224bc4851b870ea4098c860121ad98a593))
+* **wortkflow:** dynamic entrypoints enabled ([325d284](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/325d28470cf48b13521bd7fbcd25afe4765c7487))
+* **wortkflow:** dynamic entrypoints enabled ([36dd9d5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/36dd9d53f48e51aac777e9b1943bfd1dfff69288))
+* **wortkflow:** dynamic entrypoints enabled ([2461a5d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2461a5dbd26419129de12533e182f87a589791e1))
+
+
+### Bug Fixes
+
+* **workflows:** workflows fix ([29c7cc9](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/29c7cc94f8665433d61ca989114b032b34802279))
+
 ## [1.9.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.5.0...v1.9.0) (2025-09-12)
 
 

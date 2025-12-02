@@ -1,0 +1,130 @@
+.run-panel {
+    --c-muted: #cfd8dc;
+    --c-fg: #263238;
+    --c-bg: #ffffff;
+
+    --c-queued: var(--mat-neutral);
+    --c-running: rgb(23, 105, 206);
+    --c-ok: var(--mat-success);
+    --c-err: var(--mat-accent);
+    --c-skip: var(--mat-warn);
+
+    --node-radius: 30px;
+    --node-pad-y: 8px;
+    --node-pad-x: 10px;
+    --gap-y: 10px;
+
+    color: var(--c-fg);
+}
+
+:host-context(.dark) .run-panel {
+    --c-bg: #0f1115;
+    --c-fg: #e3eaf1;
+    --c-muted: #33424e;
+
+    --c-queued: var(--mat-neutral);
+    --c-running: rgb(23, 105, 206);
+    --c-ok: var(--mat-success);
+    --c-err: var(--mat-accent);
+    --c-skip: var(--mat-warn);
+}
+
+
+.run-panel {
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--md-sys-color-surface);
+    border: 2px solid var(--mat-primary);
+    min-width: 600px;
+    box-shadow:0 6px 24px rgba(0,0,0,.08);
+    &.is-selected {
+        outline: 2px solid #42a5f5;
+        outline-offset: 5px;
+    }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex: 2;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    button:not(:last-child) {
+        margin: 0 8px;
+    }
+}
+
+.title {
+    font-weight: 600;
+    color: var(--mat-primary, #fff);
+}
+
+.empty {
+    margin-top: 15px;
+}
+
+.ml-2 {
+    margin-left: .5rem;
+}
+
+.hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+.legend {
+    display: inline-flex;
+    gap: 10px;
+    font-size: 16px;
+    color: #607d8b;
+    margin: 30px 0;
+}
+
+.legend .lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend .lg i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend .lg-queued i {
+    background: var(--c-queued);
+}
+
+.legend .lg-running i {
+    background: var(--c-running);
+}
+
+.legend .lg-success i {
+    background: var(--c-ok);
+}
+
+.legend .lg-error i {
+    background: var(--c-err);
+}
+
+.legend .lg-skipped i {
+    background: var(--c-skip);
+}

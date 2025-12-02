@@ -1,0 +1,75 @@
+<div class="chat-page-container">
+  <!-- Page Header 
+  <div class="page-header">
+    <div class="header-content">
+      <h1>{{ pageTitle() | translate }}</h1>
+      @if (pageDescription()) {
+        <p class="page-description">{{ pageDescription() | translate }}</p>
+      }
+    </div>
+    
+  </div> -->
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="64"></mat-spinner>
+      <p>{{ 'chat.loading' | translate }}</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @else if (error()) {
+    <div class="error-state">
+      <mat-icon color="warn">error</mat-icon>
+      <h3>{{ 'chat.error.title' | translate }}</h3>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Templates Content -->
+  @else if (enabledTemplates().length > 0) {
+    <div class="templates-container">
+      <!-- Single Template (No Tabs) -->
+      @if (enabledTemplates().length === 1) {
+        <app-template-loader
+          [config]="enabledTemplates()[0]"
+          (templateError)="onTemplateError($event)"
+        />
+      }
+
+      <!-- Multiple Templates (Tabs) -->
+      @else {
+        <mat-tab-group 
+          [selectedIndex]="selectedTabIndex()"
+          (selectedIndexChange)="selectedTabIndex.set($event)"
+          animationDuration="300ms"
+          class="templates-tabs">
+          @for (template of enabledTemplates(); track trackByTemplateId($index, template)) {
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <span>{{ template.type | translate }}</span>
+              </ng-template>
+
+              <div class="tab-content">
+                <app-template-loader
+                  [config]="template"
+                  (templateError)="onTemplateError($event)"
+                />
+              </div>
+            </mat-tab>
+          }
+        </mat-tab-group>
+      }
+    </div>
+  }
+
+  <!-- No Templates -->
+  @else {
+    <div class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <h3>{{ 'chat.noTemplates.title' | translate }}</h3>
+      <p>{{ 'chat.noTemplates.description' | translate }}</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,11 @@
+<!-- SEO -->
+<app-seo [pageTitle]="'nav.genai-workflows' | translate"
+    [description]="'This is the workflow builder of the AI product app.'" [keywords]="'workflows, workflow builder, ai'"
+    (titleChange)="onTitleChange($event)">
+</app-seo>
+
+
+<section>
+    <app-workflow-canvas-df [nodes]="nodes" [executableNodes]="ExecNodes" [edges]="edges" [actionsNodes]="actionsNodes"
+        [availableActions]="availableActions" (OnCanvasChange)="onChange($any($event))"></app-workflow-canvas-df>
+</section>

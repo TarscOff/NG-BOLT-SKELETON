@@ -1,0 +1,28 @@
+<div class="chat-input-container">
+  <div class="chat-input-form" (keydown)="onKeyDown($event)" tabindex="0" role="region"
+    aria-label="Chat input container">
+    @if (enableAttachments) {
+      <!-- COMPLETE UPLOAD FILE -->
+    }
+    <app-dynamic-form [config]="fieldConfig" [form]="form" (keydown.delete)="$event.stopPropagation()"
+      (keydown.backspace)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()"
+      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()" />
+  </div>
+
+  <div class="chat-input-actions">
+    <button mat-icon-button color="primary" [disabled]="!canSend()" [matTooltip]="'chatTpl.send' | translate"
+      (click)="onSend()" [attr.aria-label]="'chatTpl.send' | translate" class="send-button">
+      @if (loading) {
+      <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+      <mat-icon>send</mat-icon>
+      }
+    </button>
+  </div>
+
+  @if (isOverLimit()) {
+  <div class="character-limit-warning">
+    {{ 'form.errors.textarea.maxlength' | translate: { requiredLength: maxLength } }}
+  </div>
+  }
+</div>
