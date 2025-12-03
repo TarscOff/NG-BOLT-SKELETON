@@ -33,7 +33,13 @@ stages:
   condition: and(
       succeeded(),
       eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
-      ne(variables['Build.Reason'], 'PullRequest')
+      ne(variables['Build.Reason'], 'PullRequest'),
+      not(
+        or(
+          startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'),
+          startsWith(variables['Build.SourceVersionMessage'], 'docs(release):')
+        )
+      )
     )
   jobs:
     - job: release_job
@@ -66,7 +72,7 @@ stages:
             npm ci
 
             echo "Running npm run release:patch:nopush on develop"
-            npm run release:patch:nopush
+            npm run release:minor:nopush
 
             # Push branch + tags manually
             BRANCH_REF="$BUILD_SOURCEBRANCH"          # e.g. refs/heads/develop

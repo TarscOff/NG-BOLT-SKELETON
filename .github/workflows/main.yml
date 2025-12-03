@@ -16,13 +16,17 @@ env:
   CR_REGISTRY: ghcr.io
 
 jobs:
-# ---------- Auto release on develop (patch bump) ----------
+  # ---------- Auto release on develop (patch bump) ----------
   auto_release_develop:
     runs-on: ubuntu-latest
-    # Only on develop, and skip if this push is already a release commit
-    if: github.ref == 'refs/heads/develop'
     permissions:
       contents: write
+
+    env:
+      SHOULD_RELEASE: ${{ github.event_name == 'push'
+        && github.ref == 'refs/heads/develop'
+        && !startsWith(github.event.head_commit.message, 'chore(release):')
+        && !startsWith(github.event.head_commit.message, 'docs(release):') }}
 
     steps:
       - name: Checkout
@@ -30,12 +34,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Show release decision
+        run: |
+          echo "SHOULD_RELEASE=${SHOULD_RELEASE}"
+
       - name: Setup Node
+        if: env.SHOULD_RELEASE == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        if: env.SHOULD_RELEASE == 'true'
         env:
           AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
         run: |
@@ -51,22 +61,25 @@ jobs:
           fi
 
       - name: Install dependencies
+        if: env.SHOULD_RELEASE == 'true'
         run: npm ci
 
       - name: Configure git identity & remote
+        if: env.SHOULD_RELEASE == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "Build Bot"
           git config user.email "build-bot@ci"
-          # Make sure pushes use the token
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
       - name: Run patch release on develop (no push)
+        if: env.SHOULD_RELEASE == 'true'
         run: |
           npm run release:patch:nopush
 
       - name: Push branch and tags
+        if: env.SHOULD_RELEASE == 'true'
         run: |
           set -euo pipefail
           BRANCH_NAME="${GITHUB_REF_NAME}"   # 'develop'
