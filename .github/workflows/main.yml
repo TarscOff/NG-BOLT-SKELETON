@@ -76,7 +76,7 @@ jobs:
       - name: Run patch release on develop (no push inside script)
         if: env.SHOULD_RELEASE == 'true'
         run: |
-          npm run release:patch:nopush -- -m "chore-release: v%s – bump version"
+          npm run release:patch:nopush
 
       - name: Push branch and tags
         if: env.SHOULD_RELEASE == 'true'
@@ -97,18 +97,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # 🔁 Sync to latest remote HEAD (so we see the bumped package.json)
-      - name: Sync to latest branch HEAD
-        run: |
-          set -euo pipefail
-          BRANCH_NAME="${GITHUB_REF_NAME}"
-          echo "Syncing to origin/${BRANCH_NAME}"
-          git fetch origin "${BRANCH_NAME}"
-          git checkout -B "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
-          echo "Current HEAD after sync:"
-          git log -1 --oneline
-
+          
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
