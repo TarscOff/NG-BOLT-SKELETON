@@ -36,7 +36,7 @@ stages:
       ne(variables['Build.Reason'], 'PullRequest'),
       not(
         or(
-          startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'),
+          startsWith(variables['Build.SourceVersionMessage'], 'chore(release):')
         )
       )
     )
