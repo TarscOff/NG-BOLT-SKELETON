@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.11.2...v1.11.3) (2025-12-03)
+
 ### [1.11.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.11.1...v1.11.2) (2025-12-03)
 
 ### [1.11.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.5...v1.11.1) (2025-12-03)

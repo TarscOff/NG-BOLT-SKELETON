@@ -43,6 +43,30 @@ csp_test:
 
 > In deployment (Kubernetes, App Service, etc.), pass the same env vars to the container.
 
+
+
+## 6. Troubleshooting tips
+
+### 6.1 `npm ci` fails with `E401 Unable to authenticate`
+
+- Ensure the Azure DevOps PAT has **Packaging / Read**.
+- Confirm the PAT is correctly configured:
+  - **Azure DevOps**: via `npmAuthenticate@0` + `.npmrc` without hard-coded PAT.
+  - **GitHub**: `AZURE_ARTIFACT_PAT` secret is set and appended to `.npmrc`.
+
+### 6.2 Docker image not found in CSP test
+
+- Check the tag used in `csp_test` matches the tag created in `docker_build`:
+  - `<safe-branch>-<version>` and `latest-<safe-branch>`.
+- Ensure the registry (GHCR) login succeeded in the build job.
+
+### 6.3 CSP test fails
+
+- Verify that the config file for the branch contains valid `auth.url` and `apiUrl` values.
+- Check the container logs: `docker logs <container_id>`.
+- Ensure `jq` and `curl` are installed in the test job runner.
+
+
 ## 🧑‍💻 Author
 
 **Angular Product Skeleton**  

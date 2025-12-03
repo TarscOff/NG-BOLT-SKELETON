@@ -360,8 +360,10 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 - [[✅] - Smart Tables](./README-SMARTABLES.md)
 - [[✅] - WorkflowBuilder Flow Designer](./README-WORKFLOWBUILDER.md)
 - [[✅] - Charts](./README-CHARTS.md)
-- [[🟡] - CI/CD](./README-CI-CD.md)
-- [[✅] - Contribution Guide](./CONTRIBUTING.md)
+- [[🟡] - CSP](./README-CSP.md)
+- [[✅] - GIT](./README-GIT.md)
+- [[✅] - Contribution Guide](./README-CONTRIBUTING.md)
+- [[✅] - NGRX Contribution Guide](./README-CONTRIBUTING.NGRX.md)
 
 
 
