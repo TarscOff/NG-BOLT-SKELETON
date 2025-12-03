@@ -37,7 +37,6 @@ stages:
       not(
         or(
           startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'),
-          startsWith(variables['Build.SourceVersionMessage'], 'docs(release):')
         )
       )
     )
@@ -95,11 +94,35 @@ stages:
   - job: build
     displayName: 'Build Angular & Docker'
     steps:
+      # Explicit checkout with credentials so subsequent git fetch works
+      - checkout: self
+        persistCredentials: true
+
+      # 0) Sync repo to latest remote HEAD (includes bumped version)
+      - script: |
+          set -euo pipefail
+
+          git config --global http.https://dev.azure.com/.extraheader "AUTHORIZATION: bearer $(System.AccessToken)"
+          git config --global safe.directory $(Build.SourcesDirectory)
+
+          BRANCH_REF="$(Build.SourceBranch)"         # refs/heads/develop
+          BRANCH_NAME="${BRANCH_REF#refs/heads/}"    # develop
+
+          echo "Syncing to latest remote HEAD of $BRANCH_NAME"
+          git fetch origin "$BRANCH_NAME"
+          git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
+
+          echo "Current HEAD:"
+          git log -1 --oneline
+        displayName: 'Sync repo to latest branch HEAD'
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
       # 1) Authenticate to Azure Artifacts npm feed based on repo .npmrc
       - task: npmAuthenticate@0
         displayName: 'Authenticate to Azure Artifacts (npm)'
         inputs:
-          workingFile: '.npmrc' # your project .npmrc at repo root
+          workingFile: '.npmrc'
 
       # 2) Use Node
       - task: NodeTool@0
