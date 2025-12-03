@@ -76,7 +76,7 @@ jobs:
       - name: Run patch release on develop (no push inside script)
         if: env.SHOULD_RELEASE == 'true'
         run: |
-          npm run release:patch:nopush -- -m "chore(release): v%s – bump version"
+          npm run release:patch:nopush -- -m "chore-release: v%s – bump version"
 
       - name: Push branch and tags
         if: env.SHOULD_RELEASE == 'true'
