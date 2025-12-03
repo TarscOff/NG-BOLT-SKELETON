@@ -1,0 +1,394 @@
+{
+  "version": "1.11.1",
+  "tag": "v1.11.1",
+  "previousTag": "v1.9.374",
+  "date": "2025-12-03T10:26:45.797Z",
+  "stats": {
+    "features": 0,
+    "fixes": 6,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 2,
+    "chores": 4,
+    "tests": 0,
+    "others": 8,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "cc97858",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e3a5a36",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "60897ab",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7eeb763",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cfe1aba",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "14515f6",
+        "type": "fix",
+        "scope": "ci",
+        "subject": "fix ci/cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "2f37e26",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.374",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "623c470",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.10.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "dfc869f",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.11.1",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c954401",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v1.11.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "18c6a19",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.11.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "179bec9",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.10.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "1f03a67",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #24 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bc87808",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #23 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "107b77a",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #22 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f8e8800",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'develop' into feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "172f644",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1867: fix(ci): fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f495272",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1866: fix(ci): fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f325e19",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1865: fix(ci): fix ci/cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "358418c",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1864: fix(ci): fix ci/cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "dfc869f7d0ba49b88832ba160aba32631cc5f29e",
+      "shortHash": "dfc869f",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.11.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1f03a6756b4e7be05529fb793b6b7d67c961859a",
+      "shortHash": "1f03a67",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #24 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "cc97858efd1ce5ccccdaed78f27d99cc11312e09",
+      "shortHash": "cc97858",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bc878086369ac6db134541fbd2f51c837b84454c",
+      "shortHash": "bc87808",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #23 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "e3a5a36be66d17aad51935c4906f438f08267ddf",
+      "shortHash": "e3a5a36",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "107b77a367fd7fc48fa60acf4217acf27cae942c",
+      "shortHash": "107b77a",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #22 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "f8e8800ef00d44f0b808b0e14752aa5eee732921",
+      "shortHash": "f8e8800",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'develop' into feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "60897ab594339b3b5634a168a1ae677b21a8cb5f",
+      "shortHash": "60897ab",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c954401505dd18ae1c271cf0eef4a7a6d6264cab",
+      "shortHash": "c954401",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v1.11.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "18c6a198b0e88debb87fcd1f30f0bc8e95812860",
+      "shortHash": "18c6a19",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.11.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "172f644247fff08eca7b919a9db59331dc47c047",
+      "shortHash": "172f644",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1867: fix(ci): fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "7eeb76306d1e6be184c3896f8dd8f9a12895384c",
+      "shortHash": "7eeb763",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f49527294e9d106eed9e4483db9142e9d39189e0",
+      "shortHash": "f495272",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1866: fix(ci): fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "cfe1aba5957233c42c6ffd5ee7f98a292444d83b",
+      "shortHash": "cfe1aba",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f325e19df75465185e9ae44c6a549b3d3177d5a5",
+      "shortHash": "f325e19",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1865: fix(ci): fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    },
+    {
+      "hash": "14515f65d26e6d31a8b6a993585ba916493ae3d5",
+      "shortHash": "14515f6",
+      "type": "fix",
+      "scope": "ci",
+      "subject": "fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2f37e2676240ab7bf8f6afa5dfb6bc9ea3cba31c",
+      "shortHash": "2f37e26",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.374",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "623c4703fcc770c939b4ab8814f0cadbdb8e2a02",
+      "shortHash": "623c470",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.10.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "179bec9b6ff14d3abb10660350d3e976615ac2c8",
+      "shortHash": "179bec9",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.10.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "358418cb0d93b9307f01df9013c66fa6ef7149d4",
+      "shortHash": "358418c",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1864: fix(ci): fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    }
+  ]
+}

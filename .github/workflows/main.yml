@@ -1,124 +1,151 @@
-stages:
-  - build
-  - dockerize
-  - test
-  - tag
+name: Starter CI
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+on:
+  push:
+    branches: [ main, develop, staging, uat ]
+  pull_request:
+    branches: [ main, develop, staging, uat ]
 
-build_app:
-  image: node:20
-  stage: build
-  before_script:
-    # Azure Artifacts PAT stored as GitLab CI variable AZURE_ARTIFACTS_PAT
-    - |
-      if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
-        echo "//pkgs.dev.azure.com/cadai/:_authToken=$AZURE_ARTIFACTS_PAT" > ~/.npmrc
-        echo "always-auth=true" >> ~/.npmrc
-      fi
-  script:
-    - npm ci
-    - npm run lint
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
-        echo "Using PROD config"
-        cp public/assets/config.prod.json public/assets/config.json
-        NG_CONFIG="production"
-      elif [[ "$CI_COMMIT_BRANCH" == "uat" ]]; then
-        echo "Using UAT config"
-        cp public/assets/config.uat.json public/assets/config.json
-        NG_CONFIG="uat"
-      else
-        echo "Using DEV config"
-        cp public/assets/config.dev.json public/assets/config.json
-        NG_CONFIG="development"
-      fi
+permissions:
+  contents: write
+  packages: write
 
-      echo "Building Angular with configuration: $NG_CONFIG"
-      npm run build -- --configuration=$NG_CONFIG
-  artifacts:
-    paths:
-      - dist/psx-ng-skeleton
-    expire_in: 1 week
+env:
+  NODE_VERSION: '20'
+  PKG_PATH: 'package.json'
+  CR_REGISTRY: ghcr.io
 
-docker_build:
-  image: docker:20
-  stage: dockerize
-  services:
-    - docker:20-dind
-  needs: ["build_app"]
-  script:
-    - apk add --no-cache jq
-    - VERSION=$(jq -r .version package.json)
-    - echo "App version: $VERSION"
+jobs:
+  # ---------- Build + Lint ----------
+  build_app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - echo "Logging into GitLab registry $CI_REGISTRY"
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-    - IMAGE_TAG="$CI_COMMIT_BRANCH-$VERSION"
-    - LATEST_TAG="latest-$CI_COMMIT_BRANCH"
-    - echo "Building $CI_REGISTRY_IMAGE:$IMAGE_TAG and $CI_REGISTRY_IMAGE:$LATEST_TAG"
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
 
-    - docker build \
-        -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" \
-        -t "$CI_REGISTRY_IMAGE:$LATEST_TAG" .
+            echo "Final .npmrc:"
+            cat .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
 
-    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
-    - docker push "$CI_REGISTRY_IMAGE:$LATEST_TAG"
+      - name: Install dependencies & lint
+        run: |
+          npm ci
+          npm run lint
 
-csp_test:
-  image: docker:20
-  stage: test
-  services:
-    - docker:20-dind
-  needs: ["docker_build"]
-  script:
-    - apk add --no-cache jq curl
-    - VERSION=$(jq -r .version package.json)
-    - IMAGE_TAG="$CI_COMMIT_BRANCH-$VERSION"
+  # ---------- Docker build & push (GHCR) ----------
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: build_app
+    if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
 
-    - KC=$(jq -r '.auth.url' public/assets/config.json | sed 's:/*$::')
-    - API=$(jq -r '.apiUrl' public/assets/config.json)
-    - if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then REPORT=false; else REPORT=true; fi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - docker run -d --rm \
-        -e KEYCLOAK_ORIGIN="$KC" \
-        -e API_ORIGINS="$API" \
-        -e CSP_REPORT_ONLY="$REPORT" \
-        -p 8081:80 "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-    - sleep 5
-    - curl -sI http://localhost:8081 | grep -i "content-security-policy"
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
 
-tag_release:
-  image: alpine:3.19
-  stage: tag
-  needs: ["docker_build"]
-  only:
-    - main
-  script:
-    - apk add --no-cache git jq nodejs npm
-    # configure git with CI job token so we can push tags
-    - git config --global user.email "build-bot@ci"
-    - git config --global user.name "Build Bot"
-    - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      - name: Install deps & build Angular (with env config)
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
 
-    # read version from package.json
-    - VERSION=$(jq -r .version package.json)
-    - TAG="PXS-NG-STARTER-APP@$VERSION"
-    - echo "Detected version: $VERSION"
-    - echo "Proposed tag:    $TAG"
+          npm ci
 
-    - git fetch --tags
+          echo "Branch: $BRANCH_NAME"
 
-    # skip if tag already exists
-    - |
-      if git rev-parse "$TAG" >/dev/null 2>&1; then
-        echo "Tag $TAG already exists. Nothing to do."
-        exit 0
-      fi
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "Using PROD config"
+            cp public/assets/config.prod.json public/assets/config.json
+            NG_CONFIG="production"
+          elif [ "$BRANCH_NAME" = "uat" ]; then
+            echo "Using UAT config"
+            cp public/assets/config.uat.json public/assets/config.json
+            NG_CONFIG="uat"
+          else
+            echo "Using DEV config"
+            cp public/assets/config.dev.json public/assets/config.json
+            NG_CONFIG="development"
+          fi
 
-    - git tag -a "$TAG" -m "release: $TAG"
-    - git push origin "$TAG"
+          echo "Building Angular with configuration: $NG_CONFIG"
+          npm run build -- --configuration=$NG_CONFIG
+
+          echo "Dist content:"
+          ls -R dist || true
+
+      - name: Read version
+        id: version
+        env:
+          PKG_PATH: ${{ env.PKG_PATH }}
+        run: |
+          VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compute image repo + safe branch
+        id: image_meta
+        run: |
+          # lowercase owner/repo
+          repo="${GITHUB_REPOSITORY,,}"
+          # replace '/' with '-' in branch name
+          safe_branch="${GITHUB_REF_NAME//\//-}"
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "branch=$safe_branch" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.CR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        with:
+          context: .          # contains dist/psx-ng-skeleton we just built
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-${{ env.VERSION }}
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-${{ steps.image_meta.outputs.branch }}  
