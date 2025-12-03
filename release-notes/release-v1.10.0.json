@@ -1,0 +1,68 @@
+{
+  "version": "1.10.0",
+  "tag": "v1.10.0",
+  "previousTag": "v1.9.373",
+  "date": "2025-12-03T09:18:08.672Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 1,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "179bec9",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.10.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "358418c",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1864: fix(ci): fix ci/cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "179bec9b6ff14d3abb10660350d3e976615ac2c8",
+      "shortHash": "179bec9",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.10.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "358418cb0d93b9307f01df9013c66fa6ef7149d4",
+      "shortHash": "358418c",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1864: fix(ci): fix ci/cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ci): fix ci/cd"
+    }
+  ]
+}

@@ -86,6 +86,6 @@ const out = {
 const file = join(process.cwd(), 'release-notes', `release-v${version}.json`);
 writeFileSync(file, JSON.stringify(out, null, 2), 'utf8');
 execSync(`git add "${file}"`, { stdio: 'inherit' });
-execSync(`git commit -m "docs(release): add JSON notes for v${version}"`, { stdio: 'inherit' });
+execSync(`git commit -m "chore(release): add JSON notes for v${version}"`, { stdio: 'inherit' });
 
 console.log('\n🎯 Done. Push with: npm run release:push\n');

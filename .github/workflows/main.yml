@@ -22,11 +22,11 @@ jobs:
     permissions:
       contents: write
 
+    # Decide once per job if we should run the release logic
     env:
       SHOULD_RELEASE: ${{ github.event_name == 'push'
         && github.ref == 'refs/heads/develop'
-        && !startsWith(github.event.head_commit.message, 'chore(release):')
-        && !startsWith(github.event.head_commit.message, 'docs(release):') }}
+        && !startsWith(github.event.head_commit.message, 'chore(release):') }}
 
     steps:
       - name: Checkout
@@ -73,10 +73,10 @@ jobs:
           git config user.email "build-bot@ci"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-      - name: Run patch release on develop (no push)
+      - name: Run patch release on develop (no push inside script)
         if: env.SHOULD_RELEASE == 'true'
         run: |
-          npm run release:patch:nopush
+          npm run release:patch:nopush -- -m "chore(release): v%s – bump version"
 
       - name: Push branch and tags
         if: env.SHOULD_RELEASE == 'true'
@@ -87,7 +87,7 @@ jobs:
           git push origin "HEAD:${BRANCH_NAME}"
           git push origin --tags
 
-  # ---------- Build + Lint + Angular ----------
+  # ---------- Build + Lint ----------
   build_app:
     runs-on: ubuntu-latest
     needs: auto_release_develop
@@ -97,6 +97,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # 🔁 Sync to latest remote HEAD (so we see the bumped package.json)
+      - name: Sync to latest branch HEAD
+        run: |
+          set -euo pipefail
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          echo "Syncing to origin/${BRANCH_NAME}"
+          git fetch origin "${BRANCH_NAME}"
+          git checkout -B "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
+          echo "Current HEAD after sync:"
+          git log -1 --oneline
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -126,11 +137,57 @@ jobs:
           npm ci
           npm run lint
 
-      - name: Select config and build Angular
+  # ---------- Docker build & push (GHCR) ----------
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: build_app
+    if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 🔁 Sync again (this job is a new clone, we want latest bumped HEAD)
+      - name: Sync to latest branch HEAD
+        run: |
+          set -euo pipefail
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          echo "Syncing to origin/${BRANCH_NAME}"
+          git fetch origin "${BRANCH_NAME}"
+          git checkout -B "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
+          echo "Current HEAD after sync (docker_build):"
+          git log -1 --oneline
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
+
+      - name: Install deps & build Angular (with env config)
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+
+          npm ci
+
           echo "Branch: $BRANCH_NAME"
 
           if [ "$BRANCH_NAME" = "main" ]; then
@@ -150,31 +207,8 @@ jobs:
           echo "Building Angular with configuration: $NG_CONFIG"
           npm run build -- --configuration=$NG_CONFIG
 
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-
-  # ---------- Docker build & push (GHCR) ----------
-  docker_build:
-    runs-on: ubuntu-latest
-    needs: build_app
-    if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download dist artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: .
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+          echo "Dist content:"
+          ls -R dist || true
 
       - name: Read version
         id: version
@@ -206,7 +240,7 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         with:
-          context: .          # includes dist/ from artifact
+          context: .          # contains dist/psx-ng-skeleton we just built
           file: ./Dockerfile
           push: true
           tags: |
@@ -218,14 +252,59 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker_build
     if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 🔁 Same sync here to be consistent
+      - name: Sync to latest branch HEAD
+        run: |
+          set -euo pipefail
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          echo "Syncing to origin/${BRANCH_NAME}"
+          git fetch origin "${BRANCH_NAME}"
+          git checkout -B "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
+          echo "Current HEAD after sync (csp_test):"
+          git log -1 --oneline
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts (using AZURE_ARTIFACT_PAT)
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          fi
+
+      # Ensure config.json matches branch (for KC/API urls)
+      - name: Select config for CSP test
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          echo "Branch for CSP test: $BRANCH_NAME"
+
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "Using PROD config"
+            cp public/assets/config.prod.json public/assets/config.json
+          elif [ "$BRANCH_NAME" = "uat" ]; then
+            echo "Using UAT config"
+            cp public/assets/config.uat.json public/assets/config.json
+          else
+            echo "Using DEV config"
+            cp public/assets/config.dev.json public/assets/config.json
+          fi
 
       - name: Read version
         id: version
