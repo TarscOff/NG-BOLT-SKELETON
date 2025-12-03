@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.1](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v1.9.374...v1.11.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* **ci:** fix ci/cd ([cc97858](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/cc97858efd1ce5ccccdaed78f27d99cc11312e09))
+* **ci:** fix ci/cd ([e3a5a36](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/e3a5a36be66d17aad51935c4906f438f08267ddf))
+* **ci:** fix ci/cd ([60897ab](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/60897ab594339b3b5634a168a1ae677b21a8cb5f))
+* **ci:** fix ci/cd ([7eeb763](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/7eeb76306d1e6be184c3896f8dd8f9a12895384c))
+* **ci:** fix ci/cd ([cfe1aba](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/cfe1aba5957233c42c6ffd5ee7f98a292444d83b))
+* **ci:** fix ci/cd ([14515f6](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/14515f65d26e6d31a8b6a993585ba916493ae3d5))
+
 ## 1.11.0 (2025-12-03)
 
 ## 1.10.0 (2025-12-03)
