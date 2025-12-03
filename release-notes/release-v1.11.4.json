@@ -1,0 +1,85 @@
+{
+  "version": "1.11.4",
+  "tag": "v1.11.4",
+  "previousTag": "v1.11.3",
+  "date": "2025-12-03T11:23:55.722Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 3,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "c39ef54",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.11.4",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "84dbd91",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing CI/CD  config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bbf98a1",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v1.11.3",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "c39ef54f7e249abdd7a10c34071ea0a862e4aa09",
+      "shortHash": "c39ef54",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.11.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "84dbd91515b6bddeaa4ed0a735a092746990f674",
+      "shortHash": "84dbd91",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing CI/CD  config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bbf98a16293da17b3241e0c7598e391cf492fe94",
+      "shortHash": "bbf98a1",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v1.11.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
