@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.374](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v1.9.6...v1.9.374) (2025-12-03)
+
+
+### Bug Fixes
+
+* **ci:** fix ci/cd ([2d30868](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/2d30868831b9c6123ab186d0720ecbbc84c1a66c))
+
 ### 1.9.373 (2025-12-03)
 
 ### 1.9.372 (2025-12-03)
