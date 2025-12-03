@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.11.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.5...v1.11.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* **ci:** fix ci/cd ([cc97858](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/cc97858efd1ce5ccccdaed78f27d99cc11312e09))
+* **ci:** fix ci/cd ([e3a5a36](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/e3a5a36be66d17aad51935c4906f438f08267ddf))
+* **ci:** fix ci/cd ([60897ab](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/60897ab594339b3b5634a168a1ae677b21a8cb5f))
+* **ci:** fix ci/cd ([7eeb763](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/7eeb76306d1e6be184c3896f8dd8f9a12895384c))
+* **ci:** fix ci/cd ([cfe1aba](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/cfe1aba5957233c42c6ffd5ee7f98a292444d83b))
+* **ci:** fix ci/cd ([14515f6](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/14515f65d26e6d31a8b6a993585ba916493ae3d5))
+* **ci:** fix ci/cd ([2d30868](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2d30868831b9c6123ab186d0720ecbbc84c1a66c))
+* **ci:** fix ci/cd ([c17debb](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c17debbace7c9d54b2f5b7a39859703171e2a61d))
+* **ci:** fix ci/cd ([9a31fd0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/9a31fd0be61f3c1db64ef5c20a88913a6b1147af))
+* **ci:** fix ci/cd ([b2d82fd](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/b2d82fdaa53b0875194094de46d1cc9c6eb53967))
+* **ci:** fix ci/cd ([c1dcba7](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c1dcba7d2ede94ac30ff8793968d94cf94c1c735))
+* **ci:** fix ci/cd ([f904f77](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/f904f77db076652d697046c936d7ae0cee7f4aa9))
+* **ci:** fix ci/cd ([37f56f8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/37f56f84bc56bbc2e3315d73e08ccee895047c6b))
+
 ## 1.11.0 (2025-12-03)
 
 ## 1.10.0 (2025-12-03)
