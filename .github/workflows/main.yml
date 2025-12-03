@@ -20,6 +20,10 @@ jobs:
   build_app:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -56,6 +60,9 @@ jobs:
     if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
