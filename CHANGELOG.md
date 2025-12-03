@@ -741,6 +741,44 @@ All notable changes to this project will be documented in this file. See [standa
 ### 1.9.7 (2025-12-02)
 
 ### 1.9.6 (2025-12-02)
+### 1.9.6 (2025-12-02)
+
+
+### Features
+
+* **components:** charts, tables, layout, components finalized ([6961312](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/6961312b15b8e16a2f6b159839a5e58f89ee185c))
+* **components:** custom components + form builder OK ([6b56b4f](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/6b56b4f43b111923c3b60f5ae7b746551b34aca0))
+* **config:** app fully configurable and passes items to core ([879b79f](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/879b79fa9186a1246b817492ad9bec7f82008339))
+* **documentation:** adding documentation and relative paths for each ([187a0cd](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/187a0cdc5819afc16a34d81ec8e2c9d8c7a3fc38))
+* **dynamicForms:** dynamic forms enhanced with more attributes ([93554b6](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/93554b66d361ce921f7bc998db9f4a4bbf9a7ebf))
+* **keycloack:** keycloak init and guards implementation ([8b63154](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/8b631541f5bd1e03923b29b6d283270c699025df))
+* **templating:** creating workflows dynanic templates ([de351f3](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/de351f34bfe79113b6ff687ef632bdb1419f9af9))
+* **templating:** creating workflows dynanic templates + refactoring code ([9162ea3](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/9162ea3f2d71285f4c58014b0027dc9badf48294))
+* **templating:** creating workflows dynanic templates + refactoring code ([cddd33a](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/cddd33a98a84c932e2673c8220416476925937f5))
+* **templating:** creating workflows dynanic templates + refactoring code ([13064a9](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/13064a9f7d91c2ecd598668bb8314c592b7c145b))
+* **templating:** creating workflows dynanic templates + refactoring code ([c3b251a](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/c3b251aad093c62efcb75401c06da27bf35e2d19))
+* **workflows:** workflow builder instance ([c314382](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/c314382e79d099206f2f655836b7ca1f1ad40c70))
+* **workflows:** workflow builder instance ([4c6d09a](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/4c6d09acb7a1ad7e207b78efd606b59a605a3517))
+* **wortkflow:** dynamic entrypoints enabled ([6f88d64](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/6f88d649c2499c346e08e1693b4247f3499334f4))
+* **wortkflow:** dynamic entrypoints enabled ([e81e562](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/e81e56224bc4851b870ea4098c860121ad98a593))
+* **wortkflow:** dynamic entrypoints enabled ([325d284](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/325d28470cf48b13521bd7fbcd25afe4765c7487))
+* **wortkflow:** dynamic entrypoints enabled ([36dd9d5](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/36dd9d53f48e51aac777e9b1943bfd1dfff69288))
+* **wortkflow:** dynamic entrypoints enabled ([2461a5d](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/2461a5dbd26419129de12533e182f87a589791e1))
+* **wortkflow:** dynamic workflow builder ([51af30c](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/51af30ce14b30b73ba633283c49c88774eaa634f))
+
+
+### Bug Fixes
+
+* **appConfig:** passing environments from hsot app to core ([1506931](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/1506931e97c295dbd108d0f0fe437bd64a45f58a))
+* **ci:** fix ci/cd ([c17debb](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/c17debbace7c9d54b2f5b7a39859703171e2a61d))
+* **ci:** fix ci/cd ([9a31fd0](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/9a31fd0be61f3c1db64ef5c20a88913a6b1147af))
+* **ci:** fix ci/cd ([b2d82fd](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/b2d82fdaa53b0875194094de46d1cc9c6eb53967))
+* **ci:** fix ci/cd ([c1dcba7](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/c1dcba7d2ede94ac30ff8793968d94cf94c1c735))
+* **ci:** fix ci/cd ([f904f77](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/f904f77db076652d697046c936d7ae0cee7f4aa9))
+* **ci:** fix ci/cd ([37f56f8](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/37f56f84bc56bbc2e3315d73e08ccee895047c6b))
+* **core:** app changes implementation to angular 19 + updating module + udpating configs ([a3f2159](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/a3f215926329313f7f625d6117bd4e11a79e4fdd))
+* **quickSettings:** fixing quick settings and conenction to NGX Store on the SDk + udpating module ([bc77f91](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/bc77f918b8f84123e5525d0230c04ffcfb373c27))
+* **workflows:** workflows fix ([29c7cc9](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/29c7cc94f8665433d61ca989114b032b34802279))
 
 ### [1.9.5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.9.4...v1.9.5) (2025-12-02)
 
