@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - main
+      - master
       - develop
       - staging
       - uat
@@ -9,7 +9,7 @@ trigger:
 pr:
   branches:
     include:
-      - main
+      - master
       - develop
       - staging
       - uat
@@ -59,11 +59,15 @@ stages:
           BRANCH_NAME="$(Build.SourceBranchName)"
           echo "Branch: $BRANCH_NAME"
 
-          if [ "$BRANCH_NAME" = "main" ]; then
+          if [ "$BRANCH_NAME" = "master" ]; then
             echo "Using PROD config"
             cp public/assets/config.prod.json public/assets/config.json
             NG_CONFIG="production"
           elif [ "$BRANCH_NAME" = "uat" ]; then
+            echo "Using UAT config"
+            cp public/assets/config.uat.json public/assets/config.json
+            NG_CONFIG="uat"
+          elif [ "$BRANCH_NAME" = "staging" ]; then
             echo "Using UAT config"
             cp public/assets/config.uat.json public/assets/config.json
             NG_CONFIG="uat"

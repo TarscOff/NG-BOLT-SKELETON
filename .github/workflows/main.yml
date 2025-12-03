@@ -2,9 +2,9 @@ name: Starter CI
 
 on:
   push:
-    branches: [ main, develop, staging, uat ]
+    branches: [ master, develop, staging, uat ]
   pull_request:
-    branches: [ main, develop, staging, uat ]
+    branches: [ master, develop, staging, uat ]
 
 permissions:
   contents: write
@@ -57,7 +57,7 @@ jobs:
   docker_build:
     runs-on: ubuntu-latest
     needs: build_app
-    if: contains(fromJson('["main","develop","staging","uat"]'), github.ref_name)
+    if: contains(fromJson('["master","develop","staging","uat"]'), github.ref_name)
 
     steps:
       - name: Checkout
@@ -93,11 +93,15 @@ jobs:
 
           echo "Branch: $BRANCH_NAME"
 
-          if [ "$BRANCH_NAME" = "main" ]; then
+          if [ "$BRANCH_NAME" = "master" ]; then
             echo "Using PROD config"
             cp public/assets/config.prod.json public/assets/config.json
             NG_CONFIG="production"
           elif [ "$BRANCH_NAME" = "uat" ]; then
+            echo "Using UAT config"
+            cp public/assets/config.uat.json public/assets/config.json
+            NG_CONFIG="uat"
+          elif [ "$BRANCH_NAME" = "staging" ]; then
             echo "Using UAT config"
             cp public/assets/config.uat.json public/assets/config.json
             NG_CONFIG="uat"
