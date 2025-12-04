@@ -1,0 +1,67 @@
+{
+  "version": "2.0.2",
+  "tag": "v2.0.2",
+  "previousTag": "v2.0.1",
+  "date": "2025-12-04T13:41:32.934Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "5ea8371",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.2 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7f7cfe8",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.1",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "5ea8371ceb3258d70e984c250e35d01557b9ecd2",
+      "shortHash": "5ea8371",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.2 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "7f7cfe825d5f96221a4a043653a037b4236e96e0",
+      "shortHash": "7f7cfe8",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

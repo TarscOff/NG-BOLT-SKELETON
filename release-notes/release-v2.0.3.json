@@ -1,0 +1,141 @@
+{
+  "version": "2.0.3",
+  "tag": "v2.0.3",
+  "previousTag": "v2.0.1",
+  "date": "2025-12-04T13:50:51.425Z",
+  "stats": {
+    "features": 0,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 4,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "ce37a1b",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "f2b63bc",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.3 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9f20a69",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.2",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5ea8371",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.2 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7f7cfe8",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.1",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "aafa863",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1894: fix(ciCd): fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "f2b63bccee09790065de68128668300d69723f62",
+      "shortHash": "f2b63bc",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.3 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "aafa8633bdd14612e3455c7ad133cb89b978262c",
+      "shortHash": "aafa863",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1894: fix(ciCd): fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(ciCd): fixing ci-cd"
+    },
+    {
+      "hash": "ce37a1b4c64d4cf7fca8c9e0fed36d6210071146",
+      "shortHash": "ce37a1b",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9f20a69aa0bfa199b2431429b23b1a4fe89c8549",
+      "shortHash": "9f20a69",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5ea8371ceb3258d70e984c250e35d01557b9ecd2",
+      "shortHash": "5ea8371",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.2 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "7f7cfe825d5f96221a4a043653a037b4236e96e0",
+      "shortHash": "7f7cfe8",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.1",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

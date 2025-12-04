@@ -1,0 +1,159 @@
+{
+  "version": "2.0.1",
+  "tag": "v2.0.1",
+  "previousTag": "v2.0.0",
+  "date": "2025-12-04T13:39:58.259Z",
+  "stats": {
+    "features": 0,
+    "fixes": 2,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 3,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "a95eb10",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "db07ab8",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "1ed61e5",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.1 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f747602",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "130beb6",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #33 from TarikHaddadi/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cae58c2",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #31 from TarikHaddadi/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6dd7630",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1875: fix ci",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "1ed61e5e98b9cbe3b5c61f5c5dcdd136d66ff748",
+      "shortHash": "1ed61e5",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.1 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "130beb629721d5816ce9eb5ef53b8c5e07463047",
+      "shortHash": "130beb6",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #33 from TarikHaddadi/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
+    },
+    {
+      "hash": "a95eb108e2642df73af06a0d49b97f385751f22c",
+      "shortHash": "a95eb10",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "db07ab8d963a1718abedae4e8e76aa15eaf08338",
+      "shortHash": "db07ab8",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cae58c210f26f240c72a9656e52a0283b001b63d",
+      "shortHash": "cae58c2",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #31 from TarikHaddadi/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
+    },
+    {
+      "hash": "6dd7630d4fc5396698c2c1126bea1652375bd9d6",
+      "shortHash": "6dd7630",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1875: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "f747602485548d1448f685c271db6d35757ef3ae",
+      "shortHash": "f747602",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
