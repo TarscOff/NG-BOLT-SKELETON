@@ -8,16 +8,56 @@ const { join } = require('node:path');
 // usage: node scripts/release.js patch -m "chore(release): v%s – my note"
 const args = process.argv.slice(2);
 const type = args[0] || 'patch';
-const extra = args.slice(1).join(' ');
+
+// Build command with properly quoted arguments
+let command = `npx --yes standard-version --release-as ${type}`;
+
+// Process additional arguments (everything after the release type)
+if (args.length > 1) {
+  for (let i = 1; i < args.length; i++) {
+    const arg = args[i];
+    // Check if this is a flag like -m or --message
+    if (arg.startsWith('-')) {
+      command += ` ${arg}`;
+      // If next arg exists and doesn't start with -, it's the value for this flag
+      if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
+        i++;
+        const value = args[i];
+        // Properly escape and quote the value
+        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        command += ` "${escaped}"`;
+      }
+    } else {
+      // Standalone argument
+      const escaped = arg.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      command += ` "${escaped}"`;
+    }
+  }
+}
+
+console.log(`Executing: ${command}`);
 
 // 1) bump version + tag (allow custom -m)
-execSync(`npx --yes standard-version --release-as ${type} ${extra}`, { stdio: 'inherit' });
+try {
+  execSync(command, { stdio: 'inherit', shell: true });
+} catch (error) {
+  console.error('Failed to run standard-version:', error.message);
+  process.exit(1);
+}
 
-// 2) tags (current, previous)
-const tags = execSync('git tag --sort=-v:refname', { encoding: 'utf8' })
-  .trim().split('\n').filter(Boolean);
-const currentTag = tags[0];
+// 2) determine tags
+const rawTags = execSync('git tag --sort=-version:refname', { encoding: 'utf8' }).trim();
+const tags = rawTags ? rawTags.split('\n') : [];
+
+if (tags.length === 0) {
+  console.warn('⚠️  No git tags found. This may be the first release or tags were not fetched.');
+}
+
+const currentTag = tags[0] || 'HEAD';
 const previousTag = tags[1] || '';
+
+console.log(`Current tag: ${currentTag}`);
+console.log(`Previous tag: ${previousTag || 'none (first release)'}`);
 
 // 3) read bumped version (no require cache)
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
@@ -25,7 +65,10 @@ const version = pkg.version;
 
 // 4) collect commits for range
 const range = previousTag ? `${previousTag}..${currentTag}` : currentTag;
+console.log(`Collecting commits from range: ${range}`);
+
 const raw = execSync(`git log ${range} --pretty=format:%H%n%s%n%b%n==END==`, { encoding: 'utf8' });
+
 const blocks = raw.split('\n==END==').map(s => s.trim()).filter(Boolean);
 
 // parse conventional commits (same as before) …
