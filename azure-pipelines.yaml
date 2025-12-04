@@ -55,7 +55,11 @@ stages:
       # 1) Authenticate to Azure Artifacts npm feed based on repo .npmrc
       - task: npmAuthenticate@0
         displayName: 'Authenticate to Azure Artifacts (npm)'
-        condition: not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         inputs:
           workingFile: '.npmrc'
 
@@ -70,6 +74,11 @@ stages:
           set -euo pipefail
           npm ci
           npm run lint
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         displayName: 'Install & Lint App'
 
       # 3.5) Configure Git identity for release commits
@@ -136,6 +145,11 @@ stages:
 
           echo "Running Angular build with configuration: $NG_CONFIG"
           npm run build -- --configuration=$NG_CONFIG
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         displayName: 'Build Angular App with environment config'
 
       # 6) Extract version from (possibly bumped) package.json and expose as pipeline variable
@@ -146,6 +160,11 @@ stages:
           echo "Detected version from $PKG_PATH: $VERSION"
           echo "##vso[task.setvariable variable=APP_VERSION]$VERSION"
         displayName: 'Read version from package.json'
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         env:
           PKG_PATH: $(PKG_PATH)
         name: SetVersion
@@ -153,7 +172,11 @@ stages:
       # 7) Build & push Docker image to registry (skip on PRs)
       - task: Docker@2
         displayName: 'Build & Push Docker image'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        condition: and(
+            succeeded(),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         inputs:
           containerRegistry: '$(DOCKER_SERVICE_CONNECTION)'
           repository: '$(DOCKER_REPOSITORY)'
