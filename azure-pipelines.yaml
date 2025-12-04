@@ -182,8 +182,8 @@ stages:
           command: 'buildAndPush'
           dockerfile: 'Dockerfile'
           tags: |
-            $(Build.SourceBranchName)-acd-$(APP_VERSION)
-            latest-acd-$(Build.SourceBranchName)
+            $(Build.SourceBranchName)-skeleton-$(APP_VERSION)
+            latest-skeleton-$(Build.SourceBranchName)
 
        # 8) Push release commit + tags (only when we actually did a release)
       - script: |
