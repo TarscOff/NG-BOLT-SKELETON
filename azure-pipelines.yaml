@@ -26,7 +26,6 @@ variables:
   # default release type; can be overridden when running pipeline manually
   RELEASE_TYPE: 'patch'
 
-
 stages:
 
 # ---------- Build, Test, Docker, Release ----------
@@ -42,17 +41,6 @@ stages:
         fetchDepth: 0  
         fetchTags: true 
 
-      - script: |
-          set +e  # Don't exit on error
-          COMMIT_MSG="$(Build.SourceVersionMessage)"
-          echo "Commit message: $COMMIT_MSG"
-          if [[ "$COMMIT_MSG" == chore\(release\):* ]]; then
-            echo "##vso[task.logissue type=warning]Release commit detected - this is expected after a release"
-            echo "##vso[task.complete result=SucceededWithIssues;]DONE - Release commit, no build needed"
-          fi
-        displayName: 'Check for release commit'
-        continueOnError: true
-
       # 1) Authenticate to Azure Artifacts npm feed based on repo .npmrc
       - task: npmAuthenticate@0
         displayName: 'Authenticate to Azure Artifacts (npm)'
@@ -67,6 +55,11 @@ stages:
       # 2) Use Node
       - task: NodeTool@0
         displayName: 'Use Node.js $(NODE_VERSION)'
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         inputs:
           versionSpec: '$(NODE_VERSION)'
 
@@ -88,6 +81,11 @@ stages:
           git config --global user.email "build-bot@azure-pipelines.com"
           git config --global user.name "Azure Pipeline Bot"
           git config --global safe.directory $(Build.SourcesDirectory)
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
         displayName: 'Configure Git identity'
 
       # 4) CI release step (bump version + CHANGELOG.md + tag + JSON via release.js)
