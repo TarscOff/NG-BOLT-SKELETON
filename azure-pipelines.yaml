@@ -26,6 +26,7 @@ variables:
   # default release type; can be overridden when running pipeline manually
   RELEASE_TYPE: 'patch'
 
+
 stages:
 
 # ---------- Build, Test, Docker, Release ----------
@@ -116,7 +117,7 @@ stages:
             succeeded(),
             eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
             ne(variables['Build.Reason'], 'PullRequest'),
-            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release): v'))
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
           )
       # 5) Select config file based on branch and build Angular
       - script: |
@@ -208,7 +209,7 @@ stages:
             succeeded(),
             eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
             ne(variables['Build.Reason'], 'PullRequest'),
-            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release): v'))
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
           )
         env:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
