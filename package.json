@@ -18,7 +18,7 @@
     "release:patch:nopush": "node ./scripts/release.js patch",
     "release:minor:nopush": "node ./scripts/release.js minor",
     "release:major:nopush": "node ./scripts/release.js major",
-    "release:push": "git push --follow-tags origin HEAD && git push --follow-tags origin2 HEAD",
+    "release:push": "git push --follow-tags origin HEAD",
     "deps:check": "node ./scripts/remove-unused.mjs",
     "deps:apply": "node ./scripts/remove-unused.mjs --apply"
   },
