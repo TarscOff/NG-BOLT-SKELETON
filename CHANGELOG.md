@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.3) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+
 ### [2.0.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.2) (2025-12-04)
 
 ### [2.0.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.1) (2025-12-04)
