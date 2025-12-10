@@ -1,334 +1,445 @@
-# Core SDK — Layout Toolbar Actions (Dynamic Per‑Page Buttons)
+# Core SDK — Layout & Configuration Guide
 
-> _Last updated: 2025‑09‑11_
+> _Last updated: 2025‑12‑10_
 
-This document explains how to add **dynamic toolbar actions** (e.g., Back, Export, Delete) to the main `AppLayoutComponent` so that **each routed page** can publish its own buttons without touching the layout code.
+This document explains how to configure and use the **`AppLayoutComponent`** from the Core SDK, including:
+- **Dynamic logo configuration** from the hosting app
+- **Dynamic toolbar actions** (e.g., Back, Export, Delete) that each routed page can publish
+- **Navigation menu** with Material 3 components
+- **User profile panel** with roles and logout
+- **Quick settings dialog** (theme, language, AI configuration)
 
 Works with **Angular 16–19+**, standalone components, Material 3, NgRx, and ngx-translate.
 
 ---
 
-## TL;DR
+## Table of Contents
 
-- Add a small `ToolbarActionsService` that exposes an `actions$` stream and methods to set/clear actions.
-- The **layout** subscribes to `actions$` and renders the buttons on the right side of the `<mat-toolbar>`.
-- **Pages** (Dashboard, Details, …) publish their own actions in `ngOnInit()` and they are **auto-cleared on destroy**.
+1. [Basic Usage in Routes](#1-basic-usage-in-routes)
+2. [Logo Configuration](#2-logo-configuration)
+3. [Dynamic Toolbar Actions](#3-dynamic-toolbar-actions)
+4. [Navigation Menu](#4-navigation-menu)
+5. [API Reference](#5-api-reference)
 
 ---
 
-## 1) Service — `ToolbarActionsService`
+## 1) Basic Usage in Routes
 
-Create the service anywhere under your Core SDK (e.g., `libs/core/src/lib/layout/toolbar-actions.service.ts`).
+The `AppLayoutComponent` is used as a parent route that wraps all your feature pages:
 
 ```ts
-import { DestroyRef, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { ThemePalette } from '@angular/material/core';
+import { Routes } from '@angular/router';
+import { UserRole } from '@cadai/pxs-ng-core/enums';
+import { authGuard, featureGuard } from '@cadai/pxs-ng-core/guards';
+import { AppLayoutComponent } from '@cadai/pxs-ng-core/shared';
 
+export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
+  },
+  {
+    path: '',
+    component: AppLayoutComponent,
+    canActivateChild: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        canActivate: [featureGuard('dashboard', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+      },
+      {
+        path: 'genai-chat',
+        canActivate: [featureGuard('ai.chat', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
+        loadComponent: () =>
+          import('./features/chat/chat.component').then(m => m.ChatPageComponent),
+      },
+      { 
+        path: '403', 
+        loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) 
+      },
+      { 
+        path: '**', 
+        loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) 
+      },
+    ]
+  }
+];
+```
+
+---
+
+## 2) Logo Configuration
+
+The layout supports **dynamic logo configuration** from the hosting app via the `CoreOptions` interface.
+
+### Step 1: Add Logo URL to App Configuration
+
+In your hosting app's `app.config.ts`:
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideCore } from '@cadai/pxs-ng-core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideCore({
+      logoUrl: '/assets/images/my-company-logo.png', // ✅ Your custom logo
+      appVersion: '1.0.0',
+      theme: {
+        primary: '#1976d2',
+        accent: '#ff4081',
+        warn: '#f44336',
+      },
+      i18n: {
+        defaultLanguage: 'en',
+        availableLanguages: ['en', 'fr', 'nl'],
+      },
+      // ...other options
+    }),
+    // ...other providers
+  ],
+};
+```
+
+### Step 2: Logo Fallback Behavior
+
+The layout uses the following priority order:
+1. **`CoreOptions.logoUrl`** (from `provideCore`)
+2. **Default logo** (if not provided)
+
+The logo is displayed in the sidenav header:
+
+```html
+<div class="nav-title">
+  <img [src]="logoUrl" alt="Logo" class="logo" />
+  {{ 'navigationTitle' | translate }}
+</div>
+```
+
+### Styling the Logo
+
+Add custom styles in your hosting app's global styles or theme:
+
+```scss
+.side-nav {
+  .nav-title {
+    .logo {
+      max-width: 40px;
+      max-height: 40px;
+      object-fit: contain;
+      margin-right: 12px;
+    }
+  }
+}
+```
+
+---
+
+## 3) Dynamic Toolbar Actions
+
+The layout subscribes to a `ToolbarActionsService` that allows each routed page to publish its own buttons without modifying the layout code.
+
+### Service Interface
+
+The `ToolbarActionsService` (already implemented in Core SDK) exposes:
+
+```ts
 export type ButtonVariant = 'icon' | 'stroked' | 'raised' | 'flat';
 
 export interface ToolbarAction {
   id: string;
-  icon?: string; // e.g. 'arrow_back', 'download'
-  label?: string; // visible text for non-icon variants
-  tooltip?: string; // hover tooltip or i18n text
-  color?: ThemePalette; // 'primary' | 'accent' | 'warn'
+  icon?: string;           // Material icon name
+  label?: string;          // Translation key for button text
+  tooltip?: string;        // Translation key for tooltip
+  color?: ThemePalette;    // 'primary' | 'accent' | 'warn'
   variant?: ButtonVariant; // defaults to 'icon'
+  class?: string;          // Additional CSS classes
   visible$?: Observable<boolean>;
   disabled$?: Observable<boolean>;
-  click: () => void; // handler
+  click: () => void;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ToolbarActionsService {
-  private readonly _actions = new BehaviorSubject<ToolbarAction[]>([]);
-  readonly actions$ = this._actions.asObservable();
-
-  set(actions: ToolbarAction[] = []) {
-    this._actions.next(actions);
-  }
-  add(...actions: ToolbarAction[]) {
-    this._actions.next([...this._actions.value, ...actions]);
-  }
-  remove(id: string) {
-    this._actions.next(this._actions.value.filter((a) => a.id !== id));
-  }
-  clear() {
-    this._actions.next([]);
-  }
-
-  /** Scope helper: set actions and auto-clear when the caller is destroyed */
-  scope(destroyRef: DestroyRef, actions: ToolbarAction[] = []) {
-    this.set(actions);
-    destroyRef.onDestroy(() => this.clear());
-  }
+  readonly actions$: Observable<ToolbarAction[]>;
+  
+  set(actions: ToolbarAction[]): void;
+  add(...actions: ToolbarAction[]): void;
+  remove(id: string): void;
+  clear(): void;
+  scope(destroyRef: DestroyRef, actions: ToolbarAction[]): void;
 }
 ```
 
----
+### Layout Integration
 
-## 2) Layout — render actions in `AppLayoutComponent`
-
-Inject the service **once** and read the stream. Keep your change detection strategy as `OnPush`.
-
-```ts
-// app-layout.component.ts (excerpt)
-import { Component, inject } from '@angular/core';
-import { ToolbarActionsService } from './toolbar-actions.service'; // adjust path
-
-export class AppLayoutComponent {
-  public toolbarActions$ = inject(ToolbarActionsService).actions$;
-}
-```
-
-Update the toolbar template to place actions on the right:
+The `AppLayoutComponent` already includes the toolbar actions rendering:
 
 ```html
 <mat-toolbar color="primary">
   <button mat-icon-button (click)="sidenav.toggle()">
     <mat-icon>menu</mat-icon>
   </button>
-
   <span class="title">{{ title$ | async }}</span>
+
   <span class="spacer"></span>
 
-        <div class="custom-btns">
-        @for (a of (toolbarActions$ | async) ?? []; track a.id) {
-          @if ((a.visible$ | async) ?? true) {
-            @if ((a.variant ?? 'icon') === 'icon') {
-              <button
-                mat-icon-button
-                [color]="a.color || 'primary'"
-                [class]="a.class || ''"
-                [matTooltip]="a.tooltip || '' | translate"
-                [disabled]="a.disabled$ | async"
-                (click)="a.click()"
-              >
-                <mat-icon [color]="a.color || 'primary'" [class]="a.class || ''">{{
-                  a.icon
-                }}</mat-icon>
-              </button>
-            } @else if (a.variant === 'stroked') {
-              <button
-                mat-stroked-button
-                [color]="a.color || 'primary'"
-                [class]="a.class || ''"
-                [matTooltip]="a.tooltip || '' | translate"
-                [disabled]="a.disabled$ | async"
-                (click)="a.click()"
-              >
-                @if (a.icon) {
-                  <mat-icon [color]="a.color || 'primary'" [class]="a.class || ''">
-                    {{ a.icon }}</mat-icon
-                  >
-                }
-                {{ a.label | translate }}
-              </button>
-            } @else if (a.variant === 'raised') {
-              <button
-                mat-raised-button
-                [color]="a.color || 'primary'"
-                [class]="a.class || ''"
-                [matTooltip]="a.tooltip || '' | translate"
-                [disabled]="a.disabled$ | async"
-                (click)="a.click()"
-              >
-                @if (a.icon) {
-                  <mat-icon [color]="a.color || 'primary'" [class]="a.class || ''">{{
-                    a.icon
-                  }}</mat-icon>
-                }
-                {{ a.label | translate }}
-              </button>
-            } @else {
-              <button
-                mat-flat-button
-                [color]="a.color || 'primary'"
-                [class]="a.class || ''"
-                [matTooltip]="a.tooltip || '' | translate"
-                [disabled]="a.disabled$ | async"
-                (click)="a.click()"
-              >
-                @if (a.icon) {
-                  <mat-icon [color]="a.color || 'primary'" [class]="a.class || ''">{{
-                    a.icon
-                  }}</mat-icon>
-                }
-                {{ a.label | translate }}
-              </button>
-            }
-          }
+  <div class="custom-btns">
+    @for (a of (toolbarActions$ | async) ?? []; track a.id) {
+      @if ((a.visible$ | async) ?? true) {
+        <!-- Icon variant -->
+        @if ((a.variant ?? 'icon') === 'icon') {
+          <button
+            mat-icon-button
+            [color]="a.color || 'primary'"
+            [class]="a.class || ''"
+            [matTooltip]="a.tooltip || '' | translate"
+            [disabled]="a.disabled$ | async"
+            (click)="a.click()"
+          >
+            <mat-icon [color]="a.color || 'primary'">{{ a.icon }}</mat-icon>
+          </button>
         }
-      </div>
+        <!-- Stroked variant -->
+        @else if (a.variant === 'stroked') {
+          <button
+            mat-stroked-button
+            [color]="a.color || 'primary'"
+            [class]="a.class || ''"
+            [matTooltip]="a.tooltip || '' | translate"
+            [disabled]="a.disabled$ | async"
+            (click)="a.click()"
+          >
+            @if (a.icon) {
+              <mat-icon>{{ a.icon }}</mat-icon>
+            }
+            {{ a.label | translate }}
+          </button>
+        }
+        <!-- Raised variant -->
+        @else if (a.variant === 'raised') {
+          <button
+            mat-raised-button
+            [color]="a.color || 'primary'"
+            [class]="a.class || ''"
+            [matTooltip]="a.tooltip || '' | translate"
+            [disabled]="a.disabled$ | async"
+            (click)="a.click()"
+          >
+            @if (a.icon) {
+              <mat-icon>{{ a.icon }}</mat-icon>
+            }
+            {{ a.label | translate }}
+          </button>
+        }
+        <!-- Flat variant (default) -->
+        @else {
+          <button
+            mat-flat-button
+            [color]="a.color || 'primary'"
+            [class]="a.class || ''"
+            [matTooltip]="a.tooltip || '' | translate"
+            [disabled]="a.disabled$ | async"
+            (click)="a.click()"
+          >
+            @if (a.icon) {
+              <mat-icon>{{ a.icon }}</mat-icon>
+            }
+            {{ a.label | translate }}
+          </button>
+        }
+      }
+    }
+  </div>
 </mat-toolbar>
 ```
 
-Minimal styles:
-
-```scss
-mat-toolbar {
-  display: flex;
-  align-items: center;
-}
-.spacer {
-  flex: 1 1 auto;
-}
-.title {
-  margin-left: 0.5rem;
-  font-weight: 600;
-}
-```
-
-> **Note:** In your posted layout you already have the toolbar and title; just add the `spacer` and `@for` block above.
-
----
-
-## 3) Pages — publishing actions
-
-Example Dashboard page setting **Back**, **Export**, and **Delete** actions. Buttons are removed automatically when the component is destroyed.
+### Example: Page with Toolbar Actions
 
 ```ts
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { Location } from '@angular/common';
-import { map } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
-import { ToolbarActionsService, ToolbarAction } from '../layout/toolbar-actions.service';
+import { map } from 'rxjs/operators';
+import { ToolbarActionsService, ToolbarAction } from '@cadai/pxs-ng-core/services';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  template: `<p>Dashboard</p>`,
+  template: `<p>Dashboard Content</p>`,
 })
 export class DashboardComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private toolbar = inject(ToolbarActionsService);
-  private i18n = inject(TranslateService);
   private location = inject(Location);
   private store = inject(Store);
 
-  private selectedCount$ = this.store.select(AppSelectors.ItemsSelectors.selectSelectedCount);
+  private selectedCount$ = this.store
+    .select(AppSelectors.ItemsSelectors.selectSelectedCount);
 
   ngOnInit(): void {
-    
     const back: ToolbarAction = {
       id: 'back',
       icon: 'arrow_back',
-      tooltip: 'back', // use keys , since the component already uses translates pipes
-      class:"primary",
+      tooltip: 'back',
       color: 'primary',
+      variant: 'icon',
       click: () => this.location.back(),
-      variant:"icon",
-      label:'back' // use keys , since the component already uses translates pipes
     };
 
     const exportCsv: ToolbarAction = {
       id: 'export',
       icon: 'download',
-      tooltip: 'export', // use keys , since the component already uses translates pipes
+      label: 'export',
+      tooltip: 'export',
       color: 'primary',
-      click: () => {},
-      variant:"flat",
-      label:'export', // use keys , since the component already uses translates pipes
-      class:"primary"
+      variant: 'flat',
+      click: () => this.exportToCsv(),
     };
 
     const deleteSel: ToolbarAction = {
       id: 'delete',
       icon: 'delete',
-      tooltip: 'delete', // use keys , since the component already uses translates pipes
+      label: 'delete',
+      tooltip: 'delete',
       color: 'warn',
-      class:"primary",
-      click: () => {},
-      variant:"stroked",
-      label:'delete' // use keys , since the component already uses translates pipes
+      variant: 'stroked',
+      disabled$: this.selectedCount$.pipe(map(count => count === 0)),
+      click: () => this.deleteSelected(),
     };
 
-    const refreshSel: ToolbarAction = {
+    const refresh: ToolbarAction = {
       id: 'refresh',
       icon: 'refresh',
-      tooltip: 'refresh', // use keys , since the component already uses translates pipes
+      label: 'refresh',
+      tooltip: 'refresh',
       color: 'accent',
-      class:"accent",
-      click: () => {},
-      variant:"raised",
-      label:'refresh' // use keys , since the component already uses translates pipes
+      variant: 'raised',
+      click: () => this.refreshData(),
     };
 
-    // Publish actions for this page and auto-clear on destroy
-    this.toolbar.scope(this.destroyRef, [back, exportCsv, deleteSel, refreshSel]);
+    // Set actions and auto-clear on component destroy
+    this.toolbar.scope(this.destroyRef, [back, exportCsv, deleteSel, refresh]);
   }
 
-  private exportToCsv() {
-    /* ... */
-  }
-  private deleteSelected() {
-    /* ... */
-  }
+  private exportToCsv() { /* ... */ }
+  private deleteSelected() { /* ... */ }
+  private refreshData() { /* ... */ }
 }
 ```
 
----
+### Patterns & Recipes
 
-## API Reference
-
-### `ToolbarAction`
-
-| Property    | Type                                        | Required | Description                               |
-| ----------- | ------------------------------------------- | -------- | ----------------------------------------- | -------- | -------- |
-| `id`        | `string`                                    | ✅       | Stable ID for tracking/removal.           |
-| `icon`      | `string`                                    |          | Material Icon name.                       |
-| `label`     | `string`                                    |          | Text for non-icon variants.               |
-| `tooltip`   | `string`                                    |          | Tooltip/i18n text.                        |
-| `color`     | `ThemePalette`                              |          | `'primary'                                | 'accent' | 'warn'`. |
-| `variant`   | `'icon' \| 'stroked' \| 'raised' \| 'flat'` |          | Defaults to `'icon'`.                     |
-| `visible$`  | `Observable<boolean>`                       |          | Stream to show/hide. Defaults to visible. |
-| `disabled$` | `Observable<boolean>`                       |          | Disable button reactively.                |
-| `click`     | `() => void`                                | ✅       | Click handler.                            |
-
-### `ToolbarActionsService`
-
-- `actions$: Observable<ToolbarAction[]>` — current actions for the layout to render.
-- `set(actions: ToolbarAction[])` — replace the whole set.
-- `add(...actions: ToolbarAction[])` — append actions.
-- `remove(id: string)` — remove by id.
-- `clear()` — remove all.
-- `scope(destroyRef, actions)` — set now and auto-`clear()` on component destroy.
-
----
-
-## Patterns & Recipes
-
-### A) Role‑based visibility (Keycloak/NgRx)
+#### A) Role-based Visibility
 
 ```ts
 const isAdmin$ = this.store
   .select(AppSelectors.AuthSelectors.selectRoles)
-  .pipe(map((roles) => roles?.includes('ROLE_admin') ?? false));
+  .pipe(map(roles => roles?.includes('ROLE_admin') ?? false));
 
 const adminSettings: ToolbarAction = {
   id: 'admin-settings',
   icon: 'admin_panel_settings',
-  tooltip: this.i18n.instant('admin.settings'),
+  tooltip: 'admin_settings',
   visible$: isAdmin$,
   click: () => this.openAdminSettings(),
 };
 ```
 
-### B) Live disabled state (e.g., selection count)
+#### B) Conditional Disabled State
 
 ```ts
-const deleteSel: ToolbarAction = {
-  id: 'delete',
-  icon: 'delete',
-  color: 'warn',
-  disabled$: this.selectedCount$.pipe(map((c) => c === 0)),
-  click: () => this.deleteSelected(),
+const saveAction: ToolbarAction = {
+  id: 'save',
+  icon: 'save',
+  label: 'save',
+  disabled$: this.form.statusChanges.pipe(
+    map(status => status === 'INVALID')
+  ),
+  click: () => this.save(),
 };
 ```
+
+---
+
+## 4) Navigation Menu
+
+The layout includes an auto-generated navigation menu based on feature flags and roles.
+
+### Menu Configuration
+
+Navigation items are configured via `CoreOptions.features`:
+
+```ts
+provideCore({
+  features: {
+    dashboard: { enabled: true, label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+    'ai.chat': { enabled: true, label: 'AI Chat', icon: 'chat', route: '/genai-chat' },
+    'ai.workflows': { enabled: false, label: 'Workflows', icon: 'account_tree', route: '/genai-workflows' },
+    team: { enabled: true, label: 'Team', icon: 'people', route: '/team' },
+  },
+})
+```
+
+The menu automatically:
+- Filters items based on `enabled` flag
+- Shows/hides based on user roles (via route guards)
+- Translates labels using `ngx-translate`
+- Highlights active route
+- Collapses labels when sidebar is minimized
+
+---
+
+## 5) API Reference
+
+### `CoreOptions` Interface
+
+```ts
+export interface CoreOptions {
+  logoUrl?: string;                    // Custom logo URL
+  appVersion?: string;                 // Version displayed in footer
+  theme?: CoreTheme;                   // Theme configuration
+  i18n?: CoreI18nOptions;              // Internationalization
+  features?: Record<string, Feature>;  // Feature flags & menu items
+  interceptors?: HttpInterceptorFn[];  // HTTP interceptors
+  animations?: boolean;                // Enable/disable animations
+  environments?: RuntimeConfig;        // Runtime environment config
+}
+```
+
+### `ToolbarAction` Interface
+
+| Property    | Type                                        | Required | Description                               |
+| ----------- | ------------------------------------------- | -------- | ----------------------------------------- |
+| `id`        | `string`                                    | ✅       | Stable ID for tracking/removal            |
+| `icon`      | `string`                                    |          | Material Icon name                        |
+| `label`     | `string`                                    |          | Translation key for button text           |
+| `tooltip`   | `string`                                    |          | Translation key for tooltip               |
+| `color`     | `ThemePalette`                              |          | `'primary' \| 'accent' \| 'warn'`         |
+| `variant`   | `'icon' \| 'stroked' \| 'raised' \| 'flat'` |          | Defaults to `'icon'`                      |
+| `class`     | `string`                                    |          | Additional CSS classes                    |
+| `visible$`  | `Observable<boolean>`                       |          | Stream to show/hide (default: visible)    |
+| `disabled$` | `Observable<boolean>`                       |          | Disable button reactively                 |
+| `click`     | `() => void`                                | ✅       | Click handler                             |
+
+### `ToolbarActionsService` Methods
+
+- `actions$: Observable<ToolbarAction[]>` — Current actions for the layout
+- `set(actions: ToolbarAction[])` — Replace all actions
+- `add(...actions: ToolbarAction[])` — Append actions
+- `remove(id: string)` — Remove action by ID
+- `clear()` — Remove all actions
+- `scope(destroyRef: DestroyRef, actions: ToolbarAction[])` — Set actions with auto-cleanup on destroy
+
+---
 
 ## 🧑‍💻 Author
 
 **Angular Product Skeleton** — _Tarik Haddadi_  
-Angular 19+, standalone APIs, runtime configs, optional NgRx, optional Keycloak.
+Angular 19+, standalone APIs, runtime configs, NgRx, Keycloak integration.

@@ -1,0 +1,330 @@
+stages:
+  - build
+  - release
+  - docker
+  - deploy
+
+variables:
+  NODE_VERSION: '20'
+  PKG_PATH: 'package.json'
+  CR_REGISTRY: teamhub-se.telindus.lu:5050
+  RELEASE_TYPE: 'patch'
+
+# Define workflow rules - when to run pipelines
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "staging" || $CI_COMMIT_BRANCH == "uat"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Cache node_modules across jobs
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+
+# ---------- Build + Lint ----------
+build_app:
+  stage: build
+  image: node:${NODE_VERSION}
+  before_script:
+    - node --version
+    - npm --version
+    # Configure npm for Azure Artifacts BEFORE any npm commands
+    - |
+      if [ -n "$AZURE_ARTIFACT_PAT" ]; then
+        echo "Configuring npm for Azure Artifacts into project .npmrc"
+        {
+          echo ""
+          echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACT_PAT}"
+          echo "always-auth=true"
+        } >> .npmrc
+        echo "Final .npmrc:"
+        cat .npmrc
+      else
+        echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+        echo "WARNING: If your .npmrc requires Azure Artifacts, npm ci will fail!"
+      fi
+  script:
+    - npm ci
+    - npm run lint
+
+# ---------- Release (bump version, CHANGELOG, tag) ----------
+
+release:
+  stage: release
+  image: node:${NODE_VERSION}
+  needs:
+    - build_app
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/'
+  variables:
+    GIT_DEPTH: 0  
+  before_script:
+    - apt-get update && apt-get install -y git ca-certificates
+    - git config --global user.email "gitlab-ci@gitlab.com"
+    - git config --global user.name "GitLab CI"
+    - git config --global safe.directory ${CI_PROJECT_DIR}
+    - git config --global http.sslVerify false
+    - |
+      if [ -z "$CI_PUSH_TOKEN" ]; then
+        echo "ERROR: CI_PUSH_TOKEN is not set!"
+        echo "Please configure CI_PUSH_TOKEN as a GitLab CI/CD variable with write access"
+        exit 1
+      fi
+    - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@teamhub-se.telindus.lu:8443/${CI_PROJECT_PATH}.git
+    - git fetch --tags
+    - |
+      if [ -n "$AZURE_ARTIFACT_PAT" ]; then
+        {
+          echo ""
+          echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACT_PAT}"
+          echo "always-auth=true"
+        } >> .npmrc
+      fi
+  script:
+    - npm ci
+    - |
+      set -euo pipefail
+      echo "Running CI release of type: $RELEASE_TYPE"
+      
+      # Check current version and what the next version would be
+      CURRENT_VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+      echo "Current version in package.json: $CURRENT_VERSION"
+      
+      # Calculate next version based on release type
+      IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+      if [ "$RELEASE_TYPE" = "patch" ]; then
+        NEXT_VERSION="$major.$minor.$((patch + 1))"
+      elif [ "$RELEASE_TYPE" = "minor" ]; then
+        NEXT_VERSION="$major.$((minor + 1)).0"
+      elif [ "$RELEASE_TYPE" = "major" ]; then
+        NEXT_VERSION="$((major + 1)).0.0"
+      else
+        echo "Unknown RELEASE_TYPE: $RELEASE_TYPE"
+        exit 1
+      fi
+      
+      echo "Next version will be: $NEXT_VERSION"
+      
+      # Check if tag already exists (locally or remotely)
+      if git rev-parse "v$NEXT_VERSION" >/dev/null 2>&1; then
+        echo "WARNING: Tag v$NEXT_VERSION already exists locally"
+        echo "Deleting local tag to allow standard-version to recreate it"
+        git tag -d "v$NEXT_VERSION"
+      fi
+      
+      # Check if tag exists on remote
+      if git ls-remote --tags origin | grep -q "refs/tags/v$NEXT_VERSION$"; then
+        echo "ERROR: Tag v$NEXT_VERSION already exists on remote"
+        echo "This version has already been released. Skipping release."
+        echo "If you need to re-release, manually delete the remote tag first:"
+        echo "  git push origin :refs/tags/v$NEXT_VERSION"
+        # Create artifact with current version for downstream jobs
+        VERSION="$CURRENT_VERSION"
+        echo "VERSION=$VERSION" >> release.env
+        echo "Detected existing version: $VERSION"
+        exit 0  # Exit successfully to not fail the pipeline
+      fi
+      
+      # Run standard-version
+      if [ "$RELEASE_TYPE" = "patch" ]; then
+        npm run release:patch:nopush -- -m "chore(release): v%s – CI release $CI_COMMIT_BRANCH"
+      elif [ "$RELEASE_TYPE" = "minor" ]; then
+        npm run release:minor:nopush -- -m "chore(release): v%s – CI release $CI_COMMIT_BRANCH"
+      elif [ "$RELEASE_TYPE" = "major" ]; then
+        npm run release:major:nopush -- -m "chore(release): v%s – CI release $CI_COMMIT_BRANCH"
+      fi
+      
+      # Show latest tag & commit
+      git describe --tags --abbrev=0 || true
+      git log -1 --oneline
+    - |
+      set -euo pipefail
+      
+      # Ensure we're on the correct branch (not detached HEAD)
+      echo "Current git state:"
+      git status
+      git log -1 --oneline
+      
+      # Checkout the branch if we're in detached HEAD
+      if git symbolic-ref -q HEAD > /dev/null; then
+        echo "Already on a branch"
+      else
+        echo "Detached HEAD detected, checking out ${CI_COMMIT_BRANCH}"
+        git checkout -B ${CI_COMMIT_BRANCH}
+      fi
+      
+      echo "Pushing HEAD + tags to origin"
+      git push origin ${CI_COMMIT_BRANCH} --follow-tags
+    - |
+      VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+      echo "VERSION=$VERSION" >> release.env
+      echo "Detected version: $VERSION"
+  artifacts:
+    reports:
+      dotenv: release.env
+    when: always  # Create artifacts even if job fails
+  resource_group: release  # Prevent concurrent release jobs
+  
+# ---------- Docker build & push (GitLab Container Registry) ----------
+docker_build:
+  stage: docker
+  image: docker:24
+  services:
+    - name: docker:24-dind
+      command: ["--insecure-registry=teamhub-se.telindus.lu:5050"]
+  needs:
+    - job: build_app
+      artifacts: false
+    - job: release
+      artifacts: true
+      optional: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event" && ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "staging" || $CI_COMMIT_BRANCH == "uat") && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - apk add --no-cache ca-certificates git nodejs npm
+    - git config --global safe.directory ${CI_PROJECT_DIR}
+    - git config --global http.sslVerify false
+    
+    # Configure Docker to trust the internal CA certificate
+    - |
+      if [ -n "$GITLAB_REGISTRY_CERT" ]; then
+        echo "GITLAB_REGISTRY_CERT is set"
+        
+        # Check if it's a file path or certificate content
+        if [ -f "$GITLAB_REGISTRY_CERT" ]; then
+          echo "Reading certificate from file: $GITLAB_REGISTRY_CERT"
+          CERT_CONTENT=$(cat "$GITLAB_REGISTRY_CERT")
+        else
+          echo "Using certificate content from variable"
+          CERT_CONTENT="$GITLAB_REGISTRY_CERT"
+        fi
+        
+        # Validate certificate content
+        echo "$CERT_CONTENT" | head -n 1 | grep -q "BEGIN CERTIFICATE" || {
+          echo "ERROR: GITLAB_REGISTRY_CERT does not contain valid certificate"
+          exit 1
+        }
+        
+        # Add to system trust store (Alpine Linux format)
+        echo "$CERT_CONTENT" > /usr/local/share/ca-certificates/telindus-registry.crt
+        update-ca-certificates
+        
+        # Add to Docker daemon trust store (for the DinD service)
+        mkdir -p /etc/docker/certs.d/${CR_REGISTRY}
+        echo "$CERT_CONTENT" > /etc/docker/certs.d/${CR_REGISTRY}/ca.crt
+        
+        # Wait for Docker daemon to be ready
+        timeout 30 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+        
+        # Restart Docker daemon to pick up certificate changes
+        # Note: In DinD, we can't restart the daemon, so we configure insecure registry as fallback
+        echo "✅ CA certificate configured"
+        echo "Certificate preview:"
+        openssl x509 -in /etc/docker/certs.d/${CR_REGISTRY}/ca.crt -noout -subject -issuer 2>/dev/null || echo "Certificate installed but openssl validation failed"
+        ls -la /etc/docker/certs.d/${CR_REGISTRY}/ || true
+        
+        # Configure Docker client to use the certificate
+        mkdir -p ~/.docker
+        echo "{\"insecure-registries\": []}" > ~/.docker/config.json
+      else
+        echo "⚠️ WARNING: GITLAB_REGISTRY_CERT not set."
+        echo "Configuring Docker to skip TLS verification for ${CR_REGISTRY}..."
+        
+        # Fallback: configure Docker to skip TLS verification
+        mkdir -p /etc/docker
+        echo '{"insecure-registries":["'${CR_REGISTRY}'"]}' > /etc/docker/daemon.json
+        echo "Docker daemon configuration:"
+        cat /etc/docker/daemon.json
+      fi
+  script:
+    # Pull latest changes (including release commit if any)
+    - git fetch origin ${CI_COMMIT_BRANCH}
+    - git reset --hard origin/${CI_COMMIT_BRANCH}
+    - echo "Current commit:"
+    - git log -1 --oneline
+    - echo "Current version:"
+    - cat package.json | grep '"version"'
+    
+    # Configure npm for Azure Artifacts
+    - |
+      if [ -n "$AZURE_ARTIFACT_PAT" ]; then
+        {
+          echo ""
+          echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACT_PAT}"
+          echo "always-auth=true"
+        } >> .npmrc
+      fi
+    
+    # Install dependencies and build Angular app
+    - |
+      set -euo pipefail
+      npm ci
+      
+      echo "Branch: $CI_COMMIT_BRANCH"
+      
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        echo "Using PROD config"
+        cp public/assets/config.prod.json public/assets/config.json
+        NG_CONFIG="production"
+      elif [ "$CI_COMMIT_BRANCH" = "uat" ]; then
+        echo "Using UAT config"
+        cp public/assets/config.uat.json public/assets/config.json
+        NG_CONFIG="uat"
+      elif [ "$CI_COMMIT_BRANCH" = "staging" ]; then
+        echo "Using UAT config"
+        cp public/assets/config.uat.json public/assets/config.json
+        NG_CONFIG="uat"
+      else
+        echo "Using DEV config"
+        cp public/assets/config.dev.json public/assets/config.json
+        NG_CONFIG="development"
+      fi
+      
+      echo "Building Angular with configuration: $NG_CONFIG"
+      npm run build -- --configuration=$NG_CONFIG
+      
+      echo "Dist content:"
+      ls -R dist || true
+    
+    # Build and push Docker image
+    - |
+      VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+      echo "Detected version: $VERSION"
+      
+      # Compute safe branch name
+      SAFE_BRANCH=$(echo "${CI_COMMIT_BRANCH}" | tr '/' '-')
+      
+      echo "Repository: ${CI_PROJECT_PATH}"
+      echo "Safe branch: $SAFE_BRANCH"
+      echo "Registry: ${CR_REGISTRY}"
+      
+      # Test Docker connectivity
+      echo "Testing Docker daemon connectivity..."
+      docker info || exit 1
+      
+      # Log in to GitLab Container Registry using CI_JOB_TOKEN
+      echo "Attempting Docker login to ${CR_REGISTRY}..."
+      echo "${CI_JOB_TOKEN}" | docker login ${CR_REGISTRY} -u ${CI_REGISTRY_USER} --password-stdin
+      echo "✅ Docker login successful"
+      
+      # Build and push image to GitLab Container Registry
+      IMAGE_BASE="${CR_REGISTRY}/${CI_PROJECT_PATH}"
+      echo "Building Docker image..."
+      docker build -t "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}" \
+                   -t "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}" \
+                   -f ./Dockerfile .
+      
+      echo "Pushing Docker images..."
+      docker push "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
+      docker push "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"
+      
+      echo "✅ Pushed images:"
+      echo "   ${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
+      echo "   ${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"

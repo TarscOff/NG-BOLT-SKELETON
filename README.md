@@ -357,15 +357,15 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 - [[✅] - Global Core Overview](./README-OVERVIEW.md)
 - [[✅] - Change log](./CHANGELOG.md)
 - [[✅] - Theming, Assets and translattions](./README-ASSETS-TRANSLATIONS.md)
+- [[✅] - App Layout](./README-LAYOUT.md)
+- [[✅] - Form Builder](./README-FOrmBuilder.md)
 - [[✅] - Smart Tables](./README-SMARTABLES.md)
 - [[✅] - WorkflowBuilder Flow Designer](./README-WORKFLOWBUILDER.md)
 - [[✅] - Charts](./README-CHARTS.md)
 - [[🟡] - CSP](./README-CSP.md)
 - [[✅] - GIT](./README-GIT.md)
-- [[✅] - Contribution Guide](./README-CONTRIBUTING.md)
+- [[✅] - Contribution Guide](./CONTRIBUTING.md)
 - [[✅] - NGRX Contribution Guide](./README-CONTRIBUTING.NGRX.md)
-
-
 
 ## Edge Cases & Notes
 
