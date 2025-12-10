@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
-import { ToastService } from '@cadai/pxs-ng-core/services';
+import { LayoutService, ToastService } from '@cadai/pxs-ng-core/services';
 
 import { TemplateLoaderComponent } from '@features/workflows/templates/components/loader/template-loader.component';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
 import { TemplateConfig, TemplatePageResponse } from '@features/workflows/templates/utils/template-config.interface';
+import { SeoComponent } from '@cadai/pxs-ng-core/shared';
 
 @Component({
   selector: 'app-chat',
@@ -24,6 +25,7 @@ import { TemplateConfig, TemplatePageResponse } from '@features/workflows/templa
     MatTooltipModule,
     TranslateModule,
     TemplateLoaderComponent,
+    SeoComponent
   ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
@@ -31,6 +33,7 @@ import { TemplateConfig, TemplatePageResponse } from '@features/workflows/templa
 export class ChatPageComponent implements OnInit {
   private templating = inject(TemplatingService);
   private toast = inject(ToastService);
+  private layoutService = inject(LayoutService);
 
   // State
   pageConfig = signal<TemplatePageResponse | null>(null);
@@ -90,5 +93,9 @@ export class ChatPageComponent implements OnInit {
    */
   trackByTemplateId(index: number, template: TemplateConfig): string {
     return template.type;
+  }
+
+  public onTitleChange(title: string): void {
+    this.layoutService.setTitle(title);
   }
 }
