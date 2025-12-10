@@ -1,7 +1,7 @@
-# PSX-NG-SKELETON – Angular 19 Skeleton
->_Last updated: 2025-09-02_
+# NG-BOLT-SKELETON – Angular 19+ Skeleton
+>_Last updated: 2025-12-04_
 
-> 🚀 Modern Angular 19 project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
+> 🚀 Modern Angular 19+ project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
 
 # NPMRC
 
@@ -357,15 +357,15 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 - [[✅] - Global Core Overview](./README-OVERVIEW.md)
 - [[✅] - Change log](./CHANGELOG.md)
 - [[✅] - Theming, Assets and translattions](./README-ASSETS-TRANSLATIONS.md)
+- [[✅] - App Layout](./README-LAYOUT.md)
+- [[✅] - Form Builder](./README-FOrmBuilder.md)
 - [[✅] - Smart Tables](./README-SMARTABLES.md)
 - [[✅] - WorkflowBuilder Flow Designer](./README-WORKFLOWBUILDER.md)
 - [[✅] - Charts](./README-CHARTS.md)
 - [[🟡] - CSP](./README-CSP.md)
 - [[✅] - GIT](./README-GIT.md)
-- [[✅] - Contribution Guide](./README-CONTRIBUTING.md)
+- [[✅] - Contribution Guide](./CONTRIBUTING.md)
 - [[✅] - NGRX Contribution Guide](./README-CONTRIBUTING.NGRX.md)
-
-
 
 ## Edge Cases & Notes
 
@@ -391,5 +391,5 @@ Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**
 ## 🧑‍💻 Author
 
 **Angular Product Skeleton**  
-Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).
+Built by **Tarik Haddadi** using Angular 19+ and modern best practices (2025).
 

@@ -1,0 +1,86 @@
+{
+  "version": "2.0.5",
+  "tag": "v2.0.5",
+  "previousTag": "v2.0.4",
+  "date": "2025-12-04T14:40:08.556Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "9534366",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.5 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "20be3e7",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.4",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "079bc2e",
+        "type": "other",
+        "scope": null,
+        "subject": "Update README.md",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "9534366365909b796df0e16a7ff2355fb525bb1a",
+      "shortHash": "9534366",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.5 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "079bc2e1aaf725b2e8e11ac24e9790aeeb042c6a",
+      "shortHash": "079bc2e",
+      "type": "other",
+      "scope": null,
+      "subject": "Update README.md",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "20be3e7e7c5cf0b3ed79fb27d799bec2dd145ec5",
+      "shortHash": "20be3e7",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
