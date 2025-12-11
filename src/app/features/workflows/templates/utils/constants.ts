@@ -15,12 +15,15 @@ export const CHAT_CONFIG: ChatConfig = {
     showTimestamps: true,
     showAvatars: true,
     allowMarkdown: true,
-    allowEdit: true,
-    allowDelete: true,
+    allowEdit: false,
+    allowDelete: false,
     maxLength: 4000,
     placeholder: 'Type your message...',
-    enableAttachments: false,
+    enableAttachments: true,
     autoScroll: true,
+    acceptedFileTypes: 'image/*,.pdf,.doc,.docx', // or specify like: 'image/*,.pdf,.doc,.docx'
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 5
 }
 export const COMPARE_ENDPOINTS: CompareEndpoints = {
     uploadFiles: '/api/compare/upload',

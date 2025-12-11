@@ -29,7 +29,7 @@ body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: var(--md-sys-color-surface);
+  background-color: transparent;
   color: var(--md-sys-color-on-surface);
 }
 
@@ -37,8 +37,13 @@ body {
 .mat-sidenav,
 .mat-sidenav-container,
 .mat-toolbar {
-  background-color: var(--md-sys-color-surface);
+  // Custom toolbar style
+  background-color: transparent;
   color: var(--md-sys-color-on-surface);
+}
+
+.mat-toolbar {
+  flex-wrap: wrap;
 }
 
 // Optional custom overrides
@@ -66,7 +71,7 @@ body {
   }
 
   .title {
-    color: var(--mat-table-row-item-label-text-color, #575656) !important; 
+    color: var(--mat-table-row-item-label-text-color, #575656) !important;
   }
 }
 

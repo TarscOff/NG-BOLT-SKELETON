@@ -16,7 +16,7 @@ import pkg from '../package.json';
     providers: [
       ...appConfig.providers!,
       provideCore({
-        logoUrl: 'logo.png',
+        logoUrl: 'assets/logo.png',
         appVersion: pkg.version,
         environments: env,
         theme: 'dark',

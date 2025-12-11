@@ -18,7 +18,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
-import { FieldConfigService } from '@cadai/pxs-ng-core/services';
+import { FieldConfigService, ToastService } from '@cadai/pxs-ng-core/services';
+import { ChatInputData } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
 
 @Component({
   selector: 'app-chat-input-tpl',
@@ -44,17 +45,23 @@ export class ChatInputComponent implements OnInit, OnChanges {
   @Input() disabled = false;
   @Input() loading = false;
 
-  @Output() send = new EventEmitter<string>();
-  @Output() attachmentSelected = new EventEmitter<File>();
+  @Output() send = new EventEmitter<ChatInputData>();
 
   form!: FormGroup;
   fieldConfig: FieldConfig[] = [];
   characterCount = signal(0);
 
+  @Input() attachedFiles: File[] = [];
+  @Input() allowMultipleFiles = true;
+  @Input() acceptedFileTypes = '*'; // or specify like: 'image/*,.pdf,.doc,.docx'
+  @Input() maxFileSize = 10 * 1024 * 1024; // 10MB
+  @Input() maxFiles = 5;
+
   constructor(
     private fb: FormBuilder,
     private fieldsConfigService: FieldConfigService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -114,6 +121,23 @@ export class ChatInputComponent implements OnInit, OnChanges {
     });
   }
 
+  fileIcon(name: string, type?: string): string {
+    const ext = name.split('.').pop()?.toLowerCase();
+    if (type?.includes('pdf') || ext === 'pdf') return 'picture_as_pdf';
+    if (
+      type?.startsWith('image/') ||
+      ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')
+    )
+      return 'image';
+    if (['csv', 'xls', 'xlsx'].includes(ext ?? '')) return 'table_chart';
+    if (['ppt', 'pptx', 'key'].includes(ext ?? '')) return 'slideshow';
+    if (['doc', 'docx', 'rtf', 'odt', 'txt', 'md'].includes(ext ?? ''))
+      return 'description';
+    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? ''))
+      return 'folder_zip';
+    return 'attach_file';
+  }
+
   private updateFormState(): void {
     const messageControl = this.form?.get('message');
     if (!messageControl) return;
@@ -131,11 +155,26 @@ export class ChatInputComponent implements OnInit, OnChanges {
     if (!this.canSend()) return;
 
     const message = this.form.get('message')?.value?.trim();
-    if (!message) return;
+    if (!message) {
+      // display a toast or some UI feedback here as needed
+      this.toast.show(
+        this.translate.instant('chatTpl.error.emptyMessage'),
+        'Close',
+        5000
+      );
+      return
+    };
 
-    this.send.emit(message);
+    // Emit message along with attached files
+    this.send.emit({
+      message,
+      files: [...this.attachedFiles]
+    });
+
+    // Reset form and clear attachments
     this.form.reset();
     this.characterCount.set(0);
+    this.attachedFiles = [];
   }
 
   onKeyDown(event: KeyboardEvent): void {
@@ -145,29 +184,73 @@ export class ChatInputComponent implements OnInit, OnChanges {
     }
   }
 
-  onFileSelected(event: Event): void {
-    if (!this.enableAttachments) return;
-
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      this.attachmentSelected.emit(file);
-      input.value = ''; // Reset input
-    }
-  }
-
   isOverLimit(): boolean {
     return this.characterCount() > this.maxLength;
   }
 
   canSend(): boolean {
     const messageControl = this.form.get('message');
+    const hasMessage = !!messageControl?.value?.trim();
+    const hasFiles = this.attachedFiles.length > 0;
+    
     return (
       !this.disabled &&
       !this.loading &&
-      !!messageControl?.value?.trim() &&
+      (hasMessage || hasFiles) &&
       !this.isOverLimit() &&
-      messageControl.valid
+      messageControl?.valid === true
     );
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const files = Array.from(input.files);
+    
+    // Validate file count
+    if (this.attachedFiles.length + files.length > this.maxFiles) {
+      // Show error - too many files
+      // display a toast or some UI feedback here as needed
+      this.toast.show(
+        this.translate.instant('chatTpl.error.maxFilesExceeded', { maxFiles: this.maxFiles }),
+        'Close',
+        5000
+      );
+      return;
+    }
+
+    // Validate file sizes and add files
+    for (const file of files) {
+      if (file.size > this.maxFileSize) {
+        console.error(`File ${file.name} exceeds maximum size of ${this.formatFileSize(this.maxFileSize)}`);
+        continue;
+      }
+      
+      // Check for duplicates
+      if (!this.attachedFiles.some(f => f.name === file.name && f.size === file.size)) {
+        this.attachedFiles.push(file);
+      }
+    }
+
+    // Reset input
+    input.value = '';
+  }
+
+  removeFile(file: File): void {
+    const index = this.attachedFiles.indexOf(file);
+    if (index > -1) {
+      this.attachedFiles.splice(index, 1);
+    }
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 }

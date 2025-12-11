@@ -18,8 +18,8 @@
 .pxs-wf-palette {
   padding-right: 12px;
   flex: 1;
-  top: 70px;
-  left: 375px;
+  top: 170px;
+  left: 5px;
   border-radius: 15px;
   z-index: 9;
   padding: 8px;
@@ -27,8 +27,8 @@
 
 .palette-toggle {
   position: absolute;
-  top: 14px;
-  left: 380px;
+  top: 104px;
+  left: 20px;
   z-index: 1000;
   background-color: var(--mat-primary);
   color: #fff;
@@ -36,8 +36,8 @@
 
 .run-panel-btn {
   position: absolute;
-  top: 14px;
-  left: 560px;
+  top: 104px;
+  left: 150px;
   z-index: 1000;
   background-color: var(--mat-primary);
   color: #fff;
@@ -62,26 +62,25 @@
 }
 
 .form {
-  position: absolute;
+  position: relative;
   top: 3px;
   left: 3px;
   min-width: 350px;
   border-radius: 15px;
   z-index: 9;
-  padding: 8px;
 
   ::ng-deep {
     .mdc-text-field {
-      background: var(--md-sys-color-surface);
+      background: transparent;
     }
   }
 }
 
 .pxs-wf-canvas {
   position: absolute;
-  inset: 0;
+  bottom: 0;
   width: 100%;
-  height: 100%;
+  height: 90%;
   display: block;
   border-radius: 15px;
   border: 2px solid #d1d1d1;
@@ -101,6 +100,7 @@
   position: absolute;
   inset: 0;
   flex: 5;
+  bottom: 0;
 }
 
 .workflow-zone {
@@ -129,10 +129,6 @@
   display: flex;
   align-items: center;
   justify-content: start;
-}
-
-.form {
-  padding: 10px;
 }
 
 .quick-add {

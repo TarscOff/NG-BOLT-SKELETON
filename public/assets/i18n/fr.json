@@ -32,6 +32,7 @@
   "tip": "Astuce",
   "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d’un nœud (source), puis sur le port gauche d’un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options.",
   "input": "Entrée",
+  "new-session": "Nouvelle Session",
   "result": "Résultat",
   "compare": "Comparaison",
   "summarize": "Résumer",
@@ -80,6 +81,7 @@
     "dashboard": "GenAI Tableau de bord",
     "reports": "GenAI Rapports",
     "components": "GenAI Composants",
+    "genai-sessions": "GenAI Session : {{name}}",
     "team": "GenAI Forms",
     "genai-chat": "GenAI Chat",
     "genai-compare": "GenAI Comparer",
@@ -90,6 +92,7 @@
   },
   "ai": {
     "chat": "Scope du chat",
+    "projects": "Scope des projets",
     "compare": "Scope de la comparaison",
     "workflows": "Scope des workflows",
     "provider": "Fournisseur",
@@ -101,6 +104,85 @@
     "variant": "Variante",
     "value": "Valeur"
   },
+  "loading": "Chargement...",
+  "projects": {
+    "subtitle": "Gérez et organisez vos projets GenAI",
+    "create-new": "Nouveau Projet",
+    "create-first": "Créer votre premier projet",
+    "id": "ID",
+    "designed-workflows": "Workflows Conçus",
+    "published-workflows": "Workflows Publiés",
+    "files": "Fichiers du Projet",
+    "users": "Utilisateurs",
+    "owners": "Propriétaires",
+    "members": "Membres",
+    "total": "Total",
+    "open": "Ouvrir le projet",
+    "pagination": "Pagination des projets",
+    "no-projects": "Aucun projet disponible",
+    "no-projects-description": "Commencez par créer votre premier projet pour organiser vos workflows et fichiers GenAI",
+    "search": {
+      "label": "Rechercher",
+      "placeholder": "Rechercher par nom ou ID..."
+    },
+    "orderBy": {
+      "label": "Trier par",
+      "placeholder": "Trier par",
+      "name": "Nom",
+      "id": "ID"
+    },
+    "clearFilters": "Effacer les filtres",
+    "details": {
+      "title": "Détails : {{name}}",
+      "subtitle": "Voir et gérer les détails du projet",
+      "tabs": {
+        "files": "Fichiers",
+        "chat": "Historique Chat",
+        "sessions": "Mes Sessions",
+        "compare": "Historique Comparaison",
+        "summarize": "Historique Résumé",
+        "extract": "Historique Extraction",
+        "workflows": "Workflows",
+        "members": "Membres"
+      },
+      "no-sessions": "Aucune session disponible",
+      "add-files": "Ajouter des Fichiers",
+      "file-actions": "Actions de fichier",
+      "download": "Télécharger",
+      "remove": "Supprimer",
+      "view": "Voir",
+      "delete": "Supprimer",
+      "updated": "Mis à jour",
+      "designed-steps": "Étapes Conçues",
+      "status": "Statut",
+      "published": "Publié",
+      "draft": "Brouillon",
+      "open": "Ouvrir",
+      "publish": "Publier",
+      "invite-email": "Inviter par email",
+      "email-placeholder": "utilisateur@entreprise.com",
+      "send-invite": "Envoyer l'invitation",
+      "invite-member": "Inviter un membre",
+      "member-actions": "Actions membre",
+      "make-owner": "Promouvoir propriétaire",
+      "make-member": "Définir comme membre",
+      "remove-member": "Retirer le membre",
+      "workflows-pagination": "Pagination des workflows",
+      "no-files": "Aucun fichier téléchargé",
+      "no-chat-history": "Aucun historique de chat disponible",
+      "no-compare-history": "Aucun historique de comparaison disponible",
+      "no-summarize-history": "Aucun historique de résumé disponible",
+      "no-extract-history": "Aucun historique d'extraction disponible",
+      "no-workflows": "Aucun workflow disponible",
+      "no-members": "Aucun membre ajouté",
+      "confirm-delete": "Supprimer \"{{title}}\" ?",
+      "confirm-remove-member": "Retirer {{name}} de ce projet ?"
+    },
+    "error": {
+      "not-found": "Projet introuvable",
+      "failed-to-load": "Échec du chargement des détails du projet"
+    }
+  },
   "error": {
     "403": {
       "title": "Accès interdit",
@@ -109,7 +191,9 @@
     "404": {
       "title": "Page introuvable",
       "text": "Nous n’avons pas pu trouver"
-    }
+    },
+    "label": "Erreur",
+    "failed-to-load-projects": "Échec du chargement des projets"
   },
   "common": {
     "back": "Retour",
@@ -127,13 +211,21 @@
     "edit": "Modifier le message",
     "delete": "Supprimer le message",
     "save": "Enregistrer",
+    "emptyState": "Aucun message. Commencez une conversation !",
     "cancel": "Annuler",
+    "attachFile": "Joindre un fichier",
     "clear": "Effacer la discussion",
     "scrollToBottom": "Défiler vers le bas",
     "input": "Saisie de message",
     "editMessage": "Modifier le message",
     "messages": "Messages de discussion",
-    "editContent": "Modifier le contenu"
+    "editContent": "Modifier le contenu",
+    "acceptedFormats": "Formats acceptés : {{formats}}",
+    "removeFile": "Supprimer le fichier",
+    "error": {
+      "maxFilesExceeded": "Vous pouvez joindre un maximum de {{maxFiles}} fichiers.",
+      "emptyMessage": "Le message ne peut pas être vide."
+    }
   },
   "workflow": {
     "runPanel": {

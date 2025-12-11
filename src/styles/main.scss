@@ -3,11 +3,35 @@
 
 :root {
   --mat-primary: #5c2d91;
-  --mat-primary-variant: #470e7c;
+  --mat-primary-variant: #66d3b3;
   --mat-accent: #ff202b;
   --mat-warn: #ec9a00ff;
   --mat-neutral: #c1c1c3;
   --mat-success: #4caf50;
+
+  // Make scrollbar more visible
+  &::-webkit-scrollbar {
+    width: 10px; // Slightly wider
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); // More visible track
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--mat-primary); // Use primary color
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--mat-primary-dark);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: auto; // Normal width (not thin)
+  scrollbar-color: var(--mat-primary) rgba(0, 0, 0, 0.1);
+
 }
 
 html.dark {
@@ -132,6 +156,10 @@ html.dark {
   --mdc-switch-selected-handle-color: #fff;
   --mdc-switch-selected-hover-handle-color: #fff;
   --mdc-switch-selected-pressed-handle-color: #fff;
+  --mdc-outlined-card-container-color: transparent;
+  --mat-sidenav-container-background-color: transparent;
+  --mat-toolbar-container-background-color: transparent;
+  --mat-paginator-container-background-color: transparent;
 }
 
 

@@ -37,6 +37,15 @@ import { AppSelectors } from '@cadai/pxs-ng-core/store';
     :host { display:block; min-width:320px; max-width:760px; }
     .card { border:2px solid var(--mat-primary,#fff); border-radius:12px; background:var(--md-sys-color-surface,#fff);
             box-shadow:0 6px 24px rgba(0,0,0,.08); overflow:hidden; min-width:700px;}
+    .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent));
+        opacity: .07;
+    }
                 .card.is-selected {
     outline: 2px solid #42a5f5;
     outline-offset: 5px;
@@ -147,7 +156,7 @@ export class WfDetailsNodeComponent extends DrawFlowBaseNode implements OnInit, 
     const data = (raw ?? {}) as RunNodeDTO;
     const type = (data.type ?? data.aiType ?? 'input') as PaletteType;
     const ports = data.ports;
-    return { type, ports, params: this.stripReserved(data.params), aiType: data.aiType, label: data.label, position: data?.['position'],preferredTab: data.preferredTab, };
+    return { type, ports, params: this.stripReserved(data.params), aiType: data.aiType, label: data.label, position: data?.['position'], preferredTab: data.preferredTab, };
   }
 
   private get safeModel(): RunNodeDTO {

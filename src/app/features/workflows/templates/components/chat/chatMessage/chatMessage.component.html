@@ -37,6 +37,21 @@
         } @else if (shouldRenderPlainText()) {
           <p>{{ message.content }}</p>
         }
+
+        <!-- Attachments Preview Section -->
+        @if (message.attachments && message.attachments.length > 0) {
+          <div class="message-attachments">
+            @for (attachment of message.attachments; track attachment.name) {
+              <div class="attachment-item">
+                <mat-icon class="attachment-icon">{{ getFileIcon(attachment.name, attachment.type) }}</mat-icon>
+                <div class="attachment-info">
+                  <span class="attachment-name" [matTooltip]="attachment.name">{{ attachment.name }}</span>
+                  <span class="attachment-size">{{ formatFileSize(attachment.size) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
       } @else {
         <div class="edit-form">
           <app-dynamic-form 

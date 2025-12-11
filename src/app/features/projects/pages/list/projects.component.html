@@ -1,0 +1,133 @@
+<!-- SEO -->
+<app-seo [pageTitle]="'nav.genai-projects' | translate"
+  [description]="'This is the projects page of the AI product app.'" [keywords]="'projects, ai, analytics'"
+  (titleChange)="onTitleChange($event)">
+</app-seo>
+
+<section>
+
+  <div class="projects-page-container">
+    <!-- Loading State -->
+    @if (loading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="64"></mat-spinner>
+      <p>{{ 'loading' | translate }}</p>
+    </div>
+    }
+
+    <!-- Error State -->
+    @else if (error()) {
+    <div class="error-state">
+      <mat-icon color="warn">error</mat-icon>
+      <h3>{{ 'error.label' | translate }}</h3>
+      <p>{{ error() }}</p>
+    </div>
+    }
+
+    <!-- Content -->
+    @else {
+    <!-- Header Card -->
+    <mat-card class="header-card" appearance="outlined">
+      <mat-card-header>
+        <div mat-card-avatar class="header-avatar">
+          <mat-icon>folder_special</mat-icon>
+        </div>
+        <mat-card-title>{{ 'nav.genai-projects' | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ 'projects.subtitle' | translate }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions align="end">
+      </mat-card-actions>
+      <mat-card-content>
+        <!-- Filter/Search Card -->
+        <div class="filter-container">
+          <app-dynamic-form [config]="filterFieldConfig" [form]="filterForm"></app-dynamic-form>
+          <button mat-icon-button [disabled]="!filterForm.dirty" [matTooltip]="'projects.clearFilters' | translate"
+            (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+
+    <!-- Grid of project cards (paged) -->
+    @if (pagedProjects().length > 0) {
+    <div class="projects-grid">
+      @for (project of pagedProjects(); track trackById($index, project)) {
+      <mat-card appearance="outlined" class="project-card" tabindex="0" role="button"
+        [attr.aria-label]="('projects.open' | translate) + ' ' + project.name" (click)="openProject(project)"
+        (keydown.enter)="openProject(project)" (keydown.space)="openProject(project)">
+        <mat-card-header>
+          <div mat-card-avatar class="avatar-folder">
+            <mat-icon>folder_special</mat-icon>
+          </div>
+          <mat-card-title>{{ project.name }}</mat-card-title>
+          <mat-card-subtitle>{{ 'projects.id' | translate }}: {{ project.id }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <mat-list>
+            <!--            <mat-list-item>
+                        <mat-icon matListItemIcon>design_services</mat-icon>
+                        <div matListItemTitle>{{ 'projects.designed-workflows' | translate }}</div>
+                        <div matListItemMeta>{{ project.designedWorkflows }}</div>
+                    </mat-list-item>
+
+                    <mat-list-item>
+                        <mat-icon matListItemIcon>publish</mat-icon>
+                        <div matListItemTitle>{{ 'projects.published-workflows' | translate }}</div>
+                        <div matListItemMeta>{{ project.publishedWorkflows }}</div>
+                    </mat-list-item>
+ -->
+            <mat-list-item>
+              <mat-icon matListItemIcon>attach_file</mat-icon>
+              <div matListItemTitle>{{ 'projects.files' | translate }}</div>
+              <div matListItemMeta>{{ project.filesCount }}</div>
+            </mat-list-item>
+
+            <!--             <mat-list-item>
+                        <mat-icon matListItemIcon>group</mat-icon>
+                        <div matListItemTitle>{{ 'projects.users' | translate }}</div>
+                        <div matListItemLine class="user-details">
+                            {{ 'projects.owners' | translate }} • {{ 'projects.members' | translate }} • {{
+                            'projects.total' | translate }}
+                        </div>
+                        <div matListItemMeta>
+                            {{ totalUsers(project) }}
+                        </div>
+                    </mat-list-item> -->
+          </mat-list>
+        </mat-card-content>
+
+        <mat-card-actions align="end">
+          <button mat-icon-button color="accent" class="accent" [matTooltip]="'projects.open' | translate"
+            [attr.aria-label]="('projects.open' | translate) + ' ' + project.name"
+            (click)="$event.stopPropagation(); openProject(project)">
+            <mat-icon>open_in_new</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+      }
+    </div>
+
+    <!-- Paginator -->
+    <mat-paginator [length]="length()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
+      [pageSizeOptions]="pageSizeOptions" (page)="onPage($event)" [attr.aria-label]="'projects.pagination' | translate">
+    </mat-paginator>
+    }
+
+    <!-- Empty State -->
+    @else {
+    <div class="empty-state">
+      <mat-icon>folder_off</mat-icon>
+      <h3>{{ 'projects.no-projects' | translate }}</h3>
+      <p>{{ 'projects.no-projects-description' | translate }}</p>
+      <button mat-flat-button color="primary" (click)="createProject()">
+        <mat-icon>add</mat-icon>
+        {{ 'projects.create-first' | translate }}
+      </button>
+    </div>
+    }
+    }
+  </div>
+</section>
