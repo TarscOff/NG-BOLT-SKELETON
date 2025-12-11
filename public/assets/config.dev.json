@@ -156,12 +156,35 @@
       "route": "/genai-workflows",
       "requireAuth": true
     },
-    "ai.projects": {
+ "ai.projects": {
       "enabled": true,
+      "variants": [
+        {
+          "ai.provider": "openai",
+          "ai.model": [
+            "gpt-4o-mini"
+          ]
+        },
+        {
+          "ai.provider": "azure",
+          "ai.model": [
+            "az-4o",
+            "az8-4o",
+            "az-4o-large"
+          ]
+        },
+        {
+          "ai.provider": "deepseek",
+          "ai.model": [
+            "deep-4o-large",
+            "deep-4o",
+            "deep-4o5-large"
+          ]
+        }
+      ],
       "roles": [
-        "ROLE_admin",
         "ROLE_user",
-        "ROLE_owner"
+        "ROLE_admin"
       ],
       "allow": {
         "tenants": [
@@ -171,7 +194,7 @@
       },
       "key": "genai-projects",
       "label": "nav.genai-projects",
-      "icon": "source",
+      "icon": "folder_open",
       "route": "/genai-projects",
       "requireAuth": true
     },

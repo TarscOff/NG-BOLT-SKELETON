@@ -1,0 +1,447 @@
+<!-- SEO -->
+<app-seo [pageTitle]="'projects.details.title' | translate : { name: project()?.name || '' }"
+    [description]="'This is the project details page of the AI product app.'"
+    [keywords]="'project, details, ai, analytics'" (titleChange)="onTitleChange($event)">
+</app-seo>
+
+<div class="project-details-container">
+    <!-- Loading State -->
+    @if (loading()) {
+    <div class="loading-state">
+        <mat-spinner diameter="64"></mat-spinner>
+        <p>{{ 'loading' | translate }}</p>
+    </div>
+    }
+
+    <!-- Error State -->
+    @else if (error()) {
+    <div class="error-state">
+        <mat-icon color="warn">error</mat-icon>
+        <h3>{{ 'error.label' | translate }}</h3>
+        <p>{{ error() }}</p>
+    </div>
+    }
+
+    <!-- Content -->
+    @else {
+    <mat-card appearance="outlined" class="project-shell">
+        <mat-card-header>
+            <div mat-card-avatar class="avatar-folder">
+                <mat-icon>folder_special</mat-icon>
+            </div>
+            <mat-card-title>{{ project()?.name || ('projects.details.title' | translate) }}</mat-card-title>
+            <mat-card-subtitle>
+                {{ 'projects.details.subtitle' | translate }}
+            </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+            <mat-tab-group [fitInkBarToContent]="true">
+
+                <!-- MY SESSIONS TAB -->
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">view_timeline</mat-icon>
+                        {{ 'projects.details.tabs.sessions' | translate }} ({{ sessionsCount() }})
+                    </ng-template>
+
+                    @if (sessionsHistory().length > 0) {
+                    <div class="custom-list">
+                        @for (h of sessionsHistory(); track trackHist($index, h)) {
+                        <div class="custom-list-item">
+                            <mat-icon class="item-icon">view_timeline</mat-icon>
+
+                            <div class="item-content">
+                                <span class="item-title">
+
+                                    <mat-chip class="success" color="success" selected="false">{{ h.id }}</mat-chip>{{
+                                    h.title }}</span>
+                                <span class="item-subtitle muted">{{ h.createdAt | date:'medium' }}</span>
+                            </div>
+
+                            <div class="item-actions">
+                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    (click)="viewItem('session', h)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button color="accent"
+                                    [matTooltip]="'projects.details.delete' | translate"
+                                    (click)="deleteItem('session', h)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>open_jam</mat-icon>
+                        <p>{{ 'projects.details.no-sessions' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab>
+
+                <!-- FILES TAB -->
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">attach_file</mat-icon>
+                        {{ 'projects.details.tabs.files' | translate }} ({{ filesCount() }})
+                    </ng-template>
+                    <div class="files-toolbar">
+                        <input #fileInput type="file" multiple hidden (change)="addFiles(fileInput)" />
+                        <button mat-flat-button color="primary" (click)="fileInput.click()" [disabled]="!isAdmin()">
+                            <mat-icon>upload_file</mat-icon>
+                            {{ 'projects.details.add-files' | translate }}
+                        </button>
+                    </div>
+
+
+                    @if (files().length > 0) {
+                    <div class="custom-list">
+                        @for (f of files(); track trackFile($index, f)) {
+                        <div class="custom-list-item">
+                            <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
+                            <div class="item-content">
+
+                                <div matListItemTitle>{{ f.name }}</div>
+                                <div matListItemLine class="muted">
+                                    {{ prettySize(f.size) }} • {{ f.uploadedAt | date: 'mediumDate' }}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button mat-icon-button [matMenuTriggerFor]="fileMenu" [disabled]="!isAdmin()"
+                                    [attr.aria-label]="'projects.details.file-actions' | translate">
+                                    <mat-icon>more_vert</mat-icon>
+                                </button>
+                                <mat-menu #fileMenu="matMenu">
+                                    <button mat-menu-item (click)="downloadFile(f)">
+                                        <mat-icon>download</mat-icon>
+                                        {{ 'projects.details.download' | translate }}
+                                    </button>
+                                    <button mat-menu-item (click)="removeFile(f)">
+                                        <mat-icon>delete</mat-icon>
+                                        {{ 'projects.details.remove' | translate }}
+                                    </button>
+                                </mat-menu>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>folder_open</mat-icon>
+                        <p>{{ 'projects.details.no-files' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab>
+
+                <!-- CHAT HISTORY TAB -->
+                <!-- <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">chat</mat-icon>
+                        {{ 'projects.details.tabs.chat' | translate }} ({{ chatCount() }})
+                    </ng-template>
+
+                    @if (chatHistory().length > 0) {
+                    <mat-list>
+                        @for (h of chatHistory(); track trackHist($index, h)) {
+                        <mat-list-item>
+                            <mat-icon matListItemIcon>chat</mat-icon>
+                            <div matListItemTitle>{{ h.title }}</div>
+                            <div matListItemLine class="muted">
+                                {{ h.createdAt | date:'medium' }}
+                                @if (h.updatedAt) {
+                                <span>&nbsp;•&nbsp;{{ 'projects.details.updated' | translate }} {{ h.updatedAt |
+                                    date:'short' }}</span>
+                                }
+                            </div>
+                     
+                            <div matListItemMeta>
+                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    (click)="viewItem('chat', h)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button color="accent" class="accent"
+                                    [matTooltip]="'projects.details.delete' | translate"
+                                    (click)="deleteItem('chat', h)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </mat-list-item>
+                        }
+                    </mat-list>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>chat_bubble_outline</mat-icon>
+                        <p>{{ 'projects.details.no-chat-history' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab> -->
+
+                <!-- COMPARE HISTORY TAB -->
+                <!--       <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">compare_arrows</mat-icon>
+                        {{ 'projects.details.tabs.compare' | translate }} ({{ compareCount() }})
+                    </ng-template>
+
+                    @if (compareHistory().length > 0) {
+                    <mat-list>
+                        @for (h of compareHistory(); track trackHist($index, h)) {
+                        <mat-list-item>
+                            <mat-icon matListItemIcon>compare_arrows</mat-icon>
+                            <div matListItemTitle>{{ h.title }}</div>
+                            <div matListItemLine class="muted">{{ h.createdAt | date:'medium' }}</div>
+                            <div matListItemLine>
+                                <div class="progress-line">
+                                    <mat-progress-bar mode="determinate" [value]="h.progress || 0"></mat-progress-bar>
+                                    <span class="progress-label">{{ h.progress || 0 }}%</span>
+                                </div>
+                            </div>
+                            <div matListItemMeta>
+                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    (click)="viewItem('compare', h)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn"
+                                    [matTooltip]="'projects.details.delete' | translate"
+                                    (click)="deleteItem('compare', h)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </mat-list-item>
+                        }
+                    </mat-list>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>compare_arrows</mat-icon>
+                        <p>{{ 'projects.details.no-compare-history' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab> -->
+
+                <!-- SUMMARIZE HISTORY TAB -->
+                <!--        <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">summarize</mat-icon>
+                        {{ 'projects.details.tabs.summarize' | translate }} ({{ summarizeCount() }})
+                    </ng-template>
+
+                    @if (summarizeHistory().length > 0) {
+                    <mat-list>
+                        @for (h of summarizeHistory(); track trackHist($index, h)) {
+                        <mat-list-item>
+                            <mat-icon matListItemIcon>summarize</mat-icon>
+                            <div matListItemTitle>{{ h.title }}</div>
+                            <div matListItemLine class="muted">{{ h.createdAt | date:'medium' }}</div>
+                            <div matListItemLine>
+                                <div class="progress-line">
+                                    <mat-progress-bar mode="determinate" [value]="h.progress || 0"></mat-progress-bar>
+                                    <span class="progress-label">{{ h.progress || 0 }}%</span>
+                                </div>
+                            </div>
+                            <div matListItemMeta>
+                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    (click)="viewItem('summary', h)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn"
+                                    [matTooltip]="'projects.details.delete' | translate"
+                                    (click)="deleteItem('summary', h)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </mat-list-item>
+                        }
+                    </mat-list>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>summarize</mat-icon>
+                        <p>{{ 'projects.details.no-summarize-history' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab> -->
+
+                <!-- EXTRACT HISTORY TAB -->
+                <!--      <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">content_paste_search</mat-icon>
+                        {{ 'projects.details.tabs.extract' | translate }} ({{ extractCount() }})
+                    </ng-template>
+
+                    @if (extractHistory().length > 0) {
+                    <mat-list>
+                        @for (h of extractHistory(); track trackHist($index, h)) {
+                        <mat-list-item>
+                            <mat-icon matListItemIcon>content_paste_search</mat-icon>
+                            <div matListItemTitle>{{ h.title }}</div>
+                            <div matListItemLine class="muted">{{ h.createdAt | date:'medium' }}</div>
+                            <div matListItemLine>
+                                <div class="progress-line">
+                                    <mat-progress-bar mode="determinate" [value]="h.progress || 0"></mat-progress-bar>
+                                    <span class="progress-label">{{ h.progress || 0 }}%</span>
+                                </div>
+                            </div>
+                            <div matListItemMeta>
+                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    (click)="viewItem('extract', h)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn"
+                                    [matTooltip]="'projects.details.delete' | translate"
+                                    (click)="deleteItem('extract', h)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </mat-list-item>
+                        }
+                    </mat-list>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>content_paste_search</mat-icon>
+                        <p>{{ 'projects.details.no-extract-history' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab> -->
+
+                <!-- WORKFLOWS TAB (Admin only) -->
+                <!--      @if (isAdmin()) {
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">hub</mat-icon>
+                        {{ 'projects.details.tabs.workflows' | translate }} ({{ wfLength() }})
+                    </ng-template>
+
+                    @if (workflows().length > 0) {
+                    <div class="workflows-grid">
+                        @for (w of pagedWorkflows(); track trackWf($index, w)) {
+                        <mat-card appearance="outlined" class="workflow-card">
+                            <mat-card-header>
+                                <div mat-card-avatar class="avatar-flow">
+                                    <mat-icon>device_hub</mat-icon>
+                                </div>
+                                <mat-card-title>{{ w.name }}</mat-card-title>
+                                <mat-card-subtitle>{{ w.lastUpdated | date:'mediumDate' }}</mat-card-subtitle>
+                            </mat-card-header>
+
+                            <mat-card-content>
+                                <mat-list>
+                                    <mat-list-item>
+                                        <mat-icon matListItemIcon>schema</mat-icon>
+                                        <div matListItemTitle>{{ 'projects.details.designed-steps' | translate }}</div>
+                                        <div matListItemMeta>{{ w.designedSteps }}</div>
+                                    </mat-list-item>
+
+                                    <mat-list-item>
+                                        <mat-icon matListItemIcon>publish</mat-icon>
+                                        <div matListItemTitle>{{ 'projects.details.status' | translate }}</div>
+                                        <div matListItemMeta>
+                                            <mat-chip appearance="outlined"
+                                                [color]="w.published ? 'primary' : undefined">
+                                                {{ w.published ? ('projects.details.published' | translate) :
+                                                ('projects.details.draft' | translate) }}
+                                            </mat-chip>
+                                        </div>
+                                    </mat-list-item>
+                                </mat-list>
+                            </mat-card-content>
+
+                            <mat-card-actions align="end">
+                                <button mat-icon-button [matTooltip]="'projects.details.open' | translate"
+                                    (click)="openWorkflow(w)">
+                                    <mat-icon>open_in_new</mat-icon>
+                                </button>
+                                <button mat-icon-button [matTooltip]="'projects.details.publish' | translate"
+                                    (click)="publishWorkflow(w)" [disabled]="w.published">
+                                    <mat-icon>rocket_launch</mat-icon>
+                                </button>
+                            </mat-card-actions>
+                        </mat-card>
+                        }
+                    </div>
+
+                    <mat-paginator [length]="wfLength()" [pageSize]="wfPageSize()" [pageIndex]="wfPageIndex()"
+                        [pageSizeOptions]="wfPageSizeOptions" (page)="onWfPage($event)"
+                        [attr.aria-label]="'projects.details.workflows-pagination' | translate">
+                    </mat-paginator>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>hub</mat-icon>
+                        <p>{{ 'projects.details.no-workflows' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab>
+                }
+ -->
+
+                <!-- MEMBERS TAB (Admin only) -->
+                <!--     @if (isAdmin()) {
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">group</mat-icon>
+                        {{ 'projects.details.tabs.members' | translate }} ({{ ownersCount() }} {{ 'projects.owners' |
+                        translate }} • {{ membersCount() }} {{ 'projects.members' | translate }})
+                    </ng-template>
+
+                    <div class="members-toolbar">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="email-field">
+                            <mat-label>{{ 'projects.details.invite-email' | translate }}</mat-label>
+                            <input matInput type="email" [placeholder]="'projects.details.email-placeholder' | translate"
+                                [value]="inviteEmail()" (input)="inviteEmail.set($any($event.target).value)" />
+                            <button mat-icon-button matSuffix [matTooltip]="'projects.details.send-invite' | translate"
+                                (click)="inviteMember()" [attr.aria-label]="'projects.details.invite-member' | translate">
+                                <mat-icon>send</mat-icon>
+                            </button>
+                        </mat-form-field>
+                    </div>
+
+                    @if (members().length > 0) {
+                    <mat-list>
+                        @for (m of members(); track trackMem($index, m)) {
+                        <mat-list-item>
+                            <mat-icon matListItemIcon>person</mat-icon>
+                            <div matListItemTitle>{{ m.name }}</div>
+                            <div matListItemLine class="muted">{{ m.email }}</div>
+                            <div matListItemLine class="muted">{{ m.joinedAt | date:'mediumDate' }}</div>
+                            <div matListItemMeta class="member-meta">
+                                <mat-chip appearance="outlined" [color]="m.role === 'owner' ? 'primary' : undefined">
+                                    {{ m.role === 'owner' ? ('projects.owners' | translate) : ('projects.members' |
+                                    translate) }}
+                                </mat-chip>
+                                <button mat-icon-button [matMenuTriggerFor]="memberMenu"
+                                    [attr.aria-label]="'projects.details.member-actions' | translate">
+                                    <mat-icon>more_vert</mat-icon>
+                                </button>
+                                <mat-menu #memberMenu="matMenu">
+                                    <button mat-menu-item (click)="setRole(m, 'owner')">
+                                        <mat-icon>workspace_premium</mat-icon>
+                                        {{ 'projects.details.make-owner' | translate }}
+                                    </button>
+                                    <button mat-menu-item (click)="setRole(m, 'member')">
+                                        <mat-icon>group</mat-icon>
+                                        {{ 'projects.details.make-member' | translate }}
+                                    </button>
+                                    <mat-divider></mat-divider>
+                                    <button mat-menu-item (click)="removeMember(m)">
+                                        <mat-icon>person_remove</mat-icon>
+                                        {{ 'projects.details.remove-member' | translate }}
+                                    </button>
+                                </mat-menu>
+                            </div>
+                        </mat-list-item>
+                        }
+                    </mat-list>
+                    } @else {
+                    <div class="empty-tab">
+                        <mat-icon>group</mat-icon>
+                        <p>{{ 'projects.details.no-members' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab>
+                } -->
+
+            </mat-tab-group>
+        </mat-card-content>
+    </mat-card>
+    }
+</div>

@@ -7,6 +7,11 @@ export interface ChatMessage {
   avatar?: string;
   metadata?: Record<string, unknown>;
   edited?: boolean;
+  attachments?: {
+    name: string;
+    size: number;
+    type: string;
+  }[];
 }
 
 export interface ChatSender {
@@ -30,8 +35,11 @@ export interface ChatConfig {
   // Input Options
   maxLength?: number;
   placeholder?: string;
+
   enableAttachments?: boolean;
-  
+  acceptedFileTypes?: string;
+  maxFileSize?: number;
+  maxFiles?: number;
   // UI Messages
   emptyStateMessage?: string;
   
@@ -70,4 +78,9 @@ export interface ChatMessagesResponse {
   messages: ChatMessage[];
   total: number;
   hasMore: boolean;
+}
+
+export interface ChatInputData {
+  message: string;
+  files: File[];
 }

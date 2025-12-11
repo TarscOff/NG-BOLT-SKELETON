@@ -5,39 +5,41 @@
 
 
 <section>
-  <!-- LINE -->
-  <app-chart [height]="300" [type]="'line'" [data]="tsData" [options]="tsDataOptions"></app-chart>
-  <app-chart [height]="300" [type]="'line'" [data]="tsMultipleData" [options]="tsMultipleDataOptions"></app-chart>
+  <div class="page-content">
+    <!-- LINE -->
+    <app-chart [height]="300" [type]="'line'" [data]="tsData" [options]="tsDataOptions"></app-chart>
+    <app-chart [height]="300" [type]="'line'" [data]="tsMultipleData" [options]="tsMultipleDataOptions"></app-chart>
 
-  <div class="flex flex-wrap flex-justify-space-around">
-    <div>
-      <!-- RADAR -->
-      <app-chart [height]="500" [type]="'radar'" [data]="radarData" [options]="radarOptions"></app-chart>
+    <div class="flex flex-wrap flex-justify-space-around">
+      <div>
+        <!-- RADAR -->
+        <app-chart [height]="500" [type]="'radar'" [data]="radarData" [options]="radarOptions"></app-chart>
+      </div>
+      <div>
+        <!-- POLAR AREA -->
+        <app-chart [height]="500" [type]="'polarArea'" [data]="polarData" [options]="polarOptions"
+          (elementClick)="onPolarClick($event)"></app-chart>
+      </div>
     </div>
-    <div>
-      <!-- POLAR AREA -->
-      <app-chart [height]="500" [type]="'polarArea'" [data]="polarData" [options]="polarOptions"
-        (elementClick)="onPolarClick($event)"></app-chart>
+    <div class="flex flex-wrap flex-justify-space-around">
+      <div>
+        <!-- PIE -->
+        <app-chart [height]="400" [type]="'pie'" [data]="pieData" [options]="pieOptions"
+          (elementClick)="onPieClick($event)"></app-chart>
+      </div>
+      <div>
+        <!-- DOUGHNUT -->
+        <app-chart [height]="400" [type]="'doughnut'" [data]="doughnutData" [options]="doughnutOptions"
+          (elementClick)="onDoughnutClick($event)"></app-chart>
+      </div>
     </div>
+    <!-- BAR -->
+    <app-chart [height]="300" [width]="'100%'" [type]="'bar'" [data]="barData" [options]="barOptions"
+      (elementClick)="onBarClick($event)">
+    </app-chart>
+    <app-smart-table [columns]="cols" [data]="users" [endpoint]="undefined" [serverSide]="false" [pageSize]="20"
+      [stickyHeader]="true" [stickyFooter]="false" [enableTree]="true" childrenKey="children" idKey="id"
+      (rowClick)="onRowClick($event)" [multiSelect]="true" [enableReorder]="false" [height]="600"
+      (action)="onActionClick($event)"></app-smart-table>
   </div>
-  <div class="flex flex-wrap flex-justify-space-around">
-    <div>
-      <!-- PIE -->
-      <app-chart [height]="400" [type]="'pie'" [data]="pieData" [options]="pieOptions"
-        (elementClick)="onPieClick($event)"></app-chart>
-    </div>
-    <div>
-      <!-- DOUGHNUT -->
-      <app-chart [height]="400" [type]="'doughnut'" [data]="doughnutData" [options]="doughnutOptions"
-        (elementClick)="onDoughnutClick($event)"></app-chart>
-    </div>
-  </div>
-  <!-- BAR -->
-  <app-chart [height]="300" [width]="'100%'" [type]="'bar'" [data]="barData" [options]="barOptions"
-    (elementClick)="onBarClick($event)">
-  </app-chart>
-  <app-smart-table [columns]="cols" [data]="users" [endpoint]="undefined" [serverSide]="false" [pageSize]="20"
-    [stickyHeader]="true" [stickyFooter]="false" [enableTree]="true" childrenKey="children" idKey="id"
-    (rowClick)="onRowClick($event)" [multiSelect]="true" [enableReorder]="false" [height]="600"
-    (action)="onActionClick($event)"></app-smart-table>
 </section>

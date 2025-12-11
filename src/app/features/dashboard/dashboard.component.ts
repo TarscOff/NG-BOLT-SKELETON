@@ -8,7 +8,7 @@ import { LayoutService, ToolbarActionsService } from '@cadai/pxs-ng-core/service
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { ActiveElement, ChartData, ChartEvent, ChartOptions } from 'chart.js';
 import { DateTime } from 'luxon';
-import { pick, fill30, warn, success, accent, linearGradientSuccess, linearGradientWarn, successFill, accentFill, primary, linearGradientPrimary } from '@cadai/pxs-ng-core/utils';
+import { pick, fill30, success, accent, successFill, accentFill, primary, linearGradientPrimary, linearGradientAccent } from '@cadai/pxs-ng-core/utils';
 import { SmartColumn, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
 
 @Component({
@@ -213,10 +213,10 @@ export class DashboardComponent implements OnInit {
         ],
         fill: true,
         tension: 0.25,
-        borderColor: () => success(),
-        backgroundColor: (ctx) => linearGradientSuccess(ctx.chart.ctx, this.isDark),
-        pointBackgroundColor: () => success(),
-        pointHoverBackgroundColor: () => success(),
+        borderColor: () => primary(),
+        backgroundColor: (ctx) => linearGradientPrimary(ctx.chart.ctx, this.isDark),
+        pointBackgroundColor: () => primary(),
+        pointHoverBackgroundColor: () => primary(),
       }
     ]
   };
@@ -249,10 +249,10 @@ export class DashboardComponent implements OnInit {
         ],
         fill: true,
         tension: 0.25,
-        borderColor: () => warn(),
-        backgroundColor: (ctx) => linearGradientWarn(ctx.chart.ctx, this.isDark),
-        pointBackgroundColor: () => warn(),
-        pointHoverBackgroundColor: () => warn(),
+        borderColor: () => accent(),
+        backgroundColor: (ctx) => linearGradientAccent(ctx.chart.ctx, this.isDark),
+        pointBackgroundColor: () => accent(),
+        pointHoverBackgroundColor: () => accent(),
 
       },
       {

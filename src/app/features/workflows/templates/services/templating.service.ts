@@ -16,7 +16,7 @@ import { ChatEndpoints, ChatMessage } from '@features/workflows/templates/utils/
 import { CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
 import { SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
 import { ChatService } from './chat.service';
-import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, EXTRACT_CONFIG, EXTRACT_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS } from '../utils/constants';
+import { CHAT_CONFIG, CHAT_ENDPOINTS } from '../utils/constants';
 import { ExtractionResult } from '../utils/tplsInterfaces/extractTpl.interface';
 import { ExtractComponent } from '../components/extract/extract.component';
 
@@ -58,12 +58,12 @@ export class TemplatingService {
    * Fetch template configuration from API
    * @param pageId Optional page identifier (defaults to 'default')
    */
-  fetchTemplateConfig(pageId = 'default'): Observable<TemplatePageResponse> {
+  fetchTemplateConfig(pageId = 'default', isNewSession: boolean): Observable<TemplatePageResponse> {
     return this.http.get<TemplatePageResponse>(`${this.base}/page/${pageId}`).pipe(
       map(response => this.validateAndTransform(response)),
       catchError(error => {
         console.error('Failed to fetch template config:', error);
-        return of(this.getDefaultConfig());
+        return of(this.getDefaultConfig(isNewSession));
       })
     );
   }
@@ -156,14 +156,14 @@ export class TemplatingService {
   /**
    * Get default/fallback configuration with new endpoint structure
    */
-  private getDefaultConfig(): TemplatePageResponse {
+  private getDefaultConfig(isNewSession: boolean): TemplatePageResponse {
     return {
-      pageTitle: 'AI Tools',
+      pageTitle: 'AI Tools - Session : ',
       pageDescription: 'Choose a tool to get started',
       templates: [
         {
           type: 'chat',
-          initialMessages: this.getMockChatMessages(),
+          initialMessages: !isNewSession ? this.getMockChatMessages() : [],
           currentUser: {
             id: 'user-1',
             name: 'You',
@@ -172,7 +172,7 @@ export class TemplatingService {
           endpoints: CHAT_ENDPOINTS,
           config: CHAT_CONFIG,
         },
-        {
+        /*{
           type: 'compare',
           mode: 'upload',
           endpoints: COMPARE_ENDPOINTS,
@@ -192,7 +192,7 @@ export class TemplatingService {
           endpoints: EXTRACT_ENDPOINTS,
           result: this.getMockExtractionResult(),
           config: EXTRACT_CONFIG,
-        },
+        }, */
       ],
       metadata: {
         version: '2.0.0',
@@ -331,6 +331,18 @@ export class TemplatingService {
           type: 'user',
         },
         timestamp: new Date('2025-11-03T10:01:00'),
+        attachments: [
+          {
+            name: 'contract_v1.pdf',
+            size: 2048576,
+            type: 'application/pdf'
+          },
+          {
+            name: 'contract_v2.pdf',
+            size: 2156789,
+            type: 'application/pdf'
+          }
+        ]
       },
       {
         id: 'msg-4',
