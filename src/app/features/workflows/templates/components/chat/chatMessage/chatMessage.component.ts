@@ -184,4 +184,29 @@ export class ChatMessageComponent implements OnInit {
       !this.shouldRenderCode() &&
       !this.isEditing();
   }
+
+  getFileIcon(name: string, type?: string): string {
+    const ext = name.split('.').pop()?.toLowerCase();
+    if (type?.includes('pdf') || ext === 'pdf') return 'picture_as_pdf';
+    if (
+      type?.startsWith('image/') ||
+      ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')
+    )
+      return 'image';
+    if (['csv', 'xls', 'xlsx'].includes(ext ?? '')) return 'table_chart';
+    if (['ppt', 'pptx', 'key'].includes(ext ?? '')) return 'slideshow';
+    if (['doc', 'docx', 'rtf', 'odt', 'txt', 'md'].includes(ext ?? ''))
+      return 'description';
+    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? ''))
+      return 'folder_zip';
+    return 'attach_file';
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
 }

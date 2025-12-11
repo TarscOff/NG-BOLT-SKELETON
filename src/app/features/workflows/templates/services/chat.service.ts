@@ -12,6 +12,7 @@ import {
 interface SendMessageRequest {
     content: string;
     sender: ChatSender;
+    files?: File[];
 }
 
 interface SendMessageResponse {
@@ -64,20 +65,48 @@ export class ChatService {
         request: SendMessageRequest,
         endpoints?: Partial<ChatEndpoints>
     ): Observable<SendMessageResponse> {
-
-
         const endpoint = endpoints?.sendMessage || this.endpoints.sendMessage;
         if (!endpoint) {
             return throwError(() => new Error('Send endpoint not configured'));
         }
 
-        return this.http.post<SendMessageResponse>(endpoint, request).pipe(
-            catchError(error => {
-                console.error('Error sending message:', error);
-                throwError(() => error);
-                return this.mockSendMessage(request);
-            })
-        );
+        // Check if there are files to upload
+        if (request.files && request.files.length > 0) {
+            const formData = new FormData();
+
+            // Append JSON fields individually
+            formData.append('content', request.content);
+            formData.append('sender', JSON.stringify(request.sender));
+
+            // Or as one JSON string field
+            // formData.append('message', JSON.stringify({
+            //     content: request.content,
+            //     sender: request.sender
+            // }));
+
+            // Append each file
+            request.files.forEach((file) => {
+                formData.append('files', file, file.name);
+            });
+
+            return this.http.post<SendMessageResponse>(endpoint, formData).pipe(
+                catchError(error => {
+                    console.error('Error sending message with files:', error);
+                    return this.mockSendMessage(request);
+                })
+            );
+        } else {
+            // Send as regular JSON if no files
+            return this.http.post<SendMessageResponse>(endpoint, {
+                content: request.content,
+                sender: request.sender
+            }).pipe(
+                catchError(error => {
+                    console.error('Error sending message:', error);
+                    return this.mockSendMessage(request);
+                })
+            );
+        }
     }
 
     deleteMessage(

@@ -41,6 +41,86 @@
   "toggle": "Fold",
   "untoggle": "Unfold",
   "jump_to_view": "Go to view",
+  "new-session": "New Session",
+  "loading": "Loading ...",
+  "projects": {
+    "subtitle": "Manage and organize your GenAI projects",
+    "create-new": "New Project",
+    "create-first": "Create your first project",
+    "id": "ID",
+    "designed-workflows": "Designed Workflows",
+    "published-workflows": "Published Workflows",
+    "files": "Project Files",
+    "users": "Users",
+    "owners": "Owners",
+    "members": "Members",
+    "total": "Total",
+    "open": "Open project",
+    "pagination": "Project pagination",
+    "no-projects": "No projects available",
+    "no-projects-description": "Get started by creating your first project to organize your GenAI workflows and files",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search by name or ID..."
+    },
+    "orderBy": {
+      "label": "Order By",
+      "placeholder": "Select order",
+      "name": "Name",
+      "id": "ID"
+    },
+    "clearFilters": "Clear filters",
+    "details": {
+      "title": "Details : {{name}}",
+      "subtitle": "View and manage project details",
+      "tabs": {
+        "files": "Files",
+        "chat": "Chat History",
+        "sessions": "My Sessions",
+        "compare": "Compare History",
+        "summarize": "Summarize History",
+        "extract": "Extract History",
+        "workflows": "Workflows",
+        "members": "Members"
+      },
+      "no-sessions": "No sessions available",
+      "add-files": "Add Files",
+      "file-actions": "File actions",
+      "download": "Download",
+      "remove": "Remove",
+      "view": "View",
+      "delete": "Delete",
+      "updated": "Updated",
+      "designed-steps": "Designed Steps",
+      "status": "Status",
+      "published": "Published",
+      "draft": "Draft",
+      "open": "Open",
+      "publish": "Publish",
+      "invite-email": "Invite by email",
+      "email-placeholder": "user@company.com",
+      "send-invite": "Send invite",
+      "invite-member": "Invite member",
+      "member-actions": "Member actions",
+      "make-owner": "Make owner",
+      "make-member": "Make member",
+      "remove-member": "Remove member",
+      "workflows-pagination": "Workflows pagination",
+      "no-files": "No files uploaded yet",
+      "no-chat-history": "No chat history available",
+      "no-compare-history": "No compare history available",
+      "no-summarize-history": "No summarize history available",
+      "no-extract-history": "No extract history available",
+      "no-workflows": "No workflows available",
+      "no-members": "No members added yet",
+      "confirm-delete": "Delete \"{{title}}\"?",
+      "confirm-remove-member": "Remove {{name}} from this project?"
+    },
+    "error": {
+      "not-found": "Project not found",
+      "failed-to-load": "Failed to load project details"
+    }
+  },
   "chatPage": {
     "loading": "Loading templates...",
     "reload": "Reload",
@@ -84,11 +164,13 @@
     "genai-compare": "GenAI Compare",
     "genai-workflows": "GenAI Workflows",
     "genai-projects": "GenAI Projects",
+    "genai-sessions": "GenAI Session :  {{name}}",
     "genai-admin": "GenAI Admin",
     "admin": "Admin"
   },
   "ai": {
     "chat": "Chat Scope",
+    "projects": "Projects Scope",
     "compare": "Compare Scope",
     "workflows": "Workflows Scope",
     "provider": "Provider",
@@ -108,7 +190,9 @@
     "404": {
       "title": "Page not found",
       "text": "We couldn’t find"
-    }
+    },
+    "label": "Error",
+    "failed-to-load-projects": "Failed to load projects"
   },
   "common": {
     "back": "Back",
@@ -126,13 +210,21 @@
     "edit": "Edit message",
     "delete": "Delete message",
     "save": "Save",
+    "attachFile": "Attach file",
     "cancel": "Cancel",
     "clear": "Clear chat",
     "scrollToBottom": "Scroll to bottom",
     "input": "Message input",
     "editMessage": "Edit message",
     "messages": "Chat messages",
-    "editContent": "Edit content"
+    "editContent": "Edit content",
+    "acceptedFormats": "Accepted formats: {{formats}}",
+    "removeFile": "Remove file",
+    "emptyState": "No messages yet. Start a conversation!",
+    "error": {
+      "maxFilesExceeded": "You can attach a maximum of {{maxFiles}} files.",
+      "emptyMessage": "Message cannot be empty."
+    }
   },
   "workflow": {
     "runPanel": {

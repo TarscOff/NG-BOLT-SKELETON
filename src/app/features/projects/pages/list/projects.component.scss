@@ -1,0 +1,252 @@
+.projects-page-container {
+  margin: 0 auto;
+  height: 100%;
+  overflow: auto;
+  padding: 1rem;
+}
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+
+// Loading state
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+// Error state
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin: 0.5rem 0;
+  }
+}
+
+// Header card
+.header-card {
+  margin-bottom: 1.5rem;
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--mat-primary-variant) 0%, var(--mat-accent) 100%);
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  mat-card-actions {
+    padding: 0 1rem 1rem;
+
+    button {
+      mat-icon {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
+
+// Projects grid
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+// Project card
+.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
+    linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent)) border-box;
+
+  &::after {
+    content: "";
+    background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent)) border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .05;
+    transition: all 0.2s ease-in-out;
+
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    &::after {
+      opacity: .2;
+    }
+
+  }
+
+  .avatar-folder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+  }
+
+  mat-card-content {
+    flex: 1;
+    padding: 0;
+
+    mat-list {
+      padding: 0;
+    }
+
+    mat-list-item {
+      font-size: 0.875rem;
+
+      .user-details {
+        font-size: 0.75rem;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  mat-card-actions {
+    padding: 0.5rem 1rem;
+  }
+}
+
+// Empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+
+  h3 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin: 0.5rem 0 2rem;
+    max-width: 500px;
+  }
+
+  button mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-right: 0.5rem;
+  }
+}
+
+// Paginator
+mat-paginator {
+  background: transparent;
+  margin-top: 1rem;
+}
+
+// Responsive
+@media (max-width: 960px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .projects-page-container {
+    padding: 1rem;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-card mat-card-actions {
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+
+  button {
+    margin-bottom: 18px;
+    margin-left: 15px;
+    ;
+  }
+
+  app-dynamic-form {
+    flex: 1;
+
+    ::ng-deep {
+      form {
+        display: flex;
+        flex-direction: row;
+
+        app-field-host {
+          flex: 1;
+        }
+      }
+    }
+  }
+}

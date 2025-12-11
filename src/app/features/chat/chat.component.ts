@@ -62,7 +62,7 @@ export class ChatPageComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.templating.fetchTemplateConfig(pageId).subscribe({
+    this.templating.fetchTemplateConfig(pageId, false).subscribe({
       next: (config) => {
         this.pageConfig.set(config);
         this.loading.set(false);

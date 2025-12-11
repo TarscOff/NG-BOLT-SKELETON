@@ -79,6 +79,8 @@ import { ExtractConfig, ExtractFile } from '@features/workflows/templates/utils/
       height: 100%;
       display: flex;
       flex-direction: column;
+      box-shadow: none;
+      background-color: var(--mat-sys-surface);
 
       mat-card-content {
         flex: 1;

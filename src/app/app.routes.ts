@@ -50,6 +50,33 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/chat/chat.component').then(m => m.ChatPageComponent),
       },
+      {
+        path: 'genai-projects',
+        canActivate: [featureGuard('ai.projects', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/projects/pages/list/projects.component').then(m => m.ProjectsComponent),
+          },
+          {
+            path: ':id/sessions/new',
+            loadComponent: () =>
+              import('./features/projects/pages/sessions/sessions.component').then(m => m.SessionsComponent),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./features/projects/pages/details/details.component').then(m => m.ProjectDetailsComponent),
+          },
+          {
+            path: ':id/sessions/:sessionId',
+            loadComponent: () =>
+              import('./features/projects/pages/sessions/sessions.component').then(m => m.SessionsComponent),
+          },
+        ]
+      },
       { path: '403', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) },
       { path: '**', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) },
     ]

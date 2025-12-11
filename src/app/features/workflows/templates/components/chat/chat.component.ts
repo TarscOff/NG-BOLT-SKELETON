@@ -32,6 +32,7 @@ import {
   ChatMode,
   ChatConfig,
   ChatEndpoints,
+  ChatInputData,
 } from '../../utils/tplsInterfaces/chatTpl.interface';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
@@ -156,7 +157,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const config = this._config();
     const disabled = this.disabled;
 
-    if(disabled) return false;
+    if (disabled) return false;
     if (mode.mode === 'preloaded') {
       return config.allowEdit !== false && config.allowDelete !== false;
     }
@@ -240,33 +241,37 @@ export class ChatComponent implements OnInit, OnDestroy {
     return message.id;
   }
 
-  onSendMessage(content: string): void {
-    console.log("here1")
+  onSendMessage(data: ChatInputData): void {
     if (!this.canSendMessage$()) {
       return;
     }
 
     const userMessage: ChatMessage = {
       id: this.generateMessageId(),
-      content,
+      content: data.message,
       sender: this._currentUser(),
       timestamp: new Date(),
+      attachments: data.files.map(f => ({
+        name: f.name,
+        size: f.size,
+        type: f.type
+      }))
     };
 
     this._messages.update(msgs => [...msgs, userMessage]);
-    this.messageSent.emit(content);
+    this.messageSent.emit(data.message);
     this._isTyping.set(true);
 
     const endpoints = {
       ...this._endpoints(),
     };
-    console.log("here2",endpoints)
 
     this.chatService
       .sendMessage(
         {
-          content,
+          content: data.message,
           sender: this._currentUser(),
+          files: data.files
         },
         endpoints
       )
@@ -274,7 +279,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       .subscribe({
         next: response => {
           this._isTyping.set(false);
-          this._messages.update(msgs => [...msgs, response.assistantMessage]);
+            const assistantMessage = {
+            ...response.assistantMessage,
+            attachments: response.assistantMessage.attachments || []
+            };
+            this._messages.update(msgs => [...msgs, assistantMessage]);
         },
         error: err => {
           this._isTyping.set(false);
@@ -308,69 +317,31 @@ export class ChatComponent implements OnInit, OnDestroy {
       });
   }
 
-onEditMessage(messageId: string, content: string): void {
-  if (!this.canEditDelete$()) {
-    return;
-  }
-
-  this._isLoading.set(true);
-
-  this.chatService
-    .editMessage(messageId, content, this._endpoints())
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: updated => {
-        this._isLoading.set(false);
-        this._messages.update(msgs =>
-          msgs.map(m =>
-            m.id === messageId
-              ? { ...m, content, edited: true, ...updated }
-              : m
-          )
-        );
-        this.messageEdited.emit({ id: messageId, content });
-      },
-      error: err => {
-        this._isLoading.set(false);
-        console.error('Error editing message:', err);
-        this.errorEmitter.emit(err);
-      },
-    });
-}
-
-  onAttachmentSelected(file: File): void {
-    const config = this._config();
-    if (!config.enableAttachments) {
+  onEditMessage(messageId: string, content: string): void {
+    if (!this.canEditDelete$()) {
       return;
     }
 
     this._isLoading.set(true);
 
-    const endpoints = {
-      ...this._endpoints(),
-    };
-
     this.chatService
-      .uploadAttachment(file, endpoints)
+      .editMessage(messageId, content, this._endpoints())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: result => {
+        next: updated => {
           this._isLoading.set(false);
-          this.attachmentUploaded.emit(result);
-          
-          // Optionally add attachment info as message
-          const attachmentMessage: ChatMessage = {
-            id: this.generateMessageId(),
-            content: `Uploaded: ${result.filename}`,
-            sender: this._currentUser(),
-            timestamp: new Date(),
-            metadata: { attachmentUrl: result.url },
-          };
-          this._messages.update(msgs => [...msgs, attachmentMessage]);
+          this._messages.update(msgs =>
+            msgs.map(m =>
+              m.id === messageId
+                ? { ...m, content, edited: true, ...updated }
+                : m
+            )
+          );
+          this.messageEdited.emit({ id: messageId, content });
         },
         error: err => {
           this._isLoading.set(false);
-          console.error('Error uploading attachment:', err);
+          console.error('Error editing message:', err);
           this.errorEmitter.emit(err);
         },
       });
@@ -388,7 +359,7 @@ onEditMessage(messageId: string, content: string): void {
     }
   }
 
-  
+
   private generateMessageId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }

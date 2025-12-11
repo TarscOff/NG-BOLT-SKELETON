@@ -74,7 +74,6 @@
       </div>
     }
   </div>
-
   <!-- Input Area -->
   <div class="chat-footer">
     <app-chat-input-tpl
@@ -82,9 +81,11 @@
       [maxLength]="effectiveMaxLength$()"
       [placeholder]="effectivePlaceholder$()"
       [enableAttachments]="config$().enableAttachments === true"
+      [acceptedFileTypes]="config$().acceptedFileTypes || ''"
+      [maxFiles]="config$().maxFiles || 5"
+      [allowMultipleFiles]="(config$().maxFiles || 5) > 1"
       [loading]="isLoading$()"
       (send)="onSendMessage($event)"
-      (attachmentSelected)="onAttachmentSelected($event)"
     ></app-chat-input-tpl>
   </div>
 

@@ -60,6 +60,16 @@ import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterf
       &.collapsed {
         height: auto;
       }
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent));
+        opacity: .07;
+    }
     }
     .card.is-selected {
       outline: 2px solid #42a5f5;
