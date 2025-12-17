@@ -1,0 +1,104 @@
+{
+  "version": "2.0.7",
+  "tag": "v2.0.7",
+  "previousTag": "v2.0.6",
+  "date": "2025-12-11T15:41:21.214Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 3,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "4b0c951",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.7 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2fb0b9b",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing layout STYLES",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b1715a4",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.6",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "0ee733d",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #40 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "4b0c95104a15ddef154db5262516a8b8304f9e64",
+      "shortHash": "4b0c951",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.7 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0ee733d3a60e21f3b7b62f3bba720b22c2e23ba8",
+      "shortHash": "0ee733d",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #40 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): fixing layout STYLES"
+    },
+    {
+      "hash": "2fb0b9b9fa89915f8892fa441bc0e3ac45e8b621",
+      "shortHash": "2fb0b9b",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing layout STYLES",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b1715a40c98577c67424a95b65ae8e536d28e0f1",
+      "shortHash": "b1715a4",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.6",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

@@ -1,10 +1,11 @@
 # Core SDK — Layout & Configuration Guide
 
-> _Last updated: 2025‑12‑10_
+> _Last updated: 2025‑12‑11_
 
 This document explains how to configure and use the **`AppLayoutComponent`** from the Core SDK, including:
 - **Dynamic logo configuration** from the hosting app
 - **Dynamic toolbar actions** (e.g., Back, Export, Delete) that each routed page can publish
+- **Dynamic breadcrumbs** that pages can set to show navigation hierarchy
 - **Navigation menu** with Material 3 components
 - **User profile panel** with roles and logout
 - **Quick settings dialog** (theme, language, AI configuration)
@@ -18,8 +19,9 @@ Works with **Angular 16–19+**, standalone components, Material 3, NgRx, and ng
 1. [Basic Usage in Routes](#1-basic-usage-in-routes)
 2. [Logo Configuration](#2-logo-configuration)
 3. [Dynamic Toolbar Actions](#3-dynamic-toolbar-actions)
-4. [Navigation Menu](#4-navigation-menu)
-5. [API Reference](#5-api-reference)
+4. [Dynamic Breadcrumbs](#4-dynamic-breadcrumbs)
+5. [Navigation Menu](#5-navigation-menu)
+6. [API Reference](#6-api-reference)
 
 ---
 
@@ -190,7 +192,7 @@ The `AppLayoutComponent` already includes the toolbar actions rendering:
   <span class="spacer"></span>
 
   <div class="custom-btns">
-    @for (a of (toolbarActions$ | async) ?? []; track a.id) {
+    @for (a of (toolbarActions$ | async) || []; track a.id) {
       @if ((a.visible$ | async) ?? true) {
         <!-- Icon variant -->
         @if ((a.variant ?? 'icon') === 'icon') {
@@ -368,7 +370,160 @@ const saveAction: ToolbarAction = {
 
 ---
 
-## 4) Navigation Menu
+## 4) Dynamic Breadcrumbs
+
+The layout includes a breadcrumb component that displays the navigation hierarchy. Each page can dynamically set its breadcrumbs using the `LayoutService`.
+
+### Service Interface
+
+The `LayoutService` exposes breadcrumb management:
+
+```ts
+export interface BreadcrumbItem {
+  label: string;        // Display text
+  route?: string;       // Optional navigation route
+  queryParams?: any;    // Optional query parameters
+  disabled?: boolean;   // Disable clicking
+}
+
+@Injectable({ providedIn: 'root' })
+export class LayoutService {
+  readonly breadcrumbs$: Observable<BreadcrumbItem[]>;
+  
+  setBreadcrumbs(items: BreadcrumbItem[]): void;
+  clearBreadcrumbs(): void;
+}
+```
+
+### Layout Integration
+
+The breadcrumb component is rendered below the page title in the toolbar:
+
+```html
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <div>
+    <span class="title">{{ title$ | async }}</span>
+    <app-breadcrumb [items]="(breadcrumbItems$ | async) || []"></app-breadcrumb>
+  </div>
+  <!-- ...toolbar actions... -->
+</mat-toolbar>
+```
+
+### Example: Setting Breadcrumbs in a Page
+
+```ts
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { LayoutService } from '@cadai/pxs-ng-core/services';
+import { BreadcrumbItem } from '@cadai/pxs-ng-core/interfaces';
+
+@Component({
+  selector: 'app-product-details',
+  standalone: true,
+  template: `
+    <h1>Product Details</h1>
+    <p>Product information goes here...</p>
+  `,
+})
+export class ProductDetailsComponent implements OnInit, OnDestroy {
+  private layoutService = inject(LayoutService);
+
+  ngOnInit(): void {
+    // Set breadcrumbs for this page
+    this.layoutService.setBreadcrumbs([
+      { label: 'Home', route: '/dashboard' },
+      { label: 'Products', route: '/products' },
+      { label: 'Product Details' }, // Current page, no route
+    ]);
+  }
+
+  ngOnDestroy(): void {
+    // Optional: clear breadcrumbs when leaving
+    this.layoutService.clearBreadcrumbs();
+  }
+}
+```
+
+### Breadcrumb Features
+
+- **Clickable items**: Items with a `route` property are clickable and navigate when clicked
+- **Non-clickable items**: Items without a `route` (typically the current page) are displayed as plain text
+- **Query parameters**: Support for query parameters in navigation
+- **Disabled state**: Items can be disabled with the `disabled` property
+- **Chevron separators**: Automatic chevron icons between items
+- **Responsive**: Adapts to mobile viewports
+
+### Advanced Patterns
+
+#### A) Dynamic Breadcrumbs from Route Data
+
+```ts
+import { ActivatedRoute } from '@angular/router';
+
+ngOnInit(): void {
+  // Build breadcrumbs from route data
+  const breadcrumbs: BreadcrumbItem[] = [];
+  let route = this.activatedRoute;
+
+  while (route) {
+    if (route.snapshot.data['breadcrumb']) {
+      breadcrumbs.unshift({
+        label: route.snapshot.data['breadcrumb'],
+        route: route.snapshot.url.join('/'),
+      });
+    }
+    route = route.parent as ActivatedRoute;
+  }
+
+  this.layoutService.setBreadcrumbs(breadcrumbs);
+}
+```
+
+#### B) Breadcrumbs with Translation
+
+```ts
+import { TranslateService } from '@ngx-translate/core';
+
+ngOnInit(): void {
+  this.layoutService.setBreadcrumbs([
+    { 
+      label: this.translate.instant('breadcrumbs.home'), 
+      route: '/' 
+    },
+    { 
+      label: this.translate.instant('breadcrumbs.products'), 
+      route: '/products' 
+    },
+    { 
+      label: this.productName // Dynamic data
+    },
+  ]);
+}
+```
+
+#### C) Conditional Breadcrumb Items
+
+```ts
+ngOnInit(): void {
+  const items: BreadcrumbItem[] = [
+    { label: 'Dashboard', route: '/dashboard' },
+  ];
+
+  if (this.hasPermission('view-reports')) {
+    items.push({ label: 'Reports', route: '/reports' });
+  }
+
+  items.push({ label: 'Current Page' });
+
+  this.layoutService.setBreadcrumbs(items);
+}
+```
+
+---
+
+## 5) Navigation Menu
 
 The layout includes an auto-generated navigation menu based on feature flags and roles.
 
@@ -396,7 +551,7 @@ The menu automatically:
 
 ---
 
-## 5) API Reference
+## 6) API Reference
 
 ### `CoreOptions` Interface
 
@@ -436,6 +591,23 @@ export interface CoreOptions {
 - `remove(id: string)` — Remove action by ID
 - `clear()` — Remove all actions
 - `scope(destroyRef: DestroyRef, actions: ToolbarAction[])` — Set actions with auto-cleanup on destroy
+
+### `BreadcrumbItem` Interface
+
+| Property      | Type     | Required | Description                          |
+| ------------- | -------- | -------- | ------------------------------------ |
+| `label`       | `string` | ✅       | Display text for the breadcrumb      |
+| `route`       | `string` |          | Navigation route (makes it clickable)|
+| `queryParams` | `any`    |          | Query parameters for navigation      |
+| `disabled`    | `boolean`|          | Disable clicking                     |
+
+### `LayoutService` Methods
+
+- `title$: Observable<string>` — Current page title
+- `breadcrumbs$: Observable<BreadcrumbItem[]>` — Current breadcrumb items
+- `setTitle(title: string)` — Update page title
+- `setBreadcrumbs(items: BreadcrumbItem[])` — Set breadcrumb items
+- `clearBreadcrumbs()` — Remove all breadcrumbs
 
 ---
 

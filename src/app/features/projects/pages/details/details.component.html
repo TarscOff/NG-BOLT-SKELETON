@@ -48,7 +48,10 @@
                     @if (sessionsHistory().length > 0) {
                     <div class="custom-list">
                         @for (h of sessionsHistory(); track trackHist($index, h)) {
-                        <div class="custom-list-item">
+                        <div tabindex="0" role="button" [attr.aria-label]="h.title"
+                            (keydown.enter)="viewItem('session', h)"
+                            (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                            (click)="viewItem('session', h)" class="custom-list-item">
                             <mat-icon class="item-icon">view_timeline</mat-icon>
 
                             <div class="item-content">
@@ -99,7 +102,11 @@
                     @if (files().length > 0) {
                     <div class="custom-list">
                         @for (f of files(); track trackFile($index, f)) {
-                        <div class="custom-list-item">
+                        <div 
+                        tabindex="0" role="button" [attr.aria-label]="f.name"
+                            (keydown.enter)="null"
+                            (keydown.space)="null; $event.preventDefault()"
+                            (click)="null" class="custom-list-item">
                             <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
                             <div class="item-content">
 

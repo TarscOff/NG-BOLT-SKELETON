@@ -36,7 +36,7 @@
     background: var(--md-sys-color-surface);
     border: 2px solid var(--mat-primary);
     min-width: 600px;
-    box-shadow:0 6px 24px rgba(0,0,0,.08);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .08);
 
     &::before {
         content: "";
@@ -44,9 +44,10 @@
         inset: 0;
         height: 100%;
         width: 100%;
-        background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent));
+        background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%);
         opacity: .07;
     }
+
     &.is-selected {
         outline: 2px solid #42a5f5;
         outline-offset: 5px;
@@ -72,7 +73,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    
+
     button:not(:last-child) {
         margin: 0 8px;
     }

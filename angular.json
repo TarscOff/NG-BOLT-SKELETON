@@ -17,7 +17,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/psx-ng-skeleton",
+            "outputPath": {
+              "base": "dist/psx-ng-skeleton"
+            },
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -27,8 +29,16 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-  { "glob": "**/*", "input": "public/assets", "output": "assets" },
-  { "glob": "favicon.ico", "input": "public", "output": "/" }
+              {
+                "glob": "**/*",
+                "input": "public/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": "public",
+                "output": "/"
+              }
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
