@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.10](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.9...v2.0.10) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([6e5f08a](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+
 ### [2.0.9](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.8...v2.0.9) (2025-12-17)
 
 
