@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.8](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.7...v2.0.8) (2025-12-17)
+
 ### [2.0.7](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.6...v2.0.7) (2025-12-11)
 
 ### [2.0.6](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.5...v2.0.6) (2025-12-10)
