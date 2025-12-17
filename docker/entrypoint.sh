@@ -12,17 +12,8 @@ for o in $KEYCLOAK_ORIGIN $API_ORIGINS; do
   [ -n "$o" ] && CONNECT_SRC="$CONNECT_SRC $o"
 done
 
-# Build CSP string (one line, no newlines)
-CSP="default-src 'self'; \
-script-src 'self'; \
-style-src 'self' 'unsafe-inline'; \
-img-src 'self' data: https:; \
-font-src 'self' https: data:; \
-connect-src $CONNECT_SRC; \
-frame-src 'none'; \
-frame-ancestors 'none'; \
-base-uri 'self'; \
-object-src 'none'"
+# Build CSP string (single line, no backslashes)
+CSP="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https: data:; connect-src $CONNECT_SRC; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
 
 # Header name
 if [ "$CSP_REPORT_ONLY" = "true" ]; then
@@ -31,8 +22,8 @@ else
   export CSP_HEADER_NAME="Content-Security-Policy"
 fi
 
-# Escape quotes for nginx
-export CSP_VALUE="$CSP"
+# Escape quotes for nginx (replace ' with \')
+export CSP_VALUE=$(echo "$CSP" | sed "s/'/\\\\'/g")
 
 # Render nginx conf from template
 envsubst '\$CSP_HEADER_NAME \$CSP_VALUE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
