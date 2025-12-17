@@ -3,7 +3,7 @@
 FROM nginx:alpine
 
 # Copy built Angular app (CI will provide dist/psx-ng-skeleton)
-COPY dist/psx-ng-skeleton /usr/share/nginx/html
+COPY dist/psx-ng-skeleton/browser /usr/share/nginx/html
 
 # Copy nginx template + entrypoint
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template

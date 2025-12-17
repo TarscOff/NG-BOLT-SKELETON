@@ -21,10 +21,13 @@
         width: 100%;
       }
 
+      .resize-handle {
+        top: -13px !important
+      }
+
       // Style the textarea for chat
       textarea {
         min-height: 48px !important;
-        max-height: 120px !important;
         line-height: 1.5 !important;
         font-size: 14px !important;
       }
@@ -103,7 +106,6 @@
       }
 
       .file-size {
-        color: rgba(0, 0, 0, 0.6);
         font-size: 11px;
       }
 
@@ -116,6 +118,24 @@
           font-size: 16px;
           width: 20px;
           height: 20px;
+        }
+      }
+    }
+  }
+}
+
+// if darkmode
+:host-context(.dark) {
+  .file-attachments-section {
+    background-color: var(--mat-sys-surface-variant);
+
+    .attached-file-chip {
+      border: 1px solid #fff;
+
+
+      .remove-file-button {
+        mat-icon {
+          color: var(--mat-accent);
         }
       }
     }

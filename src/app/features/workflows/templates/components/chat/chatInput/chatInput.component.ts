@@ -99,7 +99,8 @@ export class ChatInputComponent implements OnInit, OnChanges {
         color: 'primary',
         layoutClass: 'primary',
         rows: 1,
-        autoResize: true,
+        maxRows:10,
+        //autoResize: true,
         disabled: this.disabled || this.loading,
         validators: [Validators.maxLength(this.maxLength)],
         errorMessages: {
@@ -107,6 +108,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
             requiredLength: this.maxLength,
           }),
         },
+        isResizable: true
       }),
     ];
 

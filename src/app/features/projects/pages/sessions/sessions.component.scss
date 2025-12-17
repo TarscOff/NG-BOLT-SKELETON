@@ -90,7 +90,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  
+
   ::ng-deep {
     .mat-mdc-tab-body-wrapper {
       flex: 1;
@@ -154,7 +154,7 @@
   height: 100%;
   overflow: hidden;
 
-  
+
   // Make scrollbar more visible
   &::-webkit-scrollbar {
     width: 10px; // Slightly wider
@@ -177,7 +177,7 @@
   // Firefox
   scrollbar-width: auto; // Normal width (not thin)
   scrollbar-color: var(--mat-primary) rgba(0, 0, 0, 0.1);
-  
+
   mat-card-header {
     margin-bottom: 1rem;
   }
@@ -191,7 +191,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--mat-primary-variant) 0%, var(--mat-accent) 100%);
+    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%);
     color: white;
     border-radius: 50%;
     width: 40px;
@@ -208,7 +208,7 @@
 
 ::ng-deep {
   .mat-mdc-tab .mdc-tab-indicator__content--underline {
-    background: linear-gradient(135deg, var(--mat-primary-variant) 0%, var(--mat-accent) 100%);
+    background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%);
     border: none;
     height: 3px;
   }
