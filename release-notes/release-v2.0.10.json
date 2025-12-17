@@ -1,0 +1,105 @@
+{
+  "version": "2.0.10",
+  "tag": "v2.0.10",
+  "previousTag": "v2.0.9",
+  "date": "2025-12-17T12:26:35.322Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "6e5f08a",
+        "type": "feat",
+        "scope": "csp",
+        "subject": "fixing csp lines",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "a5a49da",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.10 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5ce7c11",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.9",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "b02be94",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #46 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "a5a49dad3ed009e4a626de3ef26604a4ac0ce47b",
+      "shortHash": "a5a49da",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.10 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b02be94e422f40407b674045836099cb198f48d1",
+      "shortHash": "b02be94",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #46 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(csp): fixing csp lines"
+    },
+    {
+      "hash": "6e5f08ab75157c66d13d36a044e717a04653a01d",
+      "shortHash": "6e5f08a",
+      "type": "feat",
+      "scope": "csp",
+      "subject": "fixing csp lines",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5ce7c115ec53d4eb38b8e79017951f2656ffa644",
+      "shortHash": "5ce7c11",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.9",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
