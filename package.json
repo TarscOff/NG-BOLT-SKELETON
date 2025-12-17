@@ -38,7 +38,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@cadai/pxs-ng-core": "^1.9.34",
+    "@cadai/pxs-ng-core": "^1.9.37",
     "@ng-draw-flow/core": "^0.17.0",
     "@ngrx/effects": "^19.2.1",
     "@ngrx/store": "^19.2.1",

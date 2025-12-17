@@ -369,7 +369,7 @@
 }
 
 // Dark theme support
-:host-context(.dark-theme) {
+:host-context(.dark) {
   .message-attachments {
     background-color: rgba(255, 255, 255, 0.05);
 

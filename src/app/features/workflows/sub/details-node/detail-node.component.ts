@@ -43,7 +43,7 @@ import { AppSelectors } from '@cadai/pxs-ng-core/store';
         inset: 0;
         height: 100%;
         width: 100%;
-        background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent));
+        background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%);
         opacity: .07;
     }
                 .card.is-selected {

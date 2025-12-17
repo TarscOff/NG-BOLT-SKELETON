@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,7 +36,7 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './sessions.component.html',
   styleUrls: ['./sessions.component.scss'],
 })
-export class SessionsComponent implements OnInit {
+export class SessionsComponent implements OnInit, OnDestroy {
   private templating = inject(TemplatingService);
   private toast = inject(ToastService);
   private layoutService = inject(LayoutService);
@@ -68,8 +68,8 @@ export class SessionsComponent implements OnInit {
         const sessionId = params.get('sessionId');
         const projectId = params.get('id');
 
-        if(sessionId) this.sessionId.set(sessionId);
-        if(projectId) this.projectId.set(projectId);
+        if (sessionId) this.sessionId.set(sessionId);
+        if (projectId) this.projectId.set(projectId);
 
         this.layoutService.setTitle(sessionId ? `Session: ${sessionId}` : 'Sessions');
 
@@ -99,9 +99,9 @@ export class SessionsComponent implements OnInit {
 
     // Breadcrumbs items
     this.layoutService.setBreadcrumbs([
-        { label: this.translateService.instant("nav.genai-projects"), route: '/genai-projects' },
-        { label: 'Project ' + this.projectId(), route: '/genai-projects/'+this.projectId() },
-        { label: 'Session ' + this.sessionId() }, // Current page, no route
+      { label: this.translateService.instant("nav.genai-projects"), route: '/genai-projects' },
+      { label: 'Project ' + this.projectId(), route: '/genai-projects/' + this.projectId() },
+      { label: 'Session ' + this.sessionId() }, // Current page, no route
     ]);
   }
 
@@ -110,6 +110,12 @@ export class SessionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPageConfig();
+  }
+
+
+  ngOnDestroy(): void {
+    // Optional: clear breadcrumbs when leaving
+    this.layoutService.clearBreadcrumbs();
   }
 
   /**

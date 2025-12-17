@@ -67,7 +67,7 @@ import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterf
         inset: 0;
         height: 100%;
         width: 100%;
-        background: linear-gradient(135deg, var(--mat-primary-variant), var(--mat-accent));
+        background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%);
         opacity: .07;
     }
     }
