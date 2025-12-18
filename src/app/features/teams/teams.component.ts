@@ -210,7 +210,6 @@ export class TeamsComponent implements OnInit {
     }).afterClosed())
 
     if (!confirmed) {
-      this.toast.show('Submission canceled');
       return;
     }
 
@@ -235,7 +234,7 @@ export class TeamsComponent implements OnInit {
 
   public async submit(): Promise<void> {
     if (this.form.invalid) {
-      this.toast.show('Form is invalid', 'Dismiss');
+      this.toast.showError('Form is invalid');
       return;
     }
 
@@ -247,7 +246,6 @@ export class TeamsComponent implements OnInit {
     }).afterClosed())
 
     if (!confirmed) {
-      this.toast.show('Submission canceled');
       return;
     }
     const raw = this.form.getRawValue();

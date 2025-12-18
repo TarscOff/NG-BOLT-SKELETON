@@ -159,10 +159,8 @@ export class ChatInputComponent implements OnInit, OnChanges {
     const message = this.form.get('message')?.value?.trim();
     if (!message) {
       // display a toast or some UI feedback here as needed
-      this.toast.show(
-        this.translate.instant('chatTpl.error.emptyMessage'),
-        'Close',
-        5000
+      this.toast.showError(
+        this.translate.instant('chatTpl.error.emptyMessage')
       );
       return
     };
@@ -216,10 +214,8 @@ export class ChatInputComponent implements OnInit, OnChanges {
     if (this.attachedFiles.length + files.length > this.maxFiles) {
       // Show error - too many files
       // display a toast or some UI feedback here as needed
-      this.toast.show(
-        this.translate.instant('chatTpl.error.maxFilesExceeded', { maxFiles: this.maxFiles }),
-        'Close',
-        5000
+      this.toast.showError(
+        this.translate.instant('chatTpl.error.maxFilesExceeded', { maxFiles: this.maxFiles })
       );
       return;
     }

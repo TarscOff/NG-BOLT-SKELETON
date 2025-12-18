@@ -9,6 +9,10 @@ variables:
   PKG_PATH: 'package.json'
   CR_REGISTRY: teamhub-se.telindus.lu:5050
   RELEASE_TYPE: 'patch'
+  # GCP Variables
+  GCP_PROJECT_ID: 'acd-genai'
+  GKE_CLUSTER_NAME: 'acd-dev-cluster'
+  GKE_CLUSTER_LOCATION: 'europe-west4-a'
 
 # Define workflow rules - when to run pipelines
 workflow:
@@ -305,6 +309,17 @@ docker_build:
       echo "Safe branch: $SAFE_BRANCH"
       echo "Registry: ${CR_REGISTRY}"
       
+      # Determine environment based on branch
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        BUILD_ENV="production"
+      elif [ "$CI_COMMIT_BRANCH" = "uat" ] || [ "$CI_COMMIT_BRANCH" = "staging" ]; then
+        BUILD_ENV="uat"
+      else
+        BUILD_ENV="development"
+      fi
+      
+      echo "Environment: $BUILD_ENV"
+      
       # Test Docker connectivity
       echo "Testing Docker daemon connectivity..."
       docker info || exit 1
@@ -316,15 +331,16 @@ docker_build:
       
       # Build and push image to GitLab Container Registry
       IMAGE_BASE="${CR_REGISTRY}/${CI_PROJECT_PATH}"
-      echo "Building Docker image..."
-      docker build -t "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}" \
-                   -t "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}" \
+      echo "Building Docker image with ENVIRONMENT=${BUILD_ENV}..."
+      docker build --build-arg ENVIRONMENT=${BUILD_ENV} \
+                   -t "${IMAGE_BASE}:${SAFE_BRANCH}-acd-${VERSION}" \
+                   -t "${IMAGE_BASE}:latest-acd-${SAFE_BRANCH}" \
                    -f ./Dockerfile .
       
       echo "Pushing Docker images..."
-      docker push "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
-      docker push "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"
+      docker push "${IMAGE_BASE}:${SAFE_BRANCH}-acd-${VERSION}"
+      docker push "${IMAGE_BASE}:latest-acd-${SAFE_BRANCH}"
       
       echo "✅ Pushed images:"
-      echo "   ${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
-      echo "   ${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"
+      echo "   ${IMAGE_BASE}:${SAFE_BRANCH}-acd-${VERSION}"
+      echo "   ${IMAGE_BASE}:latest-acd-${SAFE_BRANCH}"

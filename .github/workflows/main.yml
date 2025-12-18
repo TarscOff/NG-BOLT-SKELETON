@@ -182,7 +182,8 @@ jobs:
             } >> .npmrc
           fi
 
-      - name: Install deps & build Angular (with env config)
+      - name: Determine build environment & build Angular
+        id: build_env
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
@@ -193,22 +194,24 @@ jobs:
           echo "Branch: $BRANCH_NAME"
 
           if [ "$BRANCH_NAME" = "master" ]; then
+            BUILD_ENV="production"
             echo "Using PROD config"
             cp public/assets/config.prod.json public/assets/config.json
             NG_CONFIG="production"
-          elif [ "$BRANCH_NAME" = "uat" ]; then
-            echo "Using UAT config"
-            cp public/assets/config.uat.json public/assets/config.json
-            NG_CONFIG="uat"
-          elif [ "$BRANCH_NAME" = "staging" ]; then
+          elif [ "$BRANCH_NAME" = "uat" ] || [ "$BRANCH_NAME" = "staging" ]; then
+            BUILD_ENV="uat"
             echo "Using UAT config"
             cp public/assets/config.uat.json public/assets/config.json
             NG_CONFIG="uat"
           else
+            BUILD_ENV="development"
             echo "Using DEV config"
             cp public/assets/config.dev.json public/assets/config.json
             NG_CONFIG="development"
           fi
+
+          echo "Environment: $BUILD_ENV"
+          echo "build_env=$BUILD_ENV" >> "$GITHUB_OUTPUT"
 
           echo "Building Angular with configuration: $NG_CONFIG"
           npm run build -- --configuration=$NG_CONFIG
@@ -248,6 +251,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            ENVIRONMENT=${{ steps.build_env.outputs.build_env }}
           tags: |
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-acd-${{ env.VERSION }}
             ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-acd-${{ steps.image_meta.outputs.branch }}

@@ -26,7 +26,7 @@ RUN npm ci
 RUN npm run build -- --configuration=production
 
 FROM nginx:alpine
-COPY --from=builder /app/dist/psx-ng-skeleton /usr/share/nginx/html
+COPY --from=builder /app/dist/acd /usr/share/nginx/html
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
@@ -38,7 +38,7 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 The Angular build output is expected at:
 
 ```text
-dist/psx-ng-skeleton
+dist/acd
 ```
 
 ### 1.2 Environment config files
@@ -58,7 +58,43 @@ Branch mapping:
 - `staging` → `config.uat.json` → `--configuration=uat`
 - everything else (`develop`, feature branches) → `config.dev.json` → `--configuration=development`
 
----
+### 1.3 Security Headers & CORS Configuration
+
+The application uses nginx to serve the Angular app and configures security headers dynamically at container runtime.
+
+**Cross-Origin-Opener-Policy (COOP)**:
+
+The COOP header is configured based on the environment to balance security with development flexibility:
+
+- **`development`** (develop branch): `unsafe-none` - Allows cross-origin access for local development (e.g., localhost:4200)
+- **`uat`/`staging`**: `same-origin` - Strict isolation for pre-production environments
+- **`production`** (main branch): `same-origin` - Strict isolation for production
+
+**How it works**:
+
+1. **Build time**: The `ENVIRONMENT` variable is passed as a Docker build argument during image creation
+2. **Runtime**: The `docker/entrypoint.sh` script reads the `ENVIRONMENT` variable and sets `COOP_VALUE` accordingly
+3. **Template rendering**: nginx configuration is generated from `nginx/default.conf.template` using `envsubst`
+
+**Files involved**:
+
+- `nginx/default.conf.template` - Nginx configuration template with `$COOP_VALUE` placeholder
+- `docker/entrypoint.sh` - Sets `COOP_VALUE` based on `ENVIRONMENT` and renders nginx config
+- `Dockerfile` - Accepts `ENVIRONMENT` build argument
+- `.gitlab-ci.yml` - Passes `ENVIRONMENT` during Docker build
+
+**Development considerations**:
+
+When running the deployed dev environment and accessing it from `localhost:4200`, the `unsafe-none` COOP policy allows:
+- Opening popups to the deployed API
+- Cross-origin resource sharing for development purposes
+- Testing integrations without CORS restrictions
+
+For production and UAT environments, the strict `same-origin` policy ensures:
+- Enhanced security through origin isolation
+- Protection against cross-origin attacks
+- Compliance with security best practices
+
 
 ## 2. GitLab CI – `.gitlab-ci.yml`
 
@@ -163,6 +199,7 @@ rules:
 
 Requires `CI_PUSH_TOKEN` GitLab CI/CD variable (see setup section below).
 
+
 ### 2.6 Docker stage (`docker_build`)
 
 **Conditions**: Runs on `main`, `develop`, `staging`, `uat` (not on merge requests, not on release commits).
@@ -199,17 +236,39 @@ The pipeline supports two modes for handling self-signed certificates:
 1. Pulls latest changes from remote (includes release commit if any)
 2. Configures npm for Azure Artifacts
 3. Installs dependencies
-4. Copies appropriate config file based on branch:
+4. **Determines build environment** based on branch:
+   - `main` → `BUILD_ENV=production`
+   - `uat` / `staging` → `BUILD_ENV=uat`
+   - `develop` / others → `BUILD_ENV=development`
+5. Copies appropriate config file based on branch:
    - `main` → `config.prod.json` → `--configuration=production`
    - `uat` → `config.uat.json` → `--configuration=uat`
    - `staging` → `config.uat.json` → `--configuration=uat`
    - `develop` → `config.dev.json` → `--configuration=development`
-5. Builds Angular app with `npm run build -- --configuration=$NG_CONFIG`
-6. Reads version from `package.json`
-7. Logs into **GitLab Container Registry** using built-in `CI_JOB_TOKEN` and `CI_REGISTRY_USER`
-8. Builds and pushes Docker image with tags:
-   - `${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}` (e.g., `develop-psx-ng-skeleton-2.1.10`)
-   - `latest-psx-ng-skeleton-${SAFE_BRANCH}` (e.g., `latest-psx-ng-skeleton-develop`)
+6. Builds Angular app with `npm run build -- --configuration=$NG_CONFIG`
+7. Reads version from `package.json`
+8. Logs into **GitLab Container Registry** using built-in `CI_JOB_TOKEN` and `CI_REGISTRY_USER`
+9. **Builds Docker image with ENVIRONMENT build argument**:
+   ```bash
+   docker build --build-arg ENVIRONMENT=${BUILD_ENV} \
+                -t "${IMAGE_BASE}:${SAFE_BRANCH}-acd-${VERSION}" \
+                -t "${IMAGE_BASE}:latest-acd-${SAFE_BRANCH}" \
+                -f ./Dockerfile .
+   ```
+10. Pushes Docker image with tags:
+    - `${SAFE_BRANCH}-acd-${VERSION}` (e.g., `develop-acd-2.1.10`)
+    - `latest-acd-${SAFE_BRANCH}` (e.g., `latest-acd-develop`)
+
+**Environment-specific security headers**:
+
+The Docker image is built with the `ENVIRONMENT` variable, which controls:
+- **COOP (Cross-Origin-Opener-Policy)** header strictness
+- **CSP (Content-Security-Policy)** connect-src directives
+- Other runtime security configurations
+
+This ensures that:
+- Development images allow cross-origin access for local testing
+- Production/UAT images enforce strict security policies
 
 **Docker authentication (automatic)**:
 
@@ -217,16 +276,17 @@ The pipeline supports two modes for handling self-signed certificates:
 echo "${CI_JOB_TOKEN}" | docker login ${CR_REGISTRY} -u ${CI_REGISTRY_USER} --password-stdin
 ```
 
+
 GitLab automatically provides:
 - `CI_JOB_TOKEN`: Temporary token for the current job
 - `CI_REGISTRY_USER`: Set to `gitlab-ci-token`
-- `CI_PROJECT_PATH`: Project path (e.g., `genai/frontend/frontend-psx-ng-skeleton`)
+- `CI_PROJECT_PATH`: Project path (e.g., `genai/frontend/frontend-acd`)
 
 **Docker tags example**:
 
 ```text
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
 ```
 
 ### 2.7 GitLab CI/CD setup checklist
@@ -441,22 +501,27 @@ Stage 3: docker_build (only on main/develop/staging/uat, not MRs, not release co
    → Ensures we have the latest release commit
 ✅ Step 5: Configure npm for Azure Artifacts
 ✅ Step 6: Install dependencies
-✅ Step 7: Copy environment config
+✅ Step 7: Determine build environment
+   → develop → BUILD_ENV=development
+✅ Step 8: Copy environment config
    → develop → config.dev.json → --configuration=development
-✅ Step 8: Build Angular app
+✅ Step 9: Build Angular app
    → npm run build -- --configuration=development
-✅ Step 9: Read version from package.json
+✅ Step 10: Read version from package.json
    → VERSION=2.1.10
-✅ Step 10: Login to GitLab Container Registry
+✅ Step 11: Login to GitLab Container Registry
    → docker login teamhub-se.telindus.lu:5050 -u gitlab-ci-token
    → Uses CI_JOB_TOKEN (automatic)
-✅ Step 11: Build Docker image
-   → docker build -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-   →                -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
-✅ Step 12: Push Docker images
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
+✅ Step 12: Build Docker image with ENVIRONMENT argument
+   → docker build --build-arg ENVIRONMENT=development \
+                  -t teamhub-se.telindus.lu:5050/.../frontend-acd:develop-acd-2.1.10 \
+                  -t teamhub-se.telindus.lu:5050/.../frontend-acd:latest-acd-develop
+   → Image contains ENVIRONMENT=development for runtime configuration
+✅ Step 13: Push Docker images
+   → docker push teamhub-se.telindus.lu:5050/.../frontend-acd:develop-acd-2.1.10
+   → docker push teamhub-se.telindus.lu:5050/.../frontend-acd:latest-acd-develop
 ```
+
 
 ### 4.3 What happens on a Merge Request?
 
@@ -510,7 +575,7 @@ Running CI release of type: patch
 Current version in package.json: 2.1.9
 Next version will be: 2.1.10
 
-> psx-ng-skeleton@2.1.9 release:patch:nopush
+> acd@2.1.9 release:patch:nopush
 
 ✔ bumping version in package.json from 2.1.9 to 2.1.10
 ✔ bumping version in package-lock.json from 2.1.9 to 2.1.10
@@ -530,23 +595,23 @@ Look for in docker_build stage logs:
 
 ```
 Detected version: 2.1.10
-Repository: genai/frontend/frontend-psx-ng-skeleton
+Repository: genai/frontend/frontend-acd
 Safe branch: develop
 Registry: teamhub-se.telindus.lu:5050
 
 Login Succeeded
 
 Successfully built a1b2c3d4e5f6
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
+Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
+Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
 
-The push refers to repository [teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton]
-develop-psx-ng-skeleton-2.1.10: digest: sha256:... size: 1234
-latest-psx-ng-skeleton-develop: digest: sha256:... size: 1234
+The push refers to repository [teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd]
+develop-acd-2.1.10: digest: sha256:... size: 1234
+latest-acd-develop: digest: sha256:... size: 1234
 
 ✅ Pushed images:
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
+   teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
+   teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
 ```
 
 #### ⏭️ **Skipped version bump** (wrong branch)
@@ -619,8 +684,8 @@ Error response from daemon: Get "https://teamhub-se.telindus.lu:5050/v2/": tls: 
     - `chore(release): v<version> – CI release <branch>`
     - `chore(release): add JSON notes for v<version>`
 - Docker tags follow the pattern:
-  - `<branch>-psx-ng-skeleton-<version>` (e.g., `develop-psx-ng-skeleton-2.1.10`, `main-psx-ng-skeleton-2.1.10`)
-  - `latest-psx-ng-skeleton-<branch>` (e.g., `latest-psx-ng-skeleton-develop`, `latest-psx-ng-skeleton-main`)
+  - `<branch>-acd-<version>` (e.g., `develop-acd-2.1.10`, `main-acd-2.1.10`)
+  - `latest-acd-<branch>` (e.g., `latest-acd-develop`, `latest-acd-main`)
 - Branch names with slashes (e.g. `feature/login`) are sanitized by replacing `/` with `-` for Docker tags
 - Pushes release commits and tags only on `develop` branch
 - **Registry location**: GitLab Container Registry (self-hosted at `teamhub-se.telindus.lu:5050`)
@@ -717,6 +782,39 @@ Error response from daemon: Get "https://teamhub-se.telindus.lu:5050/v2/": tls: 
 3. Verify the DinD service is configured with `--insecure-registry` flag
 4. Check the certificate is accessible and valid
 
+
+#### **Issue**: CORS errors when accessing deployed API from localhost:4200
+
+**Symptoms**:
+```
+Access to fetch at 'https://api.example.com' from origin 'http://localhost:4200' 
+has been blocked by CORS policy
+```
+
+**Solution**:
+This is **expected and by design** for production/UAT environments. The deployed application uses strict COOP (`same-origin`) headers.
+
+For development:
+1. **Use the deployed dev environment** (develop branch) which has `COOP: unsafe-none`
+2. **Or run the API locally** alongside the frontend
+3. **Or use a proxy** in your Angular development server configuration
+
+The COOP configuration is:
+- `develop` branch → `unsafe-none` (allows localhost access)
+- `uat`/`staging`/`main` → `same-origin` (strict security)
+
+#### **Issue**: COOP header not reflecting expected value
+
+**Symptoms**:
+Development environment shows `Cross-Origin-Opener-Policy: same-origin` instead of `unsafe-none`
+
+**Solution**:
+1. Verify the Docker image was built with the correct `ENVIRONMENT` variable
+2. Check Docker build logs for: `Building Docker image with ENVIRONMENT=development...`
+3. Inspect the running container's environment: `docker exec <container> printenv ENVIRONMENT`
+4. Verify `docker/entrypoint.sh` is setting `COOP_VALUE` correctly
+5. Check nginx config: `docker exec <container> cat /etc/nginx/conf.d/default.conf`
+
 ### 6.2 Manual Version Release
 
 If you need to manually trigger a release or change the version type:
@@ -754,7 +852,7 @@ If you need to manually trigger a release or change the version type:
 
 **Pull command example**:
 ```bash
-docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
 ```
 
 ---
@@ -781,6 +879,9 @@ docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:
 2. **Image cleanup**: Regularly clean up old images from registry
 3. **Security scanning**: Consider adding container vulnerability scanning
 4. **Multi-stage builds**: Use multi-stage Dockerfile to minimize image size
+5. **Environment-specific builds**: Each environment builds with its own security configuration
+   - Development images include relaxed COOP for local testing
+   - Production images enforce strict security headers
 
 ### 7.4 Security
 
@@ -788,6 +889,11 @@ docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:
 2. **Token rotation**: Regularly rotate CI/CD tokens and certificates
 3. **Branch protection**: Require code reviews for protected branches
 4. **Variable masking**: Mask sensitive variables in CI/CD settings
+5. **Security headers**: Configured per environment via Docker build arguments
+   - **COOP**: Strict for production, relaxed for development
+   - **CSP**: Dynamic based on API_ORIGINS and KEYCLOAK_ORIGIN
+   - All headers configured in `nginx/default.conf.template`
+6. **Runtime configuration**: Security policies are baked into images at build time but can be overridden via environment variables at container runtime if needed
 
 ---
 

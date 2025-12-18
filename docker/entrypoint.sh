@@ -5,6 +5,14 @@ set -e
 : "${KEYCLOAK_ORIGIN:?Set KEYCLOAK_ORIGIN, e.g. https://kc.example.com}"
 : "${API_ORIGINS:=}"  # space-separated, e.g. "https://api.example.com https://files.example.com"
 : "${CSP_REPORT_ONLY:=false}"  # "true" -> Report-Only
+: "${ENVIRONMENT:=production}"  # "development", "uat", or "production"
+
+# Set COOP based on environment
+if [ "$ENVIRONMENT" = "development" ]; then
+  export COOP_VALUE="unsafe-none"
+else
+  export COOP_VALUE="same-origin"
+fi
 
 # Build connect-src list
 CONNECT_SRC="'self'"
@@ -26,7 +34,7 @@ fi
 export CSP_VALUE=$(echo "$CSP" | sed "s/'/\\\\'/g")
 
 # Render nginx conf from template
-envsubst '\$CSP_HEADER_NAME \$CSP_VALUE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '\$CSP_HEADER_NAME \$CSP_VALUE \$COOP_VALUE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 # Start nginx
 nginx -g "daemon off;"

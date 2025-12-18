@@ -489,7 +489,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const draftWorkflow: ToolbarAction = {
       id: 'draft_workflow',
       icon: 'edit_document',
-      tooltip: 'draft_workflow',
+      tooltip: 'draft',
       click: () => this.submit(),
       variant: 'flat',
       label: 'Draft',
@@ -1004,7 +1004,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       );
 
     if (isInputResultPair) {
-      this.toast.show(
+      this.toast.showError(
         this.translate.instant('workflow.errors.noDirectInputToResult') ||
         'You cannot connect Input directly to Result.',
       );
@@ -1156,7 +1156,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toast.show(this.translate.instant('form.errors.fixFields'));
+      this.toast.showError(this.translate.instant('form.errors.fixFields'));
       return;
     }
 
@@ -1164,7 +1164,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const edges = this._edges();
     const graphErr = this.validateGraph(nodes, edges);
     if (graphErr) {
-      this.toast.show(graphErr);
+      this.toast.showError(graphErr);
       return;
     }
 
@@ -1556,7 +1556,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const sourceNode = this.allNodes().find(n => n.id === sourceNodeId);
 
     if (actionType === 'result' && sourceNode?.type === 'input') {
-      this.toast.show(
+      this.toast.showError(
         this.translate.instant('workflow.errors.noDirectInputToResult') ||
         'You cannot connect Input directly to Result.',
       );
@@ -1661,7 +1661,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       (srcNode.type === 'result' && tgtNode.type === 'input');
 
     if (isInputResultPair) {
-      this.toast.show(
+      this.toast.showError(
         this.translate.instant('workflow.errors.noDirectInputToResult') ||
         'You cannot connect Input directly to Result.',
       );

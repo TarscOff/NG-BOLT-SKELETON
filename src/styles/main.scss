@@ -1,5 +1,6 @@
 @use './variables';
 @use './mixins' as *;
+@use './fonts.scss' as *;
 
 :root {
   --mat-primary: #5c2d91;
