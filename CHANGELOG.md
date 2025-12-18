@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.12](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.11...v2.0.12) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+
 ### [2.0.11](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.10...v2.0.11) (2025-12-18)
 
 
