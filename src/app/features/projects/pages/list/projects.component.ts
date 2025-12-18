@@ -143,10 +143,10 @@ export class ProjectsComponent implements OnInit {
                 console.error('Error loading projects:', err);
                 this.error.set(
                     this.translateService.instant('error.failed-to-load-projects')
-                ); this.toast.show(
+                ); 
+                this.toast.showError(
                     this.translateService.instant('error.failed-to-load-projects'),
-                    'Close',
-                    5000
+
                 );
                 this.loading.set(false);
             },

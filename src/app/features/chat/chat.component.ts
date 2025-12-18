@@ -71,10 +71,8 @@ export class ChatPageComponent implements OnInit {
         console.error('Failed to load page config:', err);
         this.error.set('Failed to load page configuration');
         this.loading.set(false);
-        this.toast.show(
+        this.toast.showError(
           'Failed to load page configuration.',
-          'Close',
-          5000
         );
       },
     });
@@ -85,7 +83,7 @@ export class ChatPageComponent implements OnInit {
    */
   onTemplateError(error: Error): void {
     console.error('Template error:', error);
-    this.toast.show(`Error: ${error.message}`, 'Close', 5000);
+    this.toast.showError(`Error: ${error.message}`);
   }
 
   /**

@@ -8,10 +8,10 @@ $tertiary-palette: mat.$green-palette;
 
 // M3 theming: only primary + tertiary are allowed here in your version
 $light-theme: mat.define-theme((color: (theme-type: light, primary: $primary-palette, tertiary: $tertiary-palette),
-      typography: (brand-family: 'Roboto, "Helvetica Neue", sans-serif')));
+      typography: (brand-family: 'ProximusRegular, sans-serif')));
 
 $dark-theme: mat.define-theme((color: (theme-type: dark, primary: $primary-palette, tertiary: $tertiary-palette),
-      typography: (brand-family: 'Roboto, "Helvetica Neue", sans-serif')));
+      typography: (brand-family: 'ProximusRegular, sans-serif')));
 
 // Apply light theme by default
 :root {
@@ -28,9 +28,13 @@ html,
 body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'ProximusRegular', sans-serif;
   background-color: transparent;
   color: var(--md-sys-color-on-surface);
+
+  * {
+    font-family: 'ProximusRegular', sans-serif;
+  }
 }
 
 // Sidenav + Toolbar should follow theme tokens
@@ -46,6 +50,18 @@ body {
   flex-wrap: wrap;
 }
 
+// Snackbar 
+.app-toast-error {
+  --mdc-snackbar-container-color: var(--mat-accent);
+  background-color: var(--mat-accent);
+  background: var(--mat-accent);
+}
+
+.app-toast-success {
+  --mdc-snackbar-container-color: var(--mat-success);
+  background-color: var(--mat-success);
+  background: var(--mat-success);
+}
 // Optional custom overrides
 /* 
 .mat-mdc-button {
@@ -60,7 +76,7 @@ body {
 */
 
 // Darkmode overlay overrides
-.dark {
+html.dark {
   .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
     background: rgb(189 189 189 / 72%) !important
   }
@@ -83,3 +99,4 @@ body {
   background: #fff;
   color: #1d1d1f;
 }
+
