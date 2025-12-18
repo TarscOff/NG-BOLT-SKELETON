@@ -366,7 +366,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         }).afterClosed())
 
         if (!confirmed) {
-            this.toast.show('Submission canceled');
             return;
         }
 

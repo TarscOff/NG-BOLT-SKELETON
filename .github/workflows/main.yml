@@ -254,5 +254,5 @@ jobs:
           build-args: |
             ENVIRONMENT=${{ steps.build_env.outputs.build_env }}
           tags: |
-            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-acd-${{ env.VERSION }}
-            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-acd-${{ steps.image_meta.outputs.branch }}
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.image_meta.outputs.branch }}-psx-ng-skeleton-${{ env.VERSION }}
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest-psx-ng-skeleton-${{ steps.image_meta.outputs.branch }}

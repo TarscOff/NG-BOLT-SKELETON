@@ -26,7 +26,7 @@ RUN npm ci
 RUN npm run build -- --configuration=production
 
 FROM nginx:alpine
-COPY --from=builder /app/dist/acd /usr/share/nginx/html
+COPY --from=builder /app/dist/psx-ng-skeleton /usr/share/nginx/html
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
@@ -38,7 +38,7 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 The Angular build output is expected at:
 
 ```text
-dist/acd
+dist/psx-ng-skeleton
 ```
 
 ### 1.2 Environment config files
@@ -251,13 +251,13 @@ The pipeline supports two modes for handling self-signed certificates:
 9. **Builds Docker image with ENVIRONMENT build argument**:
    ```bash
    docker build --build-arg ENVIRONMENT=${BUILD_ENV} \
-                -t "${IMAGE_BASE}:${SAFE_BRANCH}-acd-${VERSION}" \
-                -t "${IMAGE_BASE}:latest-acd-${SAFE_BRANCH}" \
+                -t "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}" \
+                -t "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}" \
                 -f ./Dockerfile .
    ```
 10. Pushes Docker image with tags:
-    - `${SAFE_BRANCH}-acd-${VERSION}` (e.g., `develop-acd-2.1.10`)
-    - `latest-acd-${SAFE_BRANCH}` (e.g., `latest-acd-develop`)
+    - `${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}` (e.g., `develop-psx-ng-skeleton-2.1.10`)
+    - `latest-psx-ng-skeleton-${SAFE_BRANCH}` (e.g., `latest-psx-ng-skeleton-develop`)
 
 **Environment-specific security headers**:
 
@@ -280,13 +280,13 @@ echo "${CI_JOB_TOKEN}" | docker login ${CR_REGISTRY} -u ${CI_REGISTRY_USER} --pa
 GitLab automatically provides:
 - `CI_JOB_TOKEN`: Temporary token for the current job
 - `CI_REGISTRY_USER`: Set to `gitlab-ci-token`
-- `CI_PROJECT_PATH`: Project path (e.g., `genai/frontend/frontend-acd`)
+- `CI_PROJECT_PATH`: Project path (e.g., `genai/frontend/frontend-psx-ng-skeleton`)
 
 **Docker tags example**:
 
 ```text
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
 ```
 
 ### 2.7 GitLab CI/CD setup checklist
@@ -514,12 +514,12 @@ Stage 3: docker_build (only on main/develop/staging/uat, not MRs, not release co
    → Uses CI_JOB_TOKEN (automatic)
 ✅ Step 12: Build Docker image with ENVIRONMENT argument
    → docker build --build-arg ENVIRONMENT=development \
-                  -t teamhub-se.telindus.lu:5050/.../frontend-acd:develop-acd-2.1.10 \
-                  -t teamhub-se.telindus.lu:5050/.../frontend-acd:latest-acd-develop
+                  -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10 \
+                  -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
    → Image contains ENVIRONMENT=development for runtime configuration
 ✅ Step 13: Push Docker images
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-acd:develop-acd-2.1.10
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-acd:latest-acd-develop
+   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
 ```
 
 
@@ -575,7 +575,7 @@ Running CI release of type: patch
 Current version in package.json: 2.1.9
 Next version will be: 2.1.10
 
-> acd@2.1.9 release:patch:nopush
+> psx-ng-skeleton@2.1.9 release:patch:nopush
 
 ✔ bumping version in package.json from 2.1.9 to 2.1.10
 ✔ bumping version in package-lock.json from 2.1.9 to 2.1.10
@@ -595,23 +595,23 @@ Look for in docker_build stage logs:
 
 ```
 Detected version: 2.1.10
-Repository: genai/frontend/frontend-acd
+Repository: genai/frontend/frontend-psx-ng-skeleton
 Safe branch: develop
 Registry: teamhub-se.telindus.lu:5050
 
 Login Succeeded
 
 Successfully built a1b2c3d4e5f6
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
+Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
 
-The push refers to repository [teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd]
-develop-acd-2.1.10: digest: sha256:... size: 1234
-latest-acd-develop: digest: sha256:... size: 1234
+The push refers to repository [teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton]
+develop-psx-ng-skeleton-2.1.10: digest: sha256:... size: 1234
+latest-psx-ng-skeleton-develop: digest: sha256:... size: 1234
 
 ✅ Pushed images:
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:latest-acd-develop
+   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
 ```
 
 #### ⏭️ **Skipped version bump** (wrong branch)
@@ -684,8 +684,8 @@ Error response from daemon: Get "https://teamhub-se.telindus.lu:5050/v2/": tls: 
     - `chore(release): v<version> – CI release <branch>`
     - `chore(release): add JSON notes for v<version>`
 - Docker tags follow the pattern:
-  - `<branch>-acd-<version>` (e.g., `develop-acd-2.1.10`, `main-acd-2.1.10`)
-  - `latest-acd-<branch>` (e.g., `latest-acd-develop`, `latest-acd-main`)
+  - `<branch>-psx-ng-skeleton-<version>` (e.g., `develop-psx-ng-skeleton-2.1.10`, `main-psx-ng-skeleton-2.1.10`)
+  - `latest-psx-ng-skeleton-<branch>` (e.g., `latest-psx-ng-skeleton-develop`, `latest-psx-ng-skeleton-main`)
 - Branch names with slashes (e.g. `feature/login`) are sanitized by replacing `/` with `-` for Docker tags
 - Pushes release commits and tags only on `develop` branch
 - **Registry location**: GitLab Container Registry (self-hosted at `teamhub-se.telindus.lu:5050`)
@@ -852,7 +852,7 @@ If you need to manually trigger a release or change the version type:
 
 **Pull command example**:
 ```bash
-docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-acd:develop-acd-2.1.10
+docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
 ```
 
 ---
