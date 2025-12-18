@@ -1,0 +1,105 @@
+{
+  "version": "2.0.12",
+  "tag": "v2.0.12",
+  "previousTag": "v2.0.11",
+  "date": "2025-12-18T14:00:14.216Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "7f52654",
+        "type": "feat",
+        "scope": "nginx",
+        "subject": "fixing cors on nginx and updating ci",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "cf3bbcc",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.12 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ce91f2a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.11",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "34917b6",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #49 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "cf3bbcc2956b1900ff0acbf21d7437a73f7f862d",
+      "shortHash": "cf3bbcc",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.12 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "34917b604d6c796dbde8a69822eb5d998988fc34",
+      "shortHash": "34917b6",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #49 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(nginx): fixing cors on nginx and updating ci"
+    },
+    {
+      "hash": "7f5265412bd522f73d07db2bc6cfb170cf7f3a0e",
+      "shortHash": "7f52654",
+      "type": "feat",
+      "scope": "nginx",
+      "subject": "fixing cors on nginx and updating ci",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ce91f2a395d76ab51f61c30f00f26724f34bbdc3",
+      "shortHash": "ce91f2a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.11",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
