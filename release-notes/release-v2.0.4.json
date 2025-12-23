@@ -1,0 +1,142 @@
+{
+  "version": "2.0.4",
+  "tag": "v2.0.4",
+  "previousTag": "v2.0.3",
+  "date": "2025-12-04T14:28:23.544Z",
+  "stats": {
+    "features": 0,
+    "fixes": 2,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "1572c43",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd documentation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b1c28ab",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "d67d02e",
+        "type": "docs",
+        "scope": "ciCd",
+        "subject": "updating ci-cd docs",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "57be6f4",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.4 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b7031e1",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.3",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "68e7c65",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #36 from TarikHaddadi/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "57be6f46f03c9fc9f7dad57fa529485a8a97c7a4",
+      "shortHash": "57be6f4",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.4 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "68e7c653c8d909603bcbaa07dd6147e77cc96ae0",
+      "shortHash": "68e7c65",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #36 from TarikHaddadi/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
+    },
+    {
+      "hash": "d67d02ea4d440b3ca770df1e65f4be4cbeb7db1c",
+      "shortHash": "d67d02e",
+      "type": "docs",
+      "scope": "ciCd",
+      "subject": "updating ci-cd docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1572c43f2147934c01d140dd8b7a24cb8488a7a7",
+      "shortHash": "1572c43",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd documentation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b7031e1bf66f773c1511c33cf8d60d9c6497f8b0",
+      "shortHash": "b7031e1",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.3",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b1c28ab07aad62628d2acb2a0302a01f061ed217",
+      "shortHash": "b1c28ab",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

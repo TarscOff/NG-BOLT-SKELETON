@@ -2,22 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [2.0.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.3) (2025-12-04)
+### [2.0.12](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.11...v2.0.12) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+
+### [2.0.11](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.10...v2.0.11) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
+
+### [2.0.10](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.9...v2.0.10) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([6e5f08a](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+
+### [2.0.9](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.8...v2.0.9) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([c33aeba](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
+
+### [2.0.8](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.7...v2.0.8) (2025-12-17)
+
+### [2.0.7](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.6...v2.0.7) (2025-12-11)
+
+### [2.0.6](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.5...v2.0.6) (2025-12-10)
+
+### [2.0.5](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.4...v2.0.5) (2025-12-04)
+
+### [2.0.4](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.3...v2.0.4) (2025-12-04)
 
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+* **ciCd:** fixing ci-cd ([b1c28ab](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
+* **ciCd:** fixing ci-cd documentation ([1572c43](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
 
-### [2.0.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.2) (2025-12-04)
+### [2.0.3](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.2...v2.0.3) (2025-12-04)
 
-### [2.0.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.1) (2025-12-04)
+### [2.0.2](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.1...v2.0.2) (2025-12-04)
 
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([a95eb10](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
-* **ciCd:** fixing ci-cd ([db07ab8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
+* **ciCd:** fixing ci-cd ([ce37a1b](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+
+### [2.0.1](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.0...v2.0.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([a95eb10](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
+* **ciCd:** fixing ci-cd ([db07ab8](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
 
 ## [2.0.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.11.5...v2.0.0) (2025-12-03)
 
