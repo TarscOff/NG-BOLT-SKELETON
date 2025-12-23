@@ -1,0 +1,105 @@
+{
+  "version": "2.0.14",
+  "tag": "v2.0.14",
+  "previousTag": "v2.0.13",
+  "date": "2025-12-23T16:38:27.186Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "ca15ce4",
+        "type": "feat",
+        "scope": "app",
+        "subject": "integration API and ci updates + latest changes on core",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "704301d",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.14 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fd3c233",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.13",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "acae4ae",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #51 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "704301dd57be76f042334744bc7ef3b8ee61beea",
+      "shortHash": "704301d",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.14 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "acae4ae14ecc2eef343733918c92c1366a0d72a4",
+      "shortHash": "acae4ae",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #51 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(app): integration API and ci updates + latest changes on core"
+    },
+    {
+      "hash": "ca15ce483c66f20af7595a48b25a217d7f251125",
+      "shortHash": "ca15ce4",
+      "type": "feat",
+      "scope": "app",
+      "subject": "integration API and ci updates + latest changes on core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fd3c23305708b1ab8af6ead8c9da256e224f664f",
+      "shortHash": "fd3c233",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.13",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
