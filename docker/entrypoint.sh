@@ -2,10 +2,10 @@
 set -e
 
 # Required envs (set at run time or via orchestrator)
-: "${KEYCLOAK_ORIGIN:?Set KEYCLOAK_ORIGIN, e.g. https://kc.example.com}"
-: "${API_ORIGINS:=}"  # space-separated, e.g. "https://api.example.com https://files.example.com"
-: "${CSP_REPORT_ONLY:=false}"  # "true" -> Report-Only
-: "${ENVIRONMENT:=production}"  # "development", "uat", or "production"
+: "${API_URL:?Set API_URL, e.g. https://acd.pxl-codit.com/api}"
+: "${KEYCLOAK_URL:?Set KEYCLOAK_URL, e.g. https://keycloak.pxl-codit.com/}"
+: "${ENVIRONMENT:=production}"
+: "${CSP_REPORT_ONLY:=false}"
 
 # Set COOP based on environment
 if [ "$ENVIRONMENT" = "development" ]; then
@@ -14,27 +14,45 @@ else
   export COOP_VALUE="same-origin"
 fi
 
-# Build connect-src list
+# Debug: print environment variables
+echo "=== Runtime Environment ==="
+echo "API_URL: ${API_URL}"
+echo "KEYCLOAK_URL: ${KEYCLOAK_URL}"
+echo "ENVIRONMENT: ${ENVIRONMENT}"
+echo "=========================="
+
+# Generate env-config.js from template using envsubst
+echo "Generating runtime env-config.js..."
+envsubst < /usr/share/nginx/html/env-config.template.js > /usr/share/nginx/html/env-config.js
+
+# Verify generated file
+echo "Generated env-config.js:"
+cat /usr/share/nginx/html/env-config.js
+
+# Build CSP connect-src list
 CONNECT_SRC="'self'"
-for o in $KEYCLOAK_ORIGIN $API_ORIGINS; do
-  [ -n "$o" ] && CONNECT_SRC="$CONNECT_SRC $o"
+for url in $KEYCLOAK_URL $API_URL; do
+  [ -n "$url" ] && CONNECT_SRC="$CONNECT_SRC $url"
 done
 
-# Build CSP string (single line, no backslashes)
-CSP="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https: data:; connect-src $CONNECT_SRC; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+# Build CSP string (single line)
+CSP_VALUE="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https: data:; connect-src $CONNECT_SRC; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
 
-# Header name
+# Set CSP header name
 if [ "$CSP_REPORT_ONLY" = "true" ]; then
-  export CSP_HEADER_NAME="Content-Security-Policy-Report-Only"
+  export CSP_HEADER="Content-Security-Policy-Report-Only"
 else
-  export CSP_HEADER_NAME="Content-Security-Policy"
+  export CSP_HEADER="Content-Security-Policy"
 fi
 
-# Escape quotes for nginx (replace ' with \')
-export CSP_VALUE=$(echo "$CSP" | sed "s/'/\\\\'/g")
+export CSP_VALUE
 
-# Render nginx conf from template
-envsubst '\$CSP_HEADER_NAME \$CSP_VALUE \$COOP_VALUE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+# Render nginx config from template
+envsubst '${CSP_HEADER} ${CSP_VALUE} ${COOP_VALUE}' \
+  < /etc/nginx/conf.d/default.conf.template \
+  > /etc/nginx/conf.d/default.conf
+
+echo "✅ Runtime configuration complete"
 
 # Start nginx
-nginx -g "daemon off;"
+exec nginx -g 'daemon off;'

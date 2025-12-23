@@ -2,8 +2,8 @@ export interface ChatMessage {
   id: string;
   content: string;
   sender: ChatSender;
-  timestamp: Date;
-  type?: 'text' | 'markdown' | 'code';
+  timestamp?: Date;
+  type?: 'text' | 'markdown' | 'code' | "mixed";
   avatar?: string;
   metadata?: Record<string, unknown>;
   edited?: boolean;
@@ -15,7 +15,7 @@ export interface ChatMessage {
 }
 
 export interface ChatSender {
-  id: string;
+  id?: string;
   name: string;
   type: 'user' | 'assistant' | 'system';
   avatar?: string;
@@ -50,16 +50,6 @@ export interface ChatConfig {
 export interface ChatMode {
   mode: 'interactive' | 'preloaded';
   messages?: ChatMessage[];
-}
-
-
-export interface ChatEndpoints {
-  sendMessage: string;
-  getMessages: string;
-  deleteMessage: string;
-  editMessage: string;
-  clearChat: string;
-  uploadAttachment: string;
 }
 
 export interface ChatSendRequest {

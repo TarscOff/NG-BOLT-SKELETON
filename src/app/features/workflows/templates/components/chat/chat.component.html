@@ -6,62 +6,80 @@
       <span class="chat-title">{{ 'chatTpl.title' | translate }}</span>
     </div>
     <div class="chat-header-actions">
-      <button
-        mat-icon-button
-        [matTooltip]="'chatTpl.scrollToBottom' | translate"
-        (click)="scrollToBottom()"
-        [disabled]="disabled"
-        class="success"
-      >
+      <button mat-icon-button [matTooltip]="'chatTpl.scrollToBottom' | translate" (click)="scrollToBottom()"
+        [disabled]="disabled" class="success">
         <mat-icon>arrow_downward</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        [matTooltip]="'chatTpl.clear' | translate"
-        (click)="clearChat()"
-        [disabled]="disabled || isEmpty()"
-        class="accent"
-      >
+      <button mat-icon-button [matTooltip]="'chatTpl.clear' | translate" (click)="clearChat()" disabled class="accent">
+        <!-- [disabled]="disabled || isEmpty()"  -->
         <mat-icon>delete_sweep</mat-icon>
       </button>
     </div>
   </div>
 
   <!-- Messages Container -->
-  <div
-    #messagesContainer
-    class="chat-messages" 
-    [class.empty]="isEmpty()"
-        [attr.aria-label]="'chatTpl.messages' | translate"
-  >
+  <div #messagesContainer class="chat-messages" [class.empty]="isEmpty()"
+    [attr.aria-label]="'chatTpl.messages' | translate">
     <!-- Empty State -->
     @if (isEmpty()) {
-      <div class="chat-empty">
-        <mat-icon>chat_bubble_outline</mat-icon>
-        <p>{{ effectiveEmptyMessage$() | translate }}</p>
-      </div>
+    <div class="chat-empty">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <p>{{ effectiveEmptyMessage$() | translate }}</p>
+    </div>
     }
 
     <!-- Messages List -->
     @if (!isEmpty()) {
-      <div class="messages-list">
-        @for (message of messages$(); track trackByMessageId($index, message)) {
-          <app-chat-message-tpl
-            [message]="message"
-            [currentUserId]="currentUser$().id"
-            [showTimestamp]="config$().showTimestamps !== false"
-            [showAvatar]="config$().showAvatars !== false"
-            [allowMarkdown]="config$().allowMarkdown !== false"
-            [allowEdit]="config$().allowEdit !== false && canEditDelete$()"
-            [allowDelete]="config$().allowDelete !== false && canEditDelete$()"
-            [isDark]="(isDark$ | async) || false"
-            (edit)="onEditMessage($event.id, $event.content)"
-            (delete)="onDeleteMessage($event)"
-          ></app-chat-message-tpl>
-        }
+    <div class="messages-list">
+      @for (message of messages$(); track trackByMessageId($index, message)) {
+      <app-chat-message-tpl [message]="message" [currentUserId]="currentUser$().id"
+        [showTimestamp]="config$().showTimestamps !== false" [showAvatar]="config$().showAvatars !== false"
+        [allowMarkdown]="config$().allowMarkdown !== false"
+        [allowEdit]="config$().allowEdit !== false && canEditDelete$()"
+        [allowDelete]="config$().allowDelete !== false && canEditDelete$()" [isDark]="(isDark$ | async) || false"
+        (edit)="onEditMessage($event.id, $event.content)" (delete)="onDeleteMessage($event)"></app-chat-message-tpl>
+      }
 
-        <!-- Typing Indicator -->
-        @if (isTyping$()) {
+      @if (isPolling$()) {
+      <div class="workflow-progress">
+        <div class="workflow-header">
+          <mat-icon class="spinning">sync</mat-icon>
+          @if(workflowStatus$()) {
+          <span>{{ workflowStatus$()!.workflow_name }}</span>
+          <span class="status-badge" [class]="workflowStatus$()!.workflow_status">
+            {{ workflowStatus$()!.workflow_status | translate}}
+          </span>
+          }
+        </div>
+        <!--    <div class="tasks-list">
+          @if (workflowStatus$()!.tasks.length === 0) {
+            <p style="padding: 0.5rem; color: #666;">Waiting for tasks...</p>
+          }
+          @for (task of workflowStatus$()!.tasks; track task.task_id) {
+          <div class="task-item" [class]="task.task_status">
+            <mat-icon class="task-icon">
+              @if (task.task_status === 'completed') {
+              check_circle
+              } @else if (task.task_status === 'failed') {
+              error
+              } @else if (task.task_status === 'running') {
+              pending
+              } @else {
+              radio_button_unchecked
+              }
+            </mat-icon>
+            <span class="task-name">{{ task.task_name }}</span>
+            @if (task.task_status_comment) {
+            <span class="task-comment">{{ task.task_status_comment }}</span>
+            }
+          </div>
+          }
+        </div> -->
+      </div>
+      }
+
+      <!-- Typing Indicator -->
+      @if (isTyping$()) {
       <div class="chat-typing">
         <div class="typing-indicator">
           <span></span>
@@ -70,29 +88,23 @@
         </div>
         <span class="typing-text">{{ 'chatTpl.typing' | translate }}</span>
       </div>
-        }
-      </div>
+      }
+    </div>
     }
   </div>
   <!-- Input Area -->
   <div class="chat-footer">
-    <app-chat-input-tpl
-      [disabled]="!canSendMessage$() || disabled"
-      [maxLength]="effectiveMaxLength$()"
-      [placeholder]="effectivePlaceholder$()"
-      [enableAttachments]="config$().enableAttachments === true"
-      [acceptedFileTypes]="config$().acceptedFileTypes || ''"
-      [maxFiles]="config$().maxFiles || 5"
-      [allowMultipleFiles]="(config$().maxFiles || 5) > 1"
-      [loading]="isLoading$()"
-      (send)="onSendMessage($event)"
-    ></app-chat-input-tpl>
+    <app-chat-input-tpl [disabled]="!canSendMessage$() || disabled" [maxLength]="effectiveMaxLength$()"
+      [placeholder]="effectivePlaceholder$()" [enableAttachments]="config$().enableAttachments === true"
+      [acceptedFileTypes]="config$().acceptedFileTypes || ''" [maxFiles]="config$().maxFiles || 5"
+      [allowMultipleFiles]="(config$().maxFiles || 5) > 1" [loading]="isLoading$()"
+      (send)="onSendMessage($event)"></app-chat-input-tpl>
   </div>
 
   <!-- Loading Overlay -->
   @if (isLoading$()) {
-    <div class="loading-overlay">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
+  <div class="loading-overlay">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
   }
 </div>

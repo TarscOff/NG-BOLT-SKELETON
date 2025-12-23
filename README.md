@@ -1,136 +1,618 @@
-# PSX-NG-SKELETON – Angular 19 Skeleton
->_Last updated: 2025-09-02_
+# Angular 19+ Skeleton
+>_Last updated: 2025-12-23_
 
-> 🚀 Modern Angular 19 project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
+> 🚀 Modern Angular 19+ project template with runtime environment configs, standalone components, NgRx state management, dynamic forms, internationalization, and full CI/CD support.
 
-# NPMRC
+---
 
-Use the following so you can push to registry
+## 📋 Table of Contents
 
-```vsts-npm-auth -config .npmrc```
+- [Quick Start](#-quick-start-for-developers)
+- [Runtime Configuration Architecture](#-runtime-configuration-architecture)
+- [Feature Flags & Tenant Resolution](#-feature-flags--tenant-resolution)
+- [Keycloak Setup](#-keycloak-prerequisites)
+- [Using Core SDK](#-using-the-core-sdk)
+- [Development & Build](#️-development--build)
+- [Project Structure](#-project-structure)
+- [Documentation Index](#-documentation-index)
+
 ---
 
 ## 🧭 Quick Start for Developers
 
-1. Set up a Keycloak client (Public + PKCE S256) and brokered IdPs if needed.  
-2. Update `public/assets/config.dev.json` (`auth.url/realm/clientId`).  
-3. `npm start` → app redirects to Keycloak and back.  
-4. Verify API calls include Bearer token.  
-5. For CSP, start with Report‑Only and review DevTools for violations.
-# Feature Flags & Tenant Resolution — How It Works
+### Initial Setup
+
+1. **Configure npm registry access:**
+   ```bash
+   vsts-npm-auth -config .npmrc
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up local runtime configuration:**
+   ```bash
+   # Copy the template
+   cp public/env-config.template.js public/env-config.js
+   
+   # Edit with your local values
+   # public/env-config.js should look like:
+   window.env = {
+     API_URL: "/api",
+     KEYCLOAK_URL: "https://keycloak-dev.example.com/",
+   };
+   ```
+
+4. **Configure Keycloak client** (Public + PKCE S256) and brokered IdPs if needed
+
+5. **Update static configuration** in `public/assets/config.json`:
+   ```json
+   {
+     "auth": {
+       "realm": "your-realm",
+       "clientId": "your-client-id"
+     },
+     "features": { /* ... */ }
+   }
+   ```
+
+6. **Start development server:**
+   ```bash
+   npm start
+   ```
+
+7. **Verify setup:**
+   - App redirects to Keycloak and back
+   - API calls include Bearer token
+   - Check browser console: `console.log(window.env)`
+
+### Environment URLs (Reference)
+
+**Development:**
+```javascript
+// Keycloak
+AUTHORIZATION_URL: https://keycloak.pxl-codit.com/realms/genai-dev/protocol/openid-connect/auth
+ACCESS_TOKEN_URL: https://keycloak.pxl-codit.com/realms/genai-dev/protocol/openid-connect/token
+CLIENT_ID: genai-acd
+REDIRECT_URL: https://[URL].pxl-codit.com/
+
+// Backend
+API_URL: https://[URL].pxl-codit.com/api
+SWAGGER: https://[URL].pxl-codit.com/api/doc/
+```
+
+---
+
+## 🔧 Runtime Configuration Architecture
+
+### Why This Approach?
+
+This application uses a **hybrid configuration strategy** that enables:
+
+- ✅ **Single Docker image** for all environments (dev, UAT, prod)
+- ✅ **No rebuild required** when changing API URLs or Keycloak endpoints
+- ✅ **Environment-specific values** injected at container startup
+- ✅ **Static feature flags** defined once at build time
+
+### File Structure & Purpose
+
+```
+public/
+├── env-config.template.js    ← Template with ${PLACEHOLDERS} (committed to Git)
+├── env-config.js             ← Generated at runtime (gitignored, local dev only)
+└── assets/
+    └── config.json           ← Static app configuration (feature flags, menu structure)
+
+docker/
+└── entrypoint.sh             ← Generates env-config.js at container startup
+
+nginx/
+└── default.conf.template     ← Nginx config template with dynamic CSP headers
+```
+
+| File | Purpose | When Created | Contains |
+|------|---------|--------------|----------|
+| **`env-config.template.js`** | Template for runtime config | Development (committed) | Placeholders like `${API_URL}` |
+| **`env-config.js`** | Actual runtime config | Container startup or local dev | Real values from env vars |
+| **`config.json`** | Static app config | Build time | Feature flags, menu structure, auth settings |
+
+---
+
+### How It Works
+
+#### 🏠 Development (Local)
+
+```mermaid
+graph LR
+    A[Developer] -->|Creates manually| B[public/env-config.js]
+    B -->|Loaded by| C[index.html]
+    C -->|Exposes| D[window.env]
+    E[public/assets/config.json] -->|Loaded by| F[main.ts]
+    D -->|Merged with| F
+    F -->|Provides| G[Angular App]
+```
+
+**Steps:**
+1. Developer copies `env-config.template.js` → `env-config.js`
+2. Edits with real local values:
+   ```javascript
+   window.env = {
+     API_URL: "https://url-dev.example.com/api",
+     KEYCLOAK_URL: "https://keycloak-dev.example.com/",
+   };
+   ```
+3. Angular loads this file in `index.html`:
+   ```html
+   <script src="/env-config.js"></script>
+   ```
+4. `main.ts` merges `window.env` with `config.json` before bootstrap
+
+#### 🐳 Production (Docker)
+
+```mermaid
+graph LR
+    A[Docker Run] -->|Sets env vars| B[entrypoint.sh]
+    B -->|Uses envsubst| C[env-config.template.js]
+    C -->|Generates| D[env-config.js]
+    D -->|Loaded by| E[nginx]
+    F[config.json] -->|Merged with| G[main.ts]
+    D -->|Merged with| G
+    G -->|Bootstraps| H[Angular App]
+```
+
+**Build time:**
+```bash
+npm run buildProd  # Always production build (no environment-specific builds)
+docker build -t psx-ng-skeleton:latest .
+```
+
+**Runtime:**
+```bash
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  psx-ng-skeleton:latest
+```
+
+**Container startup sequence:**
+1. `entrypoint.sh` reads environment variables (`API_URL`, `KEYCLOAK_URL`, `ENVIRONMENT`)
+2. Generates `env-config.js` from template using `envsubst`:
+   ```bash
+   envsubst < /usr/share/nginx/html/env-config.template.js \
+            > /usr/share/nginx/html/env-config.js
+   ```
+3. Result:
+   ```javascript
+   window.env = {
+     API_URL: "https://api.example.com",
+     KEYCLOAK_URL: "https://keycloak.example.com/",
+   };
+   ```
+4. Generates nginx config with dynamic CSP headers based on URLs
+5. Angular loads generated file and merges with `config.json`
+
+---
+
+### Configuration Merge Flow
+
+```typescript
+// main.ts - Bootstrap sequence
+
+// 1. Load static configuration (feature flags, menu structure)
+const staticConfigRes = await fetch('/assets/config.json', { cache: 'no-store' });
+const staticConfig = await staticConfigRes.json();
+
+// 2. Runtime environment loaded via <script src="/env-config.js">
+const runtimeEnv = window.env; // Injected by env-config.js
+
+// 3. Merge configurations
+const finalConfig = {
+  ...staticConfig,
+  apiUrl: runtimeEnv.API_URL,           // ← Runtime override
+  auth: {
+    ...staticConfig.auth,
+    url: runtimeEnv.KEYCLOAK_URL         // ← Runtime override
+  }
+};
+
+// 4. Bootstrap Angular with merged config
+await bootstrapApplication(AppComponent, {
+  providers: [
+    provideCore({
+      appVersion: pkg.version,
+      environments: finalConfig,
+      theme: 'light',
+      i18n: { /* ... */ }
+    })
+  ]
+});
+```
+
+---
+
+### What Goes Where?
+
+| Configuration Type | File | Example | When to Change |
+|-------------------|------|---------|----------------|
+| **Environment URLs** | `env-config.js` (runtime) | `API_URL`, `KEYCLOAK_URL` | Per environment deployment |
+| **Feature flags** | `config.json` (static) | `features.dashboard.enabled` | Per application release |
+| **Menu structure** | `config.json` (static) | `features.dashboard.route` | Per application release |
+| **Auth realm/client** | `config.json` (static) | `auth.realm`, `auth.clientId` | Per tenant setup |
+| **Tenant rules** | `config.json` (static) | `features.x.allow.tenants` | Per application release |
+
+**Rule of thumb:**
+- ✅ **Changes per environment** (dev/uat/prod) → `env-config.js` (via env vars)
+- ✅ **Changes per deployment** (features, UI) → `config.json` (static)
+
+---
+
+### Required Environment Variables
+
+These variables **must be set** when running the Docker container:
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `API_URL` | `https://url.pxl-codit.com/api` | Backend API base URL (no trailing slash) |
+| `KEYCLOAK_URL` | `https://keycloak.pxl-codit.com/` | Keycloak server URL (with trailing slash) |
+| `ENVIRONMENT` | `production` | Environment name (`development`, `uat`, `production`) |
+
+**Environment-specific behavior:**
+- `development` → COOP header: `unsafe-none` (allows cross-origin for debugging)
+- `uat`/`production` → COOP header: `same-origin` (strict isolation)
+
+---
+
+### Deployment Examples
+
+#### Docker CLI
+
+```bash
+# Development
+docker run -d -p 80:80 \
+  -e API_URL="https://url-dev.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e ENVIRONMENT="development" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+
+# UAT (same image, different env vars!)
+docker run -d -p 80:80 \
+  -e API_URL="https://url-uat.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e ENVIRONMENT="uat" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+
+# Production (same image, different env vars!)
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+```
+
+#### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  psx-ng-skeleton-frontend:
+    image: teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+    ports:
+      - "80:80"
+    environment:
+      - API_URL=https://url.pxl-codit.com/api
+      - KEYCLOAK_URL=https://keycloak.pxl-codit.com/
+      - ENVIRONMENT=production
+```
+
+#### Kubernetes
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: psx-ng-skeleton-config
+data:
+  API_URL: "https://api.example.com"
+  KEYCLOAK_URL: "https://keycloak.example.com/"
+  ENVIRONMENT: "production"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psx-ng-skeleton-frontend
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: psx-ng-skeleton
+        image: teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
+        envFrom:
+        - configMapRef:
+            name: psx-ng-skeleton-config
+        ports:
+        - containerPort: 80
+```
+
+---
+
+### Troubleshooting Runtime Configuration
+
+#### Issue: `window.env is undefined` in browser console
+
+**Cause:** `env-config.js` not loaded or generated
+
+**Solution:**
+```bash
+# 1. Check if file exists in container
+docker exec <container-name> ls -la /usr/share/nginx/html/env-config.js
+
+# 2. View generated content
+docker exec <container-name> cat /usr/share/nginx/html/env-config.js
+
+# 3. Verify environment variables were passed
+docker inspect <container-name> | grep -A 10 Env
+
+# 4. Check browser network tab
+# Should see successful request to /env-config.js
+
+# 5. Check browser console
+console.log(window.env);
+// Should output: {API_URL: "...", KEYCLOAK_URL: "..."}
+```
+
+#### Issue: API calls go to wrong URL
+
+**Cause:** Runtime configuration not merged correctly
+
+**Solution:**
+```typescript
+// Check in browser console:
+console.log(window.env);        // Should show runtime values
+console.log(window.env.API_URL); // Should NOT be "${API_URL}"
+
+// Verify merge in main.ts
+const runtimeConfig = {
+  ...staticConfig,
+  apiUrl: window.env.API_URL,
+  auth: { 
+    ...staticConfig.auth, 
+    url: window.env.KEYCLOAK_URL 
+  }
+};
+```
+
+#### Issue: Need different CSP headers per environment
+
+**Solution:** Set `ENVIRONMENT` variable when running container:
+- `development` → Relaxed CSP for debugging
+- `uat`/`production` → Strict CSP
+
+```bash
+docker run -e ENVIRONMENT="development" psx-ng-skeleton:latest  # Relaxed CSP
+docker run -e ENVIRONMENT="production" psx-ng-skeleton:latest   # Strict CSP
+```
+
+#### Issue: Config change requires rebuild
+
+**This is the old behavior!** New approach:
+- ❌ No rebuild needed for URL changes
+- ✅ Just restart container with new env vars:
+  ```bash
+  docker stop psx-ng-skeleton-container
+  docker run -e API_URL="https://new-api.com" psx-ng-skeleton:latest
+  ```
+
+---
+
+### Security Considerations
+
+1. **Never commit `env-config.js`**
+   - It's gitignored for security
+   - Contains environment-specific values
+   - Template file (`env-config.template.js`) is safe to commit
+
+2. **Template contains only placeholders**
+   ```javascript
+   // ✅ Safe - contains placeholders
+   window.env = {
+     API_URL: "${API_URL}",
+     KEYCLOAK_URL: "${KEYCLOAK_URL}",
+   };
+   ```
+
+3. **Secrets via environment variables**
+   - Never bake secrets into Docker image
+   - Pass at runtime via `-e` or ConfigMap
+   - Use secret management tools (Vault, Azure Key Vault)
+
+4. **Dynamic CSP headers**
+   - Generated based on runtime `API_URL` and `KEYCLOAK_URL`
+   - Prevents injection attacks
+   - Configurable per environment via `ENVIRONMENT` variable
+
+---
+
+### Benefits of This Approach
+
+| Aspect | Old Approach | New Approach | Improvement |
+|--------|-------------|--------------|-------------|
+| **Builds per release** | 3 builds (dev, uat, prod) | 1 build | 🚀 3x faster CI/CD |
+| **Config changes** | Rebuild + redeploy | Restart container | ⚡ Instant updates |
+| **CI/CD time** | ~15 minutes | ~5 minutes | ⏱️ 10 min saved |
+| **Image storage** | 3 images per version | 1 image per version | 💾 66% less storage |
+| **Deployment flexibility** | Baked-in config | Runtime config | 🎯 True portability |
+| **Environment promotion** | Rebuild for prod | Promote same image | ✅ What you test is what you deploy |
+
+---
+
+## 🎯 Feature Flags & Tenant Resolution
+
+### Overview
 
 > **TL;DR**  
-> - `KeycloakService` builds a **`userCtx`** from the token (auth state, **roles from `authorization`**, and **tenant**).  
-> - `FeatureService` compares that `userCtx` against **RuntimeConfig** (`features`) to decide **what to show** (menus, routes, UI).  
-> - `featureGuard('key')` and `visibleFeatures(userCtx?)` use the **same checks**, keeping navigation and menus in sync.
+> - `KeycloakService` builds a **`userCtx`** from the token (auth state, roles, tenant)
+> - `FeatureService` compares `userCtx` against **RuntimeConfig** to decide what to show
+> - `featureGuard('key')` and `visibleFeatures()` use the **same checks**, keeping navigation and menus in sync
 
----
+### Key Terms
 
-## Terms
+- **RuntimeConfig** (`assets/config.json`): Feature definitions with rules
+  ```json
+  {
+    "features": {
+      "dashboard": {
+        "enabled": true,
+        "requireAuth": true,
+        "roles": ["ROLE_user", "ROLE_admin"],
+        "allow": { "tenants": ["acme", "globex"] },
+        "key": "dashboard",
+        "label": "nav.dashboard",
+        "icon": "dashboard",
+        "route": "/dashboard"
+      }
+    }
+  }
+  ```
 
-- **RuntimeConfig** (`assets/config.json`): holds `features` and their rules (`enabled`, `requireAuth`, `roles`, `allow.tenants`, plus `key/label/icon/route` for menus).
-- **userCtx**: `{ isAuthenticated: boolean; roles: string[]; tenant: string | null }`  
-  Sourced from **Keycloak token** via `KeycloakService`:
-  - `roles` come from the **custom `authorization` claim** (array of role names, e.g., `ROLE_user`, `ROLE_admin`).
-  - `tenant` comes from the **custom `tenant` claim**.
+- **userCtx**: User context from Keycloak token
+  ```typescript
+  {
+    isAuthenticated: boolean;
+    roles: string[];      // From custom 'authorization' claim
+    tenant: string | null; // From custom 'tenant' claim
+  }
+  ```
 
----
+### Data Flow
 
-## Data Flow
+```mermaid
+graph TD
+    A[User Login] -->|Keycloak| B[Token with Claims]
+    B -->|authorization claim| C[roles array]
+    B -->|tenant claim| D[tenant string]
+    C --> E[KeycloakService.getUserCtx]
+    D --> E
+    E --> F[userCtx object]
+    F --> G[FeatureService.isEnabled]
+    H[config.json features] --> G
+    G -->|Enabled?| I{Check Rules}
+    I -->|requireAuth| J{Is Authenticated?}
+    I -->|roles| K{Has Role?}
+    I -->|tenants| L{Tenant Match?}
+    J -->|Yes| M[Feature Visible]
+    K -->|Yes| M
+    L -->|Yes| M
+    J -->|No| N[Feature Hidden]
+    K -->|No| N
+    L -->|No| N
+```
 
-1. **Auth & user context**  
-   `KeycloakService.getUserCtx()` reads the current session:
+1. **Auth & User Context**  
+   `KeycloakService.getUserCtx()` extracts from token:
    - `isAuthenticated` (boolean)
-   - `roles` (from custom `authorization` claim; falls back to realm/client roles only if needed)
+   - `roles` (from custom `authorization` claim)
    - `tenant` (from custom `tenant` claim)
 
-2. **Feature evaluation**  
-   `FeatureService.isEnabled(featureKey, userCtx)` checks the feature entry in RuntimeConfig:
-   - `enabled === true`
-   - if `requireAuth`, then `userCtx.isAuthenticated` must be `true`
-   - if `roles` present, user must have **at least one**
-   - if `allow.tenants` present, `userCtx.tenant` must be **included**
+2. **Feature Evaluation**  
+   `FeatureService.isEnabled(featureKey, userCtx)` checks:
+   - ✅ `enabled === true`
+   - ✅ if `requireAuth`, then `userCtx.isAuthenticated === true`
+   - ✅ if `roles` defined, user must have at least one matching role
+   - ✅ if `allow.tenants` defined, `userCtx.tenant` must be in list
 
 3. **Menus & Guards**  
-   - `FeatureService.visibleFeatures(userCtx?)` filters all features using the checks above and returns items (`key/label/icon/route`) to render the menu.  
-   - `featureGuard('feature.key')` applies the **same rules** to allow/deny navigation.  
-     - If `requireAuth` and the user is not authenticated, the guard **triggers Keycloak login** (no `/login` route needed).  
-     - If authenticated but not allowed (role/tenant mismatch), it redirects to an optional `/403`.
+   - `FeatureService.visibleFeatures(userCtx?)` filters features for menu
+   - `featureGuard('feature.key')` applies same rules to routes
+     - Not authenticated + `requireAuth` → Redirects to Keycloak
+     - Authenticated but forbidden → Redirects to `/403`
 
 ---
 
-## Keycloak Pre‑requisites (custom claims)
+## 🔐 Keycloak Prerequisites
 
-To make the UI/guards work as designed, configure **two custom claims** on your Keycloak client (or realm) so they are included in the **Access Token** (and optionally **ID Token**):
+### Required Custom Claims
 
-### 1) `tenant` claim (string)
-Use a **User Attribute** mapper.
+Configure these **two custom claims** in your Keycloak client (or realm) to include in the **Access Token**:
+
+#### 1) `tenant` Claim (String)
+
+**Mapper Configuration:**
 - **Mapper Type:** *User Attribute*
-- **User Attribute:** `tenant` (add this attribute on each user, or set via groups)
+- **User Attribute:** `tenant`
 - **Token Claim Name:** `tenant`
 - **Claim JSON Type:** `String`
 - **Add to access token:** ✅
 - **Add to ID token:** ✅ (optional)
-- *(Optional)* **Add to userinfo:** ✅
+- **Add to userinfo:** ✅ (optional)
 
-> Alternative: if tenant comes from group membership, use a **Script Mapper** or a **Group Membership** mapper and output a single string. Most teams keep a simple user attribute named `tenant`.
+**Add to user:**
+```
+User → Attributes → Add:
+  Key: tenant
+  Value: acme
+```
 
-### 2) `authorization` claim (array of role names)
-You want one array that merges realm and/or client roles into **one** claim. You can achieve this **without scripts** using multiple role mappers pointing to the **same** claim name with **Multivalued** enabled.
+#### 2) `authorization` Claim (Array of Roles)
 
-**Option A — Realm roles only (simple):**
+**Option A — Realm Roles Only:**
 - **Mapper Type:** *User Realm Role*
 - **Token Claim Name:** `authorization`
 - **Claim JSON Type:** `String`
 - **Multivalued:** ✅
 - **Add to access token:** ✅
-- *(repeat for other realms if applicable)*
 
-**Option B — Merge realm + client roles:**
-Create **two** mappers (or more, one per client) with the **same** claim name `authorization`:
-1. *User Realm Role* mapper → `authorization`, `String`, **Multivalued** ✅
-2. *User Client Role* mapper (select your client) → `authorization`, `String`, **Multivalued** ✅
+**Option B — Merge Realm + Client Roles:**
 
-Keycloak will **merge** values from both mappers into one `authorization: [...]` array.
+Create **two mappers** with same claim name:
 
-> If you prefer a fully custom build (e.g., renaming roles or mapping from groups), you can use a **Script Mapper** to push a curated array into `authorization`.
+1. *User Realm Role* → `authorization`, `String`, **Multivalued** ✅
+2. *User Client Role* (select client) → `authorization`, `String`, **Multivalued** ✅
 
-## Using the Core SDK in a Host App (Angular 19)
+Keycloak merges both into one array: `authorization: ["ROLE_user", "ROLE_admin"]`
 
-This guide shows how to initialize the **Core SDK** in an Angular 19 Host Application, including runtime config loading, theming, and i18n. You can paste this directly into your Azure DevOps Wiki or keep it as `USING-CORE-IN-HOST.md` in your repo.
+**Alternative:** Use **Script Mapper** for custom role transformation
+
+### Client Configuration
+
+```
+Client Type: OpenID Connect
+Access Type: Public
+Valid Redirect URIs: https://url.example.com/*
+Web Origins: https://url.example.com
+
+Authentication Flow:
+  ✅ Standard Flow Enabled (Authorization Code)
+  ✅ Implicit Flow Enabled (for refresh)
+  
+Advanced Settings:
+  Proof Key for Code Exchange: S256 (PKCE)
+```
 
 ---
+
+## 📦 Using the Core SDK
 
 ### 1) Prerequisites
 
-- Angular 19 standalone app
-- Runtime config at `public/assets/config.json` (copied per environment by CI/CD), containing:
-  - `auth` (Keycloak `url`, `realm`, `clientId`, etc.)
-  - `features` (feature flags & rules)
-  - any app-specific settings (API base URLs, tenant rules, etc.)
-- Translations under `public/assets/i18n/` (`en.json`, `fr.json`, ...)
-- Theme CSS under `public/assets/theme/` (`light.css`, `dark.css`)
+- Angular 19+ standalone app
+- Runtime config at `public/assets/config.json`
+- Translations at `public/assets/i18n/*.json`
+- Theme CSS at `public/assets/theme/*.css`
+- Keycloak with custom claims (`tenant`, `authorization`)
 
-> Ensure Keycloak token contains custom claims: `tenant` (string) and `authorization` (array of role names). See your Host README for exact mapper setup.
-
----
-
-### 2) Install Core SDK
+### 2) Installation
 
 ```bash
-npm i @cadai/pxs-ng-core
+npm install @cadai/pxs-ng-core
 ```
-
-> If you use a private registry / scope, configure your `.npmrc` accordingly.
-
----
 
 ### 3) Bootstrap in `main.ts`
 
-Paste the following into your **Host App** `main.ts`.  
-This loads your runtime config **before** bootstrapping Angular, then initializes the Core SDK via `provideCore(...)`.
-
-```ts
+```typescript
 /// <reference types="@angular/localize" />
 
 import { bootstrapApplication } from '@angular/platform-browser';
@@ -140,11 +622,14 @@ import { appConfig } from './app/app.config';
 import { provideCore } from '@cadai/pxs-ng-core/core';
 import pkg from '../package.json';
 
-/** Simple theme loader (sync) */
+/** Simple theme loader */
 export function loadTheme(theme: 'light' | 'dark') {
   const href = `assets/theme/${theme}.css`;
-  const existing = document.getElementById('theme-style') as HTMLLinkElement | null;
-  if (existing) { existing.href = href; return; }
+  const existing = document.getElementById('theme-style') as HTMLLinkElement;
+  if (existing) { 
+    existing.href = href; 
+    return; 
+  }
   const link = document.createElement('link');
   link.id = 'theme-style';
   link.rel = 'stylesheet';
@@ -153,18 +638,32 @@ export function loadTheme(theme: 'light' | 'dark') {
 }
 
 (async () => {
-  // Load runtime env before bootstrapping
+  // 1. Load runtime config (merges window.env with config.json)
   const res = await fetch('/assets/config.json', { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Failed to load config: ${res.status} ${res.statusText}`);
-  const env = await res.json();
+  if (!res.ok) {
+    throw new Error(`Config load failed: ${res.status} ${res.statusText}`);
+  }
+  const staticConfig = await res.json();
+  
+  // 2. Merge with runtime environment
+  const runtimeEnv = window.env || {};
+  const finalConfig = {
+    ...staticConfig,
+    apiUrl: runtimeEnv.API_URL || staticConfig.api?.baseUrl,
+    auth: {
+      ...staticConfig.auth,
+      url: runtimeEnv.KEYCLOAK_URL || staticConfig.auth?.url
+    }
+  };
 
+  // 3. Bootstrap Angular
   await bootstrapApplication(AppComponent, {
     providers: [
-      ...appConfig.providers!,                // router, animations, store
+      ...appConfig.providers!,
       provideCore({
         appVersion: pkg.version,
-        environments: env,                    // <- the runtime config JSON
-        theme: 'light',                       // 'light' | 'dark'
+        environments: finalConfig,     // Merged config
+        theme: 'light',
         i18n: {
           prefix: 'assets/i18n/',
           suffix: '.json',
@@ -178,47 +677,16 @@ export function loadTheme(theme: 'light' | 'dark') {
 })().catch(err => console.error('Bootstrap failed:', err));
 ```
 
-**What `provideCore(...)` wires up**
-- Reads `environments` (runtime config) and exposes it via the Core Config service
-- Initializes Keycloak (based on `auth` from the runtime config)
-- Sets up i18n (Translate loader with prefix/suffix, default & fallback lang)
-- Hooks global interceptors (auth header, error handling)
-- Registers feature/guard services
+**What `provideCore(...)` does:**
+- ✅ Initializes Keycloak with merged config
+- ✅ Sets up i18n with TranslateModule
+- ✅ Registers HTTP interceptors (auth, error handling)
+- ✅ Configures feature flags and guards
+- ✅ Provides app-wide services
 
----
+### 4) Routing & Guards
 
-### 4) Minimal `assets/config.json` Example
-
-```json
-{
-  "auth": {
-    "url": "https://keycloak.example.com",
-    "realm": "my-realm",
-    "clientId": "my-client"
-  },
-  "features": {
-    "dashboard": {
-      "enabled": true,
-      "requireAuth": true,
-      "roles": ["ROLE_user", "ROLE_admin"],
-      "allow": { "tenants": ["clarence", "acme"] },
-      "key": "dashboard",
-      "label": "nav.dashboard",
-      "icon": "dashboard",
-      "route": "/dashboard"
-    }
-  },
-  "api": { "baseUrl": "https://api.example.com" }
-}
-```
-
-> CI/CD should copy the right `config.*.json` into `public/assets/config.json` for each environment.
-
----
-
-### 5) Routing & Guards (Host App)
-
-```ts
+```typescript
 // app.routes.ts
 import { Routes } from '@angular/router';
 import { featureGuard } from '@cadai/pxs-ng-core/core';
@@ -234,162 +702,498 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         canActivate: [featureGuard('dashboard', { forbid: '/403' })],
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        loadComponent: () => 
+          import('./features/dashboard/dashboard.component')
+            .then(m => m.DashboardComponent),
       },
-      { path: '403', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.ForbiddenComponent) },
-      { path: '**', loadComponent: () => import('@cadai/pxs-ng-core/shared').then(m => m.NotFoundComponent) },
+      { 
+        path: '403', 
+        loadComponent: () => 
+          import('@cadai/pxs-ng-core/shared')
+            .then(m => m.ForbiddenComponent) 
+      },
+      { 
+        path: '**', 
+        loadComponent: () => 
+          import('@cadai/pxs-ng-core/shared')
+            .then(m => m.NotFoundComponent) 
+      },
     ]
   }
 ];
 ```
 
-- `featureGuard('key')` enforces rules from `config.json` (`enabled`, `requireAuth`, `roles`, `allow.tenants`).  
-- Unauthenticated users are redirected to Keycloak when `requireAuth` is true.
+### 5) Dynamic Menu from Features
+
+```typescript
+// layout/menu.component.ts
+import { Component, inject } from '@angular/core';
+import { FeaturesService } from '@cadai/pxs-ng-core/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-menu',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  template: `
+    <nav>
+      @for (item of menuItems; track item.key) {
+        <a [routerLink]="item.route">
+          <i [class]="item.icon"></i>
+          {{ item.label | translate }}
+        </a>
+      }
+    </nav>
+  `
+})
+export class MenuComponent {
+  private features = inject(FeaturesService);
+  
+  get menuItems() {
+    return this.features.visibleFeatures();
+    // Returns: [{ key, label, icon, route }, ...]
+  }
+}
+```
+
+### 6) Asset Structure
+
+```
+public/assets/
+├── config.json                    # Static config (features, auth)
+├── i18n/
+│   ├── en.json                   # English translations
+│   ├── fr.json                   # French translations
+│   └── nl.json                   # Dutch translations
+└── theme/
+    ├── light.css                 # Light theme
+    └── dark.css                  # Dark theme
+
+public/
+├── env-config.template.js        # Runtime env template
+└── env-config.js                 # Generated at runtime (gitignored)
+```
+
+**Translation file example:**
+```json
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "User Management",
+    "settings": "Settings"
+  },
+  "errors": {
+    "forbidden": "You don't have permission to access this resource",
+    "notFound": "Page not found"
+  }
+}
+```
+
+### 7) Common Pitfalls
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `config.json` not found | Missing or wrong path | Ensure file at `public/assets/config.json` |
+| Features not showing | Missing Keycloak claims | Verify `tenant` and `authorization` mappers |
+| CORS errors | CSP blocking requests | Start with `Content-Security-Policy-Report-Only` |
+| `window.env undefined` | `env-config.js` not loaded | Check `index.html` includes `<script src="/env-config.js">` |
+| Wrong API URL | Runtime config not merged | Verify `main.ts` merges `window.env` |
 
 ---
 
-### 6) Dynamic Menu from Features (optional)
+## ⚒️ Development & Build
 
-You can list the available features directly from the features services by using the following
+### Local Development
 
-```ts
-// in a layout or menu service/component
-import { inject } from '@angular/core';
-import { FeaturesService } from '@cadai/pxs-ng-core/core';
+```bash
+# Start dev server (localhost:4200)
+npm start
 
-export class AppMenuService {
-  private features = inject(FeaturesService);
-  get items() {
-    return this.features.visibleFeatures(); // returns [{ key, label, icon, route }, ...]
+# Start with specific configuration
+npm run start -- --configuration=development
+```
+
+### Local API Proxy Configuration
+
+**Why we use a proxy:**
+
+During local development (`npm start`), the Angular dev server runs on `http://localhost:4200`, but the backend API is on a different domain (e.g., `https://url.pxl-codit.com`). This creates **CORS (Cross-Origin Resource Sharing)** issues because browsers block requests between different origins for security reasons.
+
+The **proxy configuration** solves this by:
+1. ✅ Making the Angular dev server act as a middleman
+2. ✅ Forwarding API requests to the real backend
+3. ✅ Avoiding CORS errors during development
+4. ✅ Allowing you to use relative URLs like `/api/users` instead of full URLs
+
+**How it works:**
+
+```
+Browser Request → Angular Dev Server → Backend API
+    /api/users  →  localhost:4200  → https://url.pxl-codit.com/api/users
+```
+
+**Configuration file: `proxy.conf.json`**
+
+```json
+{
+  "/api": {
+    "target": "https://url.pxl-codit.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+```
+
+| Option | Purpose |
+|--------|---------|
+| **`/api`** | Any request starting with `/api` will be proxied |
+| **`target`** | Backend server URL to forward requests to |
+| **`secure: true`** | Accept self-signed SSL certificates (if needed) |
+| **`changeOrigin: true`** | Changes the origin header to match the target |
+| **`logLevel: "debug"`** | Shows proxy activity in console (useful for debugging) |
+
+**Connection to runtime config:**
+
+In your local `env-config.js`, you set:
+```javascript
+window.env = {
+  API_URL: "/api",  // ← Relative path, proxied to real backend
+  KEYCLOAK_URL: "https://keycloak-dev.example.com/"
+};
+```
+
+The Angular HTTP client then makes calls like:
+```typescript
+this.http.get('/api/users')  // Proxied to https://url.pxl-codit.com/api/users
+```
+
+**Wired in `angular.json`:**
+
+```json
+{
+  "serve": {
+    "options": {
+      "proxyConfig": "proxy.conf.json"  // ← Tells dev server to use proxy
+    }
+  }
+}
+```
+
+**Production vs Development:**
+
+| Environment | API_URL | Behavior |
+|-------------|---------|----------|
+| **Local dev** | `/api` | Proxied through dev server to `https://url.pxl-codit.com` |
+| **Docker/Prod** | `https://api.example.com` | Direct calls (nginx handles routing) |
+
+**Debugging proxy issues:**
+
+```bash
+# 1. Check proxy is working (look for proxy logs)
+npm start
+# Should see: [HPM] Proxy created: /api -> https://url.pxl-codit.com
+
+# 2. Test API call in browser console
+fetch('/api/health').then(r => r.json()).then(console.log)
+
+# 3. Check network tab for proxied requests
+# Request URL should be: http://localhost:4200/api/health
+# But response comes from: https://url.pxl-codit.com/api/health
+```
+
+**Common issues:**
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `ERR_CONNECTION_REFUSED` | Backend not running | Check target URL is correct |
+| `CORS errors still appear` | Proxy not configured | Verify `proxyConfig` in `angular.json` |
+| `404 on API calls` | Wrong path prefix | Ensure requests start with `/api` |
+| `SSL certificate errors` | Self-signed cert | Set `"secure": false` in proxy config |
+
+---
+
+### Build Commands
+
+```bash
+# Development build
+npm run build              # = ng build --configuration=development
+
+# UAT build
+npm run buildUat          # = ng build --configuration=uat
+
+# Production build
+npm run buildProd         # = ng build --configuration=production
+
+# Watch mode (auto-rebuild)
+npm run watch
+```
+
+### Testing & Quality
+
+```bash
+# Run unit tests
+npm test
+
+# Run tests with coverage
+npm run test -- --code-coverage
+
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lint -- --fix
+```
+
+### Build Output
+
+```
+dist/
+└── psx-ng-skeleton/
+    └── browser/          # Production build output
+        ├── index.html
+        ├── main.*.js
+        ├── polyfills.*.js
+        ├── styles.*.css
+        └── assets/
+```
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── app.component.ts          # Root component
+│   ├── app.config.ts             # Application config & providers
+│   ├── app.routes.ts             # Routing configuration
+│   ├── features/                 # Feature modules
+│   │   ├── dashboard/
+│   │   ├── users/
+│   │   └── settings/
+│   ├── layout/                   # Layout components
+│   │   ├── header/
+│   │   ├── sidebar/
+│   │   └── footer/
+│   ├── shared/                   # Shared components
+│   └── store/                    # NgRx state management
+├── assets/                       # Static assets
+├── environments/                 # Environment configs (legacy)
+└── main.ts                       # Bootstrap entry point
+
+public/
+├── assets/
+│   ├── config.json              # Static configuration
+│   ├── i18n/                    # Translations
+│   └── theme/                   # Theme CSS files
+├── env-config.template.js       # Runtime env template
+└── favicon.ico
+
+docker/
+├── entrypoint.sh                # Container startup script
+└── Dockerfile                   # Container definition
+
+nginx/
+└── default.conf.template        # Nginx config template
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `main.ts` | Bootstrap Angular, load runtime config |
+| `app.config.ts` | DI providers, router, animations |
+| `app.routes.ts` | Route definitions with guards |
+| `public/assets/config.json` | Feature flags, static config |
+| `public/env-config.template.js` | Runtime environment template |
+| `docker/entrypoint.sh` | Generate runtime config at startup |
+
+---
+
+## 🧠 TypeScript Configuration
+
+This project uses Angular strict mode with:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictTemplates": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
 ```
 
 ---
 
-### 7) i18n Files
+## 📃 Documentation Index
 
+**Legend:** ✅ Complete · 🟡 In Progress · ❌ Planned
+
+### Core Documentation
+- [✅ Global Core Overview](./README-OVERVIEW.md) - Architecture and design patterns
+- [✅ Change Log](./CHANGELOG.md) - Version history and release notes
+- [✅ CI/CD Setup](./README-GIT.md) - GitLab CI, GitHub Actions, Azure Pipelines
+
+### Features & Components
+- [✅ Theming & Translations](./README-ASSETS-TRANSLATIONS.md) - i18n, theme switching
+- [✅ App Layout](./README-LAYOUT.md) - Header, sidebar, navigation
+- [✅ Form Builder](./README-FormBuilder.md) - Dynamic forms with validation
+- [✅ Smart Tables](./README-SMARTABLES.md) - Advanced data tables
+- [✅ Workflow Builder](./README-WORKFLOWBUILDER.md) - Visual flow designer
+- [✅ Charts](./README-CHARTS.md) - Data visualization
+
+### Development Guides
+- [✅ Contribution Guide](./CONTRIBUTING.md) - How to contribute
+- [✅ NgRx Guide](./README-CONTRIBUTING.NGRX.md) - State management patterns
+- [🟡 CSP Configuration](./README-CSP.md) - Content Security Policy setup
+
+---
+
+## 🎯 Quick Reference
+
+### Environment Variables (Docker)
+
+```bash
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  psx-ng-skeleton:latest
 ```
-public/assets/i18n/en.json
-public/assets/i18n/fr.json
-```
+
+### Feature Flag Example
 
 ```json
-// en.json
-{ "nav.dashboard": "Dashboard" }
+{
+  "features": {
+    "dashboard": {
+      "enabled": true,
+      "requireAuth": true,
+      "roles": ["ROLE_user"],
+      "allow": { "tenants": ["acme"] },
+      "key": "dashboard",
+      "label": "nav.dashboard",
+      "icon": "dashboard",
+      "route": "/dashboard"
+    }
+  }
+}
+```
+
+### Guard Usage
+
+```typescript
+{
+  path: 'admin',
+  canActivate: [featureGuard('admin', { forbid: '/403' })],
+  loadComponent: () => import('./admin.component')
+}
 ```
 
 ---
 
-### 8) Theming
+## ✅ Checklist for New Developers
 
-- Place CSS files under `public/assets/theme/light.css` and `public/assets/theme/dark.css`
-- Switch by calling `loadTheme('dark')` or `loadTheme('light')`
+### Local Setup
+- [ ] Clone repository
+- [ ] Run `vsts-npm-auth -config .npmrc`
+- [ ] Run `npm install`
+- [ ] Copy `env-config.template.js` to `env-config.js`
+- [ ] Edit `env-config.js` with local values
+- [ ] Verify `env-config.js` is gitignored
+- [ ] Run `npm start`
+- [ ] Verify `window.env` in browser console
 
----
+### Keycloak Setup
+- [ ] Create public client with PKCE
+- [ ] Add `tenant` mapper (User Attribute → String)
+- [ ] Add `authorization` mapper (Roles → Array)
+- [ ] Set valid redirect URIs
+- [ ] Test login flow
 
-### 9) Common Pitfalls
-
-- `config.json` missing or not copied by CI/CD → app fails during bootstrap
-- Keycloak claims not present → features hidden/guards forbid (ensure `tenant` and `authorization` mappers)
-- CORS/CSP blocking `config.json` or Keycloak redirect → start with CSP **Report‑Only**
-
----
-
-### 10) TL;DR
-
-1. Put env at `public/assets/config.json`  
-2. Add `provideCore({...})` in `main.ts`  
-3. Define features & routes, use `featureGuard('key')`  
-4. Put translations & theme assets in the expected folders  
-
----
-
-Only config.json is loaded by the app, so CI/CD pipelines copy the correct version based on branch or env.
-
-## ⚒️ Development build & serve
-
-```
-npm start                 # = ng serve
-```
-
-### Static builds
-
-```
-npm run build             # = ng build --configuration=development
-npm run buildUat
-npm run buildProd
-```
-
-### Watch mode
-```
-npm run watch
-```
-### Testing & Linting
-```
-npm run test
-npm run lint
-```
-
-## 📁 Project Structure Highlights
-
-| Path                                                     | Purpose                                             |
-|----------------------------------------------------------|-----------------------------------------------------|
-| `public/assets/config.*.json`                            | Runtime environment configs (`dev`, `uat`, `prod`)  |
-| `src/app/app.config.ts`                                  | Angular 19 `ApplicationConfig` & DI providers       |
-| `src/app/app.routes.ts`                                  | Routing config using standalone components          |
-
-
-## 🧠 Notes
-
-This project uses Angular strict mode (`strict: true`) and TypeScript with:
-
-- `resolveJsonModule`
-- `esModuleInterop`
-- `strictTemplates`
-- `noImplicitReturns`
-- `noFallthroughCasesInSwitch`
-
-
-## 📃 Documentation Index
-Legend: **✅ Done** · **🟡 Ongoing** · **❌ To do**  
-
-- [[✅] - Global Core Overview](./README-OVERVIEW.md)
-- [[✅] - Change log](./CHANGELOG.md)
-- [[✅] - Theming, Assets and translattions](./README-ASSETS-TRANSLATIONS.md)
-- [[✅] - App Layout](./README-LAYOUT.md)
-- [[✅] - Form Builder](./README-FOrmBuilder.md)
-- [[✅] - Smart Tables](./README-SMARTABLES.md)
-- [[✅] - WorkflowBuilder Flow Designer](./README-WORKFLOWBUILDER.md)
-- [[✅] - Charts](./README-CHARTS.md)
-- [[🟡] - CSP](./README-CSP.md)
-- [[✅] - GIT](./README-GIT.md)
-- [[✅] - Contribution Guide](./CONTRIBUTING.md)
-- [[✅] - NGRX Contribution Guide](./README-CONTRIBUTING.NGRX.md)
-
-## Edge Cases & Notes
-
-- If the token lacks a **tenant** and a feature has `allow.tenants`, that feature will be **hidden/forbidden** (no match).  
-  Ensure your `tenant` mapper is present for users of tenant‑scoped features.
-- **Single-tenant and multi-tenant** both work: the tenant always comes from the token; `allow.tenants` comes from config.  
-  (Backend must still enforce authorization & tenant constraints.)
-- `label` values are **i18n keys** — add them to `assets/i18n/*.json`.
+### Configuration
+- [ ] Update `config.json` with features
+- [ ] Add translations to `i18n/*.json`
+- [ ] Configure routes with `featureGuard`
+- [ ] Test feature visibility based on roles/tenant
 
 ---
 
-## Quick Checklist
+## 🐛 Common Issues & Solutions
 
-- [x] **Keycloak**: add **User Attribute** mapper for `tenant` → claim `tenant` (string).  
-- [x] **Keycloak**: add **User Realm Role** mapper → claim `authorization` (multivalued string).  
-- [x] **Keycloak** *(optional)*: add **User Client Role** mapper(s) → same claim `authorization` (multivalued) to merge client roles.  
-- [x] **RuntimeConfig**: define features with `enabled`, `roles`, `allow.tenants`, `requireAuth`, and menu fields.  
-- [x] **SDK bootstrap**: call `features.setUser(kc.getUserCtx())`.  
-- [x] **Host UI**: menus via `features.visibleFeatures()`, routes via `featureGuard('key')`.  
-- [x] **Backend**: enforce roles/tenant server‑side (UI flags are not security).
+### Issue: Build fails with module not found
+
+**Solution:**
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Issue: Keycloak redirects to wrong URL
+
+**Solution:** Check `REDIRECT_URL` in Keycloak client matches your app URL
+
+### Issue: Features not showing after login
+
+**Solution:** 
+1. Check token contains `tenant` and `authorization` claims
+2. Verify feature rules in `config.json`
+3. Check `KeycloakService.getUserCtx()` returns correct data
+
+### Issue: CSP blocks requests
+
+**Solution:** 
+1. Start with Report-Only mode
+2. Check browser console for violations
+3. Add necessary domains to CSP
+
+---
+
+## 🔒 Security Notes
+
+1. **Never commit secrets** - Use environment variables
+2. **Always use HTTPS** in production
+3. **Enable PKCE** for Keycloak (S256)
+4. **Configure CSP** headers properly
+5. **Validate tokens** on backend (frontend checks are UX only)
+6. **Rotate credentials** regularly
+
+---
+
+## 🚀 Deployment Checklist
+
+### Pre-Deployment
+- [ ] Update `CHANGELOG.md`
+- [ ] Run tests: `npm test`
+- [ ] Run linter: `npm run lint`
+- [ ] Build production: `npm run buildProd`
+- [ ] Test Docker build locally
+
+### Deployment
+- [ ] Tag Docker image with version
+- [ ] Push to container registry
+- [ ] Update Kubernetes/Docker manifests
+- [ ] Set environment variables
+- [ ] Deploy to target environment
+- [ ] Smoke test application
+
+### Post-Deployment
+- [ ] Verify application loads
+- [ ] Test login flow
+- [ ] Check feature flags work
+- [ ] Monitor logs for errors
+- [ ] Check CSP violations
+
+---
 
 
 ## 🧑‍💻 Author
 
 **Angular Product Skeleton**  
 Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).
-

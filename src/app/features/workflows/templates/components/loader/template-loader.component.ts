@@ -124,7 +124,8 @@ import { ExtractConfig, ExtractFile } from '@features/workflows/templates/utils/
       justify-content: center;
       padding: 48px;
       text-align: center;
-
+      color: var(--mat-accent);
+      
       mat-icon {
         font-size: 48px;
         width: 48px;
@@ -150,6 +151,10 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly cdr = inject(ChangeDetectorRef);
 
   @Input({ required: true }) config!: TemplateConfig;
+  @Input({ required: true }) sessionId!: string;
+  @Input({ required: true }) projectId!: string;
+  @Input({ required: true }) templateId!: string;
+
   @Input() context?: TemplateContext;
 
   @Output() templateLoaded = new EventEmitter<ComponentRef<TemplateComponentInstance>>();
@@ -204,11 +209,15 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
       throw new Error('Template host ViewContainerRef not available');
     }
 
+    if (!this.config) {
+      throw new Error('No template configuration provided');
+    }
+
     this.error.set(null);
 
-    const componentType = this.registry.getComponent(this.config.type);
+    const componentType = this.registry.getComponent(this.config?.type);
     if (!componentType) {
-      throw new Error(`No component registered for type: ${this.config.type}`);
+      throw new Error(`No component registered for type: ${this.config?.type}`);
     }
 
     this.destroyComponent();
@@ -228,7 +237,7 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
   private configureComponent(componentRef: ComponentRef<TemplateComponentInstance>): void {
     const instance = componentRef.instance;
 
-    switch (this.config.type) {
+    switch (this.config?.type) {
       case 'chat':
         this.configureChatComponent(instance as ChatComponent, this.config as ChatTemplateConfig);
         break;
@@ -254,7 +263,7 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     if (config.initialMessages && config.initialMessages.length > 0) {
       instance.mode = {
         mode: 'preloaded',
-        messages: config.initialMessages
+        messages: config.initialMessages,
       };
     } else {
       instance.mode = {
@@ -271,10 +280,9 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
       instance.currentUser = config.currentUser;
     }
 
-    // Set endpoints
-    if (config.endpoints) {
-      instance.endpoints = config.endpoints;
-    }
+    instance.projectId = this.projectId;
+    instance.sessionId = this.sessionId;
+    instance.templateId = this.templateId;
 
     // Wire outputs to forward events
     instance.messageSent.subscribe((content: string) => {
@@ -316,11 +324,6 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     // Set configuration
     if (config.config) {
       instance.config = config.config as CompareConfig || {};
-    }
-
-    // Set endpoints
-    if (config.endpoints) {
-      instance.endpoints = config.endpoints;
     }
 
     // Wire outputs
@@ -366,11 +369,6 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
       instance.config = config.config as SummarizeConfig || {};
     }
 
-    // Set endpoints
-    if (config.endpoints) {
-      instance.endpoints = config.endpoints;
-    }
-
     // Wire outputs
     instance.summarizeCompleted.subscribe((result) => {
       const templateResult: TemplateResult = {
@@ -412,11 +410,6 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
     // Set configuration
     if (config.config) {
       instance.config = config.config as ExtractConfig || {};
-    }
-
-    // Set endpoints
-    if (config.endpoints) {
-      instance.endpoints = config.endpoints;
     }
 
     // Wire outputs

@@ -18,7 +18,7 @@
     <!-- Error State -->
     @else if (error()) {
     <div class="error-state">
-      <mat-icon color="warn">error</mat-icon>
+      <mat-icon color="warn" class="warn">error</mat-icon>
       <h3>{{ 'error.label' | translate }}</h3>
       <p>{{ error() }}</p>
     </div>
@@ -56,13 +56,13 @@
       @for (project of pagedProjects(); track trackById($index, project)) {
       <mat-card appearance="outlined" class="project-card" tabindex="0" role="button"
         [attr.aria-label]="('projects.open' | translate) + ' ' + project.name" (click)="openProject(project)"
-        (keydown.enter)="openProject(project)" (keydown.space)="openProject(project)">
+        (keydown.enter)="openProject(project)" (keydown.space)="openProject(project)" >
         <mat-card-header>
           <div mat-card-avatar class="avatar-folder">
             <mat-icon>folder_special</mat-icon>
           </div>
           <mat-card-title>{{ project.name }}</mat-card-title>
-          <mat-card-subtitle>{{ 'projects.id' | translate }}: {{ project.id }}</mat-card-subtitle>
+          <mat-card-subtitle>{{ 'projects.id' | translate }}: {{ project.project_id }}</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
@@ -82,7 +82,7 @@
             <mat-list-item>
               <mat-icon matListItemIcon>attach_file</mat-icon>
               <div matListItemTitle>{{ 'projects.files' | translate }}</div>
-              <div matListItemMeta>{{ project.filesCount }}</div>
+              <div matListItemMeta>{{ getProjectFileInfo(project.project_id)  }}</div>
             </mat-list-item>
 
             <!--             <mat-list-item>
@@ -91,9 +91,6 @@
                         <div matListItemLine class="user-details">
                             {{ 'projects.owners' | translate }} • {{ 'projects.members' | translate }} • {{
                             'projects.total' | translate }}
-                        </div>
-                        <div matListItemMeta>
-                            {{ totalUsers(project) }}
                         </div>
                     </mat-list-item> -->
           </mat-list>
@@ -112,7 +109,7 @@
 
     <!-- Paginator -->
     <mat-paginator [length]="length()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
-      [pageSizeOptions]="pageSizeOptions" (page)="onPage($event)" [attr.aria-label]="'projects.pagination' | translate">
+      [pageSizeOptions]="pageSizeOptions" (page)="onPage($event)" [attr.aria-label]="'projects.pagination' | translate" >
     </mat-paginator>
     }
 
@@ -122,7 +119,7 @@
       <mat-icon>folder_off</mat-icon>
       <h3>{{ 'projects.no-projects' | translate }}</h3>
       <p>{{ 'projects.no-projects-description' | translate }}</p>
-      <button mat-flat-button color="primary" (click)="createProject()">
+      <button mat-flat-button color="primary" (click)="createProject()" disabled>
         <mat-icon>add</mat-icon>
         {{ 'projects.create-first' | translate }}
       </button>

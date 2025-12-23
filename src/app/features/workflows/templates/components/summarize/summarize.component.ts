@@ -34,7 +34,6 @@ import {
     SummaryResult,
     SummarizeConfig,
     SummarizeMode,
-    SummarizeEndpoints,
 } from '../../utils/tplsInterfaces/summarizeTpl.interface';
 import { SummarizeService } from '../../services/summarize.service';
 import { iconFor } from '@features/workflows/templates/utils/fileIcon';
@@ -99,10 +98,6 @@ export class SummarizeComponent implements OnInit, OnDestroy {
         this.initializeForms();
     }
 
-    @Input() set endpoints(value: Partial<SummarizeEndpoints>) {
-        this._endpoints.set(value);
-    }
-
     @Input() disabled = false;
 
     // Outputs
@@ -114,7 +109,6 @@ export class SummarizeComponent implements OnInit, OnDestroy {
     // Signals
     private _mode = signal<SummarizeMode>({ mode: 'upload' });
     private _config = signal<SummarizeConfig>(this.defaultConfig);
-    private _endpoints = signal<Partial<SummarizeEndpoints>>({});
     private _result = signal<SummaryResult | null>(null);
     private _isUploading = signal<boolean>(false);
     private _isSummarizing = signal<boolean>(false);
@@ -125,7 +119,6 @@ export class SummarizeComponent implements OnInit, OnDestroy {
     // Computed
     mode$ = computed(() => this._mode());
     config$ = computed(() => this._config());
-    endpoints$ = computed(() => this._endpoints());
     result$ = computed(() => this._result());
     isUploading$ = computed(() => this._isUploading());
     isSummarizing$ = computed(() => this._isSummarizing());
@@ -175,11 +168,6 @@ export class SummarizeComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
         this.lang$ = this.store.select(AppSelectors.LangSelectors.selectLang);
-
-        // Configure service
-        this.summarizeService.configure({
-            endpoints: this._endpoints(),
-        });
 
         this.initializeForms();
     }
@@ -336,7 +324,7 @@ export class SummarizeComponent implements OnInit, OnDestroy {
 
         // Upload files
         this.summarizeService
-            .uploadFile({ files: filesToUpload }, this._endpoints())
+            .uploadFile({ files: filesToUpload })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
@@ -382,8 +370,7 @@ export class SummarizeComponent implements OnInit, OnDestroy {
                         includeKeyPoints: true,
                         maxKeyPoints: 5,
                     },
-                },
-                this._endpoints()
+                }
             )
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -412,7 +399,7 @@ export class SummarizeComponent implements OnInit, OnDestroy {
     private pollSummaryResult(summaryId: string): void {
         const pollInterval = setInterval(() => {
             this.summarizeService
-                .getSummary(summaryId, this._endpoints())
+                .getSummary(summaryId)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (result) => {

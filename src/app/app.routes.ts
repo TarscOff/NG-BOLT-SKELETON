@@ -44,13 +44,6 @@ export const routes: Routes = [
           import('./features/components/components.component').then(m => m.CustomComponentsComponent),
       },
       {
-        path: 'genai-chat',
-        canActivate: [featureGuard('ai.chat', { forbid: '/403' })],
-        data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
-        loadComponent: () =>
-          import('./features/chat/chat.component').then(m => m.ChatPageComponent),
-      },
-      {
         path: 'genai-projects',
         canActivate: [featureGuard('ai.projects', { forbid: '/403' })],
         data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },

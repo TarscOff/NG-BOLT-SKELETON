@@ -1,13 +1,11 @@
 {
   "name": "dev",
   "production": false,
-  "apiUrl": "https://dev.api.yourdomain.com",
   "hasNgrx": true,
   "auth": {
     "hasKeycloak": true,
-    "url": "http://localhost:8080/",
-    "realm": "my-realm",
-    "clientId": "eportal_chatbot",
+    "realm": "genai-dev",
+    "clientId": "genai-acd",
     "init": {
       "onLoad": "login-required",
       "checkLoginIframe": false,

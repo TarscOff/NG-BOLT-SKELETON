@@ -514,7 +514,7 @@ export class DocumentExportService {
    */
   private showSuccessNotification(format: ExportFormat): void {
     const message = this.translate.instant(`exportTpl.success.${format}`);
-    this.toast.showError(message);
+    this.toast.show(message);
   }
 
   /**
@@ -522,7 +522,7 @@ export class DocumentExportService {
    */
   private showErrorNotification(format: ExportFormat): void {
     const message = this.translate.instant(`exportTpl.error.${format}`);
-    this.toast.showError(message);
+    this.toast.show(message);
   }
 
   /**

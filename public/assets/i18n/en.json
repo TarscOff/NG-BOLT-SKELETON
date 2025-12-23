@@ -4,15 +4,29 @@
     "fr": "French",
     "nl": "Dutch"
   },
+  "paginator": {
+    "itemsPerPage": "Items per page:",
+    "nextPage": "Next page",
+    "previousPage": "Previous page",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "rangeLabel": "{{start}} - {{end}} of {{total}}"
+  },
   "HELLO": "Hello",
   "SAVE": "Save",
   "LANG": "Language",
+  "running": "Running",
+  "completed": "Completed",
+  "processing": "Processing",
+  "failed": "Failed",
   "LANG_HINT": "Used Language",
   "DASHBOARD_TITLE": "Dashboard",
   "TEAM_MEMBERS": "Team members",
   "quick_settings": "Quick settings",
+  "ai_settings": "AI Settings",
+  "navigation_home": "Navigate to home page",
   "confirm": "Confirm",
-  "navigationTitle": "Navigation",
+  "navigationTitle": "Menu",
   "selection": "Selection",
   "name": "Name",
   "role": "Role",
@@ -59,6 +73,7 @@
     "pagination": "Project pagination",
     "no-projects": "No projects available",
     "no-projects-description": "Get started by creating your first project to organize your GenAI workflows and files",
+    "delete-success": "Project \"{{title}}\" deleted successfully",
     "search": {
       "label": "Search",
       "placeholder": "Search by name or ID..."
@@ -72,9 +87,9 @@
     "clearFilters": "Clear filters",
     "details": {
       "title": "Details : {{name}}",
-      "subtitle": "View and manage project details",
+      "subtitle": "View and manage project",
       "tabs": {
-        "files": "Files",
+        "files": "Artifacts",
         "chat": "Chat History",
         "sessions": "My Sessions",
         "compare": "Compare History",
@@ -118,7 +133,13 @@
     },
     "error": {
       "not-found": "Project not found",
-      "failed-to-load": "Failed to load project details"
+      "failed-to-load": "Failed to load project details",
+      "failed-to-load-session": "Failed to load session details",
+      "failed-to-create-session": "Failed to create session",
+      "session-not-found": "Session not found",
+      "failed-to-load-templates": "Failed to load templates",
+      "workflow-status-polling-failed": "Failed to poll workflow status",
+      "delete-failed": "Failed to delete {{title}}"
     }
   },
   "chatPage": {
@@ -192,7 +213,9 @@
       "text": "We couldn’t find"
     },
     "label": "Error",
-    "failed-to-load-projects": "Failed to load projects"
+    "failed-to-load-projects": "Failed to load projects",
+    "failed-to-load-project-artifacts": "Failed to load artifacts for project {{projectId}}",
+    "user_registration_failed": "User registration failed"
   },
   "common": {
     "back": "Back",

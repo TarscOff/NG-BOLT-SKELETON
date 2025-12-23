@@ -25,7 +25,7 @@ import { SummaryResult } from '@features/workflows/templates/utils/tplsInterface
 import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
 import { ChatMessage } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
-import { CHAT_CONFIG, CHAT_ENDPOINTS, COMPARE_CONFIG, COMPARE_ENDPOINTS, SUMMARIZE_CONFIG, SUMMARIZE_ENDPOINTS, EXTRACT_CONFIG, EXTRACT_ENDPOINTS } from '@features/workflows/templates/utils/constants';
+import { CHAT_CONFIG, COMPARE_CONFIG, SUMMARIZE_CONFIG, EXTRACT_CONFIG } from '@features/workflows/templates/utils/constants';
 import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
 import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 
@@ -152,28 +152,24 @@ import { ExtractionResult } from '@features/workflows/templates/utils/tplsInterf
               <app-chat-tpl
                 [mode]="{ mode: 'preloaded', messages: chatMessages() }"
                 [config]="chatConfig()"
-                [endpoints]="chatEndpoints()"
               />
             }
             @case ('compare') {
               <app-compare-tpl
                 [mode]="{ mode: 'preloaded', result: comparisonResult() }"
                 [config]="comparisonConfig()"
-                [endpoints]="comparisonEndpoints()"
               />
             }
             @case ('summarize') {
               <app-summarize-tpl
                 [mode]="{ mode: 'preloaded', result: summaryResult() }"
                 [config]="summarizeConfig()"
-                [endpoints]="summarizeEndpoints()"
               />
             }
             @case ('extract') {
               <app-extract-tpl
                 [mode]="{ mode: 'preloaded', result: extractionResult() }"
                 [config]="extractConfig()"
-                [endpoints]="extractEndpoints()"
               />
             }
             @default {
@@ -245,7 +241,7 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
       }
     }
 
-    return this.templatingService.getMockChatMessages();
+    return [];
   });
 
   chatConfig = computed(() => {
@@ -258,17 +254,7 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
     return CHAT_CONFIG;
   });
-  chatEndpoints = computed(() => {
-    // TODO Map with passed data in the DTO
-    const currentDto = this.dto();
-
-    // Try to get messages from DTO result
-    if (currentDto?.result) {
-      // TODO: implement right logic
-    }
-    return CHAT_ENDPOINTS;
-  });
-
+ 
   /**
    * Computed signal for comparison result
    */
@@ -290,16 +276,6 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
       // TODO: implement right logic
     }
     return COMPARE_CONFIG;
-  });
-  comparisonEndpoints = computed(() => {
-    // TODO Map with passed data in the DTO
-    const currentDto = this.dto();
-
-    // Try to get messages from DTO result
-    if (currentDto?.result) {
-      // TODO: implement right logic
-    }
-    return COMPARE_ENDPOINTS;
   });
 
   /**
@@ -324,16 +300,6 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
     return SUMMARIZE_CONFIG;
   });
-  summarizeEndpoints = computed(() => {
-    // TODO Map with passed data in the DTO
-    const currentDto = this.dto();
-
-    // Try to get messages from DTO result
-    if (currentDto?.result) {
-      // TODO: implement right logic
-    }
-    return SUMMARIZE_ENDPOINTS;
-  });
 
   /**
    * Computed signal for extraction result
@@ -356,16 +322,6 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
       // TODO: implement right logic
     }
     return EXTRACT_CONFIG;
-  });
-  extractEndpoints = computed(() => {
-    // TODO Map with passed data in the DTO
-    const currentDto = this.dto();
-
-    // Try to get messages from DTO result
-    if (currentDto?.result) {
-      // TODO: implement right logic
-    }
-    return EXTRACT_ENDPOINTS;
   });
 
   ngOnInit(): void {

@@ -7,6 +7,7 @@ import {
   computed,
   signal,
   OnInit,
+  inject,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,6 +19,13 @@ import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
 import { ChatMessage } from '../../../utils/tplsInterfaces/chatTpl.interface';
+import { marked } from 'marked';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import hljs from 'highlight.js';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
   selector: 'app-chat-message-tpl',
@@ -57,7 +65,7 @@ export class ChatMessageComponent implements OnInit {
   editFieldConfig: FieldConfig[] = [];
 
   isCurrentUser = computed(() => {
-    return this.message?.sender?.id === this.currentUserId;
+    return this.message?.sender?.type === 'user';
   });
 
   isAssistant = computed(() => {
@@ -84,13 +92,42 @@ export class ChatMessageComponent implements OnInit {
     return this.showAvatar && !this.isSystem();
   });
 
+  private clipboard = inject(Clipboard);
+  private store = inject(Store);
+  
+  isDark$!: Observable<boolean>;
+  copied = signal(false);
+
   constructor(
     private fb: FormBuilder,
     private fieldsConfigService: FieldConfigService,
-    private translate: TranslateService
-  ) { }
+    private translate: TranslateService,
+    private sanitizer: DomSanitizer
+  ) {
+    marked.use({
+      breaks: true,
+      gfm: true,
+      renderer: {
+        code(token) {
+          const code = token.text;
+          const language = token.lang;
+          const validLanguage = language && hljs.getLanguage(language) ? language : 'plaintext';
+          try {
+            const highlighted = hljs.highlight(code, { language: validLanguage }).value;
+            return `<pre><code class="hljs language-${validLanguage}">${highlighted}</code></pre>`;
+          } catch (err) {
+            console.error('Highlight error:', err);
+            return `<pre><code class="hljs">${code}</code></pre>`;
+          }
+        }
+      }
+    });
+
+  }
 
   ngOnInit(): void {
+    this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
+
     // Initialize edit form
     this.editForm = this.fb.group({});
     this.editFieldConfig = [
@@ -169,9 +206,23 @@ export class ChatMessageComponent implements OnInit {
     return classes.join(' ');
   }
 
+  getParsedContent(): SafeHtml {
+    if (!this.message?.content) return '';
+
+    try {
+      if (this.shouldRenderMarkdown()) {
+        const parsed = marked.parse(this.message.content) as string;
+        return this.sanitizer.sanitize(1, parsed) || '';
+      }
+      return this.message.content;
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      return this.message.content;
+    }
+  }
+
   shouldRenderMarkdown(): boolean {
-    return this.allowMarkdown &&
-      this.message.type === 'markdown' &&
+    return (this.allowMarkdown || this.message.type === 'markdown' || this.message.type === 'mixed') &&
       !this.isEditing();
   }
 
@@ -208,5 +259,20 @@ export class ChatMessageComponent implements OnInit {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  copyToClipboard(textContent: string | SafeHtml): void {
+    if (textContent) {
+      const success = this.clipboard.copy(textContent.toString());
+
+      if (success) {
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 2000);
+      }
+    }
+  }
+
+  isFromUser(): boolean {
+    return this.message?.sender?.type === 'user';
   }
 }

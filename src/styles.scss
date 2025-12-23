@@ -2,6 +2,7 @@
 @use './styles/mixins' as *;
 
 @include mat.core();
+@import 'highlight.js/styles/github.css'; 
 
 $primary-palette: mat.$azure-palette;
 $tertiary-palette: mat.$green-palette;

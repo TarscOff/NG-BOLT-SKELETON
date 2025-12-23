@@ -4,16 +4,30 @@
     "fr": "Français",
     "nl": "Néerlandais"
   },
+  "paginator": {
+    "itemsPerPage": "Éléments par page",
+    "nextPage": "Page suivante",
+    "previousPage": "Page précédente",
+    "firstPage": "Première page",
+    "lastPage": "Dernière page",
+    "rangeLabel": "{{start}} - {{end}} sur {{total}}"
+  },
   "HELLO": "Bonjour",
   "SAVE": "Enregistrer",
   "LANG": "Langue",
+  "running": "En cours",
+  "completed": "Terminé",
+  "processing": "En traitement",
+  "failed": "Échoué",
   "LANG_HINT": "Langue utilisée",
   "DASHBOARD_TITLE": "Tableau de bord",
   "TEAM_MEMBERS": "Membres de l’équipe",
   "quick_settings": "Paramètres rapides",
+  "navigation_home": "Naviguer vers la page d’accueil",
+  "ai_settings": "Paramètres AI",
   "confirm": "Confirmer",
   "cancel": "Annuler",
-  "navigationTitle": "Navigation",
+  "navigationTitle": "Menu",
   "selection": "Séléction",
   "name": "Nom",
   "role": "Rôle",
@@ -121,6 +135,7 @@
     "pagination": "Pagination des projets",
     "no-projects": "Aucun projet disponible",
     "no-projects-description": "Commencez par créer votre premier projet pour organiser vos workflows et fichiers GenAI",
+    "delete-success": "Projet \"{{title}}\" supprimé avec succès",
     "search": {
       "label": "Rechercher",
       "placeholder": "Rechercher par nom ou ID..."
@@ -134,9 +149,9 @@
     "clearFilters": "Effacer les filtres",
     "details": {
       "title": "Détails : {{name}}",
-      "subtitle": "Voir et gérer les détails du projet",
+      "subtitle": "Voir et gérer le projet",
       "tabs": {
-        "files": "Fichiers",
+        "files": "Atéfacts",
         "chat": "Historique Chat",
         "sessions": "Mes Sessions",
         "compare": "Historique Comparaison",
@@ -180,7 +195,13 @@
     },
     "error": {
       "not-found": "Projet introuvable",
-      "failed-to-load": "Échec du chargement des détails du projet"
+      "failed-to-load": "Échec du chargement des détails du projet",
+      "failed-to-create-session": "Échec de la création de la session",
+      "failed-to-load-session": "Échec du chargement des détails de la session",
+      "session-not-found": "Session introuvable",
+      "failed-to-load-templates": "Échec du chargement des modèles",
+      "workflow-status-polling-failed": "Échec du sondage du statut du workflow",
+      "delete-failed": "Échec de la suppression de {{title}}"
     }
   },
   "error": {
@@ -193,7 +214,9 @@
       "text": "Nous n’avons pas pu trouver"
     },
     "label": "Erreur",
-    "failed-to-load-projects": "Échec du chargement des projets"
+    "failed-to-load-projects": "Échec du chargement des projets",
+    "failed-to-load-project-artifacts": "Échec du chargement des artéfacts pour le projet {{projectId}}",
+    "user_registration_failed": "Échec de l'enregistrement de l'utilisateur"
   },
   "common": {
     "back": "Retour",
