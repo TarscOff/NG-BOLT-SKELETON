@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.14](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.13...v2.0.14) (2025-12-23)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
+
 ### [2.0.13](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.12...v2.0.13) (2025-12-23)
 
 
