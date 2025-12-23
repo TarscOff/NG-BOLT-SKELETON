@@ -7,9 +7,9 @@
   margin: 12px 0;
 
   .message-content {
-    max-width: 500px;
+    max-width: 100%;
   }
-  
+
   &.current-user {
     margin-left: auto;
     flex-direction: row-reverse;
@@ -46,7 +46,7 @@
     }
 
     .message-content {
-      background: var(--mat-primary);
+      background: color-mix(in srgb, var(--mat-primary) 50%, transparent);
       color: #fff;
       border-radius: 4px 16px 16px 16px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -124,6 +124,7 @@
   .message-sender {
     font-weight: 500;
     color: var(--mat-sys-on-surface);
+    text-transform: capitalize;
   }
 
   .message-timestamp {
@@ -154,7 +155,7 @@
   &:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 
-    + .message-actions {
+    +.message-actions {
       opacity: 1;
     }
   }
@@ -182,11 +183,17 @@
   .markdown-content {
     line-height: 1.6;
 
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       margin: 0.5em 0 0.25em 0;
     }
 
-    ul, ol {
+    ul,
+    ol {
       margin: 0.5em 0;
       padding-left: 1.5em;
     }
@@ -279,6 +286,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -396,5 +404,76 @@
         }
       }
     }
+  }
+}
+
+.markdown-content {
+
+  // Code blocks
+  pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  // Inline code
+  code {
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: 'Courier New', monospace;
+  }
+
+  // Other markdown elements
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding-left: 16px;
+    color: #6a737d;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th,
+    td {
+      border: 1px solid #dfe2e5;
+      padding: 8px;
+    }
+  }
+}
+
+.copy-btn {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  bottom: 0;
+
+  &.is_left {
+    left: -50px;
+  }
+
+  &.is_right {
+    right: -50px;
   }
 }

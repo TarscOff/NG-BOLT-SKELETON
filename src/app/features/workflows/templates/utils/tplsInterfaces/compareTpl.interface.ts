@@ -60,11 +60,3 @@ export interface CompareStatusResponse {
   progress?: number;
   result?: ComparisonResult;
 }
-
-export interface CompareEndpoints {
-  uploadFiles: string;        // POST - Upload two files for comparison
-  startComparison: string;    // POST - Start comparison process
-  getComparison: string;      // GET - Get comparison result by ID
-  cancelComparison: string;   // DELETE - Cancel ongoing comparison
-  exportComparison: string;   // POST - Export comparison result
-}

@@ -35,6 +35,7 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
+  color: var(--mat-accent);
 
   mat-icon {
     font-size: 64px;
@@ -133,6 +134,11 @@
 
   }
 
+  mat-card-subtitle  {
+    font-size: 14px;
+    color: var(--mat-accent);
+  }
+
   .avatar-folder {
     display: inline-flex;
     align-items: center;
@@ -177,7 +183,7 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
-
+  color: var(--mat-accent);
   h3 {
     margin: 0.5rem 0;
     font-size: 1.5rem;
@@ -244,7 +250,8 @@ mat-paginator {
       form {
         display: flex;
         flex-direction: row;
-
+        flex-wrap: wrap;
+        
         app-field-host {
           flex: 1;
         }

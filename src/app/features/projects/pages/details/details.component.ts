@@ -8,6 +8,7 @@ import {
     OnInit,
     signal,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,7 +27,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProjectsService } from '../../services/projects.service';
-import { FileItem, HistoryItem, Member, ProjectDto, WorkflowItem } from '../../interfaces/project.model';
+import { FileItem, HistoryItem, Member, ProjectArtifactsDataDto, ProjectDto, ProjectSessionDto, WorkflowItem } from '../../interfaces/project.model';
 import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
 import { KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 import { ConfirmDialogData, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
@@ -86,15 +87,17 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     readonly files = signal<FileItem[]>([]);
     readonly filesCount = computed(() => this.files().length);
 
-    // Chat History
-    readonly chatHistory = signal<HistoryItem[]>([]);
-    readonly chatCount = computed(() => this.chatHistory().length);
+
 
     // Sessiions History
     readonly sessionsHistory = signal<HistoryItem[]>([]);
     readonly sessionsCount = computed(() => this.sessionsHistory().length);
 
     /* 
+        // Chat History
+    readonly chatHistory = signal<HistoryItem[]>([]);
+    readonly chatCount = computed(() => this.chatHistory().length);
+
         // Compare History
         readonly compareHistory = signal<HistoryItem[]>([]);
         readonly compareCount = computed(() => this.compareHistory().length);
@@ -149,7 +152,29 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             class: "primary",
             variant: "flat",
             label: this.translateService.instant("new-session"),
-            click: () => this.router.navigate(['/genai-projects', this.project()?.id, 'sessions', 'new']),
+            disabled$: toObservable(computed(() => this.loading())),
+            click: async () => {
+                const projectId = this.project()?.project_id;
+                if (projectId) {
+                    this.loading.set(true);
+                    try {
+                        const createdSession = await firstValueFrom(this.projectsService.createProjectsSessions(projectId));
+                        if (createdSession && createdSession.session_id) {
+                            this.router.navigate(['/genai-projects', projectId, 'sessions', createdSession.session_id]);
+                            return;
+                        }
+                    } catch (error) {
+                        this.error.set(
+                            this.translateService.instant('projects.error.failed-to-create-session')
+                        );
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.failed-to-create-session') + " " + (error instanceof Error ? `: ${error.message}` : ''),
+                        );
+                    } finally {
+                        this.loading.set(false);
+                    }
+                }
+            },
         };
         this.toolbarService.scope(this.destroyRef, [back, newSession]);
     }
@@ -173,8 +198,72 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
 
     ngOnDestroy(): void {
-        // Optional: clear breadcrumbs when leaving
         this.layoutService.clearBreadcrumbs();
+    }
+
+    private async loadProjectSessions(projectId: string): Promise<void> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        try {
+            // Load sessions data
+            const sessions = await firstValueFrom(this.projectsService.getProjectsSessions(projectId));
+            this.sessionsHistory.set(this.mapToHistoryItems(sessions, this.project()!));
+
+        } catch (error) {
+            this.error.set(
+                this.translateService.instant('projects.error.failed-to-load')
+            );
+            this.toast.showError(
+                this.translateService.instant('projects.error.failed-to-load') + " " + (error instanceof Error ? `: ${error.message}` : ''),
+            );
+        } finally {
+            this.loading.set(false);
+        }
+    }
+
+    private async loadProjectArtifacts(projectId: string): Promise<void> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        try {
+            // Load artifacts data
+            const projects = await firstValueFrom(this.projectsService.getProjectsFilesData(projectId));
+            this.files.set(this.mapToFiles(projects));
+
+        } catch (err) {
+            this.error.set(
+                this.translateService.instant('projects.error.failed-to-load')
+            );
+            this.toast.showError(
+                this.translateService.instant('projects.error.failed-to-load'),
+            );
+            console.error('Failed to load project details:', err);
+        } finally {
+            this.loading.set(false);
+        }
+    }
+
+    mapToFiles(artifacts: ProjectArtifactsDataDto[]): FileItem[] {
+        if (!artifacts) { return []; }
+        return artifacts.map((e) => ({
+            id: e.artifact_id,
+            name: e.artifact_name || 'Untitled File',
+            size: e.artifact_size,
+            type: e.artifact_type,
+            uploadedAt: new Date(e.created_on),
+        }));
+    }
+
+    mapToHistoryItems(sessions: ProjectSessionDto[], project: ProjectDto): HistoryItem[] {
+        if (!sessions) { return []; }
+        return sessions.map((s) => ({
+            id: s.session_id,
+            title: s.session_name || 'Untitled Session',
+            createdAt: new Date(s.created_on),
+            projectId: project.project_id,
+            meta: { ...s },
+        }));
     }
 
     private async loadProjectDetails(projectId: string): Promise<void> {
@@ -183,8 +272,8 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
         try {
             // Load project data
-            const projects = await this.projectsService.getProjectsList().toPromise();
-            const project = projects?.find((p) => p.id === projectId);
+            const projects = await firstValueFrom(this.projectsService.getProjectsList());
+            const project = projects?.find((p) => p.project_id === projectId);
 
             if (!project) {
                 this.error.set(
@@ -202,10 +291,14 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             ]);
 
             // Load mock data - replace with actual API calls
-            this.loadMockData();
+            this.loadProjectArtifacts(projectId);
+            this.loadProjectSessions(projectId);
         } catch (err) {
             this.error.set(
                 this.translateService.instant('projects.error.failed-to-load')
+            );
+            this.toast.showError(
+                this.translateService.instant('projects.error.failed-to-load'),
             );
             console.error('Failed to load project details:', err);
         } finally {
@@ -214,15 +307,10 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     }
 
     private loadMockData(): void {
-        // Mock files
-        this.files.set(this.projectsService.loadMockData().files);
 
         // Mock chat history
-        this.chatHistory.set(this.projectsService.loadMockData().chatHistory);
-
-        // Mock Session history
-        this.sessionsHistory.set(this.projectsService.loadMockData().sessionsHistory);
         /* 
+        this.chatHistory.set(this.projectsService.loadMockData().chatHistory);
                 // Mock compare history
                 this.compareHistory.set([
                     {
@@ -341,7 +429,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         kind: 'chat' | 'summary' | 'extract' | 'compare' | 'session',
         item: HistoryItem
     ): void {
-        this.router.navigate(['/genai-projects', this.project()?.id, "sessions", item.id]);
+        this.router.navigate(['/genai-projects', this.project()?.project_id, "sessions", item.id]);
     }
 
 
@@ -349,7 +437,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         kind: 'chat' | 'summary' | 'extract' | 'compare' | 'session',
         item: HistoryItem
     ): Promise<void> {
-
 
         const confirmed = await firstValueFrom(this.dialog.open<
             ConfirmDialogComponent,
@@ -376,6 +463,20 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                 this.sessionsHistory.update((list) =>
                     list.filter((x) => x.id !== item.id)
                 );
+
+                this.projectsService.deleteSessionById(item.id).subscribe({
+                    next: () => {
+                        this.toast.show( 
+                            this.translateService.instant('projects.delete-success', { title: item.title })
+                        );
+                    },
+                    error: (error: Error) => {
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.delete-failed', { title: item.title }) + " " + (error ? `: ${error.message}` : ''),
+                        );
+                        console.error('Failed to delete session:', error);
+                    }
+                });
                 break;
             /*case 'chat':
                 this.chatHistory.update((list) => list.filter((x) => x.id !== item.id));
@@ -397,6 +498,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                 break; */
         }
     }
+
     /* 
         // Workflow operations
         onWfPage(e: PageEvent): void {
@@ -455,6 +557,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             this.members.update((arr) => arr.filter((x) => x.id !== m.id));
         }
      */
+
     onTitleChange(title: string): void {
         // Handle title change if needed
         this.layoutService.setTitle(title);

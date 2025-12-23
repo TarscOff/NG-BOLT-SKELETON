@@ -1,34 +1,37 @@
-# Starter App – CI/CD Setup (GitLab CI)
+# CI/CD Setup (GitLab CI, GitHub Actions, Azure Pipelines)
 
->_Last updated: 2025-12-09_
+>_Last updated: 2025-12-23_
 
-This document explains how the CI/CD is configured for the **Starter App** using:
+This document explains how the CI/CD is configured using:
 
 - **GitLab CI** (build + automated versioning + Docker to GitLab Container Registry)
+- **GitHub Actions** (build + automated versioning + Docker to GitHub Container Registry)
+- **Azure Pipelines** (build + automated versioning + Docker to Azure Container Registry)
 
 ---
 
-## 1. Project prerequisites
+## 1. Project Prerequisites
 
 ### 1.1 Node, Angular & Docker
 
 The project assumes:
 
 - **Node**: v20 (configured in pipeline)
-- **Angular**: standard Angular CLI project
-- **Dockerfile** at repo root, with a multi-stage build:
+- **Angular**: Angular 19+ with standalone components
+- **Dockerfile** at repo root for runtime configuration
 
 ```dockerfile
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN npm ci
-RUN npm run build -- --configuration=production
-
 FROM nginx:alpine
-COPY --from=builder /app/dist/psx-ng-skeleton /usr/share/nginx/html
+
+# Copy built Angular app (CI provides dist/psx-ng-skeleton/browser)
+COPY dist/psx-ng-skeleton/browser /usr/share/nginx/html
+
+# Copy env-config template (processed at runtime)
+COPY public/env-config.template.js /usr/share/nginx/html/env-config.template.js
+
+# Copy nginx template + entrypoint
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker/entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
@@ -38,25 +41,66 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 The Angular build output is expected at:
 
 ```text
-dist/psx-ng-skeleton
+dist/psx-ng-skeleton/browser
 ```
 
-### 1.2 Environment config files
+### 1.2 Runtime Environment Configuration
 
-The Angular app uses a runtime `config.json` copied from branch-specific files:
+**🚀 NEW APPROACH**: This application uses **runtime environment configuration** instead of build-time configuration.
 
-- `public/assets/config.prod.json`
-- `public/assets/config.uat.json`
-- `public/assets/config.dev.json`
+**Key Changes:**
+- ✅ **Single Docker image** for all environments (dev, UAT, prod)
+- ✅ **No more branch-specific builds** (no `config.dev.json`, `config.uat.json`, `config.prod.json` copying)
+- ✅ **Runtime configuration** via environment variables injected at container startup
+- ✅ **Always builds with production Angular configuration** (`npm run buildProd`)
 
-Each pipeline copies the right file to `public/assets/config.json` **before** building.
+**How it works:**
 
-Branch mapping:
+1. **Build time**: Angular app is built once with production configuration
+2. **Runtime**: Docker entrypoint generates `env-config.js` from environment variables
+3. **Bootstrap**: Angular loads `window.env` and merges with static `config.json`
 
-- `main` → `config.prod.json` → `--configuration=production`
-- `uat`  → `config.uat.json` → `--configuration=uat`
-- `staging` → `config.uat.json` → `--configuration=uat`
-- everything else (`develop`, feature branches) → `config.dev.json` → `--configuration=development`
+**Files involved:**
+
+- **`public/env-config.template.js`**: Template with placeholders for environment variables
+  ```javascript
+  window.env = {
+    API_URL: "${API_URL}",
+    KEYCLOAK_URL: "${KEYCLOAK_URL}",
+  };
+  ```
+
+- **`public/assets/config.json`**: Static feature flags and application settings (no environment-specific values)
+
+- **`docker/entrypoint.sh`**: Generates `env-config.js` from template using `envsubst`
+
+- **`src/main.ts`**: Loads runtime config before bootstrapping Angular
+
+**Required environment variables at container runtime:**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `API_URL` | Backend API URL | `https://url.pxl-codit.com/api` |
+| `KEYCLOAK_URL` | Keycloak server URL (with trailing slash) | `https://keycloak.pxl-codit.com/` |
+| `ENVIRONMENT` | Environment name (affects CSP/COOP headers) | `production`, `uat`, `development` |
+
+**Example deployment:**
+
+```bash
+# Development
+docker run -d -p 80:80 \
+  -e API_URL="https://psx-ng-skeleton-dev.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e ENVIRONMENT="development" \
+  registry/psx-ng-skeleton:latest
+
+# Production
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  registry/psx-ng-skeleton:latest
+```
 
 ### 1.3 Security Headers & CORS Configuration
 
@@ -64,60 +108,58 @@ The application uses nginx to serve the Angular app and configures security head
 
 **Cross-Origin-Opener-Policy (COOP)**:
 
-The COOP header is configured based on the environment to balance security with development flexibility:
+The COOP header is configured based on the `ENVIRONMENT` variable to balance security with development flexibility:
 
-- **`development`** (develop branch): `unsafe-none` - Allows cross-origin access for local development (e.g., localhost:4200)
-- **`uat`/`staging`**: `same-origin` - Strict isolation for pre-production environments
-- **`production`** (main branch): `same-origin` - Strict isolation for production
+- **`development`**: `unsafe-none` - Allows cross-origin access for local development
+- **`uat`/`staging`**: `same-origin` - Strict isolation for pre-production
+- **`production`**: `same-origin` - Strict isolation for production
 
-**How it works**:
+**Content-Security-Policy (CSP)**:
 
-1. **Build time**: The `ENVIRONMENT` variable is passed as a Docker build argument during image creation
-2. **Runtime**: The `docker/entrypoint.sh` script reads the `ENVIRONMENT` variable and sets `COOP_VALUE` accordingly
-3. **Template rendering**: nginx configuration is generated from `nginx/default.conf.template` using `envsubst`
+Dynamic CSP configuration based on runtime environment variables:
+- `connect-src` includes `API_URL` and `KEYCLOAK_URL` automatically
+- Other directives configured in `nginx/default.conf.template`
 
-**Files involved**:
+**How it works:**
 
-- `nginx/default.conf.template` - Nginx configuration template with `$COOP_VALUE` placeholder
-- `docker/entrypoint.sh` - Sets `COOP_VALUE` based on `ENVIRONMENT` and renders nginx config
-- `Dockerfile` - Accepts `ENVIRONMENT` build argument
-- `.gitlab-ci.yml` - Passes `ENVIRONMENT` during Docker build
+1. **Container startup**: `docker/entrypoint.sh` reads `ENVIRONMENT`, `API_URL`, `KEYCLOAK_URL`
+2. **Template processing**: Uses `envsubst` to render nginx config from template
+3. **Header injection**: nginx serves with environment-specific security headers
 
-**Development considerations**:
+**Files involved:**
 
-When running the deployed dev environment and accessing it from `localhost:4200`, the `unsafe-none` COOP policy allows:
-- Opening popups to the deployed API
-- Cross-origin resource sharing for development purposes
-- Testing integrations without CORS restrictions
+- `nginx/default.conf.template` - Nginx configuration template with placeholders
+- `docker/entrypoint.sh` - Sets variables and renders nginx config
+- `Dockerfile` - Copies template and entrypoint
 
-For production and UAT environments, the strict `same-origin` policy ensures:
-- Enhanced security through origin isolation
-- Protection against cross-origin attacks
-- Compliance with security best practices
-
+---
 
 ## 2. GitLab CI – `.gitlab-ci.yml`
 
-### 2.1 Pipeline overview
+### 2.1 Pipeline Overview
 
 The GitLab CI pipeline includes three stages:
 
 - **Stage 1: build** - npm install + lint (runs on all branches/MRs)
 - **Stage 2: release** - bump version, CHANGELOG, tag and push (runs only on `develop`, not MRs, not release commits)
-- **Stage 3: docker** - build and push Docker image to **GitLab Container Registry** (runs on `main`, `develop`, `staging`, `uat`, not MRs, not release commits)
+- **Stage 3: docker** - build and push **single universal Docker image** to GitLab Container Registry (runs on `main`/`develop`, not MRs, not release commits)
 
-### 2.2 Workflow rules and triggers
+**🚀 KEY CHANGE**: Docker build no longer requires `ENVIRONMENT` build argument. Runtime configuration is injected via environment variables at container startup.
+
+### 2.2 Workflow Rules and Triggers
 
 ```yaml
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "staging" || $CI_COMMIT_BRANCH == "uat"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 ```
 
 Pipeline runs on:
-- Direct push to: `main`, `develop`, `staging`, `uat`
+- Direct push to: `main`, `develop`
 - Merge Request events (build + lint only)
+
+**Note**: `staging` and `uat` branches removed - use same image with different runtime env vars.
 
 ### 2.3 Variables
 
@@ -131,165 +173,85 @@ variables:
   DOCKER_TLS_CERTDIR: "/certs"
 ```
 
-- **NODE_VERSION**: Node.js version for build environment
-- **PKG_PATH**: Path to package.json for version extraction
-- **CR_REGISTRY**: Container registry (GitLab Container Registry at `teamhub-se.telindus.lu:5050`)
-- **RELEASE_TYPE**: Default version bump type (patch/minor/major)
-- **DOCKER_DRIVER**: Docker storage driver
-- **DOCKER_TLS_CERTDIR**: Docker TLS certificate directory for DinD
+### 2.4 Build Stage (`build_app`)
 
-### 2.4 Build stage (`build_app`)
+Unchanged - runs on all branches and merge requests.
 
-Runs on all branches and merge requests:
+### 2.5 Release Stage (`release`)
 
-1. Sets up Node.js environment
-2. Configures npm for Azure Artifacts using `AZURE_ARTIFACT_PAT` variable
-3. Installs dependencies with `npm ci`
-4. Runs linting with `npm run lint`
+Unchanged - runs only on `develop` branch, bumps version, updates CHANGELOG, creates tag.
 
-```yaml
-build_app:
-  stage: build
-  image: node:${NODE_VERSION}
-  before_script:
-    - |
-      if [ -n "$AZURE_ARTIFACT_PAT" ]; then
-        {
-          echo ""
-          echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACT_PAT}"
-          echo "always-auth=true"
-        } >> .npmrc
-      fi
-  script:
-    - npm ci
-    - npm run lint
-```
+### 2.6 Docker Stage (`docker_build`)
 
-### 2.5 Release stage (`release`)
+**🚀 MAJOR CHANGES**:
 
-**Conditions**: Runs only on `develop` branch, not on merge requests, and not on **any** release commits (prevents infinite loop).
+**Conditions**: Runs only on `main` and `develop` (not `staging`/`uat`).
 
 ```yaml
 rules:
-  - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/'
+  - if: $CI_PIPELINE_SOURCE != "merge_request_event" && ($CI_COMMIT_BRANCH == "main") && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
 ```
 
-**Important**: The condition skips **all** commits starting with `chore(release):`. This prevents the pipeline from re-running the release stage when:
-- `chore(release): v2.1.10 – CI release develop` is pushed
-- `chore(release): add JSON notes for v2.1.10` is pushed
+**Steps:**
 
-**Key features**:
-
-1. **Full Git history**: Uses `GIT_DEPTH: 0` to fetch all commits and tags
-2. **Token validation**: Validates `CI_PUSH_TOKEN` exists before proceeding
-3. **Tag conflict detection**: Checks if the next version tag already exists locally or remotely
-4. **Automated versioning**: 
-   - Calculates next version based on `RELEASE_TYPE`
-   - Runs `standard-version` to bump version, update CHANGELOG, and create tag
-   - Creates commit: `chore(release): v<version> – CI release develop`
-5. **Push to remote**: Pushes release commit and tags using `--follow-tags`
-6. **Artifact creation**: Creates `release.env` with VERSION variable for downstream jobs
-7. **Resource group**: Uses `resource_group: release` to prevent concurrent releases
-
-**Git authentication**:
-
-```yaml
-- git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@teamhub-se.telindus.lu:8443/${CI_PROJECT_PATH}.git
-```
-
-Requires `CI_PUSH_TOKEN` GitLab CI/CD variable (see setup section below).
-
-
-### 2.6 Docker stage (`docker_build`)
-
-**Conditions**: Runs on `main`, `develop`, `staging`, `uat` (not on merge requests, not on release commits).
-
-```yaml
-rules:
-  - if: $CI_PIPELINE_SOURCE != "merge_request_event" && ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "staging" || $CI_COMMIT_BRANCH == "uat") && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
-```
-
-**Docker-in-Docker Configuration**:
-
-```yaml
-services:
-  - name: docker:24-dind
-    command: ["--insecure-registry=teamhub-se.telindus.lu:5050"]
-```
-
-**Certificate Handling**:
-
-The pipeline supports two modes for handling self-signed certificates:
-
-1. **With certificate** (if `GITLAB_REGISTRY_CERT` is set as a File variable):
-   - Validates certificate content
-   - Adds to system trust store
-   - Adds to Docker daemon trust store
-   - Configures Docker client
-
-2. **Without certificate** (fallback):
-   - Configures Docker to use insecure registry mode
-   - Uses `--insecure-registry` flag in DinD service
-
-**Steps**:
-
-1. Pulls latest changes from remote (includes release commit if any)
+1. Pulls latest changes from remote
 2. Configures npm for Azure Artifacts
 3. Installs dependencies
-4. **Determines build environment** based on branch:
-   - `main` → `BUILD_ENV=production`
-   - `uat` / `staging` → `BUILD_ENV=uat`
-   - `develop` / others → `BUILD_ENV=development`
-5. Copies appropriate config file based on branch:
-   - `main` → `config.prod.json` → `--configuration=production`
-   - `uat` → `config.uat.json` → `--configuration=uat`
-   - `staging` → `config.uat.json` → `--configuration=uat`
-   - `develop` → `config.dev.json` → `--configuration=development`
-6. Builds Angular app with `npm run build -- --configuration=$NG_CONFIG`
-7. Reads version from `package.json`
-8. Logs into **GitLab Container Registry** using built-in `CI_JOB_TOKEN` and `CI_REGISTRY_USER`
-9. **Builds Docker image with ENVIRONMENT build argument**:
+4. **Builds Angular with production configuration ONLY**:
    ```bash
-   docker build --build-arg ENVIRONMENT=${BUILD_ENV} \
-                -t "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}" \
-                -t "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}" \
-                -f ./Dockerfile .
+   npm run buildProd
    ```
-10. Pushes Docker image with tags:
-    - `${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}` (e.g., `develop-psx-ng-skeleton-2.1.10`)
-    - `latest-psx-ng-skeleton-${SAFE_BRANCH}` (e.g., `latest-psx-ng-skeleton-develop`)
+   - ❌ No more branch-based config file copying
+   - ❌ No more `BUILD_ENV` determination
+   - ✅ Always production build
+5. Reads version from `package.json`
+6. Logs into GitLab Container Registry
+7. **Builds single universal Docker image** (no `ENVIRONMENT` build arg):
+   ```bash
+   docker build \
+     -t "${IMAGE_BASE}:${VERSION}" \
+     -t "${IMAGE_BASE}:latest" \
+     -f ./Dockerfile .
+   ```
+8. Pushes Docker image with **simplified tags**:
+   - `${VERSION}` (e.g., `2.1.10`)
+   - `latest`
 
-**Environment-specific security headers**:
-
-The Docker image is built with the `ENVIRONMENT` variable, which controls:
-- **COOP (Cross-Origin-Opener-Policy)** header strictness
-- **CSP (Content-Security-Policy)** connect-src directives
-- Other runtime security configurations
-
-This ensures that:
-- Development images allow cross-origin access for local testing
-- Production/UAT images enforce strict security policies
-
-**Docker authentication (automatic)**:
-
-```yaml
-echo "${CI_JOB_TOKEN}" | docker login ${CR_REGISTRY} -u ${CI_REGISTRY_USER} --password-stdin
-```
-
-
-GitLab automatically provides:
-- `CI_JOB_TOKEN`: Temporary token for the current job
-- `CI_REGISTRY_USER`: Set to `gitlab-ci-token`
-- `CI_PROJECT_PATH`: Project path (e.g., `genai/frontend/frontend-psx-ng-skeleton`)
-
-**Docker tags example**:
+**Docker tags example:**
 
 ```text
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:2.1.10
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
 ```
 
-### 2.7 GitLab CI/CD setup checklist
+**Environment-specific configuration at runtime:**
+
+The Docker image requires environment variables at container startup:
+
+```bash
+# Development
+docker run -d -p 80:80 \
+  -e API_URL="https://[psx-ng-skeleton]-dev.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e ENVIRONMENT="development" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+
+# UAT
+docker run -d -p 80:80 \
+  -e API_URL="https://[psx-ng-skeleton]-uat.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e ENVIRONMENT="uat" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+
+# Production
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+```
+
+### 2.7 GitLab CI/CD Setup Checklist
 
 #### Required CI/CD Variables
 
@@ -299,613 +261,385 @@ Configure in **Settings → CI/CD → Variables**:
    - Scope: **Packaging → Read**
    - Used to authenticate npm installs from Azure Artifacts
    - Type: Variable
-   - Protect: ✓ (recommended)
-   - Mask: ✓ (recommended)
+   - Protect: ✓
+   - Mask: ✓
 
 2. **`CI_PUSH_TOKEN`** (GitLab Access Token)
-   - Create via **Settings → Access Tokens** (Project or Personal)
+   - Create via **Settings → Access Tokens**
    - Required scope: `write_repository`
    - Used to push release commits and tags
    - Type: Variable
-   - Protect: ✓ (recommended)
-   - Mask: ✓ (recommended)
+   - Protect: ✓
+   - Mask: ✓
 
 3. **`GITLAB_REGISTRY_CERT`** (Optional - Self-signed CA Certificate)
    - Self-signed CA certificate for registry
-   - Used to trust the internal registry certificate
-   - Type: **File** (recommended) or Variable
-   - Protect: ✓ (recommended)
-   - Note: If not set, pipeline uses `--insecure-registry` mode
+   - Type: **File** (recommended)
+   - Protect: ✓
+   - Note: If not set, uses `--insecure-registry` mode
 
-#### Generating CI_PUSH_TOKEN
+---
 
-**Option 1: Project Access Token (Recommended)**
+## 3. GitHub Actions – `.github/workflows/ci.yml`
 
-1. Navigate to **Settings → Access Tokens**
-2. Click **Add new token**
-3. Configure:
-   - **Token name**: `CI_PUSH_TOKEN`
-   - **Role**: Maintainer
-   - **Scopes**: `write_repository`
-4. Click **Create project access token**
-5. Copy token immediately (won't be shown again)
+### 3.1 Pipeline Overview
 
-**Option 2: Personal Access Token**
+Similar to GitLab CI with three jobs:
 
-1. User avatar → **Edit profile → Access Tokens**
-2. Click **Add new token**
-3. Configure:
-   - **Token name**: `gitlab-ci-push`
-   - **Scopes**: `write_repository`, `api`
-4. Copy token immediately
+- **Job 1: build_app** - npm install + lint
+- **Job 2: release** - bump version, CHANGELOG, tag (only on `develop`)
+- **Job 3: docker_build** - build and push single Docker image to GHCR
 
-#### Configuring GITLAB_REGISTRY_CERT (Optional)
+**🚀 KEY CHANGE**: Builds single universal image, no branch-specific builds.
 
-If your GitLab Container Registry uses a self-signed certificate:
+### 3.2 Docker Build Job
 
-**Step 1: Export the CA certificate**
-
-```bash
-# From the GitLab server
-openssl s_client -showcerts -connect teamhub-se.telindus.lu:5050 < /dev/null 2>/dev/null | \
-  openssl x509 -outform PEM > gitlab-registry-ca.crt
-```
-
-**Step 2: Add to GitLab CI/CD Variables**
-
-1. Go to **Settings → CI/CD → Variables**
-2. Add new variable:
-   - **Key**: `GITLAB_REGISTRY_CERT`
-   - **Type**: **File** (recommended)
-   - **Value**: Paste the certificate content (including `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`)
-   - **Protect**: ✓
-   - **Mask**: Leave unchecked (certificates can't be masked)
-
-**Note**: If you don't configure this variable, the pipeline will automatically use `--insecure-registry` mode.
-
-#### Additional Configuration
-
-1. **Ensure pipeline file exists**: `.gitlab-ci.yml` at repository root
-2. **Verify config files**: `public/assets/config.{prod,uat,dev}.json` exist
-3. **Docker runner**: Ensure GitLab runners support Docker-in-Docker
-4. **Branch protection**: Consider protecting `main`/`develop` branches
-5. **Repository permissions**: Verify CI service account has push access
-6. **Container Registry**: Verify Container Registry is enabled for your project (Settings → General → Visibility, project features, permissions → Container Registry)
-
-### 2.8 Cache configuration
-
-The pipeline uses cache to speed up builds:
+**Key changes:**
 
 ```yaml
-cache:
-  key:
-    files:
-      - package-lock.json
-  paths:
-    - node_modules/
-    - .npm/
+- name: Build Angular (Production only - runtime config via env vars)
+  run: |
+    npm ci
+    echo "Building Angular with PRODUCTION configuration..."
+    npm run buildProd
+
+- name: Build and push single universal Docker image
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    file: ./Dockerfile
+    push: true
+    tags: |
+      ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ env.VERSION }}
+      ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest
 ```
 
-Cache is shared across jobs when `package-lock.json` hasn't changed.
+**Tags example:**
+
+```text
+ghcr.io/your-org/psx-ng-skeleton:2.1.10
+ghcr.io/your-org/psx-ng-skeleton:latest
+```
+
+### 3.3 Required Secrets
+
+Configure in **Settings → Secrets and variables → Actions**:
+
+1. **`AZURE_ARTIFACT_PAT`** - Azure Artifacts authentication
+2. **`GITHUB_TOKEN`** - Automatically provided by GitHub
 
 ---
 
-## 3. Quick setup checklist for a new environment
+## 4. Azure Pipelines – `azure-pipelines.yml`
 
-When cloning or onboarding this Starter App to a new environment, ensure:
+### 4.1 Pipeline Overview
 
-### 3.1 GitLab CI
+Similar structure with three stages:
 
-- [ ] Add **`AZURE_ARTIFACT_PAT`** CI/CD variable (Azure DevOps PAT with Packaging/Read)
-- [ ] Add **`CI_PUSH_TOKEN`** CI/CD variable (Project/Personal Access Token with write_repository)
-- [ ] Add **`GITLAB_REGISTRY_CERT`** CI/CD variable (Optional - File type with CA certificate)
-- [ ] Verify `.gitlab-ci.yml` is at repo root
-- [ ] Ensure `public/assets/config.{prod,uat,dev}.json` files exist
-- [ ] Confirm GitLab runners support Docker-in-Docker (docker:24-dind service)
-- [ ] Verify Git remote URL is accessible with correct port (`:8443` for Git, `:5050` for registry)
-- [ ] Enable Container Registry for the project (Settings → General → Container Registry)
+- **Stage 1: build** - npm install + lint
+- **Stage 2: release** - version bump (only on `develop`)
+- **Stage 3: docker** - build and push single Docker image
+
+### 4.2 Docker Build Step
+
+**Key changes:**
+
+```yaml
+- script: |
+    npm run buildProd
+  displayName: 'Build Angular App (Production only)'
+
+- task: Docker@2
+  displayName: 'Build & Push Docker image (single universal image)'
+  inputs:
+    containerRegistry: '$(DOCKER_SERVICE_CONNECTION)'
+    repository: '$(DOCKER_REPOSITORY)'
+    command: 'buildAndPush'
+    dockerfile: 'Dockerfile'
+    buildContext: '.'
+    tags: |
+      $(APP_VERSION)
+      latest
+```
+
+**Tags example:**
+
+```text
+yourregistry.azurecr.io/psx-ng-skeleton:2.1.10
+yourregistry.azurecr.io/psx-ng-skeleton:latest
+```
+
+### 4.3 Required Variables
+
+Configure in **Pipelines → Library → Variable groups**:
+
+1. **`AZURE_ARTIFACT_PAT`** - Azure Artifacts authentication
+2. **`DOCKER_SERVICE_CONNECTION`** - Azure Container Registry connection
 
 ---
 
-## 4. Pipeline Execution Flow – Understanding What Happens on Each Run
+## 5. Quick Setup Checklist for New Environment
 
-This section explains step-by-step what happens when the CI/CD pipeline runs.
+### 5.1 All Platforms
 
-### 4.1 Execution overview by branch and trigger type
+- [ ] Add **`AZURE_ARTIFACT_PAT`** variable/secret
+- [ ] Verify CI/CD file exists (`.gitlab-ci.yml`, `.github/workflows/ci.yml`, `azure-pipelines.yml`)
+- [ ] Ensure **single `config.json`** exists at `public/assets/config.json`
+- [ ] Verify `env-config.template.js` exists at `public/env-config.template.js`
+- [ ] Confirm `docker/entrypoint.sh` exists and is executable
+- [ ] Test Docker build locally: `docker build -t psx-ng-skeleton-test .`
 
-| Branch | Trigger | Version Bump? | Docker Build? | Notes |
-|--------|---------|---------------|---------------|-------|
-| `develop` | Direct push | ✅ Yes | ✅ Yes | Full release + Docker build |
-| `main` | Direct push | ❌ No | ✅ Yes | Docker build only |
-| `staging` | Direct push | ❌ No | ✅ Yes | Docker build only |
-| `uat` | Direct push | ❌ No | ✅ Yes | Docker build only |
-| Any branch | Merge Request | ❌ No | ❌ No | Build + lint only |
-| `develop` | Release commit* | ❌ Skipped | ❌ Skipped | Prevents infinite loop |
+### 5.2 GitLab CI Specific
 
-**\*Release commit**: Any commit starting with `chore(release):` (e.g., `chore(release): v2.1.10` or `chore(release): add JSON notes for v2.1.10`)
+- [ ] Add **`CI_PUSH_TOKEN`** variable
+- [ ] Add **`GITLAB_REGISTRY_CERT`** variable (optional)
+- [ ] Enable Container Registry for project
+- [ ] Verify Git remote URL uses correct ports (`:8443` for Git, `:5050` for registry)
 
-### 4.2 Step-by-step execution for a typical push to `develop`
+### 5.3 GitHub Actions Specific
 
-```
-Stage 1: build_app (runs on all branches/MRs)
-✅ Step 1: Setup Node.js environment (node:20)
-✅ Step 2: Check Node/npm versions
-✅ Step 3: Configure npm for Azure Artifacts
-   → Appends auth token to .npmrc
-✅ Step 4: Install dependencies
-   → npm ci (installs all dependencies including @cadai/*)
-✅ Step 5: Run linting
-   → npm run lint
+- [ ] Add **`AZURE_ARTIFACT_PAT`** secret
+- [ ] Verify GHCR permissions (Settings → Actions → General → Workflow permissions → Read and write)
 
-Stage 2: release (only on develop, not MRs, not release commits)
-✅ Step 1: Install Git + certificates
-✅ Step 2: Configure Git identity
-   → Sets "GitLab CI" as committer
-✅ Step 3: Validate CI_PUSH_TOKEN
-   → Exits with error if not set
-✅ Step 4: Configure Git remote with CI_PUSH_TOKEN
-   → https://oauth2:${CI_PUSH_TOKEN}@teamhub-se.telindus.lu:8443/...
-✅ Step 5: Fetch all tags
-   → git fetch --tags (prevents duplicate tag errors)
-✅ Step 6: Configure npm for Azure Artifacts
-✅ Step 7: Install dependencies
-✅ Step 8: Calculate next version
-   → Reads current version from package.json
-   → Calculates next version based on RELEASE_TYPE
-   → Example: 2.1.9 → 2.1.10 (patch)
-✅ Step 9: Check for existing tags
-   → Checks locally: git rev-parse v2.1.10
-   → Checks remotely: git ls-remote --tags origin
-   → If exists: Creates artifact and exits gracefully (exit 0)
-✅ Step 10: Run standard-version
-   → npm run release:patch:nopush
-   → Updates package.json version
-   → Updates CHANGELOG.md
-   → Creates release-notes/release-v2.1.10.json
-   → Creates Git tag v2.1.10
-   → Commits: "chore(release): v2.1.10 – CI release develop"
-   → Commits: "chore(release): add JSON notes for v2.1.10"
-✅ Step 11: Handle detached HEAD
-   → Checks if on branch or detached HEAD
-   → If detached: git checkout -B develop
-✅ Step 12: Push to remote
-   → git push origin develop --follow-tags
-   → Pushes BOTH release commits and tag
-✅ Step 13: Create artifact
-   → Writes VERSION=2.1.10 to release.env
-   → Used by docker_build stage
+### 5.4 Azure Pipelines Specific
 
-Triggered Pipeline #2 (by "chore(release): v2.1.10" commit)
-Stage 1: build_app ✅ Runs normally
-Stage 2: release ❌ SKIPPED (matches /^chore\(release\):/)
-Stage 3: docker_build ❌ SKIPPED (matches /^chore\(release\):/)
+- [ ] Create Service Connection for Azure Container Registry
+- [ ] Add **`AZURE_ARTIFACT_PAT`** to Variable Group
 
-Triggered Pipeline #3 (by "chore(release): add JSON notes" commit)
-Stage 1: build_app ✅ Runs normally
-Stage 2: release ❌ SKIPPED (matches /^chore\(release\):/)
-Stage 3: docker_build ❌ SKIPPED (matches /^chore\(release\):/)
+---
 
-Stage 3: docker_build (only on main/develop/staging/uat, not MRs, not release commits)
-✅ Step 1: Setup Docker-in-Docker environment
-   → docker:24 image with docker:24-dind service
-   → DinD configured with --insecure-registry flag
-✅ Step 2: Install Git + Node.js + npm
-✅ Step 3: Configure CA certificate (if GITLAB_REGISTRY_CERT is set)
-   → Validates certificate content
-   → Adds to system trust store
-   → Adds to Docker daemon trust store
-   → OR: Configures insecure registry mode (fallback)
-✅ Step 4: Pull latest changes
-   → git fetch origin develop
-   → git reset --hard origin/develop
-   → Ensures we have the latest release commit
-✅ Step 5: Configure npm for Azure Artifacts
-✅ Step 6: Install dependencies
-✅ Step 7: Determine build environment
-   → develop → BUILD_ENV=development
-✅ Step 8: Copy environment config
-   → develop → config.dev.json → --configuration=development
-✅ Step 9: Build Angular app
-   → npm run build -- --configuration=development
-✅ Step 10: Read version from package.json
-   → VERSION=2.1.10
-✅ Step 11: Login to GitLab Container Registry
-   → docker login teamhub-se.telindus.lu:5050 -u gitlab-ci-token
-   → Uses CI_JOB_TOKEN (automatic)
-✅ Step 12: Build Docker image with ENVIRONMENT argument
-   → docker build --build-arg ENVIRONMENT=development \
-                  -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10 \
-                  -t teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
-   → Image contains ENVIRONMENT=development for runtime configuration
-✅ Step 13: Push Docker images
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-   → docker push teamhub-se.telindus.lu:5050/.../frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
-```
+## 6. Pipeline Execution Flow
 
+### 6.1 Execution Overview by Branch and Trigger
 
-### 4.3 What happens on a Merge Request?
+| Branch | Trigger | Version Bump? | Docker Build? | Docker Tags |
+|--------|---------|---------------|---------------|-------------|
+| `develop` | Direct push | ✅ Yes | ✅ Yes | `<version>`, `latest` |
+| `main` | Direct push | ❌ No | ✅ Yes | `<version>`, `latest` |
+| Any branch | Merge Request | ❌ No | ❌ No | N/A |
+| `develop` | Release commit* | ❌ Skipped | ❌ Skipped | N/A |
 
-```
-✅ Checkout
-✅ Authenticate to Azure Artifacts
-✅ Install dependencies (npm ci)
-✅ Lint (npm run lint)
-⏭️  Skip version bump
-⏭️  Skip Docker build
-```
+**\*Release commit**: Any commit starting with `chore(release):`
 
-**Result**: MR validation only, no deployable artifacts.
-
-### 4.4 Identifying a release commit (automatic skip)
-
-After a successful release, the pipeline pushes **two commits**:
-
-```
-chore(release): v2.1.10 – CI release develop
-chore(release): add JSON notes for v2.1.10
-```
-
-When **either** commit triggers a new pipeline run:
+### 6.2 Step-by-Step Execution for Push to `develop`
 
 ```
 Stage 1: build_app
-✅ Runs normally (build + lint)
+✅ Install dependencies (npm ci)
+✅ Run linting (npm run lint)
 
-Stage 2: release
-❌ Condition not met: $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
-   → Job is skipped automatically
-   → This prevents duplicate version bumps and infinite loops
+Stage 2: release (only on develop)
+✅ Calculate next version (e.g., 2.1.9 → 2.1.10)
+✅ Check for existing tags (prevent duplicates)
+✅ Run standard-version (bump, CHANGELOG, tag)
+✅ Push release commits + tag
+✅ Create artifact: VERSION=2.1.10
 
-Stage 3: docker_build
-❌ Condition not met: $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
-   → Job is skipped automatically
-   → This prevents duplicate Docker builds
+Triggered Pipeline #2 (by release commits)
+Stage 1: build_app ✅ Runs
+Stage 2: release ❌ SKIPPED (release commit detected)
+Stage 3: docker_build ❌ SKIPPED (release commit detected)
+
+Stage 3: docker_build (only on main/develop, not release commits)
+✅ Pull latest changes
+✅ Install dependencies
+✅ Build with production config (npm run buildProd)
+✅ Read version (2.1.10)
+✅ Login to registry
+✅ Build single Docker image (no environment arg)
+✅ Push with tags: 2.1.10, latest
 ```
 
-**Result**: Only the build stage runs for release commits. Docker build is skipped to avoid unnecessary operations.
+### 6.3 Deployment with Runtime Configuration
 
-### 4.5 Understanding pipeline logs – What to look for
+After Docker image is pushed, deploy to any environment by setting runtime env vars:
 
-#### ✅ **Successful version bump**
-
-Look for in release stage logs:
-
-```
-Running CI release of type: patch
-Current version in package.json: 2.1.9
-Next version will be: 2.1.10
-
-> psx-ng-skeleton@2.1.9 release:patch:nopush
-
-✔ bumping version in package.json from 2.1.9 to 2.1.10
-✔ bumping version in package-lock.json from 2.1.9 to 2.1.10
-✔ outputting changes to CHANGELOG.md
-✔ committing package-lock.json and package.json and CHANGELOG.md
-✔ tagging release v2.1.10
-
-Current tag: v2.1.10
-583b2ee chore(release): v2.1.10 – CI release develop
-
-Pushing HEAD + tags to origin
-```
-
-#### ✅ **Successful Docker push**
-
-Look for in docker_build stage logs:
-
-```
-Detected version: 2.1.10
-Repository: genai/frontend/frontend-psx-ng-skeleton
-Safe branch: develop
-Registry: teamhub-se.telindus.lu:5050
-
-Login Succeeded
-
-Successfully built a1b2c3d4e5f6
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-Successfully tagged teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
-
-The push refers to repository [teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton]
-develop-psx-ng-skeleton-2.1.10: digest: sha256:... size: 1234
-latest-psx-ng-skeleton-develop: digest: sha256:... size: 1234
-
-✅ Pushed images:
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
-   teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest-psx-ng-skeleton-develop
-```
-
-#### ⏭️ **Skipped version bump** (wrong branch)
-
-Release stage logs:
-
-```
-This job has not been executed, because of the configured rules.
-Condition not met: $CI_COMMIT_BRANCH == "develop"
-```
-
-#### ⏭️ **Skipped Docker build** (release commit detected)
-
-Docker build stage logs:
-
-```
-This job has not been executed, because of the configured rules.
-Condition not met: $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
-```
-
-#### ⚠️ **Tag already exists** (idempotent skip)
-
-Release stage logs:
-
-```
-Next version will be: 2.1.10
-ERROR: Tag v2.1.10 already exists on remote
-This version has already been released. Skipping release.
-If you need to re-release, manually delete the remote tag first:
-  git push origin :refs/tags/v2.1.10
-
-Detected existing version: 2.1.9
-Job succeeded
-```
-
-**This is expected behavior!** The job exits gracefully (exit 0) to allow the pipeline to continue.
-
-#### ❌ **CI_PUSH_TOKEN missing**
-
-Release stage logs:
-
-```
-ERROR: CI_PUSH_TOKEN is not set!
-Please configure CI_PUSH_TOKEN as a GitLab CI/CD variable with write access
-```
-
-**Action**: Create the `CI_PUSH_TOKEN` variable as described in section 2.7.
-
-#### ❌ **Docker login fails with certificate error**
-
-Docker build stage logs:
-
-```
-Error response from daemon: Get "https://teamhub-se.telindus.lu:5050/v2/": tls: failed to verify certificate: x509: certificate signed by unknown authority
-```
-
-**Action**: Configure the `GITLAB_REGISTRY_CERT` variable as described in section 2.7, or rely on the automatic `--insecure-registry` fallback.
-
----
-
-## 5. Versioning conventions
-
-- The version is **automatically bumped** by the CI pipeline using `standard-version` via release scripts
-- The version is taken from **`package.json`** (field `version`) after the automated bump
-- The release creates:
-  - Version bump in `package.json` (patch/minor/major based on `RELEASE_TYPE`)
-  - CHANGELOG.md update with commit history
-  - Git tag (e.g., `v2.1.10`)
-  - Two commits:
-    - `chore(release): v<version> – CI release <branch>`
-    - `chore(release): add JSON notes for v<version>`
-- Docker tags follow the pattern:
-  - `<branch>-psx-ng-skeleton-<version>` (e.g., `develop-psx-ng-skeleton-2.1.10`, `main-psx-ng-skeleton-2.1.10`)
-  - `latest-psx-ng-skeleton-<branch>` (e.g., `latest-psx-ng-skeleton-develop`, `latest-psx-ng-skeleton-main`)
-- Branch names with slashes (e.g. `feature/login`) are sanitized by replacing `/` with `-` for Docker tags
-- Pushes release commits and tags only on `develop` branch
-- **Registry location**: GitLab Container Registry (self-hosted at `teamhub-se.telindus.lu:5050`)
-
----
-
-## 6. Troubleshooting
-
-### 6.1 Common Issues
-
-#### **Issue**: `CI_PUSH_TOKEN is not set`
-
-**Solution**: Create a Project or Personal Access Token with `write_repository` scope and add it as a CI/CD variable named `CI_PUSH_TOKEN`.
-
-#### **Issue**: `fatal: tag 'v2.1.10' already exists`
-
-**Solution**: The pipeline now handles this gracefully. If you see this error:
-1. Check if the release stage exited with code 0 (success)
-2. If it failed, manually delete the tag: `git push origin :refs/tags/v2.1.10`
-3. Re-run the pipeline
-
-#### **Issue**: `npm ci` fails with authentication error
-
-**Solution**: 
-1. Verify `AZURE_ARTIFACT_PAT` CI/CD variable is set correctly
-2. Check that the PAT has **Packaging → Read** scope
-3. Ensure the PAT hasn't expired
-
-#### **Issue**: Docker build fails with "cannot access Azure Artifacts"
-
-**Solution**: The `.npmrc` with authentication is created in the build stage and persists for the Docker build. Ensure `COPY . .` in Dockerfile happens after npm auth configuration.
-
-#### **Issue**: `error: Cannot access URL` when pushing
-
-**Solution**: 
-1. Verify `CI_PUSH_TOKEN` has `write_repository` scope
-2. Check that the Git remote URL includes the correct port (`:8443`)
-3. Ensure the token hasn't expired or been revoked
-
-#### **Issue**: Docker push fails with "unauthorized" to GitLab Container Registry
-
-**Solution**:
-1. Verify Container Registry is enabled: Settings → General → Container Registry
-2. Check GitLab runner has access to Docker-in-Docker service
-3. Ensure `CI_JOB_TOKEN` is being used correctly (automatically provided by GitLab)
-4. Verify registry URL is correct: `teamhub-se.telindus.lu:5050`
-
-#### **Issue**: Pipeline triggers multiple times after release
-
-**Solution**: This is **expected but optimized**! The release creates two commits:
-- `chore(release): v2.1.10 – CI release develop`
-- `chore(release): add JSON notes for v2.1.10`
-
-Both trigger new pipelines, but **only the build stage runs**. Release and Docker stages are automatically skipped (condition: `!~ /^chore\(release\):/`).
-
-#### **Issue**: Docker service timeout or health check error
-
-**Symptoms**:
-```
-*** WARNING: Service runner-...-docker-0 probably didn't start properly.
-Health check error: service "..." timeout
-```
-
-**Solution**:
-1. This is often a transient issue with Docker-in-Docker initialization
-2. Retry the pipeline job
-3. Check GitLab Runner configuration for Docker executor settings
-4. Verify the runner machine has sufficient resources
-5. If persistent, check Docker service logs in the runner
-
-#### **Issue**: Certificate warning in Docker build
-
-**Symptoms**:
-```
-WARNING: ca-cert-telindus-registry.pem does not contain exactly one certificate or CRL: skipping
-```
-
-**Solution**:
-1. Verify `GITLAB_REGISTRY_CERT` contains a valid PEM certificate
-2. Ensure certificate starts with `-----BEGIN CERTIFICATE-----`
-3. Check there are no extra spaces or characters
-4. If issue persists, the pipeline will automatically fall back to `--insecure-registry` mode
-
-#### **Issue**: Docker login fails with TLS certificate error
-
-**Symptoms**:
-```
-Error response from daemon: Get "https://teamhub-se.telindus.lu:5050/v2/": tls: failed to verify certificate: x509: certificate signed by unknown authority
-```
-
-**Solutions**:
-1. **Recommended**: Set up `GITLAB_REGISTRY_CERT` as a File variable with your CA certificate
-2. **Alternative**: The pipeline automatically uses `--insecure-registry` mode as fallback
-3. Verify the DinD service is configured with `--insecure-registry` flag
-4. Check the certificate is accessible and valid
-
-
-#### **Issue**: CORS errors when accessing deployed API from localhost:4200
-
-**Symptoms**:
-```
-Access to fetch at 'https://api.example.com' from origin 'http://localhost:4200' 
-has been blocked by CORS policy
-```
-
-**Solution**:
-This is **expected and by design** for production/UAT environments. The deployed application uses strict COOP (`same-origin`) headers.
-
-For development:
-1. **Use the deployed dev environment** (develop branch) which has `COOP: unsafe-none`
-2. **Or run the API locally** alongside the frontend
-3. **Or use a proxy** in your Angular development server configuration
-
-The COOP configuration is:
-- `develop` branch → `unsafe-none` (allows localhost access)
-- `uat`/`staging`/`main` → `same-origin` (strict security)
-
-#### **Issue**: COOP header not reflecting expected value
-
-**Symptoms**:
-Development environment shows `Cross-Origin-Opener-Policy: same-origin` instead of `unsafe-none`
-
-**Solution**:
-1. Verify the Docker image was built with the correct `ENVIRONMENT` variable
-2. Check Docker build logs for: `Building Docker image with ENVIRONMENT=development...`
-3. Inspect the running container's environment: `docker exec <container> printenv ENVIRONMENT`
-4. Verify `docker/entrypoint.sh` is setting `COOP_VALUE` correctly
-5. Check nginx config: `docker exec <container> cat /etc/nginx/conf.d/default.conf`
-
-### 6.2 Manual Version Release
-
-If you need to manually trigger a release or change the version type:
-
-1. **Change RELEASE_TYPE**:
-   - Go to **CI/CD → Pipelines → Run pipeline**
-   - Add variable: `RELEASE_TYPE` = `minor` or `major`
-   - Run on `develop` branch
-
-2. **Manual version bump**:
-   ```bash
-   npm run release:patch   # or release:minor or release:major
-   git push --follow-tags
-   ```
-
-3. **Delete and recreate a release**:
-   ```bash
-   # Delete local tag
-   git tag -d v2.1.10
-   
-   # Delete remote tag
-   git push origin :refs/tags/v2.1.10
-   
-   # Trigger new pipeline
-   git commit --allow-empty -m "trigger: new release"
-   git push
-   ```
-
-### 6.3 Viewing Docker Images
-
-**GitLab Container Registry**:
-1. Navigate to **Packages & Registries → Container Registry**
-2. You'll see all pushed images with their tags
-3. Click on an image to see details, digests, and pull commands
-
-**Pull command example**:
 ```bash
-docker pull teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:develop-psx-ng-skeleton-2.1.10
+# Development environment
+docker run -d -p 80:80 \
+  -e API_URL="https://BE-dev.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e ENVIRONMENT="development" \
+  registry/psx-ng-skeleton:latest
+
+# UAT environment (same image!)
+docker run -d -p 80:80 \
+  -e API_URL="https://BE-uat.example.com/api" \
+  -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e ENVIRONMENT="uat" \
+  registry/psx-ng-skeleton:latest
+
+# Production environment (same image!)
+docker run -d -p 80:80 \
+  -e API_URL="https://api.example.com" \
+  -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e ENVIRONMENT="production" \
+  registry/psx-ng-skeleton:latest
+```
+
+**Kubernetes example:**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [psx-ng-skeleton]-frontend
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: psx-ng-skeleton
+        image: registry/psx-ng-skeleton:2.1.10
+        env:
+        - name: API_URL
+          value: "https://api.example.com"
+        - name: KEYCLOAK_URL
+          value: "https://keycloak.example.com/"
+        - name: ENVIRONMENT
+          value: "production"
+        ports:
+        - containerPort: 80
 ```
 
 ---
 
-## 7. Best Practices
+## 7. Versioning Conventions
 
-### 7.1 Development Workflow
-
-1. **Feature branches**: Create feature branches from `develop`
-2. **Merge Requests**: Use MRs for code review before merging to `develop`
-3. **Automatic versioning**: Let CI handle version bumps on `develop`
-4. **Branch protection**: Protect `main` and `develop` branches from direct pushes
-
-### 7.2 Versioning Strategy
-
-1. **Patch releases**: Bug fixes, minor updates (default)
-2. **Minor releases**: New features, non-breaking changes
-3. **Major releases**: Breaking changes, major refactors
-4. **Conventional commits**: Use conventional commit messages for automatic CHANGELOG generation
-
-### 7.3 Docker Images
-
-1. **Tag strategy**: Use version-specific tags for production, `latest-*` for development
-2. **Image cleanup**: Regularly clean up old images from registry
-3. **Security scanning**: Consider adding container vulnerability scanning
-4. **Multi-stage builds**: Use multi-stage Dockerfile to minimize image size
-5. **Environment-specific builds**: Each environment builds with its own security configuration
-   - Development images include relaxed COOP for local testing
-   - Production images enforce strict security headers
-
-### 7.4 Security
-
-1. **Secrets management**: Never commit secrets to repository
-2. **Token rotation**: Regularly rotate CI/CD tokens and certificates
-3. **Branch protection**: Require code reviews for protected branches
-4. **Variable masking**: Mask sensitive variables in CI/CD settings
-5. **Security headers**: Configured per environment via Docker build arguments
-   - **COOP**: Strict for production, relaxed for development
-   - **CSP**: Dynamic based on API_ORIGINS and KEYCLOAK_ORIGIN
-   - All headers configured in `nginx/default.conf.template`
-6. **Runtime configuration**: Security policies are baked into images at build time but can be overridden via environment variables at container runtime if needed
+- Version is **automatically bumped** by CI using `standard-version`
+- Version taken from **`package.json`** after bump
+- Release creates:
+  - Version bump in `package.json`
+  - CHANGELOG.md update
+  - Git tag (e.g., `v2.1.10`)
+  - Two commits: `chore(release): v<version>` and `chore(release): add JSON notes`
+- **Docker tags are now simplified**:
+  - ✅ `<version>` (e.g., `2.1.10`)
+  - ✅ `latest`
+- **Single image for all environments** - configured at runtime
 
 ---
 
-This README should be kept in sync with:
+## 8. Troubleshooting
 
-- `.gitlab-ci.yml`
-- `package.json` scripts
-- Docker configuration
+### 8.1 Common Issues
 
-Whenever the CI/CD is updated, update this doc accordingly.
+#### **Issue**: `window.env is undefined` in browser console
+
+**Cause**: `env-config.js` not loaded or generated
+
+**Solution**:
+1. Check container logs: `docker logs <container-name>`
+2. Verify entrypoint generated file: `docker exec <container> cat /usr/share/nginx/html/env-config.js`
+3. Ensure environment variables are passed: `docker inspect <container> | grep -A 20 Env`
+4. Check `index.html` loads script: `<script src="/env-config.js"></script>`
+
+#### **Issue**: API calls go to wrong URL
+
+**Cause**: Runtime configuration not merged correctly
+
+**Solution**:
+1. Check `window.env` in browser console
+2. Verify `main.ts` merges runtime config:
+   ```typescript
+   const runtimeConfig = {
+     ...staticConfig,
+     apiUrl: env.API_URL,
+     auth: { ...config.auth, url: env.KEYCLOAK_URL }
+   };
+   ```
+3. Check container environment: `docker exec <container> printenv`
+
+#### **Issue**: Different security headers needed per environment
+
+**Solution**: Set `ENVIRONMENT` variable when running container:
+- `development` → COOP: `unsafe-none`
+- `uat`/`production` → COOP: `same-origin`
+
+#### **Issue**: Pipeline builds multiple images for different branches
+
+**This is the old behavior!** New approach:
+- ✅ Single image built on `main`/`develop`
+- ✅ Tags: `<version>` and `latest`
+- ✅ Deploy same image to any environment with runtime env vars
+
+#### **Issue**: Need to rebuild image for config change
+
+**This is the old behavior!** New approach:
+- ❌ No rebuild needed
+- ✅ Just restart container with new env vars:
+  ```bash
+  docker run -d -p 80:80 \
+    -e API_URL="https://new-api-url.com" \
+    -e KEYCLOAK_URL="https://new-keycloak-url.com/" \
+    registry/psx-ng-skeleton:latest
+  ```
+
+### 8.2 Verifying Runtime Configuration
+
+**Check generated env-config.js:**
+
+```bash
+# Inside running container
+docker exec <container-name> cat /usr/share/nginx/html/env-config.js
+
+# Expected output:
+# window.env = {
+#   API_URL: "https://psx-ng-skeleton.pxl-codit.com/api",
+#   KEYCLOAK_URL: "https://keycloak.pxl-codit.com/",
+# };
+```
+
+**Check browser console:**
+
+```javascript
+console.log(window.env);
+// Should show: {API_URL: "...", KEYCLOAK_URL: "..."}
+```
+
+**Check nginx configuration:**
+
+```bash
+docker exec <container-name> cat /etc/nginx/conf.d/default.conf
+# Verify COOP and CSP headers are rendered correctly
+```
+
+---
+
+## 9. Best Practices
+
+### 9.1 Development Workflow
+
+1. **Feature branches**: Create from `develop`
+2. **Merge Requests**: Use MRs for code review
+3. **Automatic versioning**: Let CI handle version bumps on `develop`
+4. **Single image**: Build once, deploy everywhere
+5. **Runtime configuration**: Change env vars without rebuild
+
+### 9.2 Versioning Strategy
+
+1. **Patch releases**: Bug fixes (default)
+2. **Minor releases**: New features
+3. **Major releases**: Breaking changes
+4. **Conventional commits**: For automatic CHANGELOG
+
+### 9.3 Docker Images
+
+1. **Single image strategy**: Build once with production config
+2. **Runtime configuration**: Pass env vars at container startup
+3. **Simplified tags**: Use `<version>` and `latest`
+4. **Image cleanup**: Regularly clean old versions
+5. **Security scanning**: Add vulnerability scanning
+
+### 9.4 Security
+
+1. **Secrets management**: Never commit secrets
+2. **Token rotation**: Regularly rotate tokens
+3. **Runtime security**: Security headers configured via `ENVIRONMENT` variable
+4. **Environment isolation**: Use same image, different env vars per environment
+---
 
 ## 🧑‍💻 Author
 
 **Angular Product Skeleton**  
-Built by **Tarik Haddadi** using Angular 19+ and modern best practices (2025).
+Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).

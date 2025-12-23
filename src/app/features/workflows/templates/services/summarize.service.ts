@@ -5,7 +5,6 @@ import { catchError, tap } from 'rxjs/operators';
 import {
   SummaryResult,
   SummarizeFile,
-  SummarizeEndpoints,
   SummarizeUploadRequest,
   SummarizeStartRequest,
   SummarizeUploadResponse,
@@ -19,31 +18,13 @@ import {
 })
 export class SummarizeService {
   private http = inject(HttpClient);
-
-  private defaultEndpoints: SummarizeEndpoints = {
-    uploadFile: '/api/summarize/upload',
-    startSummarization: '/api/summarize/start',
-    getSummary: '/api/summarize/result',
-    cancelSummary: '/api/summarize/cancel',
-    exportSummary: '/api/summarize/export',
-  };
-
-
-  configure(config: { endpoints?: Partial<SummarizeEndpoints> }): void {
-    if (config.endpoints) {
-      this.defaultEndpoints = { ...this.defaultEndpoints, ...config.endpoints };
-    }
-  }
-
   /**
    * Upload file(s) for summarization
    */
   uploadFile(
     request: SummarizeUploadRequest,
-    endpoints?: Partial<SummarizeEndpoints>
   ): Observable<SummarizeUploadResponse> {
-    const url = endpoints?.uploadFile || this.defaultEndpoints.uploadFile;
-
+    const url = "/api/summarize/upload";
 
     const formData = new FormData();
     request.files.forEach((file, index) => {
@@ -69,10 +50,8 @@ export class SummarizeService {
    */
   startSummarization(
     request: SummarizeStartRequest,
-    endpoints?: Partial<SummarizeEndpoints>
   ): Observable<SummarizeStatusResponse> {
-    const url = endpoints?.startSummarization || this.defaultEndpoints.startSummarization;
-
+    const url = "/api/summarize/start";
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
@@ -92,10 +71,8 @@ export class SummarizeService {
    */
   getSummary(
     summaryId: string,
-    endpoints?: Partial<SummarizeEndpoints>
   ): Observable<SummaryResult> {
-    const url = `${endpoints?.getSummary || this.defaultEndpoints.getSummary}/${summaryId}`;
-
+    const url = `/api/summarize/result/${summaryId}`;
 
     return this.http.get<SummaryResult>(url).pipe(
       tap(response => console.log('Summary result:', response)),
@@ -113,10 +90,8 @@ export class SummarizeService {
    */
   cancelSummary(
     summaryId: string,
-    endpoints?: Partial<SummarizeEndpoints>
   ): Observable<{ success: boolean; summaryId: string }> {
-    const url = `${endpoints?.cancelSummary || this.defaultEndpoints.cancelSummary}/${summaryId}`;
-
+    const url = `/api/summarize/cancel/${summaryId}`;
 
     return this.http.delete<{ success: boolean; summaryId: string }>(url).pipe(
       tap(response => console.log('Summarization cancelled:', response)),
@@ -135,10 +110,8 @@ export class SummarizeService {
   exportSummary(
     summaryId: string,
     format: 'pdf' | 'docx' | 'html' | 'txt',
-    endpoints?: Partial<SummarizeEndpoints>
   ): Observable<Blob> {
-    const url = `${endpoints?.exportSummary || this.defaultEndpoints.exportSummary}/${summaryId}`;
-
+    const url = `/api/summarize/export/${summaryId}`;
 
     return this.http
       .post(url, { format }, { responseType: 'blob' })

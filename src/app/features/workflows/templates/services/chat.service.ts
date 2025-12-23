@@ -1,25 +1,12 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, delay, throwError } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Observable, of, delay, throwError, firstValueFrom } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
     ChatMessage,
-    ChatSender,
-    ChatEndpoints,
-    ChatConfig,
 } from '../utils/tplsInterfaces/chatTpl.interface';
-
-interface SendMessageRequest {
-    content: string;
-    sender: ChatSender;
-    files?: File[];
-}
-
-interface SendMessageResponse {
-    success: boolean;
-    userMessage: ChatMessage;
-    assistantMessage: ChatMessage;
-}
+import { HttpService } from '@cadai/pxs-ng-core/services';
+import { ProjectsService } from '@features/projects/services/projects.service';
+import { ChatMessageDto, ChatMessageResponseDto, DataRefence, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
 
 interface DeleteMessageResponse {
     success: boolean;
@@ -35,86 +22,92 @@ interface UploadAttachmentResponse {
     providedIn: 'root',
 })
 export class ChatService {
-    private endpoints: Partial<ChatEndpoints> = {};
-    private config: Partial<ChatConfig> = {};
+    private readonly projectService = inject(ProjectsService);
+    constructor(private http: HttpService) { }
 
-    // Mock responses based on keywords
-    private mockResponses: Record<string, string> = {
-        hello: 'Hello! How can I assist you today?',
-        help: 'I can help you with various tasks. What do you need assistance with?',
-        thanks: 'You\'re welcome! Is there anything else I can help you with?',
-        bye: 'Goodbye! Have a great day!',
-        default: 'I understand. Could you please provide more details?',
-    };
+    async getChatHistory(
+        sessionId: string
+    ): Promise<ChatMessage[]> {
+        const session = await firstValueFrom(this.projectService.getChatHistory(sessionId));
+        const sessionData = session.filter(item => item.data_reference === DataRefence.CHAT_HISTORY)[0];
 
-    constructor(private http: HttpClient) { }
+        if (sessionData?.artifact_id) {
+            const historyDataContent = await firstValueFrom(this.projectService.getChatHistoryDataContent(sessionData.artifact_id));
 
-    configure(options: {
-        endpoints?: Partial<ChatEndpoints>;
-        config?: Partial<ChatConfig>;
-    }): void {
-        if (options.endpoints) {
-            this.endpoints = options.endpoints;
-        }
-        if (options.config) {
-            this.config = options.config;
+            const mappedItems = this.mapToChatTemplateData(historyDataContent);
+            return mappedItems;
+        } else {
+            return [];
         }
     }
 
+    private mapToChatTemplateData(items: ChatMessageDto[]): ChatMessage[] {
+        return items.map(item => ({
+            id: crypto.randomUUID(),
+            content: item.content,
+            sender: {
+                name: item.role,
+                type: item.role === 'user' ? 'user' : 'assistant',
+            },
+            type: "mixed"
+            // TODO Add attachments when provided BE side
+            // timestamp: new Date() // Add timestamp if required by ChatMessage interface
+            // attachments: item.attachments,
+        }));
+    }
+
+
     sendMessage(
-        request: SendMessageRequest,
-        endpoints?: Partial<ChatEndpoints>
-    ): Observable<SendMessageResponse> {
-        const endpoint = endpoints?.sendMessage || this.endpoints.sendMessage;
+        projectId: string,
+        sessionId: string,
+        templateId: string,
+        content: string,
+        files?: File[]
+    ): Observable<ChatMessageResponseDto> {
+        const formData = new FormData();
+
+        // TODO. this is hardcoded , should be removed in the future and only handled on BE side
+        const messageInputId = "6c34cfd1-ac55-492c-b730-4f3815a2309d";
+        const userPromptId = "c9d2e9dd-77c8-4c72-8157-cc079498994b";
+        const fileInputId = "442f052c-f371-4b30-8f97-89109cc61fb2";
+        // Add content as form field (using a generated ID or templateId as the key)
+        if (content.trim() !== "") {
+            formData.append(messageInputId, content);
+        }
+        if (content.trim() !== "") {
+            formData.append(userPromptId, content);
+        }
+        // Add files if provided
+        if (files && files.length > 0) {
+            files.forEach((file) => {
+            formData.append(fileInputId, file);
+            });
+        }
+
+        const endpoint = `/api/sessions/${sessionId}/execute/${templateId}`;
         if (!endpoint) {
             return throwError(() => new Error('Send endpoint not configured'));
         }
 
-        // Check if there are files to upload
-        if (request.files && request.files.length > 0) {
-            const formData = new FormData();
+        return this.http.post<ChatMessageResponseDto>(endpoint, formData)
+    }
 
-            // Append JSON fields individually
-            formData.append('content', request.content);
-            formData.append('sender', JSON.stringify(request.sender));
-
-            // Or as one JSON string field
-            // formData.append('message', JSON.stringify({
-            //     content: request.content,
-            //     sender: request.sender
-            // }));
-
-            // Append each file
-            request.files.forEach((file) => {
-                formData.append('files', file, file.name);
-            });
-
-            return this.http.post<SendMessageResponse>(endpoint, formData).pipe(
-                catchError(error => {
-                    console.error('Error sending message with files:', error);
-                    return this.mockSendMessage(request);
-                })
-            );
-        } else {
-            // Send as regular JSON if no files
-            return this.http.post<SendMessageResponse>(endpoint, {
-                content: request.content,
-                sender: request.sender
-            }).pipe(
-                catchError(error => {
-                    console.error('Error sending message:', error);
-                    return this.mockSendMessage(request);
-                })
-            );
+    getChatStatus(
+        workflow_instance_id: string,
+    ): Observable<WorkflowStatusDto> {
+        const endpoint = `/api/workflow/${workflow_instance_id}/status`;
+        if (!endpoint) {
+            return throwError(() => new Error('Status endpoint not configured'));
         }
+
+        return this.http.get<WorkflowStatusDto>(endpoint)
     }
 
     deleteMessage(
         messageId: string,
-        endpoints?: Partial<ChatEndpoints>
     ): Observable<DeleteMessageResponse> {
 
-        const endpoint = endpoints?.deleteMessage || this.endpoints.deleteMessage;
+        const endpoint = "/api/chat/delete";
         if (!endpoint) {
             return throwError(() => new Error('Delete endpoint not configured'));
         }
@@ -132,10 +125,9 @@ export class ChatService {
     editMessage(
         messageId: string,
         content: string,
-        endpoints?: Partial<ChatEndpoints>
     ): Observable<Partial<ChatMessage>> {
 
-        const endpoint = endpoints?.editMessage || this.endpoints.editMessage;
+        const endpoint = "/api/chat/edit";
         if (!endpoint) {
             return throwError(() => new Error('Edit endpoint not configured'));
         }
@@ -154,10 +146,9 @@ export class ChatService {
 
     uploadAttachment(
         file: File,
-        endpoints?: Partial<ChatEndpoints>
     ): Observable<UploadAttachmentResponse> {
 
-        const endpoint = endpoints?.uploadAttachment || this.endpoints.uploadAttachment;
+        const endpoint = "/api/chat/uploadAttachment";
         if (!endpoint) {
             return throwError(() => new Error('Upload endpoint not configured'));
         }
@@ -175,40 +166,6 @@ export class ChatService {
         );
     }
 
-    // Mock implementations
-    private mockSendMessage(request: SendMessageRequest): Observable<SendMessageResponse> {
-        const userMessage: ChatMessage = {
-            id: this.generateId(),
-            content: request.content,
-            sender: request.sender,
-            timestamp: new Date(),
-        };
-
-        const assistantResponse = this.generateMockResponse(request.content);
-        const assistantMessage: ChatMessage = {
-            id: this.generateId(),
-            content: assistantResponse,
-            sender: {
-                id: 'assistant',
-                name: 'Assistant',
-                type: 'assistant',
-            },
-            timestamp: new Date(Date.now() + 1000),
-        };
-
-        const response: SendMessageResponse = {
-            success: true,
-            userMessage,
-            assistantMessage,
-        };
-
-        // Simulate network delay respecting maxLength config
-        const delayTime = this.config.maxLength && request.content.length > this.config.maxLength / 2
-            ? 2000
-            : 1000;
-
-        return of(response).pipe(delay(delayTime));
-    }
 
     private mockDeleteMessage(messageId: string): Observable<DeleteMessageResponse> {
         return of({
@@ -240,39 +197,5 @@ export class ChatService {
             url: mockUrl,
             filename: file.name,
         }).pipe(delay(uploadDelay));
-    }
-
-    private generateMockResponse(userMessage: string): string {
-        const lowerMessage = userMessage.toLowerCase();
-
-        // Check for keywords
-        for (const [keyword, response] of Object.entries(this.mockResponses)) {
-            if (lowerMessage.includes(keyword)) {
-                return response;
-            }
-        }
-
-        // Test markdown support if enabled
-        if (this.config.allowMarkdown !== false && lowerMessage.includes('markdown')) {
-            return `Sure! Here's an example with **bold**, *italic*, and \`code\`:
-      
-            \`\`\`javascript
-            console.log('Hello, World!');
-            \`\`\`
-
-            - List item 1
-            - List item 2`;
-        }
-
-        // Test long messages if maxLength is configured
-        if (this.config.maxLength && lowerMessage.includes('long')) {
-            return 'This is a longer response to test the character limit feature. '.repeat(10);
-        }
-
-        return this.mockResponses?.['default'];
-    }
-
-    private generateId(): string {
-        return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
 }

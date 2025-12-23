@@ -5,20 +5,33 @@ import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { provideCore } from '@cadai/pxs-ng-core/core';
 import pkg from '../package.json';
+import { env } from './app/shared/interfaces/runtime.model';
+import { RuntimeConfig } from '@cadai/pxs-ng-core/interfaces';
 
 (async () => {
   // Load runtime env before bootstrapping
   const res = await fetch('/assets/config.json', { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to load config: ${res.status} ${res.statusText}`);
-  const env = await res.json();
+  const config = await res.json();
+
+  // Merge runtime environment variables
+  const runtimeConfig:RuntimeConfig = {
+    ...config,
+    apiUrl: env.API_URL,
+    auth: {
+      ...config.auth,
+      url: env.KEYCLOAK_URL,
+      init: window.location.origin + '/'
+    }
+  };
 
   await bootstrapApplication(AppComponent, {
     providers: [
       ...appConfig.providers!,
       provideCore({
-        logoUrl: 'assets/logo.png',
         appVersion: pkg.version,
-        environments: env,
+        environments: runtimeConfig,
+        logoUrl: 'assets/logo.png',
         theme: 'dark',
         i18n: {
           prefix: 'assets/i18n/',

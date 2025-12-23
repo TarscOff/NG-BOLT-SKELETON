@@ -1,6 +1,6 @@
 .project-details-container {
   margin: 0 auto;
-  height: calc(100vh - 131px);
+  height: calc(100vh - 96px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -46,6 +46,7 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
+  color: var(--mat-accent);
 
   mat-icon {
     font-size: 64px;
@@ -61,7 +62,6 @@
 
   p {
     margin: 0.5rem 0 2rem;
-    color: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -365,6 +365,20 @@ mat-paginator {
 
       mat-chip {
         margin-right: 15px;
+        width: 100px;
+        overflow: hidden;
+        padding:0 10px;
+        
+        ::ng-deep {
+           span {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding:0;
+
+          }
+        }
       }
     }
 

@@ -30,7 +30,7 @@ stages:
 
 # ---------- Build, Test, Docker, Release ----------
 - stage: build_test_docker
-  displayName: 'Build, Test, Dockerize & Release Starter App'
+  displayName: 'Build, Test, Dockerize & Release'
   jobs:
   - job: build
     displayName: 'Build Angular, Docker & (optionally) Release'
@@ -75,7 +75,7 @@ stages:
           )
         displayName: 'Install & Lint App'
 
-      # 3.5) Configure Git identity for release commits
+      # 4) Configure Git identity for release commits
       - script: |
           set -euo pipefail
           git config --global user.email "build-bot@azure-pipelines.com"
@@ -88,13 +88,47 @@ stages:
           )
         displayName: 'Configure Git identity'
 
-      # 4) CI release step (bump version + CHANGELOG.md + tag + JSON via release.js)
+      # 5) CI release step (bump version + CHANGELOG.md + tag)
       #    Only on develop, not PR, and not already a release commit
       - script: |
           set -euo pipefail
 
           echo "Running CI release of type: $(RELEASE_TYPE)"
+          
+          # Check current version
+          CURRENT_VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "Current version in package.json: $CURRENT_VERSION"
+          
+          # Calculate next version based on release type
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          if [ "$(RELEASE_TYPE)" = "patch" ]; then
+            NEXT_VERSION="$major.$minor.$((patch + 1))"
+          elif [ "$(RELEASE_TYPE)" = "minor" ]; then
+            NEXT_VERSION="$major.$((minor + 1)).0"
+          elif [ "$(RELEASE_TYPE)" = "major" ]; then
+            NEXT_VERSION="$((major + 1)).0.0"
+          else
+            echo "Unknown RELEASE_TYPE: $(RELEASE_TYPE)"
+            exit 1
+          fi
+          
+          echo "Next version will be: $NEXT_VERSION"
+          
+          # Check if tag already exists locally
+          if git rev-parse "v$NEXT_VERSION" >/dev/null 2>&1; then
+            echo "WARNING: Tag v$NEXT_VERSION already exists locally"
+            echo "Deleting local tag to allow standard-version to recreate it"
+            git tag -d "v$NEXT_VERSION"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/v$NEXT_VERSION$"; then
+            echo "ERROR: Tag v$NEXT_VERSION already exists on remote"
+            echo "This version has already been released. Skipping release."
+            exit 0
+          fi
 
+          # Run standard-version
           if [ "$(RELEASE_TYPE)" = "patch" ]; then
             npm run release:patch:nopush -- -m "chore(release): v%s – CI release $(Build.SourceBranchName)"
           elif [ "$(RELEASE_TYPE)" = "minor" ]; then
@@ -109,7 +143,7 @@ stages:
           # Show latest tag & commit
           git describe --tags --abbrev=0 || true
           git log -1 --oneline
-        displayName: 'Bump version + CHANGELOG + tag (standard-version via release.js)'
+        displayName: 'Bump version + CHANGELOG + tag (standard-version)'
         condition: |
           and(
             succeeded(),
@@ -118,44 +152,26 @@ stages:
             not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
           )
           
-      # 5) Determine build environment based on branch
+      # 6) Build Angular with PRODUCTION configuration only
+      #    (No more environment-specific builds or config copying)
       - script: |
           set -euo pipefail
 
-          BRANCH_NAME="$(Build.SourceBranchName)"
-          echo "Branch: $BRANCH_NAME"
-
-          if [ "$BRANCH_NAME" = "master" ]; then
-            BUILD_ENV="production"
-            echo "Using PROD config"
-            cp public/assets/config.prod.json public/assets/config.json
-            NG_CONFIG="production"
-          elif [ "$BRANCH_NAME" = "uat" ] || [ "$BRANCH_NAME" = "staging" ]; then
-            BUILD_ENV="uat"
-            echo "Using UAT config"
-            cp public/assets/config.uat.json public/assets/config.json
-            NG_CONFIG="uat"
-          else
-            BUILD_ENV="development"
-            echo "Using DEV config"
-            cp public/assets/config.dev.json public/assets/config.json
-            NG_CONFIG="development"
-          fi
-
-          echo "Environment: $BUILD_ENV"
-          echo "##vso[task.setvariable variable=BUILD_ENV]$BUILD_ENV"
-          echo "##vso[task.setvariable variable=NG_CONFIG]$NG_CONFIG"
-
-          echo "Running Angular build with configuration: $NG_CONFIG"
-          npm run build -- --configuration=$NG_CONFIG
+          echo "Building Angular with PRODUCTION configuration..."
+          echo "Runtime environment will be injected via Docker env vars"
+          
+          npm run buildProd
+          
+          echo "Build complete. Files will be in dist/psx-ng-skeleton/browser/"
+          ls -la dist/psx-ng-skeleton/browser/ || true
         condition: |
           and(
             succeeded(),
             not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
           )
-        displayName: 'Determine environment & Build Angular App'
+        displayName: 'Build Angular App (Production only)'
 
-      # 6) Extract version from (possibly bumped) package.json and expose as pipeline variable
+      # 7) Extract version from (possibly bumped) package.json
       - script: |
           set -euo pipefail
 
@@ -172,9 +188,10 @@ stages:
           PKG_PATH: $(PKG_PATH)
         name: SetVersion
 
-      # 7) Build & push Docker image to registry (skip on PRs)
+      # 8) Build & push single Docker image (no ENVIRONMENT build arg)
+      #    Runtime configuration will be injected via env vars at container startup
       - task: Docker@2
-        displayName: 'Build & Push Docker image'
+        displayName: 'Build & Push Docker image (single universal image)'
         condition: and(
             succeeded(),
             ne(variables['Build.Reason'], 'PullRequest'),
@@ -186,17 +203,13 @@ stages:
           command: 'buildAndPush'
           dockerfile: 'Dockerfile'
           buildContext: '.'
-          arguments: '--build-arg ENVIRONMENT=$(BUILD_ENV)'
           tags: |
-            $(Build.SourceBranchName)-skeleton-$(APP_VERSION)
-            latest-skeleton-$(Build.SourceBranchName)
+            $(APP_VERSION)
+            latest
 
-       # 8) Push release commit + tags (only when we actually did a release)
+      # 9) Push release commit + tags (only when we actually did a release)
       - script: |
           set -euo pipefail
-
-          # Reset any modified files that shouldn't be committed (config.json, .npmrc)
-          git checkout -- .npmrc public/assets/config.json || true
 
           # Use the System.AccessToken for git HTTPS ops
           git config --global http.https://dev.azure.com/.extraheader "AUTHORIZATION: bearer $(System.AccessToken)"

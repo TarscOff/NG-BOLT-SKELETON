@@ -56,7 +56,6 @@
 
                             <div class="item-content">
                                 <span class="item-title">
-
                                     <mat-chip class="success" color="success" selected="false">{{ h.id }}</mat-chip>{{
                                     h.title }}</span>
                                 <span class="item-subtitle muted">{{ h.createdAt | date:'medium' }}</span>
@@ -69,7 +68,7 @@
                                 </button>
                                 <button mat-icon-button color="accent"
                                     [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('session', h)">
+                                    (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>
@@ -78,7 +77,7 @@
                     </div>
                     } @else {
                     <div class="empty-tab">
-                        <mat-icon>open_jam</mat-icon>
+                        <mat-icon>view_timeline</mat-icon>
                         <p>{{ 'projects.details.no-sessions' | translate }}</p>
                     </div>
                     }
@@ -92,7 +91,7 @@
                     </ng-template>
                     <div class="files-toolbar">
                         <input #fileInput type="file" multiple hidden (change)="addFiles(fileInput)" />
-                        <button mat-flat-button color="primary" (click)="fileInput.click()" [disabled]="!isAdmin()">
+                        <button mat-flat-button color="primary" (click)="fileInput.click()" [disabled]="true">
                             <mat-icon>upload_file</mat-icon>
                             {{ 'projects.details.add-files' | translate }}
                         </button>
@@ -116,7 +115,7 @@
                                 </div>
                             </div>
                             <div class="item-actions">
-                                <button mat-icon-button [matMenuTriggerFor]="fileMenu" [disabled]="!isAdmin()"
+                                <button mat-icon-button [matMenuTriggerFor]="fileMenu" [disabled]="true"
                                     [attr.aria-label]="'projects.details.file-actions' | translate">
                                     <mat-icon>more_vert</mat-icon>
                                 </button>
@@ -125,7 +124,7 @@
                                         <mat-icon>download</mat-icon>
                                         {{ 'projects.details.download' | translate }}
                                     </button>
-                                    <button mat-menu-item (click)="removeFile(f)">
+                                    <button mat-menu-item (click)="removeFile(f); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                         {{ 'projects.details.remove' | translate }}
                                     </button>
@@ -170,7 +169,7 @@
                                 </button>
                                 <button mat-icon-button color="accent" class="accent"
                                     [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('chat', h)">
+                                    (click)="deleteItem('chat', h); $event.stopPropagation(); $event.preventDefault()">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>
@@ -212,7 +211,7 @@
                                 </button>
                                 <button mat-icon-button color="warn"
                                     [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('compare', h)">
+                                    (click)="deleteItem('compare', h); $event.stopPropagation(); $event.preventDefault()">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>
@@ -254,7 +253,7 @@
                                 </button>
                                 <button mat-icon-button color="warn"
                                     [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('summary', h)">
+                                    (click)="deleteItem('summary', h); $event.stopPropagation(); $event.preventDefault()">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>
@@ -296,7 +295,7 @@
                                 </button>
                                 <button mat-icon-button color="warn"
                                     [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('extract', h)">
+                                    (click)="deleteItem('extract', h); $event.stopPropagation(); $event.preventDefault()">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>

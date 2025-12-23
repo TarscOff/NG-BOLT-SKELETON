@@ -2,12 +2,11 @@
 
 FROM nginx:alpine
 
-# Accept build argument
-ARG ENVIRONMENT=production
-ENV ENVIRONMENT=${ENVIRONMENT}
+# Copy built Angular app (CI will provide dist/pxs-ng-skeleton)
+COPY dist/pxs-ng-skeleton/browser /usr/share/nginx/html
 
-# Copy built Angular app (CI will provide dist/psx-ng-skeleton)
-COPY dist/psx-ng-skeleton/browser /usr/share/nginx/html
+# Copy env-config template (will be processed at runtime)
+COPY public/env-config.template.js /usr/share/nginx/html/env-config.template.js
 
 # Copy nginx template + entrypoint
 COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template

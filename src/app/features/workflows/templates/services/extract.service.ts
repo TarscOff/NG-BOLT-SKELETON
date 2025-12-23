@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError, delay } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
-  ExtractEndpoints,
   ExtractUploadRequest,
   ExtractUploadResponse,
   ExtractStartRequest,
@@ -18,22 +17,14 @@ import {
 })
 export class ExtractService {
   private http = inject(HttpClient);
-  private endpoints: Partial<ExtractEndpoints> = {};
-
-  configure(config: { endpoints?: Partial<ExtractEndpoints> }): void {
-    if (config.endpoints) {
-      this.endpoints = config.endpoints;
-    }
-  }
 
   /**
    * Upload files for extraction
    */
   uploadFile(
     request: ExtractUploadRequest,
-    endpoints?: Partial<ExtractEndpoints>
   ): Observable<ExtractUploadResponse> {
-    const endpoint = endpoints?.uploadExtract || this.endpoints.uploadExtract;
+    const endpoint = "/api/extract/upload";
 
     if (!endpoint) {
       return this.mockUploadFile(request);
@@ -55,9 +46,8 @@ export class ExtractService {
    */
   startExtraction(
     request: ExtractStartRequest,
-    endpoints?: Partial<ExtractEndpoints>
   ): Observable<ExtractStatusResponse> {
-    const endpoint = endpoints?.startExtract || this.endpoints.startExtract;
+    const endpoint = "/api/extract/start";
 
     if (!endpoint) {
       return this.mockStartExtraction(request);
@@ -76,9 +66,8 @@ export class ExtractService {
    */
   getExtraction(
     extractionId: string,
-    endpoints?: Partial<ExtractEndpoints>
   ): Observable<ExtractionResult> {
-    const endpoint = endpoints?.statusExtract || this.endpoints.statusExtract;
+    const endpoint = "/api/extract/status";
 
     if (!endpoint) {
       return this.mockGetExtraction(extractionId);
@@ -97,9 +86,8 @@ export class ExtractService {
    */
   cancelExtraction(
     extractionId: string,
-    endpoints?: Partial<ExtractEndpoints>
   ): Observable<{ success: boolean; extractionId: string }> {
-    const endpoint = endpoints?.cancelExtract || this.endpoints.cancelExtract;
+    const endpoint = "/api/extract/cancel";
 
     if (!endpoint) {
       return this.mockCancelExtraction(extractionId);
@@ -122,9 +110,8 @@ export class ExtractService {
   exportExtraction(
     extractionId: string,
     format: 'pdf' | 'docx' | 'csv' | 'json',
-    endpoints?: Partial<ExtractEndpoints>
   ): Observable<Blob> {
-    const endpoint = endpoints?.exportExtract || this.endpoints.exportExtract;
+    const endpoint = "/api/extract/export";
 
     if (!endpoint) {
       return this.mockExportExtraction(extractionId, format);

@@ -1,120 +1,99 @@
 <div [class]="getMessageClasses()">
   @if (shouldShowAvatar()) {
-    <div class="message-avatar">
-      @if (message.sender.avatar) {
-        <img [src]="message.sender.avatar" [alt]="message.sender.name" />
-      } @else {
-        <div class="avatar-placeholder">
-          {{ getAvatarText() }}
-        </div>
-      }
+  <div class="message-avatar">
+    @if (message.sender.avatar) {
+    <img [src]="message.sender.avatar" [alt]="message.sender.name" />
+    } @else {
+    <div class="avatar-placeholder">
+      {{ getAvatarText() }}
     </div>
+    }
+  </div>
   }
 
   <div class="message-content-wrapper">
     @if (!isSystem()) {
-      <div class="message-header">
-        <span class="message-sender">{{ message.sender.name }}</span>
-        @if (shouldShowTimestamp()) {
-          <span class="message-timestamp">
-            {{ message.timestamp | date: 'short' }}
-            @if (message.edited) {
-              <span class="edited-badge" [matTooltip]="'chatTpl.edited' | translate">
-                ({{ 'chatTpl.edited' | translate }})
-              </span>
-            }
-          </span>
+    <div class="message-header">
+      <span class="message-sender">{{ message.sender.name }}</span>
+      @if (message.timestamp && shouldShowTimestamp()) {
+      <span class="message-timestamp">
+        {{ message.timestamp | date: 'short' }}
+        @if (message.edited) {
+        <span class="edited-badge" [matTooltip]="'chatTpl.edited' | translate">
+          ({{ 'chatTpl.edited' | translate }})
+        </span>
         }
-      </div>
+      </span>
+      }
+    </div>
     }
 
     <div class="message-content">
       @if (!isEditing()) {
-        @if (shouldRenderCode()) {
-          <pre><code>{{ message.content }}</code></pre>
-        } @else if (shouldRenderMarkdown()) {
-          <div class="markdown-content" [innerHTML]="message.content"></div>
-        } @else if (shouldRenderPlainText()) {
-          <p>{{ message.content }}</p>
-        }
-
-        <!-- Attachments Preview Section -->
-        @if (message.attachments && message.attachments.length > 0) {
-          <div class="message-attachments">
-            @for (attachment of message.attachments; track attachment.name) {
-              <div class="attachment-item">
-                <mat-icon class="attachment-icon">{{ getFileIcon(attachment.name, attachment.type) }}</mat-icon>
-                <div class="attachment-info">
-                  <span class="attachment-name" [matTooltip]="attachment.name">{{ attachment.name }}</span>
-                  <span class="attachment-size">{{ formatFileSize(attachment.size) }}</span>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      } @else {
-        <div class="edit-form">
-          <app-dynamic-form 
-            [config]="editFieldConfig" 
-            [form]="editForm"
-            (keydown.enter)="onEditKeyDown($any($event))"
-            (keydown.escape)="cancelEdit()"
-            (keydown.delete)="$event.stopPropagation()"
-            (keydown.backspace)="$event.stopPropagation()"
-            (pointerdown)="$event.stopPropagation()"
-            (mousedown)="$event.stopPropagation()"
-            (touchstart)="$event.stopPropagation()"
-          />
-        </div>
+      @if (shouldRenderCode()) {
+      <pre><code>{{ message.content }}</code></pre>
+      } @else if (shouldRenderMarkdown()) {
+      <div class="markdown-content" [innerHTML]="getParsedContent()"></div>
+      } @else if (shouldRenderPlainText()) {
+      <p>{{ message.content }}</p>
       }
+
+      <!-- Attachments Preview Section -->
+      @if (message.attachments && message.attachments.length > 0) {
+      <div class="message-attachments">
+        @for (attachment of message.attachments; track attachment.name) {
+        <div class="attachment-item">
+          <mat-icon class="attachment-icon">{{ getFileIcon(attachment.name, attachment.type) }}</mat-icon>
+          <div class="attachment-info">
+            <span class="attachment-name" [matTooltip]="attachment.name">{{ attachment.name }}</span>
+            <span class="attachment-size">{{ formatFileSize(attachment.size) }}</span>
+          </div>
+        </div>
+        }
+      </div>
+      }
+      } @else {
+      <div class="edit-form">
+        <app-dynamic-form [config]="editFieldConfig" [form]="editForm" (keydown.enter)="onEditKeyDown($any($event))"
+          (keydown.escape)="cancelEdit()" (keydown.delete)="$event.stopPropagation()"
+          (keydown.backspace)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()"
+          (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()" />
+      </div>
+      }
+      <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+        (click)="copyToClipboard(message.content)" [color]=" 'primary'" [class.is_left]="isFromUser()"
+        [class.is_right]="!isFromUser()" class="copy-btn">
+        <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
     </div>
 
     @if (canEdit() || canDelete()) {
-      <div class="message-actions">
-        @if (!isEditing()) {
-          @if (canEdit()) {
-            <button
-              mat-icon-button
-              [matTooltip]="'chatTpl.edit' | translate"
-              (click)="startEdit()"
-              class="primary"
-              color="primary"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-          }
-          @if (canDelete()) {
-            <button
-              mat-icon-button
-              [matTooltip]="'chatTpl.delete' | translate"
-              (click)="onDelete()"
-              class="primary"
-              color="warn"
-            >
-              <mat-icon>delete</mat-icon>
-            </button>
-          }
-        } @else {
-          <button
-            mat-icon-button
-            [matTooltip]="'chatTpl.save' | translate"
-            [disabled]="!editForm.valid || !editForm.get('editContent')?.value?.trim()"
-            (click)="saveEdit()"
-            class="action-btn save-btn"
-            color="primary"
-          >
-            <mat-icon>check</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            [matTooltip]="'chatTpl.cancel' | translate"
-            (click)="cancelEdit()"
-            class="action-btn cancel-btn"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        }
-      </div>
+    <div class="message-actions">
+      @if (!isEditing()) {
+      @if (canEdit()) {
+      <button mat-icon-button [matTooltip]="'chatTpl.edit' | translate" (click)="startEdit()" class="primary"
+        color="primary">
+        <mat-icon>edit</mat-icon>
+      </button>
+      }
+      @if (canDelete()) {
+      <button mat-icon-button [matTooltip]="'chatTpl.delete' | translate" (click)="onDelete()" class="primary"
+        color="warn">
+        <mat-icon>delete</mat-icon>
+      </button>
+      }
+      } @else {
+      <button mat-icon-button [matTooltip]="'chatTpl.save' | translate"
+        [disabled]="!editForm.valid || !editForm.get('editContent')?.value?.trim()" (click)="saveEdit()"
+        class="action-btn save-btn" color="primary">
+        <mat-icon>check</mat-icon>
+      </button>
+      <button mat-icon-button [matTooltip]="'chatTpl.cancel' | translate" (click)="cancelEdit()"
+        class="action-btn cancel-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </div>
     }
   </div>
 </div>

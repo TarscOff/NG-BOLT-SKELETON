@@ -66,11 +66,3 @@ export interface SummarizeStatusResponse {
   progress?: number;
   result?: SummaryResult;
 }
-
-export interface SummarizeEndpoints {
-  uploadFile: string;         // POST - Upload file for summarization
-  startSummarization: string; // POST - Start summarization process
-  getSummary: string;         // GET - Get summary result by ID
-  cancelSummary: string;      // DELETE - Cancel ongoing summarization
-  exportSummary: string;      // POST - Export summary result
-}

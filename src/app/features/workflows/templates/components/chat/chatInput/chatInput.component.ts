@@ -62,7 +62,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
     private fieldsConfigService: FieldConfigService,
     private translate: TranslateService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -88,7 +88,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
 
   private initializeForm(): void {
     this.form = this.fb.group({});
-    
+
     this.fieldConfig = [
       this.fieldsConfigService.getTextAreaField({
         name: 'message',
@@ -99,7 +99,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
         color: 'primary',
         layoutClass: 'primary',
         rows: 1,
-        maxRows:10,
+        maxRows: 10,
         //autoResize: true,
         disabled: this.disabled || this.loading,
         validators: [Validators.maxLength(this.maxLength)],
@@ -157,13 +157,6 @@ export class ChatInputComponent implements OnInit, OnChanges {
     if (!this.canSend()) return;
 
     const message = this.form.get('message')?.value?.trim();
-    if (!message) {
-      // display a toast or some UI feedback here as needed
-      this.toast.showError(
-        this.translate.instant('chatTpl.error.emptyMessage')
-      );
-      return
-    };
 
     // Emit message along with attached files
     this.send.emit({
@@ -192,7 +185,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
     const messageControl = this.form.get('message');
     const hasMessage = !!messageControl?.value?.trim();
     const hasFiles = this.attachedFiles.length > 0;
-    
+
     return (
       !this.disabled &&
       !this.loading &&
@@ -209,7 +202,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
     }
 
     const files = Array.from(input.files);
-    
+
     // Validate file count
     if (this.attachedFiles.length + files.length > this.maxFiles) {
       // Show error - too many files
@@ -226,7 +219,7 @@ export class ChatInputComponent implements OnInit, OnChanges {
         console.error(`File ${file.name} exceeds maximum size of ${this.formatFileSize(this.maxFileSize)}`);
         continue;
       }
-      
+
       // Check for duplicates
       if (!this.attachedFiles.some(f => f.name === file.name && f.size === file.size)) {
         this.attachedFiles.push(file);

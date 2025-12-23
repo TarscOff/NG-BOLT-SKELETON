@@ -10,7 +10,7 @@ import { FieldConfigService, LayoutService, ToastService, ToolbarActionsService 
 
 import { DynamicFormComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
 import { ProjectsService } from '@features/projects/services/projects.service';
-import { ProjectDto } from '@features/projects/interfaces/project.model';
+import { ProjectArtifactsTypesDto, ProjectDto } from '@features/projects/interfaces/project.model';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -56,12 +56,16 @@ export class ProjectsComponent implements OnInit {
 
     // State signals
     readonly projects = signal<ProjectDto[]>([]);
+    readonly projectsInfos = signal<{
+        project_id: string;
+        artifactsInfos: ProjectArtifactsTypesDto[]
+    }[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
 
     // Pagination state
     readonly pageIndex = signal(0);
-    readonly pageSize = signal(15);
+    readonly pageSize = signal(12);
     readonly pageSizeOptions = [4, 8, 12, 16];
 
     // Derived values
@@ -84,7 +88,7 @@ export class ProjectsComponent implements OnInit {
         if (search) {
             filtered = filtered.filter(project =>
                 project.name.toLowerCase().includes(search) ||
-                project.id.toString().includes(search)
+                project.project_id.toString().includes(search)
             );
         }
 
@@ -93,7 +97,7 @@ export class ProjectsComponent implements OnInit {
             if (order === 'name') {
                 return a.name.localeCompare(b.name);
             } else {
-                return a.id.localeCompare(b.id);
+                return a.project_id.localeCompare(b.project_id);
             }
         });
     });
@@ -120,7 +124,7 @@ export class ProjectsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.loadPageConfig();
+        this.loadProjectsList();
         this.initializeFilterForm();
         this.setupFilterListeners();
 
@@ -128,29 +132,70 @@ export class ProjectsComponent implements OnInit {
             this.initializeFilterForm();
         });
     }
-
-    loadPageConfig(): void {
+    loadProjectsList(): void {
         this.loading.set(true);
         this.error.set(null);
 
         this.projectsService.getProjectsList().subscribe({
             next: (projects) => {
-                console.log('Projects loaded:', projects);
                 this.projects.set(projects);
-                this.loading.set(false);
+
+                // Load artifacts info for all projects to count the total files
+                this.loadProjectsArtifactsInfo(projects);
             },
-            error: (err) => {
-                console.error('Error loading projects:', err);
+            error: () => {
                 this.error.set(
                     this.translateService.instant('error.failed-to-load-projects')
-                ); 
+                );
                 this.toast.showError(
                     this.translateService.instant('error.failed-to-load-projects'),
-
                 );
                 this.loading.set(false);
             },
         });
+    }
+
+    private loadProjectsArtifactsInfo(projects: ProjectDto[]): void {
+        const allInfos: {
+            project_id: string;
+            artifactsInfos: ProjectArtifactsTypesDto[]
+        }[] = [];
+        let completed = 0;
+
+        if (projects.length === 0) {
+            this.loading.set(false);
+            return;
+        }
+
+        projects.forEach(project => {
+            this.projectsService.getProjectsFilesInfo(project.project_id).subscribe({
+                next: (infos) => {
+                    allInfos.push({ project_id: project.project_id, artifactsInfos: infos });
+                    completed++;
+
+                    if (completed === projects.length) {
+                        this.projectsInfos.set(allInfos);
+                        this.loading.set(false);
+                    }
+                },
+                error: () => {
+                    this.toast.showError(
+                        this.translateService.instant('error.failed-to-load-project-artifacts', { projectId: project.project_id }),
+                    );
+                    completed++;
+
+                    if (completed === projects.length) {
+                        this.projectsInfos.set(allInfos);
+                        this.loading.set(false);
+                    }
+                },
+            });
+        });
+    }
+
+    getProjectFileInfo(projectId: string): number {
+        const projectInfo = this.projectsInfos().find(info => info.project_id === projectId);
+        return projectInfo?.artifactsInfos ? projectInfo.artifactsInfos.reduce((total, info) => total + (info.total || 0), 0): 0;
     }
 
     private initializeFilterForm(): void {
@@ -203,12 +248,7 @@ export class ProjectsComponent implements OnInit {
         this.pageIndex.set(0);
     }
 
-    trackById = (_: number, project: ProjectDto) => project.id;
-
-    // Helpers
-    totalUsers(project: ProjectDto): number {
-        return (project.ownerCount || 0) + (project.memberCount || 0);
-    }
+    trackById = (_: number, project: ProjectDto) => project.project_id;
 
     // Events
     onPage(event: PageEvent): void {
@@ -217,7 +257,7 @@ export class ProjectsComponent implements OnInit {
     }
 
     openProject(project: ProjectDto): void {
-        this.router.navigate(['/genai-projects', project.id]);
+        this.router.navigate(['/genai-projects', project.project_id]);
     }
 
     createProject(): void {

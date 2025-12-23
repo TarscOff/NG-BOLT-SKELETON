@@ -94,7 +94,7 @@ export class DashboardComponent implements OnInit {
       tooltip: 'new',
       click: () => {console.log("export")},
       variant:"flat",
-      label:'New',
+      label:'new',
       class:"success"
     };
 

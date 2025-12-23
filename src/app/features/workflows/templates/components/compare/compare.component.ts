@@ -32,7 +32,6 @@ import {
   ComparisonResult,
   CompareConfig,
   CompareMode,
-  CompareEndpoints,
 } from '../../utils/tplsInterfaces/compareTpl.interface';
 import { CompareService } from '../../services/compare.service';
 import { ComparisonResultComponent } from './comparison-result/comparison-result';
@@ -93,10 +92,6 @@ export class CompareComponent implements OnInit, OnDestroy {
     this.initializeForms();
   }
 
-  @Input() set endpoints(value: Partial<CompareEndpoints>) {
-    this._endpoints.set(value);
-  }
-
   @Input() disabled = false;
 
   // Outputs
@@ -108,7 +103,6 @@ export class CompareComponent implements OnInit, OnDestroy {
   // Signals
   private _mode = signal<CompareMode>({ mode: 'upload' });
   private _config = signal<CompareConfig>(this.defaultConfig);
-  private _endpoints = signal<Partial<CompareEndpoints>>({});
   private _result = signal<ComparisonResult | null>(null);
   private _isUploading = signal<boolean>(false);
   private _isComparing = signal<boolean>(false);
@@ -119,7 +113,6 @@ export class CompareComponent implements OnInit, OnDestroy {
   // Computed
   mode$ = computed(() => this._mode());
   config$ = computed(() => this._config());
-  endpoints$ = computed(() => this._endpoints());
   result$ = computed(() => this._result());
   isUploading$ = computed(() => this._isUploading());
   isComparing$ = computed(() => this._isComparing());
@@ -144,11 +137,6 @@ export class CompareComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
     this.lang$ = this.store.select(AppSelectors.LangSelectors.selectLang);
-
-    // Configure service
-    this.compareService.configure({
-      endpoints: this._endpoints(),
-    });
 
     this.initializeForms();
   }
@@ -280,8 +268,7 @@ export class CompareComponent implements OnInit, OnDestroy {
     // Upload both files
     this.compareService
       .uploadFiles(
-        { file1: file1ToUpload, file2: file2ToUpload },
-        this._endpoints()
+        { file1: file1ToUpload, file2: file2ToUpload }
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -322,8 +309,7 @@ export class CompareComponent implements OnInit, OnDestroy {
         {
           file1Key: file1.key,
           file2Key: file2.key,
-        },
-        this._endpoints()
+        }
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -352,7 +338,7 @@ export class CompareComponent implements OnInit, OnDestroy {
   private pollComparisonResult(comparisonId: string): void {
     const pollInterval = setInterval(() => {
       this.compareService
-        .getComparison(comparisonId, this._endpoints())
+        .getComparison(comparisonId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (result) => {

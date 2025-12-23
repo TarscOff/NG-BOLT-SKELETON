@@ -1,9 +1,23 @@
 import { Inject, Injectable } from "@angular/core";
 import { CoreOptions } from "@cadai/pxs-ng-core/interfaces";
-import { HttpService } from "@cadai/pxs-ng-core/services";
 import { CORE_OPTIONS } from "@cadai/pxs-ng-core/tokens";
-import { FileItem, HistoryItem, Member, ProjectDto, WorkflowItem } from "../interfaces/project.model";
-import { catchError, map, Observable, of } from "rxjs";
+import {
+    FileItem,
+    HistoryItem,
+    Member,
+    ProjectDto,
+    ProjectArtifactsTypesDto,
+    ProjectArtifactsDataDto,
+    WorkflowItem,
+    ProjectSessionDto,
+    ProjectTemplateDto,
+    ProjectTemplateConfigDto,
+    SessionChatHistoryDto,
+    SessionChatHistoryContentDto,
+    ChatMessageDto
+} from "../interfaces/project.model";
+import { map, Observable } from "rxjs";
+import { HttpClient } from "@angular/common/http";
 
 @Injectable({
     providedIn: 'root',
@@ -11,7 +25,7 @@ import { catchError, map, Observable, of } from "rxjs";
 export class ProjectsService {
 
     constructor(
-        private http: HttpService,
+        private http: HttpClient,
         @Inject(CORE_OPTIONS) private readonly coreOpts: Required<CoreOptions>,
     ) { }
 
@@ -26,233 +40,316 @@ export class ProjectsService {
 
     getProjectsList(): Observable<ProjectDto[]> {
         const url = `${this.base}/projects`;
-        return this.http.get<ProjectDto[]>(url).pipe(map(response => response || []), catchError((error) => {
-            console.error('Failed to fetch template config:', error);
-            return of(this.getMockedProjects());
-        }));
+        return this.http.get<ProjectDto[]>(url);
     }
 
-    // TODO: remove this mocked data when API is ready
-    private getMockedProjects(): ProjectDto[] {
-        return [
-            {
-                id: '1',
-                name: 'Lawsuit Analysis',
-                description: 'Description for Lawsuit Analysis project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 10,
-            },
-            {
-                id: '2',
-                name: 'Contract Review',
-                description: 'Description for Contract Review project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 5,
-            },
-            {
-                id: '3',
-                name: 'Market Research',
-                description: 'Description for Market Research project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 3,
-            },
-            {
-                id: '4',
-                name: 'Product Launch',
-                description: 'Description for Product Launch project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 8,
-            },
-            {
-                id: '5',
-                name: 'Customer Feedback',
-                description: 'Description for Customer Feedback project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 12,
-            },
-            {
-                id: '6',
-                name: 'Sales Analysis',
-                description: 'Description for Sales Analysis project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 7,
-            },
-            {
-                id: '7',
-                name: 'Financial Report',
-                description: 'Description for Financial Report project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 4,
-            },
-            {
-                id: '8',
-                name: 'Employee Training',
-                description: 'Description for Employee Training project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 6,
-            },
-            {
-                id: '9',
-                name: 'Risk Assessment',
-                description: 'Description for Risk Assessment project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 9,
-            },
-            {
-                id: '10',
-                name: 'Budget Planning',
-                description: 'Description for Budget Planning project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 11,
-            },
-            {
-                id: '11',
-                name: 'Quality Assurance',
-                description: 'Description for Quality Assurance project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 14,
-            },
-            {
-                id: '12',
-                name: 'Competitor Analysis',
-                description: 'Description for Competitor Analysis project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 6,
-            },
-            {
-                id: '13',
-                name: 'User Experience Study',
-                description: 'Description for User Experience Study project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 13,
-            },
-            {
-                id: '14',
-                name: 'Security Audit',
-                description: 'Description for Security Audit project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 8,
-            },
-            {
-                id: '15',
-                name: 'Data Migration',
-                description: 'Description for Data Migration project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 15,
-            },
-            {
-                id: '16',
-                name: 'Performance Testing',
-                description: 'Description for Performance Testing project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 7,
-            },
-            {
-                id: '17',
-                name: 'Brand Identity',
-                description: 'Description for Brand Identity project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 10,
-            },
-            {
-                id: '18',
-                name: 'Compliance Review',
-                description: 'Description for Compliance Review project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 12,
-            },
-            {
-                id: '19',
-                name: 'Infrastructure Upgrade',
-                description: 'Description for Infrastructure Upgrade project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 9,
-            },
-            {
-                id: '20',
-                name: 'Process Optimization',
-                description: 'Description for Process Optimization project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 11,
-            },
-            {
-                id: '21',
-                name: 'Digital Transformation',
-                description: 'Description for Digital Transformation project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 16,
-            },
-            {
-                id: '22',
-                name: 'Customer Support',
-                description: 'Description for Customer Support project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 8,
-            },
-            {
-                id: '23',
-                name: 'Mobile App Development',
-                description: 'Description for Mobile App Development project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 13,
-            },
-            {
-                id: '24',
-                name: 'Social Media Campaign',
-                description: 'Description for Social Media Campaign project',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                createdBy: 'system',
-                filesCount: 5,
-            }
-        ];
+    getProjectTemplates(projectId: string): Observable<ProjectTemplateDto[]> {
+        const url = `${this.base}/projects/${projectId}/templates`;
+        return this.http.get<ProjectTemplateDto[]>(url);
     }
+
+    getTemplateConfiguration(projectId: string, templateId: string): Observable<ProjectTemplateConfigDto> {
+        const url = `${this.base}/projects/${projectId}/templates/${templateId}`;
+        return this.http.get(url, {
+            responseType: 'text'
+        }).pipe(
+            map((response: string) => {
+                const parts = this.parseMultipartFormData(response);
+                return {
+                    template_metadata: JSON.parse(parts['template_metadata']),
+                    workflow_configuration: JSON.parse(parts['workflow_configuration']),
+                    workflow_structure: JSON.parse(parts['workflow_structure'])
+                } as ProjectTemplateConfigDto;
+            })
+        );
+    }
+
+    private parseMultipartFormData(text: string): Record<string, string> {
+        const parts: Record<string, string> = {};
+        const boundary = text.split('\r\n')[0];
+        const sections = text.split(boundary).filter(s => s.trim() && !s.includes('--'));
+
+        sections.forEach(section => {
+            const nameMatch = section.match(/name="([^"]+)"/);
+            const contentMatch = section.split('\r\n\r\n')[1]?.trim();
+
+            if (nameMatch && contentMatch) {
+                parts[nameMatch[1]] = contentMatch.replace(/\r\n--.*$/, '');
+            }
+        });
+
+        return parts;
+    }
+
+    getProjectsFilesInfo(projectId: string): Observable<ProjectArtifactsTypesDto[]> {
+        const url = `${this.base}/projects/${projectId}/artifacts/types`;
+        return this.http.get<ProjectArtifactsTypesDto[]>(url);
+    }
+
+    getProjectsFilesData(projectId: string): Observable<ProjectArtifactsDataDto[]> {
+        const url = `${this.base}/projects/${projectId}/artifacts`;
+        return this.http.get<ProjectArtifactsDataDto[]>(url);
+    }
+
+    getProjectsSessions(projectId: string): Observable<ProjectSessionDto[]> {
+        const url = `${this.base}/projects/${projectId}/sessions`;
+        return this.http.get<ProjectSessionDto[]>(url);
+    }
+
+    createProjectsSessions(projectId: string): Observable<ProjectSessionDto> {
+        const url = `${this.base}/projects/${projectId}/session`;
+        return this.http.post<ProjectSessionDto>(url, {
+            "session_visibility": "none"
+        });
+    }
+
+    getSessionById(sessionId: string): Observable<ProjectSessionDto> {
+        const url = `${this.base}/sessions/${sessionId}`;
+        return this.http.get<ProjectSessionDto>(url);
+    }
+
+    deleteSessionById(sessionId: string): Observable<void> {
+        const url = `${this.base}/sessions/${sessionId}`;
+        return this.http.delete<void>(url);
+    }
+
+    getChatHistory(sessionId: string): Observable<SessionChatHistoryDto[]> {
+        const url = `${this.base}/sessions/${sessionId}/artifacts/chat_history`;
+        return this.http.get<SessionChatHistoryDto[]>(url);
+    }
+
+    getChatHistoryDataContent(artifactId: string): Observable<ChatMessageDto[]> {
+        return this.getArtifactContent(artifactId).pipe(
+            map(content => content.messages)
+        );
+    }
+
+    getArtifactContent(artifactId: string): Observable<SessionChatHistoryContentDto> {
+        const url = `${this.base}/artifacts/${artifactId}/data`;
+        return this.http.get<SessionChatHistoryContentDto>(url);
+    }
+
+    /*     // TODO: remove this mocked data when API is ready
+        private getMockedProjects(): ProjectDto[] {
+            return [
+                {
+                    id: '1',
+                    name: 'Lawsuit Analysis',
+                    description: 'Description for Lawsuit Analysis project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 10,
+                },
+                {
+                    id: '2',
+                    name: 'Contract Review',
+                    description: 'Description for Contract Review project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 5,
+                },
+                {
+                    id: '3',
+                    name: 'Market Research',
+                    description: 'Description for Market Research project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 3,
+                },
+                {
+                    id: '4',
+                    name: 'Product Launch',
+                    description: 'Description for Product Launch project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 8,
+                },
+                {
+                    id: '5',
+                    name: 'Customer Feedback',
+                    description: 'Description for Customer Feedback project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 12,
+                },
+                {
+                    id: '6',
+                    name: 'Sales Analysis',
+                    description: 'Description for Sales Analysis project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 7,
+                },
+                {
+                    id: '7',
+                    name: 'Financial Report',
+                    description: 'Description for Financial Report project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 4,
+                },
+                {
+                    id: '8',
+                    name: 'Employee Training',
+                    description: 'Description for Employee Training project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 6,
+                },
+                {
+                    id: '9',
+                    name: 'Risk Assessment',
+                    description: 'Description for Risk Assessment project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 9,
+                },
+                {
+                    id: '10',
+                    name: 'Budget Planning',
+                    description: 'Description for Budget Planning project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 11,
+                },
+                {
+                    id: '11',
+                    name: 'Quality Assurance',
+                    description: 'Description for Quality Assurance project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 14,
+                },
+                {
+                    id: '12',
+                    name: 'Competitor Analysis',
+                    description: 'Description for Competitor Analysis project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 6,
+                },
+                {
+                    id: '13',
+                    name: 'User Experience Study',
+                    description: 'Description for User Experience Study project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 13,
+                },
+                {
+                    id: '14',
+                    name: 'Security Audit',
+                    description: 'Description for Security Audit project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 8,
+                },
+                {
+                    id: '15',
+                    name: 'Data Migration',
+                    description: 'Description for Data Migration project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 15,
+                },
+                {
+                    id: '16',
+                    name: 'Performance Testing',
+                    description: 'Description for Performance Testing project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 7,
+                },
+                {
+                    id: '17',
+                    name: 'Brand Identity',
+                    description: 'Description for Brand Identity project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 10,
+                },
+                {
+                    id: '18',
+                    name: 'Compliance Review',
+                    description: 'Description for Compliance Review project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 12,
+                },
+                {
+                    id: '19',
+                    name: 'Infrastructure Upgrade',
+                    description: 'Description for Infrastructure Upgrade project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 9,
+                },
+                {
+                    id: '20',
+                    name: 'Process Optimization',
+                    description: 'Description for Process Optimization project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 11,
+                },
+                {
+                    id: '21',
+                    name: 'Digital Transformation',
+                    description: 'Description for Digital Transformation project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 16,
+                },
+                {
+                    id: '22',
+                    name: 'Customer Support',
+                    description: 'Description for Customer Support project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 8,
+                },
+                {
+                    id: '23',
+                    name: 'Mobile App Development',
+                    description: 'Description for Mobile App Development project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 13,
+                },
+                {
+                    id: '24',
+                    name: 'Social Media Campaign',
+                    description: 'Description for Social Media Campaign project',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: 'system',
+                    filesCount: 5,
+                }
+            ];
+        } */
 
     loadMockData(): {
         files: FileItem[],
@@ -531,11 +628,11 @@ export class ProjectsService {
     }
 
     // Date helpers
-    private daysAgo(n: number): Date {
+    daysAgo(n: number): Date {
         return new Date(Date.now() - n * 86400000);
     }
 
-    private hoursAgo(n: number): Date {
+    hoursAgo(n: number): Date {
         return new Date(Date.now() - n * 3600000);
     }
 }

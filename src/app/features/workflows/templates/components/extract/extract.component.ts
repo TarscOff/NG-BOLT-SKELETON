@@ -36,7 +36,6 @@ import { FieldConfigService } from '@cadai/pxs-ng-core/services';
 import {
   ExtractMode,
   ExtractConfig,
-  ExtractEndpoints,
   ExtractionResult,
   ExtractFile,
 } from '../../utils/tplsInterfaces/extractTpl.interface';
@@ -101,10 +100,6 @@ export class ExtractComponent implements OnInit, OnDestroy {
     this.initializeForms();
   }
 
-  @Input() set endpoints(value: Partial<ExtractEndpoints>) {
-    this._endpoints.set(value);
-  }
-
   @Input() disabled = false;
 
   // Outputs
@@ -116,7 +111,6 @@ export class ExtractComponent implements OnInit, OnDestroy {
   // Signals
   private _mode = signal<ExtractMode>({ mode: 'upload' });
   private _config = signal<ExtractConfig>(this.defaultConfig);
-  private _endpoints = signal<Partial<ExtractEndpoints>>({});
   private _result = signal<ExtractionResult | null>(null);
   private _isUploading = signal<boolean>(false);
   private _isExtracting = signal<boolean>(false);
@@ -127,7 +121,6 @@ export class ExtractComponent implements OnInit, OnDestroy {
   // Computed
   mode$ = computed(() => this._mode());
   config$ = computed(() => this._config());
-  endpoints$ = computed(() => this._endpoints());
   result$ = computed(() => this._result());
   isUploading$ = computed(() => this._isUploading());
   isExtracting$ = computed(() => this._isExtracting());
@@ -154,10 +147,6 @@ export class ExtractComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
     this.lang$ = this.store.select(AppSelectors.LangSelectors.selectLang);
-
-    this.extractService.configure({
-      endpoints: this._endpoints(),
-    });
 
     this.initializeForms();
   }
@@ -299,7 +288,7 @@ export class ExtractComponent implements OnInit, OnDestroy {
         this._uploadProgress.set(0);
 
         this.extractService
-          .uploadFile({ files: filesToUpload }, this._endpoints())
+          .uploadFile({ files: filesToUpload })
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: (response) => {
@@ -353,8 +342,7 @@ export class ExtractComponent implements OnInit, OnDestroy {
             entities: entities,
             text: textInput || undefined,
           },
-        },
-        this._endpoints()
+        }
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -382,7 +370,7 @@ export class ExtractComponent implements OnInit, OnDestroy {
   private pollExtractionResult(extractionId: string): void {
     const pollInterval = setInterval(() => {
       this.extractService
-        .getExtraction(extractionId, this._endpoints())
+        .getExtraction(extractionId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (result) => {

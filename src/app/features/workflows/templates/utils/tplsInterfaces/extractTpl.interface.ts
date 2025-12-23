@@ -12,16 +12,6 @@ export interface ExtractConfig {
   maxFiles?: number;
 }
 
-// Endpoints interface
-export interface ExtractEndpoints {
-  uploadExtract?: string;
-  startExtract?: string;
-  statusExtract?: string;
-  cancelExtract?: string;
-  exportExtract?: string;
-}
-
-
 // Input file interface
 export interface ExtractFile extends  FileVM  {
   type: string;

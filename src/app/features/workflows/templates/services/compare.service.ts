@@ -3,7 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, delay, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import {
-  ComparisonResult, CompareFile, CompareEndpoints,
+  ComparisonResult, 
+  CompareFile,
   CompareUploadRequest,
   CompareStartRequest,
   CompareUploadResponse,
@@ -16,29 +17,13 @@ import {
 export class CompareService {
   private http = inject(HttpClient);
 
-  private defaultEndpoints: CompareEndpoints = {
-    uploadFiles: '/api/compare/upload',
-    startComparison: '/api/compare/start',
-    getComparison: '/api/compare/result',
-    cancelComparison: '/api/compare/cancel',
-    exportComparison: '/api/compare/export',
-  };
-
-
-  configure(config: { endpoints?: Partial<CompareEndpoints> }): void {
-    if (config.endpoints) {
-      this.defaultEndpoints = { ...this.defaultEndpoints, ...config.endpoints };
-    }
-  }
-
   /**
    * Upload two files for comparison
    */
   uploadFiles(
     request: CompareUploadRequest,
-    endpoints?: Partial<CompareEndpoints>
   ): Observable<CompareUploadResponse> {
-    const url = endpoints?.uploadFiles || this.defaultEndpoints.uploadFiles;
+    const url = "/api/compare/upload";
 
     const formData = new FormData();
     formData.append('file1', request.file1);
@@ -63,10 +48,8 @@ export class CompareService {
    */
   startComparison(
     request: CompareStartRequest,
-    endpoints?: Partial<CompareEndpoints>
   ): Observable<CompareStatusResponse> {
-    const url = endpoints?.startComparison || this.defaultEndpoints.startComparison;
-
+    const url = "/api/compare/start";
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
@@ -86,10 +69,8 @@ export class CompareService {
    */
   getComparison(
     comparisonId: string,
-    endpoints?: Partial<CompareEndpoints>
   ): Observable<ComparisonResult> {
-    const url = `${endpoints?.getComparison || this.defaultEndpoints.getComparison}/${comparisonId}`;
-
+    const url = `/api/compare/result/${comparisonId}`;
 
     return this.http.get<ComparisonResult>(url).pipe(
       tap(response => console.log('Comparison result:', response)),
@@ -108,10 +89,8 @@ export class CompareService {
    */
   cancelComparison(
     comparisonId: string,
-    endpoints?: Partial<CompareEndpoints>
   ): Observable<{ success: boolean; comparisonId: string }> {
-    const url = `${endpoints?.cancelComparison || this.defaultEndpoints.cancelComparison}/${comparisonId}`;
-
+    const url = `/api/compare/cancel/${comparisonId}`;
 
     return this.http.delete<{ success: boolean; comparisonId: string }>(url).pipe(
       tap(response => console.log('Comparison cancelled:', response)),
@@ -130,9 +109,8 @@ export class CompareService {
   exportComparison(
     comparisonId: string,
     format: 'pdf' | 'docx' | 'html',
-    endpoints?: Partial<CompareEndpoints>
   ): Observable<Blob> {
-    const url = `${endpoints?.exportComparison || this.defaultEndpoints.exportComparison}/${comparisonId}`;
+      const url = `/api/compare/export/${comparisonId}`;
 
     return this.http
       .post(url, { format }, { responseType: 'blob' })

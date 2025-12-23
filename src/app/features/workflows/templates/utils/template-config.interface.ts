@@ -1,7 +1,7 @@
-import { ChatConfig, ChatEndpoints, ChatMessage, ChatSender } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
-import { CompareConfig, CompareEndpoints, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
-import { SummarizeConfig, SummarizeEndpoints, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
-import { ExtractConfig, ExtractEndpoints, ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
+import { ChatConfig, ChatMessage, ChatSender } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
+import { CompareConfig, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
+import { SummarizeConfig, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
+import { ExtractConfig, ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 import { CompareComponent } from '../components/compare/compare.component';
 import { SummarizeComponent } from '../components/summarize/summarize.component';
 import { ChatComponent } from '../components/chat/chat.component';
@@ -23,7 +23,7 @@ export interface TemplateResult {
 /**
  * Template type discriminator
  */
-export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract';
+export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract' | string;
 
 /**
  * Base template configuration
@@ -31,53 +31,50 @@ export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract';
 export interface BaseTemplateConfig {
   config?: Partial<ChatConfig | CompareConfig | SummarizeConfig | ExtractConfig>;
   context?: TemplateContext;
+  templateId: string;
 }
 
 /**
  * Extract template configuration
  */
 export interface ExtractTemplateConfig extends BaseTemplateConfig {
-  type: 'extract';
+  type: TemplateType;
   mode?: 'upload' | 'preloaded';
   result?: ExtractionResult;
   config?: Partial<ExtractConfig>;
-  endpoints?: Partial<ExtractEndpoints>;
 }
 
 /**
  * Chat template configuration
  */
 export interface ChatTemplateConfig extends BaseTemplateConfig {
-  type: 'chat';
+  type: TemplateType;
   initialMessages?: ChatMessage[];
   currentUser?: ChatSender;
-  endpoints?: Partial<ChatEndpoints>;
 }
 
 /**
  * Compare template configuration
  */
 export interface CompareTemplateConfig extends BaseTemplateConfig {
-  type: 'compare';
+  type: TemplateType;
   mode?: 'upload' | 'preloaded';
   result?: ComparisonResult;
-  endpoints?: Partial<CompareEndpoints>;
 }
 
 /**
  * Summarize template configuration
  */
 export interface SummarizeTemplateConfig extends BaseTemplateConfig {
-  type: 'summarize';
+  type: TemplateType;
   mode?: 'upload' | 'preloaded';
   result?: SummaryResult;
-  endpoints?: Partial<SummarizeEndpoints>;
 }
 
 /**
  * Union type for all template configurations
  */
-export type TemplateConfig = ChatTemplateConfig | CompareTemplateConfig | SummarizeTemplateConfig | ExtractTemplateConfig;
+export type TemplateConfig = ChatTemplateConfig | CompareTemplateConfig | SummarizeTemplateConfig | ExtractTemplateConfig | null;
 
 /**
  * API Response structure
@@ -86,12 +83,6 @@ export interface TemplatePageResponse {
   pageTitle: string;
   pageDescription?: string;
   templates: TemplateConfig[];
-  metadata?: {
-    version: string;
-    lastUpdated: Date;
-    environment: string;
-    pageId?: string;
-  };
 }
 
 /**
