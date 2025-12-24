@@ -1,5 +1,0 @@
-{
-  "name": "uat",
-  "production": false,
-  "apiUrl": "https://uat.api.yourdomain.com"
-}

@@ -2,8 +2,10 @@
 set -e
 
 # Required envs (set at run time or via orchestrator)
-: "${API_URL:?Set API_URL, e.g. https://acd.pxl-codit.com/api}"
+: "${API_URL:?Set API_URL, e.g. https://[your project].pxl-codit.com/api}"
 : "${KEYCLOAK_URL:?Set KEYCLOAK_URL, e.g. https://keycloak.pxl-codit.com/}"
+: "${KEYCLOAK_REALM:?Set KEYCLOAK_REALM, e.g. genai-dev}"
+: "${KEYCLOAK_CLIENT_ID:?Set KEYCLOAK_CLIENT_ID, e.g. genai-app-client}"
 : "${ENVIRONMENT:=production}"
 : "${CSP_REPORT_ONLY:=false}"
 
@@ -18,6 +20,8 @@ fi
 echo "=== Runtime Environment ==="
 echo "API_URL: ${API_URL}"
 echo "KEYCLOAK_URL: ${KEYCLOAK_URL}"
+echo "KEYCLOAK_REALM: ${KEYCLOAK_REALM}"
+echo "KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}"
 echo "ENVIRONMENT: ${ENVIRONMENT}"
 echo "=========================="
 

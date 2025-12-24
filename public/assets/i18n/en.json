@@ -129,7 +129,11 @@
       "no-workflows": "No workflows available",
       "no-members": "No members added yet",
       "confirm-delete": "Delete \"{{title}}\"?",
-      "confirm-remove-member": "Remove {{name}} from this project?"
+      "confirm-remove-member": "Remove {{name}} from this project?",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "pastWeek": "Past Week",
+      "older": "Older"
     },
     "error": {
       "not-found": "Project not found",

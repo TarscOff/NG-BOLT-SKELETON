@@ -191,7 +191,11 @@
       "no-workflows": "Aucun workflow disponible",
       "no-members": "Aucun membre ajouté",
       "confirm-delete": "Supprimer \"{{title}}\" ?",
-      "confirm-remove-member": "Retirer {{name}} de ce projet ?"
+      "confirm-remove-member": "Retirer {{name}} de ce projet ?",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "pastWeek": "La semaine dernière",
+      "older": "Plus ancien"
     },
     "error": {
       "not-found": "Projet introuvable",

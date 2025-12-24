@@ -24,7 +24,7 @@
 
 1. **Configure npm registry access:**
    ```bash
-   vsts-npm-auth -config .npmrc
+   npx vsts-npm-auth -config .npmrc
    ```
 
 2. **Install dependencies:**
@@ -42,28 +42,19 @@
    window.env = {
      API_URL: "/api",
      KEYCLOAK_URL: "https://keycloak-dev.example.com/",
+     KEYCLOAK_REALM:"genai-dev",
+     KEYCLOAK_CLIENT_ID:"genai-app"
    };
    ```
 
 4. **Configure Keycloak client** (Public + PKCE S256) and brokered IdPs if needed
 
-5. **Update static configuration** in `public/assets/config.json`:
-   ```json
-   {
-     "auth": {
-       "realm": "your-realm",
-       "clientId": "your-client-id"
-     },
-     "features": { /* ... */ }
-   }
-   ```
-
-6. **Start development server:**
+5. **Start development server:**
    ```bash
    npm start
    ```
 
-7. **Verify setup:**
+6. **Verify setup:**
    - App redirects to Keycloak and back
    - API calls include Bearer token
    - Check browser console: `console.log(window.env)`
@@ -75,12 +66,12 @@
 // Keycloak
 AUTHORIZATION_URL: https://keycloak.pxl-codit.com/realms/genai-dev/protocol/openid-connect/auth
 ACCESS_TOKEN_URL: https://keycloak.pxl-codit.com/realms/genai-dev/protocol/openid-connect/token
-CLIENT_ID: genai-acd
-REDIRECT_URL: https://[URL].pxl-codit.com/
+CLIENT_ID: genai-app
+REDIRECT_URL: https://app.pxl-codit.com/
 
 // Backend
-API_URL: https://[URL].pxl-codit.com/api
-SWAGGER: https://[URL].pxl-codit.com/api/doc/
+API_URL: https://app.pxl-codit.com/api
+SWAGGER: https://app.pxl-codit.com/api/doc/
 ```
 
 ---
@@ -139,8 +130,10 @@ graph LR
 2. Edits with real local values:
    ```javascript
    window.env = {
-     API_URL: "https://url-dev.example.com/api",
+     API_URL: "https://app-dev.example.com/api",
      KEYCLOAK_URL: "https://keycloak-dev.example.com/",
+     KEYCLOAK_REALM:"genai-dev",
+     KEYCLOAK_CLIENT_ID:"genai-app"
    };
    ```
 3. Angular loads this file in `index.html`:
@@ -173,12 +166,14 @@ docker build -t psx-ng-skeleton:latest .
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
   psx-ng-skeleton:latest
 ```
 
 **Container startup sequence:**
-1. `entrypoint.sh` reads environment variables (`API_URL`, `KEYCLOAK_URL`, `ENVIRONMENT`)
+1. `entrypoint.sh` reads environment variables (`API_URL`, `KEYCLOAK_URL`,`KEYCLOAK_REALM`,`KEYCLOAK_CLIENT_ID`, `ENVIRONMENT`)
 2. Generates `env-config.js` from template using `envsubst`:
    ```bash
    envsubst < /usr/share/nginx/html/env-config.template.js \
@@ -189,6 +184,8 @@ docker run -d -p 80:80 \
    window.env = {
      API_URL: "https://api.example.com",
      KEYCLOAK_URL: "https://keycloak.example.com/",
+     KEYCLOAK_REALM: "genai-dev",
+     KEYCLOAK_CLIENT_ID:"genai-app"
    };
    ```
 4. Generates nginx config with dynamic CSP headers based on URLs
@@ -214,7 +211,10 @@ const finalConfig = {
   apiUrl: runtimeEnv.API_URL,           // ← Runtime override
   auth: {
     ...staticConfig.auth,
-    url: runtimeEnv.KEYCLOAK_URL         // ← Runtime override
+    url: env.KEYCLOAK_URL,
+    realm: env.KEYCLOAK_REALM,
+    clientId: env.KEYCLOAK_CLIENT_ID,
+    init: window.location.origin + '/'
   }
 };
 
@@ -237,7 +237,7 @@ await bootstrapApplication(AppComponent, {
 
 | Configuration Type | File | Example | When to Change |
 |-------------------|------|---------|----------------|
-| **Environment URLs** | `env-config.js` (runtime) | `API_URL`, `KEYCLOAK_URL` | Per environment deployment |
+| **Environment URLs** | `env-config.js` (runtime) | `API_URL`, `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID` | Per environment deployment |
 | **Feature flags** | `config.json` (static) | `features.dashboard.enabled` | Per application release |
 | **Menu structure** | `config.json` (static) | `features.dashboard.route` | Per application release |
 | **Auth realm/client** | `config.json` (static) | `auth.realm`, `auth.clientId` | Per tenant setup |
@@ -255,8 +255,10 @@ These variables **must be set** when running the Docker container:
 
 | Variable | Example | Description |
 |----------|---------|-------------|
-| `API_URL` | `https://url.pxl-codit.com/api` | Backend API base URL (no trailing slash) |
+| `API_URL` | `https://app.pxl-codit.com/api` | Backend API base URL (no trailing slash) |
 | `KEYCLOAK_URL` | `https://keycloak.pxl-codit.com/` | Keycloak server URL (with trailing slash) |
+| `KEYCLOAK_CLIENT_ID` | `genai-app` | Keycloak client_id |
+| `KEYCLOAK_REALM` | `genai-dev/` | Keycloak realm |
 | `ENVIRONMENT` | `production` | Environment name (`development`, `uat`, `production`) |
 
 **Environment-specific behavior:**
@@ -272,24 +274,30 @@ These variables **must be set** when running the Docker container:
 ```bash
 # Development
 docker run -d -p 80:80 \
-  -e API_URL="https://url-dev.example.com/api" \
+  -e API_URL="https://app-dev.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="development" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 
 # UAT (same image, different env vars!)
 docker run -d -p 80:80 \
-  -e API_URL="https://url-uat.example.com/api" \
+  -e API_URL="https://app-uat.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="uat" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 
 # Production (same image, different env vars!)
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 ```
 
 #### Docker Compose
@@ -298,12 +306,14 @@ docker run -d -p 80:80 \
 version: '3.8'
 services:
   psx-ng-skeleton-frontend:
-    image: teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+    image: teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
     ports:
       - "80:80"
     environment:
-      - API_URL=https://url.pxl-codit.com/api
+      - API_URL=https://app.pxl-codit.com/api
       - KEYCLOAK_URL=https://keycloak.pxl-codit.com/
+      - KEYCLOAK_REALM=genai-dev
+      - KEYCLOAK_CLIENT_ID=genai-app
       - ENVIRONMENT=production
 ```
 
@@ -313,16 +323,18 @@ services:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: psx-ng-skeleton-config
+  name: app-config
 data:
   API_URL: "https://api.example.com"
   KEYCLOAK_URL: "https://keycloak.example.com/"
+  KEYCLOAK_REALM: "genai-dev"
+  KEYCLOAK_CLIENT_ID: "genai-app"
   ENVIRONMENT: "production"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: psx-ng-skeleton-frontend
+  name: app-frontend
 spec:
   replicas: 3
   template:
@@ -332,7 +344,7 @@ spec:
         image: teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
         envFrom:
         - configMapRef:
-            name: psx-ng-skeleton-config
+            name: app-config
         ports:
         - containerPort: 80
 ```
@@ -361,7 +373,7 @@ docker inspect <container-name> | grep -A 10 Env
 
 # 5. Check browser console
 console.log(window.env);
-// Should output: {API_URL: "...", KEYCLOAK_URL: "..."}
+// Should output: {API_URL: "...", KEYCLOAK_URL: "...", KEYCLOAK_REAML: "...", KEYCLOAK_CLIENT_ID: "..."}
 ```
 
 #### Issue: API calls go to wrong URL
@@ -380,7 +392,10 @@ const runtimeConfig = {
   apiUrl: window.env.API_URL,
   auth: { 
     ...staticConfig.auth, 
-    url: window.env.KEYCLOAK_URL 
+    url: window.env.KEYCLOAK_URL ,
+    realm: window.env.KEYCLOAK_REALM,
+    clientId: window.env.KEYCLOAK_CLIENT_ID,
+    init: window.location.origin + '/'
   }
 };
 ```
@@ -421,6 +436,8 @@ docker run -e ENVIRONMENT="production" psx-ng-skeleton:latest   # Strict CSP
    window.env = {
      API_URL: "${API_URL}",
      KEYCLOAK_URL: "${KEYCLOAK_URL}",
+     KEYCLOAK_REAML: "${KEYCLOAK_REAML}",
+     KEYCLOAK_CLIENT_ID: "${KEYCLOAK_CLIENT_ID}",
    };
    ```
 
@@ -581,8 +598,8 @@ Keycloak merges both into one array: `authorization: ["ROLE_user", "ROLE_admin"]
 ```
 Client Type: OpenID Connect
 Access Type: Public
-Valid Redirect URIs: https://url.example.com/*
-Web Origins: https://url.example.com
+Valid Redirect URIs: https://app.example.com/*
+Web Origins: https://app.example.com
 
 Authentication Flow:
   ✅ Standard Flow Enabled (Authorization Code)
@@ -649,10 +666,13 @@ export function loadTheme(theme: 'light' | 'dark') {
   const runtimeEnv = window.env || {};
   const finalConfig = {
     ...staticConfig,
-    apiUrl: runtimeEnv.API_URL || staticConfig.api?.baseUrl,
+    apiUrl: runtimeEnv.API_URL,
     auth: {
       ...staticConfig.auth,
-      url: runtimeEnv.KEYCLOAK_URL || staticConfig.auth?.url
+      url: runtimeEnv.KEYCLOAK_URL,
+      realm: runtimeEnv.KEYCLOAK_REALM,
+      clientId: runtimeEnv.KEYCLOAK_CLIENT_ID,
+      init: window.location.origin + '/'
     }
   };
 
@@ -818,7 +838,7 @@ npm run start -- --configuration=development
 
 **Why we use a proxy:**
 
-During local development (`npm start`), the Angular dev server runs on `http://localhost:4200`, but the backend API is on a different domain (e.g., `https://url.pxl-codit.com`). This creates **CORS (Cross-Origin Resource Sharing)** issues because browsers block requests between different origins for security reasons.
+During local development (`npm start`), the Angular dev server runs on `http://localhost:4200`, but the backend API is on a different domain (e.g., `https://app.pxl-codit.com`). This creates **CORS (Cross-Origin Resource Sharing)** issues because browsers block requests between different origins for security reasons.
 
 The **proxy configuration** solves this by:
 1. ✅ Making the Angular dev server act as a middleman
@@ -830,7 +850,7 @@ The **proxy configuration** solves this by:
 
 ```
 Browser Request → Angular Dev Server → Backend API
-    /api/users  →  localhost:4200  → https://url.pxl-codit.com/api/users
+    /api/users  →  localhost:4200  → https://app.pxl-codit.com/api/users
 ```
 
 **Configuration file: `proxy.conf.json`**
@@ -838,7 +858,7 @@ Browser Request → Angular Dev Server → Backend API
 ```json
 {
   "/api": {
-    "target": "https://url.pxl-codit.com",
+    "target": "https://app.pxl-codit.com",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "debug"
@@ -860,13 +880,15 @@ In your local `env-config.js`, you set:
 ```javascript
 window.env = {
   API_URL: "/api",  // ← Relative path, proxied to real backend
-  KEYCLOAK_URL: "https://keycloak-dev.example.com/"
+  KEYCLOAK_URL: "https://keycloak-dev.example.com/",
+  KEYCLOAK_REALM: 'genai-dev',
+  KEYCLOAK_CLIENT_ID: 'genai-app'
 };
 ```
 
 The Angular HTTP client then makes calls like:
 ```typescript
-this.http.get('/api/users')  // Proxied to https://url.pxl-codit.com/api/users
+this.http.get('/api/users')  // Proxied to https://app.pxl-codit.com/api/users
 ```
 
 **Wired in `angular.json`:**
@@ -885,7 +907,7 @@ this.http.get('/api/users')  // Proxied to https://url.pxl-codit.com/api/users
 
 | Environment | API_URL | Behavior |
 |-------------|---------|----------|
-| **Local dev** | `/api` | Proxied through dev server to `https://url.pxl-codit.com` |
+| **Local dev** | `/api` | Proxied through dev server to `https://app.pxl-codit.com` |
 | **Docker/Prod** | `https://api.example.com` | Direct calls (nginx handles routing) |
 
 **Debugging proxy issues:**
@@ -893,14 +915,14 @@ this.http.get('/api/users')  // Proxied to https://url.pxl-codit.com/api/users
 ```bash
 # 1. Check proxy is working (look for proxy logs)
 npm start
-# Should see: [HPM] Proxy created: /api -> https://url.pxl-codit.com
+# Should see: [HPM] Proxy created: /api -> https://app.pxl-codit.com
 
 # 2. Test API call in browser console
 fetch('/api/health').then(r => r.json()).then(console.log)
 
 # 3. Check network tab for proxied requests
 # Request URL should be: http://localhost:4200/api/health
-# But response comes from: https://url.pxl-codit.com/api/health
+# But response comes from: https://app.pxl-codit.com/api/health
 ```
 
 **Common issues:**
@@ -1063,6 +1085,8 @@ This project uses Angular strict mode with:
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
   psx-ng-skeleton:latest
 ```
@@ -1102,7 +1126,7 @@ docker run -d -p 80:80 \
 
 ### Local Setup
 - [ ] Clone repository
-- [ ] Run `vsts-npm-auth -config .npmrc`
+- [ ] Run `npx vsts-npm-auth -config .npmrc`
 - [ ] Run `npm install`
 - [ ] Copy `env-config.template.js` to `env-config.js`
 - [ ] Edit `env-config.js` with local values
