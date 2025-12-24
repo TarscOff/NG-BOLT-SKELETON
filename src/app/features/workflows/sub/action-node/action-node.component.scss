@@ -52,7 +52,7 @@
     justify-content: start
 }
 
-html.dark .title {
+:host-context(.dark) .title {
     color: var(--mat-neutral, #fff);
 }
 

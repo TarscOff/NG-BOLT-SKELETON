@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export enum ProjectSessionVisibility {
   PROJECT_ALL = "project_all",
   SESSION_OWNER = "session_owner"
@@ -90,7 +92,7 @@ export interface FileItem {
   name: string;
   size: number;
   type?: string;
-  uploadedAt: Date;
+  uploadedAt: DateTime;
 };
 
 export interface WorkflowItem {
@@ -98,7 +100,7 @@ export interface WorkflowItem {
   name: string;
   designedSteps: number;
   published: boolean;
-  lastUpdated: Date;
+  lastUpdated: DateTime;
 };
 
 export type Role = 'owner' | 'member';
@@ -108,14 +110,14 @@ export interface Member {
   name: string;
   email: string;
   role: Role;
-  joinedAt: Date;
+  joinedAt: DateTime;
 };
 
 export interface HistoryItem {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  createdAt: DateTime;
+  updatedAt?: DateTime;
   progress?: number;
   meta?: Record<string, unknown>;
   projectId: string;
@@ -236,30 +238,30 @@ export interface ChatMessageDto {
 }
 
 export interface ChatMessageResponseDto {
-  completed_on: string;
-  created_on: string;
+  completed_on: DateTime;
+  created_on: DateTime;
   tasks: TaskDto[];
-  updated_on: string;
+  updated_on: DateTime;
   workflow_instance_id: string;
   workflow_name: string;
   workflow_status: string;
 }
 
 export interface TaskDto {
-  completed_on: string;
-  created_on: string;
+  completed_on: DateTime;
+  created_on: DateTime;
   task_id: string;
   task_name: string;
   task_status: Status;
   task_status_comment: string;
-  updated_on: string;
+  updated_on: DateTime;
 }
 
 export interface WorkflowStatusDto {
-  completed_on: string;
-  created_on: string;
+  completed_on: DateTime;
+  created_on: DateTime;
   tasks: TaskDto[];
-  updated_on: string;
+  updated_on: DateTime;
   workflow_instance_id: string;
   workflow_name: string;
   workflow_status: Status;

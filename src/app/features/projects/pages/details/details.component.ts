@@ -34,6 +34,8 @@ import { ConfirmDialogData, ToolbarAction } from '@cadai/pxs-ng-core/interfaces'
 import { firstValueFrom } from 'rxjs';
 import { UserRole } from '@cadai/pxs-ng-core/enums';
 import { MatDialog } from '@angular/material/dialog';
+import { DateTime } from 'luxon';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
     selector: 'app-project-details',
@@ -59,6 +61,8 @@ import { MatDialog } from '@angular/material/dialog';
         MatProgressSpinnerModule,
         SeoComponent,
         MatChipsModule,
+        MatExpansionModule,
+        TranslateModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -92,6 +96,51 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     // Sessiions History
     readonly sessionsHistory = signal<HistoryItem[]>([]);
     readonly sessionsCount = computed(() => this.sessionsHistory().length);
+
+    readonly groupedSessions = computed(() => {
+        const sessions = this.sessionsHistory();
+        const now = DateTime.now();
+        const today = now.startOf('day');
+        const yesterday = today.minus({ days: 1 });
+        const weekAgo = today.minus({ days: 7 });
+
+        const groups = {
+            today: [] as typeof sessions,
+            yesterday: [] as typeof sessions,
+            pastWeek: [] as typeof sessions,
+            older: [] as typeof sessions
+        };
+
+        sessions.forEach(session => {
+            const sessionDate = session.createdAt.startOf('day');
+
+            if (sessionDate >= today) {
+                groups.today.push(session);
+            } else if (sessionDate >= yesterday) {
+                groups.yesterday.push(session);
+            } else if (sessionDate >= weekAgo) {
+                groups.pastWeek.push(session);
+            } else {
+                groups.older.push(session);
+            }
+        });
+
+        return groups;
+    });
+
+    expandedGroups = signal({
+        today: true,
+        yesterday: true,
+        pastWeek: false,
+        older: false
+    });
+
+    toggleGroup(group: 'today' | 'yesterday' | 'pastWeek' | 'older') {
+        this.expandedGroups.update(state => ({
+            ...state,
+            [group]: !state[group]
+        }));
+    }
 
     /* 
         // Chat History
@@ -251,7 +300,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             name: e.artifact_name || 'Untitled File',
             size: e.artifact_size,
             type: e.artifact_type,
-            uploadedAt: new Date(e.created_on),
+            uploadedAt: DateTime.fromJSDate(new Date(e.created_on)),
         }));
     }
 
@@ -260,10 +309,12 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         return sessions.map((s) => ({
             id: s.session_id,
             title: s.session_name || 'Untitled Session',
-            createdAt: new Date(s.created_on),
+            createdAt: DateTime.fromJSDate(new Date(s.created_on)),
             projectId: project.project_id,
             meta: { ...s },
-        }));
+        })).sort(
+            (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+        );
     }
 
     private async loadProjectDetails(projectId: string): Promise<void> {
@@ -378,13 +429,12 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         const list = input.files;
         if (!list || list.length === 0) return;
 
-        const now = new Date();
         const newFiles: FileItem[] = Array.from(list).map((f, idx) => ({
-            id: `tmp-${now.getTime()}-${idx}`,
+            id: `tmp-${DateTime.now().toMillis()}-${idx}`,
             name: f.name,
             size: f.size,
             type: f.type,
-            uploadedAt: now,
+            uploadedAt: DateTime.now(),
         }));
 
         this.files.update((arr) => [...newFiles, ...arr]);
@@ -444,7 +494,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             boolean
         >(ConfirmDialogComponent, {
             data: {
-                title: 'Delete',
+                title: this.translateService.instant('delete'),
                 message: this.translateService.instant('projects.details.confirm-delete', {
                     title: item.title,
                 }),
@@ -466,7 +516,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
                 this.projectsService.deleteSessionById(item.id).subscribe({
                     next: () => {
-                        this.toast.show( 
+                        this.toast.show(
                             this.translateService.instant('projects.delete-success', { title: item.title })
                         );
                     },

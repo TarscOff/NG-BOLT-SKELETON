@@ -1,12 +1,14 @@
-import { inject, Injectable } from '@angular/core';
+import { Inject, inject, Injectable } from '@angular/core';
 import { Observable, of, delay, throwError, firstValueFrom } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
     ChatMessage,
 } from '../utils/tplsInterfaces/chatTpl.interface';
-import { HttpService } from '@cadai/pxs-ng-core/services';
 import { ProjectsService } from '@features/projects/services/projects.service';
 import { ChatMessageDto, ChatMessageResponseDto, DataRefence, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import { HttpClient } from '@angular/common/http';
+import { CoreOptions } from '@cadai/pxs-ng-core/interfaces';
+import { CORE_OPTIONS } from '@cadai/pxs-ng-core/tokens';
 
 interface DeleteMessageResponse {
     success: boolean;
@@ -23,7 +25,21 @@ interface UploadAttachmentResponse {
 })
 export class ChatService {
     private readonly projectService = inject(ProjectsService);
-    constructor(private http: HttpService) { }
+    constructor(
+        private http: HttpClient,
+        @Inject(CORE_OPTIONS) private readonly coreOpts: Required<CoreOptions>,
+    ) { }
+
+
+    /**
+     * Get base API URL for templates
+     */
+    private get base(): string {
+        const apiUrl = this.coreOpts.environments.apiUrl;
+        if (!apiUrl) throw new Error('Runtime config missing: apiUrl');
+        return `${apiUrl}`;
+    }
+
 
     async getChatHistory(
         sessionId: string
@@ -80,11 +96,11 @@ export class ChatService {
         // Add files if provided
         if (files && files.length > 0) {
             files.forEach((file) => {
-            formData.append(fileInputId, file);
+                formData.append(fileInputId, file);
             });
         }
 
-        const endpoint = `/api/sessions/${sessionId}/execute/${templateId}`;
+        const endpoint = `${this.base}/sessions/${sessionId}/execute/${templateId}`;
         if (!endpoint) {
             return throwError(() => new Error('Send endpoint not configured'));
         }
@@ -95,7 +111,7 @@ export class ChatService {
     getChatStatus(
         workflow_instance_id: string,
     ): Observable<WorkflowStatusDto> {
-        const endpoint = `/api/workflow/${workflow_instance_id}/status`;
+        const endpoint = `${this.base}/workflow/${workflow_instance_id}/status`;
         if (!endpoint) {
             return throwError(() => new Error('Status endpoint not configured'));
         }
@@ -107,7 +123,7 @@ export class ChatService {
         messageId: string,
     ): Observable<DeleteMessageResponse> {
 
-        const endpoint = "/api/chat/delete";
+        const endpoint = `${this.base}/chat/delete`;
         if (!endpoint) {
             return throwError(() => new Error('Delete endpoint not configured'));
         }
@@ -127,7 +143,7 @@ export class ChatService {
         content: string,
     ): Observable<Partial<ChatMessage>> {
 
-        const endpoint = "/api/chat/edit";
+        const endpoint = `${this.base}/chat/edit`;
         if (!endpoint) {
             return throwError(() => new Error('Edit endpoint not configured'));
         }
@@ -148,7 +164,7 @@ export class ChatService {
         file: File,
     ): Observable<UploadAttachmentResponse> {
 
-        const endpoint = "/api/chat/uploadAttachment";
+        const endpoint = `${this.base}/chat/uploadAttachment`;
         if (!endpoint) {
             return throwError(() => new Error('Upload endpoint not configured'));
         }

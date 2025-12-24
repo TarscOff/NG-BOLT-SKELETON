@@ -21,6 +21,8 @@ import { RuntimeConfig } from '@cadai/pxs-ng-core/interfaces';
     auth: {
       ...config.auth,
       url: env.KEYCLOAK_URL,
+      realm: env.KEYCLOAK_REALM,
+      clientId: env.KEYCLOAK_CLIENT_ID,
       init: window.location.origin + '/'
     }
   };

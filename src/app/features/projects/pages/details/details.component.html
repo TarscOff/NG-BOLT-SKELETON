@@ -47,32 +47,174 @@
 
                     @if (sessionsHistory().length > 0) {
                     <div class="custom-list">
-                        @for (h of sessionsHistory(); track trackHist($index, h)) {
-                        <div tabindex="0" role="button" [attr.aria-label]="h.title"
-                            (keydown.enter)="viewItem('session', h)"
-                            (keydown.space)="viewItem('session', h); $event.preventDefault()"
-                            (click)="viewItem('session', h)" class="custom-list-item">
-                            <mat-icon class="item-icon">view_timeline</mat-icon>
+                        <!-- Today -->
+                        @if (groupedSessions().today.length > 0) {
+                        <mat-expansion-panel [expanded]="expandedGroups().today" class="session-group-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="group-header">
+                                    <mat-icon class="group-icon">event</mat-icon>
+                                    {{ 'projects.details.today' | translate }}
+                                    <span class="group-count">({{ groupedSessions().today.length }})</span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
 
-                            <div class="item-content">
-                                <span class="item-title">
-                                    <mat-chip class="success" color="success" selected="false">{{ h.id }}</mat-chip>{{
-                                    h.title }}</span>
-                                <span class="item-subtitle muted">{{ h.createdAt | date:'medium' }}</span>
-                            </div>
+                            @for (h of groupedSessions().today; track trackHist($index, h)) {
+                            <div tabindex="0" role="button" [attr.aria-label]="h.title"
+                                (keydown.enter)="viewItem('session', h)"
+                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (click)="viewItem('session', h)" class="custom-list-item">
+                                <mat-icon class="item-icon">view_timeline</mat-icon>
 
-                            <div class="item-actions">
-                                <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
-                                    (click)="viewItem('session', h)">
-                                    <mat-icon>open_in_new</mat-icon>
-                                </button>
-                                <button mat-icon-button color="accent"
-                                    [matTooltip]="'projects.details.delete' | translate"
-                                    (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
-                                    <mat-icon>delete</mat-icon>
-                                </button>
+                                <div class="item-content">
+                                    <span class="item-title">
+                                        <mat-chip class="success" color="success" selected="false"
+                                            [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        {{h.title }}
+                                    </span>
+                                    <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
+                                        }}</span>
+                                </div>
+
+                                <div class="item-actions">
+                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                        (click)="viewItem('session', h); $event.stopPropagation()">
+                                        <mat-icon>open_in_new</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="accent"
+                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                        (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                            }
+                        </mat-expansion-panel>
+                        }
+
+                        <!-- Yesterday -->
+                        @if (groupedSessions().yesterday.length > 0) {
+                        <mat-expansion-panel [expanded]="expandedGroups().yesterday" class="session-group-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="group-header">
+                                    <mat-icon class="group-icon">history</mat-icon>
+                                    {{ 'projects.details.yesterday' | translate }}
+                                    <span class="group-count">({{ groupedSessions().yesterday.length }})</span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+
+                            @for (h of groupedSessions().yesterday; track trackHist($index, h)) {
+                            <div tabindex="0" role="button" [attr.aria-label]="h.title"
+                                (keydown.enter)="viewItem('session', h)"
+                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (click)="viewItem('session', h)" class="custom-list-item">
+                                <mat-icon class="item-icon">view_timeline</mat-icon>
+                                <div class="item-content">
+                                    <span class="item-title">
+                                        <mat-chip class="success" color="success" selected="false"
+                                            [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        {{h.title }}
+                                    </span>
+                                    <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
+                                        }}</span>
+                                </div>
+                                <div class="item-actions">
+                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                        (click)="viewItem('session', h); $event.stopPropagation()">
+                                        <mat-icon>open_in_new</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="accent"
+                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                        (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            }
+                        </mat-expansion-panel>
+                        }
+
+                        <!-- Past Week -->
+                        @if (groupedSessions().pastWeek.length > 0) {
+                        <mat-expansion-panel [expanded]="expandedGroups().pastWeek" class="session-group-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="group-header">
+                                    <mat-icon class="group-icon">calendar_today</mat-icon>
+                                    {{ 'projects.details.pastWeek' | translate }}
+                                    <span class="group-count">({{ groupedSessions().pastWeek.length }})</span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+
+                            @for (h of groupedSessions().pastWeek; track trackHist($index, h)) {
+                            <div tabindex="0" role="button" [attr.aria-label]="h.title"
+                                (keydown.enter)="viewItem('session', h)"
+                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (click)="viewItem('session', h)" class="custom-list-item">
+                                <mat-icon class="item-icon">view_timeline</mat-icon>
+                                <div class="item-content">
+                                    <span class="item-title">
+                                        <mat-chip class="success" color="success" selected="false"
+                                            [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        {{h.title }}
+                                    </span>
+                                    <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
+                                        }}</span>
+                                </div>
+                                <div class="item-actions">
+                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                        (click)="viewItem('session', h); $event.stopPropagation()">
+                                        <mat-icon>open_in_new</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="accent"
+                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                        (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            }
+                        </mat-expansion-panel>
+                        }
+
+                        <!-- Older -->
+                        @if (groupedSessions().older.length > 0) {
+                        <mat-expansion-panel [expanded]="expandedGroups().older" class="session-group-panel">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title class="group-header">
+                                    <mat-icon class="group-icon">access_time</mat-icon>
+                                    {{ 'projects.details.older' | translate }}
+                                    <span class="group-count">({{ groupedSessions().older.length }})</span>
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+
+                            @for (h of groupedSessions().older; track trackHist($index, h)) {
+                            <div tabindex="0" role="button" [attr.aria-label]="h.title"
+                                (keydown.enter)="viewItem('session', h)"
+                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (click)="viewItem('session', h)" class="custom-list-item">
+                                <mat-icon class="item-icon">view_timeline</mat-icon>
+                                <div class="item-content">
+                                    <span class="item-title">
+                                        <mat-chip class="success" color="success" selected="false"
+                                            [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        {{h.title }}
+                                    </span>
+                                    <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
+                                        }}</span>
+                                </div>
+                                <div class="item-actions">
+                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                        (click)="viewItem('session', h); $event.stopPropagation()">
+                                        <mat-icon>open_in_new</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="accent"
+                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                        (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            }
+                        </mat-expansion-panel>
                         }
                     </div>
                     } @else {
@@ -101,17 +243,14 @@
                     @if (files().length > 0) {
                     <div class="custom-list">
                         @for (f of files(); track trackFile($index, f)) {
-                        <div 
-                        tabindex="0" role="button" [attr.aria-label]="f.name"
-                            (keydown.enter)="null"
-                            (keydown.space)="null; $event.preventDefault()"
-                            (click)="null" class="custom-list-item">
+                        <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null"
+                            (keydown.space)="null; $event.preventDefault()" (click)="null" class="custom-list-item">
                             <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
                             <div class="item-content">
 
                                 <div matListItemTitle>{{ f.name }}</div>
                                 <div matListItemLine class="muted">
-                                    {{ prettySize(f.size) }} • {{ f.uploadedAt | date: 'mediumDate' }}
+                                    {{ prettySize(f.size) }} • {{ f.uploadedAt.toFormat("yyyy-MM-dd - HH:mm") }}
                                 </div>
                             </div>
                             <div class="item-actions">
@@ -124,7 +263,8 @@
                                         <mat-icon>download</mat-icon>
                                         {{ 'projects.details.download' | translate }}
                                     </button>
-                                    <button mat-menu-item (click)="removeFile(f); $event.stopPropagation(); $event.preventDefault()">
+                                    <button mat-menu-item
+                                        (click)="removeFile(f); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                         {{ 'projects.details.remove' | translate }}
                                     </button>

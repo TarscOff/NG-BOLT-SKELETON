@@ -38,6 +38,7 @@ import {
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { WorkflowStatusDto } from '@features/projects/interfaces/project.model';
 import { ToastService } from '@cadai/pxs-ng-core/services';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-chat-tpl',
@@ -315,7 +316,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       id: this.generateMessageId(),
       content: data.message,
       sender: this._currentUser(),
-      timestamp: new Date(),
       attachments: data.files.map(f => ({
         name: f.name,
         size: f.size,
@@ -485,9 +485,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                     workflow_instance_id: workflowInstanceId,
                     workflow_name: 'Workflow not found',
                     tasks: [],
-                    created_on: new Date().toISOString(),
-                    updated_on: new Date().toISOString(),
-                    completed_on: new Date().toISOString()
+                    created_on: DateTime.now(),
+                    updated_on: DateTime.now(),
+                    completed_on: DateTime.now()
                   } as WorkflowStatusDto);
                 }
 
@@ -496,9 +496,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                   workflow_instance_id: workflowInstanceId,
                   workflow_name: 'Initializing workflow...',
                   tasks: [],
-                  created_on: new Date().toISOString(),
-                  updated_on: new Date().toISOString(),
-                  completed_on: ''
+                  created_on: DateTime.now(),
+                  updated_on: DateTime.now(),
+                  completed_on: DateTime.now()
                 } as WorkflowStatusDto);
               }
 
@@ -512,9 +512,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                   workflow_instance_id: workflowInstanceId,
                   workflow_name: 'Error occurred',
                   tasks: [],
-                  created_on: new Date().toISOString(),
-                  updated_on: new Date().toISOString(),
-                  completed_on: new Date().toISOString()
+                  created_on: DateTime.now(),
+                  updated_on: DateTime.now(),
+                  completed_on: DateTime.now()
                 } as WorkflowStatusDto);
               }
 
@@ -523,9 +523,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                 workflow_instance_id: workflowInstanceId,
                 workflow_name: 'Processing...',
                 tasks: [],
-                created_on: new Date().toISOString(),
-                updated_on: new Date().toISOString(),
-                completed_on: ''
+                created_on: DateTime.now(),
+                updated_on: DateTime.now(),
+                completed_on: DateTime.now()
               } as WorkflowStatusDto);
             })
           );
@@ -582,7 +582,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
       try {
         const updatedMessages = await this.chatService.getChatHistory(this.sessionId$());
-        console.log("here",updatedMessages)
         if (this.hasMessagesChanged(previousMessages, updatedMessages)) {
           this._messages.set(updatedMessages);
         }

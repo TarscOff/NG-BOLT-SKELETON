@@ -1,4 +1,4 @@
-# CI/CD Setup (GitLab CI, GitHub Actions, Azure Pipelines)
+#  CI/CD Setup (GitLab CI, GitHub Actions, Azure Pipelines)
 
 >_Last updated: 2025-12-23_
 
@@ -67,6 +67,8 @@ dist/psx-ng-skeleton/browser
   window.env = {
     API_URL: "${API_URL}",
     KEYCLOAK_URL: "${KEYCLOAK_URL}",
+    KEYCLOAK_REALM: "${KEYCLOAK_REALM}",
+    KEYCLOAK_CLIENT_ID: "${KEYCLOAK_CLIENT_ID}"
   };
   ```
 
@@ -80,8 +82,10 @@ dist/psx-ng-skeleton/browser
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `API_URL` | Backend API URL | `https://url.pxl-codit.com/api` |
+| `API_URL` | Backend API URL | `https://app.pxl-codit.com/api` |
 | `KEYCLOAK_URL` | Keycloak server URL (with trailing slash) | `https://keycloak.pxl-codit.com/` |
+| `KEYCLOAK_REALM` | Keycloak realm | `genai-dev` |
+| `KEYCLOAK_CLIENT_ID` | Keycloak clientId | `genai-app` |
 | `ENVIRONMENT` | Environment name (affects CSP/COOP headers) | `production`, `uat`, `development` |
 
 **Example deployment:**
@@ -89,8 +93,10 @@ dist/psx-ng-skeleton/browser
 ```bash
 # Development
 docker run -d -p 80:80 \
-  -e API_URL="https://psx-ng-skeleton-dev.example.com/api" \
+  -e API_URL="https://app-dev.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="development" \
   registry/psx-ng-skeleton:latest
 
@@ -98,6 +104,8 @@ docker run -d -p 80:80 \
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
   registry/psx-ng-skeleton:latest
 ```
@@ -122,7 +130,7 @@ Dynamic CSP configuration based on runtime environment variables:
 
 **How it works:**
 
-1. **Container startup**: `docker/entrypoint.sh` reads `ENVIRONMENT`, `API_URL`, `KEYCLOAK_URL`
+1. **Container startup**: `docker/entrypoint.sh` reads `ENVIRONMENT`, `API_URL`, `KEYCLOAK_URL`, `KEYCLOAK_REALM`,`KEYCLOAK_CLIENT_ID`
 2. **Template processing**: Uses `envsubst` to render nginx config from template
 3. **Header injection**: nginx serves with environment-specific security headers
 
@@ -220,8 +228,8 @@ rules:
 **Docker tags example:**
 
 ```text
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:2.1.10
-teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:2.1.10
+teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 ```
 
 **Environment-specific configuration at runtime:**
@@ -231,24 +239,30 @@ The Docker image requires environment variables at container startup:
 ```bash
 # Development
 docker run -d -p 80:80 \
-  -e API_URL="https://[psx-ng-skeleton]-dev.example.com/api" \
+  -e API_URL="https://app-dev.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="development" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 
 # UAT
 docker run -d -p 80:80 \
-  -e API_URL="https://[psx-ng-skeleton]-uat.example.com/api" \
+  -e API_URL="https://app-uat.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="uat" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 
 # Production
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
-  teamhub-se.telindus.lu:5050/genai/frontend/frontend-[psx-ng-skeleton]:latest
+  teamhub-se.telindus.lu:5050/genai/frontend/frontend-psx-ng-skeleton:latest
 ```
 
 ### 2.7 GitLab CI/CD Setup Checklist
@@ -457,15 +471,19 @@ After Docker image is pushed, deploy to any environment by setting runtime env v
 ```bash
 # Development environment
 docker run -d -p 80:80 \
-  -e API_URL="https://BE-dev.example.com/api" \
+  -e API_URL="https://app-dev.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-dev.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="development" \
   registry/psx-ng-skeleton:latest
 
 # UAT environment (same image!)
 docker run -d -p 80:80 \
-  -e API_URL="https://BE-uat.example.com/api" \
+  -e API_URL="https://app-uat.example.com/api" \
   -e KEYCLOAK_URL="https://keycloak-uat.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="uat" \
   registry/psx-ng-skeleton:latest
 
@@ -473,6 +491,8 @@ docker run -d -p 80:80 \
 docker run -d -p 80:80 \
   -e API_URL="https://api.example.com" \
   -e KEYCLOAK_URL="https://keycloak.example.com/" \
+  -e KEYCLOAK_REALM="genai-dev" \
+  -e KEYCLOAK_CLIENT_ID="genai-app" \
   -e ENVIRONMENT="production" \
   registry/psx-ng-skeleton:latest
 ```
@@ -483,7 +503,7 @@ docker run -d -p 80:80 \
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: [psx-ng-skeleton]-frontend
+  name: app-frontend
 spec:
   replicas: 3
   template:
@@ -496,6 +516,10 @@ spec:
           value: "https://api.example.com"
         - name: KEYCLOAK_URL
           value: "https://keycloak.example.com/"
+        - name: KEYCLOAK_REALM
+          value: "genai-dev"
+        - name: KEYCLOAK_CLIENT_ID
+          value: "genai-app"
         - name: ENVIRONMENT
           value: "production"
         ports:
@@ -543,9 +567,15 @@ spec:
 2. Verify `main.ts` merges runtime config:
    ```typescript
    const runtimeConfig = {
-     ...staticConfig,
-     apiUrl: env.API_URL,
-     auth: { ...config.auth, url: env.KEYCLOAK_URL }
+      ...staticConfig,
+      apiUrl: env.API_URL,
+      auth: {
+        ...config.auth,
+        url: env.KEYCLOAK_URL,
+        realm: env.KEYCLOAK_REALM,
+        clientId: env.KEYCLOAK_CLIENT_ID,
+        init: window.location.origin + '/'
+      }
    };
    ```
 3. Check container environment: `docker exec <container> printenv`
@@ -572,6 +602,8 @@ spec:
   docker run -d -p 80:80 \
     -e API_URL="https://new-api-url.com" \
     -e KEYCLOAK_URL="https://new-keycloak-url.com/" \
+    -e KEYCLOAK_RELM="genai-dev" \
+    -e KEYCLOAK_CLIENT_ID="genai-app" \
     registry/psx-ng-skeleton:latest
   ```
 
@@ -585,8 +617,10 @@ docker exec <container-name> cat /usr/share/nginx/html/env-config.js
 
 # Expected output:
 # window.env = {
-#   API_URL: "https://psx-ng-skeleton.pxl-codit.com/api",
+#   API_URL: "https://app.pxl-codit.com/api",
 #   KEYCLOAK_URL: "https://keycloak.pxl-codit.com/",
+#   KEYCLOAK_REALM: 'genai-dev',
+#   KEYCLOAK_CLIENT_ID: 'genai-app'
 # };
 ```
 
@@ -594,7 +628,7 @@ docker exec <container-name> cat /usr/share/nginx/html/env-config.js
 
 ```javascript
 console.log(window.env);
-// Should show: {API_URL: "...", KEYCLOAK_URL: "..."}
+// Should show: {API_URL: "...", KEYCLOAK_URL: "...", KEYCLOAK_REALM: "...", KEYCLOAK_CLIENT_ID: "..."}
 ```
 
 **Check nginx configuration:**

@@ -1,9 +1,9 @@
 import { Inject, Injectable } from "@angular/core";
 import { CoreOptions } from "@cadai/pxs-ng-core/interfaces";
-import { HttpService } from "@cadai/pxs-ng-core/services";
 import { CORE_OPTIONS } from "@cadai/pxs-ng-core/tokens";
 import { Observable } from "rxjs";
 import { UserDto } from "../interfaces/user.model";
+import { HttpClient } from "@angular/common/http";
 
 @Injectable({
     providedIn: 'root',
@@ -11,7 +11,7 @@ import { UserDto } from "../interfaces/user.model";
 export class UserService {
 
     constructor(
-        private http: HttpService,
+        private http: HttpClient,
         @Inject(CORE_OPTIONS) private readonly coreOpts: Required<CoreOptions>,
     ) { }
 

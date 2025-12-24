@@ -18,6 +18,7 @@ import {
 } from "../interfaces/project.model";
 import { map, Observable } from "rxjs";
 import { HttpClient } from "@angular/common/http";
+import { DateTime } from "luxon";
 
 @Injectable({
     providedIn: 'root',
@@ -368,105 +369,105 @@ export class ProjectsService {
                     name: 'KYC-specs.pdf',
                     size: 532188,
                     type: 'application/pdf',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f2',
                     name: 'clients.csv',
                     size: 88492,
                     type: 'text/csv',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f3',
                     name: 'logo.png',
                     size: 24100,
                     type: 'image/png',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f4',
                     name: 'presentation.pptx',
                     size: 1256892,
                     type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f5',
                     name: 'report.docx',
                     size: 456123,
                     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f6',
                     name: 'data.xlsx',
                     size: 789456,
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f7',
                     name: 'summary.txt',
                     size: 12345,
                     type: 'text/plain',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f8',
                     name: 'diagram.svg',
                     size: 67890,
                     type: 'image/svg+xml',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f9',
                     name: 'archive.zip',
                     size: 2345678,
                     type: 'application/zip',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f10',
                     name: 'video.mp4',
                     size: 3456789,
                     type: 'video/mp4',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f11',
                     name: 'audio.mp3',
                     size: 456789,
                     type: 'audio/mpeg',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f12',
                     name: 'script.js',
                     size: 56789,
                     type: 'application/javascript',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f13',
                     name: 'styles.css',
                     size: 67890,
                     type: 'text/css',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f14',
                     name: 'index.html',
                     size: 78901,
                     type: 'text/html',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 },
                 {
                     id: 'f15',
                     name: 'presentation2.pptx',
                     size: 1356892,
                     type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                    uploadedAt: new Date(),
+                    uploadedAt: DateTime.now(),
                 }
 
             ],
@@ -474,15 +475,15 @@ export class ProjectsService {
                 {
                     id: 'c-101',
                     title: 'Chat: onboarding policy clarifications',
-                    createdAt: this.daysAgo(2),
-                    updatedAt: this.hoursAgo(1),
+                    createdAt: DateTime.now().minus({ days: 2 }),
+                    updatedAt: DateTime.now().minus({ hours: 1 }),
                     progress: 65,
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'c-099',
                     title: 'Chat: KYC edge cases',
-                    createdAt: this.daysAgo(5),
+                    createdAt: DateTime.now().minus({ days: 5 }),
                     progress: 30,
                     projectId: crypto.randomUUID(),
                 },
@@ -491,36 +492,36 @@ export class ProjectsService {
                 {
                     id: 'ss-410',
                     title: 'Session 1',
-                    createdAt: this.daysAgo(9),
+                    createdAt: DateTime.now().minus({ days: 9 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-405',
                     title: 'Session 2',
-                    createdAt: this.daysAgo(6),
+                    createdAt: DateTime.now().minus({ days: 6 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-398',
                     title: 'Session 3',
-                    createdAt: this.daysAgo(13),
+                    createdAt: DateTime.now().minus({ days: 13 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-393',
                     title: 'Session 4',
-                    createdAt: this.daysAgo(21),
+                    createdAt: DateTime.now().minus({ days: 21 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-389',
                     title: 'Session 5',
-                    createdAt: this.daysAgo(30),
+                    createdAt: DateTime.now().minus({ days: 30 }),
                     projectId: crypto.randomUUID(),
                 }, {
                     id: 'ss-385',
                     title: 'Session 6',
-                    createdAt: this.daysAgo(35),
+                    createdAt: DateTime.now().minus({ days: 35 }),
                     projectId: crypto.randomUUID(),
                 }
                 // generate 10 more object by object
@@ -528,43 +529,43 @@ export class ProjectsService {
                 {
                     id: 'ss-380',
                     title: 'Session 7',
-                    createdAt: this.daysAgo(40),
+                    createdAt: DateTime.now().minus({ days: 40 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-375',
                     title: 'Session 8',
-                    createdAt: this.daysAgo(45),
+                    createdAt: DateTime.now().minus({ days: 45 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-370',
                     title: 'Session 9',
-                    createdAt: this.daysAgo(50),
+                    createdAt: DateTime.now().minus({ days: 50 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-365',
                     title: 'Session 10',
-                    createdAt: this.daysAgo(55),
+                    createdAt: DateTime.now().minus({ days: 55 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-360',
                     title: 'Session 11',
-                    createdAt: this.daysAgo(60),
+                    createdAt: DateTime.now().minus({ days: 60 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-355',
                     title: 'Session 12',
-                    createdAt: this.daysAgo(65),
+                    createdAt: DateTime.now().minus({ days: 65 }),
                     projectId: crypto.randomUUID(),
                 },
                 {
                     id: 'ss-350',
                     title: 'Session 13',
-                    createdAt: this.daysAgo(70),
+                    createdAt: DateTime.now().minus({ days: 70 }),
                     projectId: crypto.randomUUID(),
                 },
 
@@ -576,7 +577,7 @@ export class ProjectsService {
                 {
                     id: 'p-410',
                     title: 'Compare: v1 vs v2 KYC schema',
-                    createdAt: this.daysAgo(9),
+                    createdAt: DateTime.now().minus({ days: 9 }),
                     progress: 55,
                     projectId: crypto.randomUUID(),
                 },
@@ -585,7 +586,7 @@ export class ProjectsService {
                 {
                     id: 's-210',
                     title: 'Summary: 2025-10-OKR deck.pdf',
-                    createdAt: this.daysAgo(3),
+                    createdAt: DateTime.now().minus({ days: 3 }),
                     progress: 100,
                     projectId: crypto.randomUUID(),
                 },
@@ -594,7 +595,7 @@ export class ProjectsService {
                 {
                     id: 'e-310',
                     title: 'Extract: client.csv → emails',
-                    createdAt: this.daysAgo(7),
+                    createdAt: DateTime.now().minus({ days: 7 }),
                     progress: 70,
                     projectId: crypto.randomUUID(),
                 },
@@ -604,9 +605,7 @@ export class ProjectsService {
                 name: `Workflow #${i + 1}`,
                 designedSteps: Math.floor(Math.random() * 12) + 3,
                 published: Math.random() > 0.45,
-                lastUpdated: new Date(
-                    Date.now() - Math.floor(Math.random() * 10) * 86400000
-                ),
+                lastUpdated: DateTime.now().minus({ days: Math.floor(Math.random() * 30) + 1 }),
             })),
             "members": [
                 {
@@ -614,25 +613,16 @@ export class ProjectsService {
                     name: 'Alice Martin',
                     email: 'alice@example.com',
                     role: 'owner',
-                    joinedAt: new Date('2025-08-01'),
+                    joinedAt: DateTime.fromISO('2025-08-01'),
                 },
                 {
                     id: 'u2',
                     name: 'Bob Keller',
                     email: 'bob@example.com',
                     role: 'member',
-                    joinedAt: new Date('2025-09-12'),
+                    joinedAt: DateTime.fromISO('2025-09-12'),
                 },
             ]
         }
-    }
-
-    // Date helpers
-    daysAgo(n: number): Date {
-        return new Date(Date.now() - n * 86400000);
-    }
-
-    hoursAgo(n: number): Date {
-        return new Date(Date.now() - n * 3600000);
     }
 }

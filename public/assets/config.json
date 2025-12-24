@@ -4,8 +4,6 @@
   "hasNgrx": true,
   "auth": {
     "hasKeycloak": true,
-    "realm": "genai-dev",
-    "clientId": "genai-acd",
     "init": {
       "onLoad": "login-required",
       "checkLoginIframe": false,

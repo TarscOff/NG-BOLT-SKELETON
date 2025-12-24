@@ -1,5 +1,0 @@
-{
-  "name": "production",
-  "production": true,
-  "apiUrl": "https://api.yourdomain.com"
-}
