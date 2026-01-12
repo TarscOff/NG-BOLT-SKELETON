@@ -5,7 +5,7 @@ import {
     ChatMessage,
 } from '../utils/tplsInterfaces/chatTpl.interface';
 import { ProjectsService } from '@features/projects/services/projects.service';
-import { ChatMessageDto, ChatMessageResponseDto, DataRefence, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import { ChatMessageDto, ChatMessageResponseDto, DataRefence } from '@features/projects/interfaces/project.model';
 import { HttpClient } from '@angular/common/http';
 import { CoreOptions } from '@cadai/pxs-ng-core/interfaces';
 import { CORE_OPTIONS } from '@cadai/pxs-ng-core/tokens';
@@ -72,53 +72,23 @@ export class ChatService {
         }));
     }
 
-
     sendMessage(
         projectId: string,
         sessionId: string,
         templateId: string,
-        content: string,
-        files?: File[]
+        content: string
     ): Observable<ChatMessageResponseDto> {
-        const formData = new FormData();
-
-        // TODO. this is hardcoded , should be removed in the future and only handled on BE side
-        const messageInputId = "6c34cfd1-ac55-492c-b730-4f3815a2309d";
-        const userPromptId = "c9d2e9dd-77c8-4c72-8157-cc079498994b";
-        const fileInputId = "442f052c-f371-4b30-8f97-89109cc61fb2";
-        // Add content as form field (using a generated ID or templateId as the key)
-        if (content.trim() !== "") {
-            formData.append(messageInputId, content);
-        }
-        if (content.trim() !== "") {
-            formData.append(userPromptId, content);
-        }
-        // Add files if provided
-        if (files && files.length > 0) {
-            files.forEach((file) => {
-                formData.append(fileInputId, file);
-            });
-        }
-
-        const endpoint = `${this.base}/sessions/${sessionId}/execute/${templateId}`;
-        if (!endpoint) {
-            return throwError(() => new Error('Send endpoint not configured'));
-        }
-
-        return this.http.post<ChatMessageResponseDto>(endpoint, formData)
+        return this.projectService.sendMessage(projectId, sessionId, templateId, content);
     }
 
-    getChatStatus(
-        workflow_instance_id: string,
-    ): Observable<WorkflowStatusDto> {
-        const endpoint = `${this.base}/workflow/${workflow_instance_id}/status`;
-        if (!endpoint) {
-            return throwError(() => new Error('Status endpoint not configured'));
-        }
-
-        return this.http.get<WorkflowStatusDto>(endpoint)
+    submitArtifacts(
+        sessionId: string,
+        fileTemplateId: string,
+        files: File[]
+    ): Observable<ChatMessageResponseDto> {
+        return this.projectService.submitArtifacts(sessionId, fileTemplateId, files);
     }
-
+    
     deleteMessage(
         messageId: string,
     ): Observable<DeleteMessageResponse> {
@@ -158,28 +128,6 @@ export class ChatService {
 
                 })
             );
-    }
-
-    uploadAttachment(
-        file: File,
-    ): Observable<UploadAttachmentResponse> {
-
-        const endpoint = `${this.base}/chat/uploadAttachment`;
-        if (!endpoint) {
-            return throwError(() => new Error('Upload endpoint not configured'));
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        return this.http.post<UploadAttachmentResponse>(endpoint, formData).pipe(
-            catchError(error => {
-                console.error('Error uploading attachment:', error);
-                throwError(() => error);
-                return this.mockUploadAttachment(file);
-
-            })
-        );
     }
 
 

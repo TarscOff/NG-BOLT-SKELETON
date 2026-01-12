@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FieldConfigService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 
-import { DynamicFormComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
+import { ConfirmDialogComponent, DynamicFormComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
 import { ProjectsService } from '@features/projects/services/projects.service';
 import { ProjectArtifactsTypesDto, ProjectDto } from '@features/projects/interfaces/project.model';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -16,8 +16,9 @@ import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { FieldConfig, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
-import { of } from 'rxjs';
+import { ConfirmDialogData, FieldConfig, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
+import { firstValueFrom, of } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-projects',
@@ -49,6 +50,7 @@ export class ProjectsComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly fieldsConfigService = inject(FieldConfigService);
     private readonly toolbarService = inject(ToolbarActionsService);
+    private readonly dialog = inject(MatDialog);
 
     // Filter signals
     readonly searchTerm = signal<string>('');
@@ -193,9 +195,48 @@ export class ProjectsComponent implements OnInit {
         });
     }
 
+    // Update the deleteProject method
+    async deleteProject(project: ProjectDto): Promise<void> {
+        // Show confirmation dialog
+        const confirmed = await firstValueFrom(
+            this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+                ConfirmDialogComponent,
+                {
+                    data: {
+                        title: this.translateService.instant('projects.delete.confirm-title'),
+                        message: this.translateService.instant('projects.delete.confirm-message', {
+                            name: project.name
+                        }),
+                        context: { project },
+                    }
+                }
+            ).afterClosed()
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        // Proceed with deletion
+        this.projectsService.deleteProject(project.project_id).subscribe({
+            next: () => {
+                this.toast.show(
+                    this.translateService.instant('projects.delete.success', { title: project.name }),
+                );
+                // Refresh the projects list
+                this.loadProjectsList();
+            },
+            error: () => {
+                this.toast.showError(
+                    this.translateService.instant('projects.delete.failure', { title: project.name }),
+                );
+            }
+        });
+    }
+
     getProjectFileInfo(projectId: string): number {
         const projectInfo = this.projectsInfos().find(info => info.project_id === projectId);
-        return projectInfo?.artifactsInfos ? projectInfo.artifactsInfos.reduce((total, info) => total + (info.total || 0), 0): 0;
+        return projectInfo?.artifactsInfos ? projectInfo.artifactsInfos.reduce((total, info) => total + (info.total || 0), 0) : 0;
     }
 
     private initializeFilterForm(): void {

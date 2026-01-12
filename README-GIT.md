@@ -408,7 +408,7 @@ Configure in **Pipelines → Library → Variable groups**:
 - [ ] Add **`CI_PUSH_TOKEN`** variable
 - [ ] Add **`GITLAB_REGISTRY_CERT`** variable (optional)
 - [ ] Enable Container Registry for project
-- [ ] Verify Git remote URL uses correct ports (`:8443` for Git, `:5050` for registry)
+- [ ] Verify Git remote URL uses correct ports ( `:5050` for registry)
 
 ### 5.3 GitHub Actions Specific
 

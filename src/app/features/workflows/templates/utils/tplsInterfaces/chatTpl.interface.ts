@@ -1,6 +1,8 @@
 export interface ChatMessage {
   id: string;
   content: string;
+
+  // Customn attributes not retruned by the BE
   sender: ChatSender;
   timestamp?: Date;
   type?: 'text' | 'markdown' | 'code' | "mixed";
@@ -72,5 +74,5 @@ export interface ChatMessagesResponse {
 
 export interface ChatInputData {
   message: string;
-  files: File[];
+  files?: File[];
 }

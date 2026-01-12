@@ -32,6 +32,7 @@ export interface BaseTemplateConfig {
   config?: Partial<ChatConfig | CompareConfig | SummarizeConfig | ExtractConfig>;
   context?: TemplateContext;
   templateId: string;
+  fileTemplateId: string;
 }
 
 /**

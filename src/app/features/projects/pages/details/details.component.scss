@@ -330,13 +330,13 @@ mat-paginator {
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: color-mix(in srgb, var(--mat-accent) 30%, transparent);
+    background-color: color-mix(in srgb, var(--mat-primary) 10%, transparent);
     cursor: pointer;
   }
 
   &:focus {
     outline: none;
-    background-color: color-mix(in srgb, var(--mat-accent) 35%, transparent);
+    background-color: color-mix(in srgb, var(--mat-primary) 15%, transparent);
   }
 
   &:focus-visible {
@@ -429,6 +429,12 @@ mat-list-item.historyItem {
 .custom-list {
   --mat-expansion-container-background-color: color-mix(in srgb, var(--mat-primary) 10%, transparent);
 
+  ::ng-deep {
+    .mat-expansion-panel-body {
+      padding: 16px 24px 16px;
+    }
+  }
+
   .session-group-panel {
     margin-bottom: 0.5rem;
     box-shadow: none !important;
@@ -440,6 +446,8 @@ mat-list-item.historyItem {
         linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
         linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
       box-shadow: none;
+
+
       &::after {
         content: "";
         background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
@@ -506,10 +514,47 @@ mat-list-item.historyItem {
         border-top-color: var(--mat-surface-variant, #424242);
       }
 
-      .group-header ,
+      .group-header,
       .group-count {
         color: var(--mat-neutral);
       }
     }
+  }
+
+  .custom-list-item {
+    &:hover {
+      background-color: color-mix(in srgb, var(--mat-accent) 30%, transparent);
+    }
+
+    &:focus {
+      background-color: color-mix(in srgb, var(--mat-accent) 35%, transparent);
+    }
+  }
+}
+
+.inline-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.inline-edit-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.inline-edit-field {
+  width: 100%;
+  margin: 0;
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding: 4px 0;
+    min-height: auto;
+  }
+
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
   }
 }

@@ -75,6 +75,7 @@ At the root level, we define a palette of custom CSS variables:
   --mat-warn: #ec9a00ff;
   --mat-neutral: #9e9e9e;
   --mat-success: #4caf50;
+  --mat-error: #4caf50;
 }
 ```
 
@@ -94,6 +95,7 @@ Each layout class remaps the base Material roles (`primary`, `accent`,
 .warn    { --mat-primary: var(--mat-warn); }
 .success { --mat-primary: var(--mat-success); }
 .neutral { --mat-primary: var(--mat-neutral); }
+.error { --mat-error: var(--mat-error); }
 ```
 
 All components keep `[color]="'primary'"`, but the meaning of "primary"

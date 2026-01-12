@@ -8,7 +8,7 @@ import { LayoutService, ToolbarActionsService } from '@cadai/pxs-ng-core/service
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { ActiveElement, ChartData, ChartEvent, ChartOptions } from 'chart.js';
 import { DateTime } from 'luxon';
-import { pick, fill30, success, accent, successFill, accentFill, primary, linearGradientPrimary, linearGradientAccent } from '@cadai/pxs-ng-core/utils';
+import { pick, fill30, error,success, accent, successFill, accentFill, primary, linearGradientPrimary, linearGradientAccent, linearGradientError, errorFill } from '@cadai/pxs-ng-core/utils';
 import { SmartColumn, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
 
 @Component({
@@ -41,8 +41,8 @@ export class DashboardComponent implements OnInit {
     { id: 'created', header: 'created', type: 'date', sortable: true, format: 'yyyy-LL-dd', draggable: false },
     {
       id: 'actions', type: 'actions', header: "actions", stickyEnd: true, draggable: false, width: 80, cellButtons: [
-        { icon: 'edit', id: 'edit', class: 'primary', tooltip: 'edit' },
-        { icon: 'delete', id: 'delete', class: 'accent', tooltip: 'delete' },
+        { icon: 'edit', id: 'edit', class: 'accent', tooltip: 'edit' },
+        { icon: 'delete', id: 'delete', class: 'error', tooltip: 'delete' },
       ]
     }
   ];
@@ -91,11 +91,20 @@ export class DashboardComponent implements OnInit {
     const newP: ToolbarAction = {
       id: 'newP',
       icon: 'add',
-      tooltip: 'new',
+      tooltip: 'SAVE',
       click: () => {console.log("export")},
       variant:"flat",
-      label:'new',
+      label:'SAVE',
       class:"success"
+    };
+    const DeleteBtn: ToolbarAction = {
+      id: 'deleteP',
+      icon: 'delete',
+      tooltip: 'delete',
+      click: () => {console.log("delete")},
+      variant:"flat",
+      label:'delete',
+      class:"error"
     };
 
     const deleteSel: ToolbarAction = {
@@ -121,7 +130,7 @@ export class DashboardComponent implements OnInit {
     };
 
     // Publish actions for this page and auto-clear on destroy
-    this.toolbar.scope(this.destroyRef, [newP,back, exportCsv, deleteSel, refreshSel]);
+    this.toolbar.scope(this.destroyRef, [DeleteBtn,newP,back, exportCsv, deleteSel, refreshSel]);
   }
 
   public ngOnInit(): void {
@@ -156,10 +165,10 @@ export class DashboardComponent implements OnInit {
 
   // ===== Bar Data =====
   barData: ChartData<'bar'> = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', "Sun"],
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', "Sun","sat"],
     datasets: [
       {
-        label: 'Hours', data: [7, -8, 6, 9, 5, -6],
+        label: 'Hours', data: [7, -8, 6, 9, 5, -6,8],
         backgroundColor: (ctx) => pick(ctx),
         borderColor: (ctx) => pick(ctx),
         borderWidth: 1,
@@ -271,6 +280,22 @@ export class DashboardComponent implements OnInit {
         pointBackgroundColor: () => primary(),
         pointHoverBackgroundColor: () => primary(),
       },
+      {
+        label: 'Line 3',
+        data: [
+          { x: this.now.minus({ days: 6 }).toMillis(), y: 45 },
+          { x: this.now.minus({ days: 5 }).toJSDate(), y: 12 },
+          { x: this.now.minus({ days: 2 }).toISO(), y: 4 },
+          { x: this.now.minus({ days: 1 }).toMillis(), y: 30 },
+          { x: this.now.toMillis(), y: 17 },
+        ],
+        fill: true,
+        tension: 0.25,
+        borderColor: () => error(),
+        backgroundColor: (ctx) => linearGradientError(ctx.chart.ctx, this.isDark),
+        pointBackgroundColor: () => error(),
+        pointHoverBackgroundColor: () => error(),
+      },
     ],
   };
 
@@ -289,11 +314,11 @@ export class DashboardComponent implements OnInit {
 
   // ===== PIE =====
   pieData: ChartData<'pie'> = {
-    labels: ['Chrome', 'Safari', 'Firefox', 'Edge', 'Others'],
+    labels: ['Chrome', 'Safari', 'Firefox', 'Edge', "Chromium", 'Others'],
     datasets: [
       {
         label: 'Market Share',
-        data: [63, 20, 10, 7, 5],
+        data: [63, 20, 10, 7, 55,5],
         backgroundColor: (ctx) => pick(ctx),
         borderColor: '#fff',
         borderWidth: 2,
@@ -323,10 +348,10 @@ export class DashboardComponent implements OnInit {
 
   // ===== DOUGHNUT =====
   doughnutData: ChartData<'doughnut'> = {
-    labels: ['Completed', 'In Progress', 'Blocked', "On Hold"],
+    labels: ['Completed', 'In Progress', 'Blocked', "On Hold", "Not Started", "Cancelled"],
     datasets: [
       {
-        label: 'Tasks', data: [42, 18, 5, 10],
+        label: 'Tasks', data: [42, 18, 5, 10, 15, 8],
         backgroundColor: (ctx) => pick(ctx),
         hoverOffset: 8
       }
@@ -354,11 +379,11 @@ export class DashboardComponent implements OnInit {
 
   // ===== RADAR =====
   radarData: ChartData<'radar'> = {
-    labels: ['Perf', 'Accessibility', 'Best Practices', 'SEO', 'Security', 'PWA', 'Security'],
+    labels: ['Perf', 'Accessibility', 'Best Practices', 'SEO', 'Security', 'PWA', 'Security' ,'UX'],
     datasets: [
       {
         label: 'Project A',
-        data: [85, 72, 80, 68, 74, 90, 80],
+        data: [85, 72, 80, 68, 74, 90, 80, 75],
         fill: true,
         backgroundColor: () => successFill(),
         borderColor: () => success(),
@@ -371,7 +396,7 @@ export class DashboardComponent implements OnInit {
       },
       {
         label: 'Project B',
-        data: [78, 66, 75, 80, 70, 85, 37],
+        data: [78, 66, 75, 80, 70, 85, 37, 60],
         fill: true,
         backgroundColor: () => accentFill(),
         borderColor: () => accent(),
@@ -379,6 +404,19 @@ export class DashboardComponent implements OnInit {
         pointBorderColor: () => accent(),
         pointHoverBackgroundColor: () => accent(),
         pointHoverBorderColor: () => accent(),
+        hoverRadius: 5,
+        hoverBorderWidth: 5
+      },
+      {
+        label: 'Project C',
+        data: [65, 58, 70, 55, 60, 72, 50, 45],
+        fill: true,
+        backgroundColor: () => errorFill(),
+        borderColor: () => error(),
+        pointBackgroundColor: () => error(),
+        pointBorderColor: () => error(),
+        pointHoverBackgroundColor: () => error(),
+        pointHoverBorderColor: () => error(),
         hoverRadius: 5,
         hoverBorderWidth: 5
       }
@@ -402,11 +440,11 @@ export class DashboardComponent implements OnInit {
 
   // ===== POLAR AREA =====
   polarData: ChartData<'polarArea'> = {
-    labels: ['North', 'East', 'South', 'West', "Central"],
+    labels: ['North', 'East', 'South', 'West', "Central", "International"],
     datasets: [
       {
         label: 'Wind',
-        data: [11, 7, 14, 9, 12],
+        data: [11, 7, 14, 9, 12, 8],
         backgroundColor: (ctx) => fill30(ctx),
         borderColor: (ctx) => pick(ctx),
         borderWidth: 2,

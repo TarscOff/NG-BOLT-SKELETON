@@ -97,11 +97,16 @@
         </mat-card-content>
 
         <mat-card-actions align="end">
-          <button mat-icon-button color="accent" class="accent" [matTooltip]="'projects.open' | translate"
-            [attr.aria-label]="('projects.open' | translate) + ' ' + project.name"
-            (click)="$event.stopPropagation(); openProject(project)">
-            <mat-icon>open_in_new</mat-icon>
-          </button>
+          <button mat-icon-button color="primary" class="primary" [matTooltip]="'projects.open' | translate"
+          [attr.aria-label]="('projects.open' | translate) + ' ' + project.name"
+          (click)="$event.stopPropagation(); openProject(project)">
+          <mat-icon>open_in_new</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" class="accent" [matTooltip]="'delete' | translate"
+          [attr.aria-label]="('projects.delete' | translate) + ' ' + project.name" disabled
+          (click)="$event.stopPropagation(); deleteProject(project)">
+          <mat-icon>delete</mat-icon>
+        </button>
         </mat-card-actions>
       </mat-card>
       }

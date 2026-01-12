@@ -2,7 +2,7 @@
 @use './styles/mixins' as *;
 
 @include mat.core();
-@import 'highlight.js/styles/github.css'; 
+@import 'highlight.js/styles/github.css';
 
 $primary-palette: mat.$azure-palette;
 $tertiary-palette: mat.$green-palette;
@@ -32,6 +32,7 @@ body {
   font-family: 'ProximusRegular', sans-serif;
   background-color: transparent;
   color: var(--md-sys-color-on-surface);
+  --mat-sidenav-content-text-color: var(--mat-primary);
 
   * {
     font-family: 'ProximusRegular', sans-serif;
@@ -53,9 +54,9 @@ body {
 
 // Snackbar 
 .app-toast-error {
-  --mdc-snackbar-container-color: var(--mat-accent);
-  background-color: var(--mat-accent);
-  background: var(--mat-accent);
+  --mdc-snackbar-container-color: var(--mat-error);
+  background-color: var(--mat-error);
+  background: var(--mat-error);
 }
 
 .app-toast-success {
@@ -63,6 +64,7 @@ body {
   background-color: var(--mat-success);
   background: var(--mat-success);
 }
+
 // Optional custom overrides
 /* 
 .mat-mdc-button {
@@ -78,6 +80,9 @@ body {
 
 // Darkmode overlay overrides
 html.dark {
+  
+  --mat-sidenav-content-text-color: var(--mat-primary);
+
   .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
     background: rgb(189 189 189 / 72%) !important
   }
@@ -90,6 +95,7 @@ html.dark {
   .title {
     color: var(--mat-table-row-item-label-text-color, #575656) !important;
   }
+
 }
 
 .light .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
@@ -101,3 +107,72 @@ html.dark {
   color: #1d1d1f;
 }
 
+
+button,
+a[mat-button],
+a[mat-raised-button],
+a[mat-stroked-button],
+a[mat-flat-button],
+a[mat-fab],
+a[mat-mini-fab] {
+  position: relative;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+
+  // Force overflow on Material internal elements
+  .mat-mdc-button-persistent-ripple,
+  .mdc-button__ripple,
+  .mat-mdc-button-touch-target,
+  .mat-mdc-fab-touch-target {
+    overflow: hidden !important;
+  }
+
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: linear-gradient(135deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 40%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 60%,
+        transparent 100%) !important;
+    transform: translateX(-100%) translateY(-100%) rotate(45deg) !important;
+    transition: transform 0.6s ease !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    opacity: 1 !important;
+    right: initial !important;
+    bottom: initial !important;
+  }
+
+  &:hover:not(:disabled)::before,
+  &:focus:not(:disabled)::before {
+    transform: translateX(100%) translateY(100%) rotate(45deg) !important;
+  }
+}
+
+// Enhanced glass effect for FAB buttons
+button[mat-fab],
+button[mat-mini-fab],
+a[mat-fab],
+a[mat-mini-fab] {
+  &::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: 0 !important;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent) !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+    z-index: 1 !important;
+  }
+
+  &:hover:not(:disabled)::after,
+  &:focus:not(:disabled)::after {
+    opacity: 1 !important;
+  }
+}

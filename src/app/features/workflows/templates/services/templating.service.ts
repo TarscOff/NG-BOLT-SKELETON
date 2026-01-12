@@ -44,7 +44,7 @@ export class TemplatingService {
     const config = (await firstValueFrom(this.projectService.getProjectTemplates(projectId)))
     const add_file = config.find(t => (t.template_type?.toLowerCase() === 'add file' || t.template_name.toLowerCase() === 'add file'));
 
-    const filteredFeatures= config.filter(t => (t.template_name.toLowerCase() !== "add file" && t.template_type?.toLowerCase() !== "add file")).filter(t => t);;
+    const filteredFeatures = config.filter(t => (t.template_name.toLowerCase() !== "add file" && t.template_type?.toLowerCase() !== "add file")).filter(t => t);;
     const templates: TemplatePageResponse = {
       pageTitle: 'AI Tools - Session : ',
       pageDescription: 'Choose a tool to get started',
@@ -56,9 +56,10 @@ export class TemplatingService {
               initialMessages: [],
               config: {
                 ...CHAT_CONFIG,
-                enableAttachments: add_file ? true : false,
+                enableAttachments: false // or add_file ? true : false,
               },
               templateId: template.template_id || '',
+              fileTemplateId: add_file ? add_file.template_id || '' : '',
             };
           case 'compare':
             return {
@@ -67,6 +68,7 @@ export class TemplatingService {
               result: this.getMockComparisonResult(),
               config: COMPARE_CONFIG,
               templateId: template.template_id || '',
+              fileTemplateId: add_file ? add_file.template_id || '' : '',
             };
           case 'summarize':
             return {
@@ -75,6 +77,7 @@ export class TemplatingService {
               result: this.getMockSummaryResult(),
               config: SUMMARIZE_CONFIG,
               templateId: template.template_id || '',
+              fileTemplateId: add_file ? add_file.template_id || '' : '',
             };
           case 'extract':
             return {
@@ -83,6 +86,7 @@ export class TemplatingService {
               result: this.getMockExtractionResult(),
               config: EXTRACT_CONFIG,
               templateId: template.template_id || '',
+              fileTemplateId: add_file ? add_file.template_id || '' : '',
             };
           default:
             return null

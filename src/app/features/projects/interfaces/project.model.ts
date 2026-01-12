@@ -5,14 +5,33 @@ export enum ProjectSessionVisibility {
   SESSION_OWNER = "session_owner"
 }
 
-export interface ProjectSessionDto {
-  created_on: string,
-  session_id: string,
-  session_owner: string
-  session_visibility: ProjectSessionVisibility,
-  user_role: Role
-  session_name?: string
+export interface ProjectSessionStatusDto {
+  updated_on: string;
+  session_id: string;
+  status: Status;
+  workflow_executions: WorkflowStatusDto[];
 }
+
+export interface UpdateSessionNameDto {
+  created_on: string;
+  session_id: string;
+  session_name: string;
+  session_owner_id: string;
+  session_visibility: ProjectSessionVisibility;
+  updated_on: string;
+  user_role: Role;
+}
+
+export interface ProjectSessionDto {
+  created_on: string;
+  session_id: string;
+  session_owner_id: string;
+  session_visibility: ProjectSessionVisibility;
+  user_role: Role;
+  session_name: string;
+  updated_on: string;
+}
+
 
 export interface ProjectDto {
   client_id: string;
@@ -23,12 +42,12 @@ export interface ProjectDto {
   roles: string[];
 }
 
-export interface ProjectArtifactsDataDto {
+export interface ArtifactsDataDto {
   artifact_hash: string;
   artifact_id: string;
   artifact_name: string;
   artifact_size: number;
-  artifact_type: string;
+  artifact_type: DataRefence;
   created_by: string;
   created_on: string;
   data_reference: DataRefence;

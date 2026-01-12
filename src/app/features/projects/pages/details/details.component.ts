@@ -27,15 +27,16 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProjectsService } from '../../services/projects.service';
-import { FileItem, HistoryItem, Member, ProjectArtifactsDataDto, ProjectDto, ProjectSessionDto, WorkflowItem } from '../../interfaces/project.model';
+import { FileItem, HistoryItem, Member, ArtifactsDataDto, ProjectDto, ProjectSessionDto, WorkflowItem } from '../../interfaces/project.model';
 import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
-import { KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
+import { LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 import { ConfirmDialogData, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
-import { firstValueFrom } from 'rxjs';
-import { UserRole } from '@cadai/pxs-ng-core/enums';
+import { firstValueFrom, map } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateTime } from 'luxon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { Store } from '@ngrx/store';
+import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
     selector: 'app-project-details',
@@ -61,8 +62,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
         MatProgressSpinnerModule,
         SeoComponent,
         MatChipsModule,
-        MatExpansionModule,
-        TranslateModule
+        MatExpansionModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -74,24 +74,22 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     private readonly layoutService = inject(LayoutService);
     private readonly toolbarService = inject(ToolbarActionsService);
     private readonly destroyRef = inject(DestroyRef);
-    private readonly keycloak = inject(KeycloakService);
     private readonly toast = inject(ToastService);
+    private readonly store = inject(Store);
 
     // State
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
     readonly project = signal<ProjectDto | null>(null);
 
-    // User type
-    readonly userType = signal<'admin' | 'user'>('admin');
-    readonly isAdmin = computed(() => this.userType() === 'admin');
-    readonly isUser = computed(() => this.userType() === 'user');
+    // User role from store
+    readonly isAdmin$ = this.store
+        .select(AppSelectors.UserSelectors.selectUserRole)
+        .pipe(map(roles => roles?.includes('ROLE_admin') ?? false));
 
     // Files
     readonly files = signal<FileItem[]>([]);
     readonly filesCount = computed(() => this.files().length);
-
-
 
     // Sessiions History
     readonly sessionsHistory = signal<HistoryItem[]>([]);
@@ -128,12 +126,15 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         return groups;
     });
 
-    expandedGroups = signal({
+    readonly expandedGroups = signal({
         today: true,
         yesterday: true,
         pastWeek: false,
         older: false
     });
+
+    readonly editingSessionId = signal<string | null>(null);
+    readonly originalTitle = signal<string | null>(null);
 
     toggleGroup(group: 'today' | 'yesterday' | 'pastWeek' | 'older') {
         this.expandedGroups.update(state => ({
@@ -181,6 +182,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             () => this.members().filter((m) => m.role === 'member').length
         );
      */
+
     constructor(
         private dialog: MatDialog,
     ) {
@@ -189,7 +191,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             id: 'back',
             icon: 'arrow_back',
             tooltip: this.translateService.instant("common.back"),
-            class: "accent",
+            class: "error",
             variant: "flat",
             label: this.translateService.instant("common.back"),
             click: () => this.router.navigate(['/genai-projects']),
@@ -235,16 +237,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             return;
         }
         this.loadProjectDetails(projectId);
-
-        // Getting user informations
-        const { roles } = this.keycloak.getUserCtx();
-        if (roles.includes(UserRole.ROLE_admin)) {
-            this.userType.set('admin');
-        } else {
-            this.userType.set('user');
-        }
     }
-
 
     ngOnDestroy(): void {
         this.layoutService.clearBreadcrumbs();
@@ -293,11 +286,11 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         }
     }
 
-    mapToFiles(artifacts: ProjectArtifactsDataDto[]): FileItem[] {
+    mapToFiles(artifacts: ArtifactsDataDto[]): FileItem[] {
         if (!artifacts) { return []; }
         return artifacts.map((e) => ({
             id: e.artifact_id,
-            name: e.artifact_name || 'Untitled File',
+            name: e.artifact_name || e.artifact_id || 'Untitled File',
             size: e.artifact_size,
             type: e.artifact_type,
             uploadedAt: DateTime.fromJSDate(new Date(e.created_on)),
@@ -308,12 +301,13 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         if (!sessions) { return []; }
         return sessions.map((s) => ({
             id: s.session_id,
-            title: s.session_name || 'Untitled Session',
+            title: s.session_name || s.session_id || 'Untitled Session',
             createdAt: DateTime.fromJSDate(new Date(s.created_on)),
+            updatedAt: DateTime.fromJSDate(new Date(s.updated_on)),
             projectId: project.project_id,
             meta: { ...s },
         })).sort(
-            (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+            (a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()
         );
     }
 
@@ -357,73 +351,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         }
     }
 
-    private loadMockData(): void {
-
-        // Mock chat history
-        /* 
-        this.chatHistory.set(this.projectsService.loadMockData().chatHistory);
-                // Mock compare history
-                this.compareHistory.set([
-                    {
-                        id: 'p-410',
-                        title: 'Compare: v1 vs v2 KYC schema',
-                        createdAt: this.daysAgo(9),
-                        progress: 55,
-                    },
-                ]);
-        
-                // Mock summarize history
-                this.summarizeHistory.set([
-                    {
-                        id: 's-210',
-                        title: 'Summary: 2025-10-OKR deck.pdf',
-                        createdAt: this.daysAgo(3),
-                        progress: 100,
-                    },
-                ]);
-        
-                // Mock extract history
-                this.extractHistory.set([
-                    {
-                        id: 'e-310',
-                        title: 'Extract: client.csv → emails',
-                        createdAt: this.daysAgo(7),
-                        progress: 70,
-                    },
-                ]);
-        
-                // Mock workflows
-                this.workflows.set(
-                    Array.from({ length: 13 }).map((_, i) => ({
-                        id: `w-${i + 1}`,
-                        name: `Workflow #${i + 1}`,
-                        designedSteps: Math.floor(Math.random() * 12) + 3,
-                        published: Math.random() > 0.45,
-                        lastUpdated: new Date(
-                            Date.now() - Math.floor(Math.random() * 10) * 86400000
-                        ),
-                    }))
-                );
-        
-                // Mock members
-                this.members.set([
-                    {
-                        id: 'u1',
-                        name: 'Alice Martin',
-                        email: 'alice@example.com',
-                        role: 'owner',
-                        joinedAt: new Date('2025-08-01'),
-                    },
-                    {
-                        id: 'u2',
-                        name: 'Bob Keller',
-                        email: 'bob@example.com',
-                        role: 'member',
-                        joinedAt: new Date('2025-09-12'),
-                    },
-                ]); */
-    }
-
     // File operations
     addFiles(input: HTMLInputElement): void {
         const list = input.files;
@@ -458,18 +385,18 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     }
 
     fileIcon(name: string, type?: string): string {
-        const ext = name.split('.').pop()?.toLowerCase();
-        if (type?.includes('pdf') || ext === 'pdf') return 'picture_as_pdf';
+        const ext = name.split('.')[1]?.toLowerCase() ?? type;
+        if (ext === 'pdf') return 'picture_as_pdf';
+        if (ext === 'json' || ext === 'application/json') return 'code';
         if (
-            type?.startsWith('image/') ||
-            ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')
+            ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'image'].includes(ext ?? '')
         )
             return 'image';
         if (['csv', 'xls', 'xlsx'].includes(ext ?? '')) return 'table_chart';
         if (['ppt', 'pptx', 'key'].includes(ext ?? '')) return 'slideshow';
         if (['doc', 'docx', 'rtf', 'odt', 'txt', 'md'].includes(ext ?? ''))
             return 'description';
-        if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? ''))
+        if (['zip', 'rar', '7z', 'tar', 'gz', 'collection_metadata'].includes(ext ?? ''))
             return 'folder_zip';
         return 'attach_file';
     }
@@ -480,6 +407,120 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         item: HistoryItem
     ): void {
         this.router.navigate(['/genai-projects', this.project()?.project_id, "sessions", item.id]);
+    }
+
+    editItem(
+        kind: 'chat' | 'summary' | 'extract' | 'compare' | 'session',
+        item: HistoryItem
+    ): void {
+        this.editingSessionId.set(item.id);
+        this.originalTitle.set(item.title); // Store original title
+        // Focus the input after DOM update
+        setTimeout(() => {
+            const input = document.querySelector('.inline-edit-field input') as HTMLInputElement;
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, 100);
+    }
+
+    async saveTitle(
+        type: 'chat' | 'summary' | 'extract' | 'compare' | 'session',
+        item: HistoryItem,
+        newTitle: string
+    ): Promise<void> {
+        const trimmedTitle = newTitle?.trim();
+
+        // Check if title actually changed
+        if (!trimmedTitle || trimmedTitle === item.title) {
+            this.editingSessionId.set(null);
+            this.originalTitle.set(null);
+            return;
+        }
+
+        // Show confirmation dialog
+        const confirmed = await firstValueFrom(
+            this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+                ConfirmDialogComponent,
+                {
+                    data: {
+                        title: this.translateService.instant('projects.details.confirm-rename-title'),
+                        message: this.translateService.instant('projects.details.confirm-rename-message', {
+                            oldTitle: item.title,
+                            newTitle: trimmedTitle
+                        }),
+                        context: { item },
+                    }
+                }
+            ).afterClosed()
+        );
+
+        if (!confirmed) {
+            // User cancelled, revert to original title in the input
+            const originalTitle = this.originalTitle();
+            if (originalTitle) {
+                item.title = originalTitle;
+                this.sessionsHistory.update(sessions => [...sessions]);
+            }
+            this.editingSessionId.set(null);
+            this.originalTitle.set(null);
+            return;
+        }
+
+        // Store the original title in case we need to revert
+        const originalTitle = this.originalTitle() || item.title;
+
+        // Optimistically update the UI
+        item.title = trimmedTitle;
+
+        switch (type) {
+            case 'session':
+                this.projectsService.updateSessionName(item.id, { session_name: trimmedTitle, session_visibility: "none" }).subscribe({
+                    next: () => {
+                        this.toast.show(
+                            this.translateService.instant('projects.details.title-updated')
+                        );
+                        this.editingSessionId.set(null);
+                        this.originalTitle.set(null);
+                    },
+                    error: (err) => {
+                        console.error('Error updating title:', err);
+
+                        // Revert the title to original value
+                        item.title = originalTitle;
+
+                        // Update the signal to trigger UI refresh
+                        // this.sessionsHistory.update(sessions => [...sessions]);
+
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.failed-to-update-title') +
+                            (err instanceof Error ? `: ${err.message}` : '')
+                        );
+
+                        // Keep edit mode open so user can retry
+                        // Or close it: this.editingSessionId.set(null);
+                    }
+                });
+                break;
+        }
+    }
+
+    cancelEdit(): void {
+        const itemId = this.editingSessionId();
+        const originalValue = this.originalTitle();
+
+        // Revert to original title if we have it
+        if (itemId && originalValue) {
+            const item = this.sessionsHistory().find(s => s.id === itemId);
+            if (item && item.title !== originalValue) {
+                item.title = originalValue;
+                this.sessionsHistory.update(sessions => [...sessions]);
+            }
+        }
+
+        this.editingSessionId.set(null);
+        this.originalTitle.set(null);
     }
 
 

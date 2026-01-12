@@ -73,7 +73,7 @@ release:
         echo "Please configure CI_PUSH_TOKEN as a GitLab CI/CD variable with write access"
         exit 1
       fi
-    - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@teamhub-se.telindus.lu:8443/${CI_PROJECT_PATH}.git
+    - git remote set-url origin https://oauth2:${CI_PUSH_TOKEN}@teamhub-se.telindus.lu/${CI_PROJECT_PATH}.git
     - git fetch --tags
     - |
       if [ -n "$AZURE_ARTIFACT_PAT" ]; then
