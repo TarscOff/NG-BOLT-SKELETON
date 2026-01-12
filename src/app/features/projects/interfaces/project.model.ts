@@ -47,11 +47,65 @@ export interface ArtifactsDataDto {
   artifact_id: string;
   artifact_name: string;
   artifact_size: number;
-  artifact_type: DataRefence;
+  artifact_type: DataType;
   created_by: string;
   created_on: string;
   data_reference: DataRefence;
   source_id: string;
+}
+
+export enum DataType {
+  json= "application/json",
+  pdf= "application/pdf",
+  png= "image/png",
+  jpeg= "image/jpeg",
+  txt= "text/plain",
+  doc= "application/msword",
+  docx= "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls= "application/vnd.ms-excel",
+  xlsx= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  csv= "text/csv",
+  zip= "application/zip",
+  ppt= "application/vnd.ms-powerpoint",
+  pptx= "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  md= "text/markdown",
+  langchain_documents_json = "langchain_documents_json",
+  embedded_langchain_documents = "embedded_langchain_documents",
+  string = "string",
+  xhtml = "xhtml",
+  text = "text",
+  // Audio types
+  mp3 = "audio/mpeg",
+  wav = "audio/wav",
+  ogg = "audio/ogg",
+  m4a = "audio/mp4",
+  flac = "audio/flac",
+  aac = "audio/aac",
+  // Video types
+  mp4 = "video/mp4",
+  avi = "video/x-msvideo",
+  mov = "video/quicktime",
+  wmv = "video/x-ms-wmv",
+  flv = "video/x-flv",
+  webm = "video/webm",
+  mkv = "video/x-matroska",
+  // Additional common types
+  html = "text/html",
+  xml = "application/xml",
+  rtf = "application/rtf",
+  gif = "image/gif",
+  bmp = "image/bmp",
+  svg = "image/svg+xml",
+  webp = "image/webp",
+  tiff = "image/tiff",
+  // Archive types
+  rar = "application/vnd.rar",
+  tar = "application/x-tar",
+  gz = "application/gzip",
+  // Other document types
+  odt = "application/vnd.oasis.opendocument.text",
+  ods = "application/vnd.oasis.opendocument.spreadsheet",
+  odp = "application/vnd.oasis.opendocument.presentation"
 }
 
 export enum DataRefence {
@@ -112,6 +166,7 @@ export interface FileItem {
   size: number;
   type?: string;
   uploadedAt: DateTime;
+  extraInfo?: ArtifactsDataDto;
 };
 
 export interface WorkflowItem {

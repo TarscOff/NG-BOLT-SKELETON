@@ -365,13 +365,13 @@
                         @for (f of files(); track trackFile($index, f)) {
                         <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null"
                             (click)="null" class="custom-list-item">
-                            <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
+                            <mat-icon class="item-icon">{{ fileIcon(f.type) }}</mat-icon>
 
                             <div class="item-content">
                                 <div matListItemTitle>
                                     {{ f.name }}
                                     <mat-chip appearance="outlined" [color]="'primary'">
-                                        {{ f.type| translate }}
+                                        {{ f.extraInfo?.data_reference | translate }}
                                     </mat-chip>
                                 </div>
 
