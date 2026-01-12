@@ -47,6 +47,14 @@
             <a mat-button href="https://www.google.com/" target="_blank" class="success">Success Link</a>
         </div>
     </section>
+    <section>
+        <div class="example-label">Basic Error</div>
+        <div class="example-button-row">
+            <button mat-button class="error">Error</button>
+            <button mat-button disabled class="error">Error Disabled</button>
+            <a mat-button href="https://www.google.com/" target="_blank" class="error">Error Link</a>
+        </div>
+    </section>
     <mat-divider></mat-divider>
     <section>
         <div class="example-label">Raised</div>
@@ -88,6 +96,14 @@
             <a mat-raised-button href="https://www.google.com/" target="_blank" class="success">Link Success</a>
         </div>
     </section>
+    <section>
+        <div class="example-label">Raised Error</div>
+        <div class="example-button-row">
+            <button mat-raised-button class="error">Basic Error</button>
+            <button mat-raised-button disabled class="error">Disabled Error</button>
+            <a mat-raised-button href="https://www.google.com/" target="_blank" class="error">Link Error</a>
+        </div>
+    </section>
     <mat-divider></mat-divider>
     <section>
         <div class="example-label">Stroked</div>
@@ -108,7 +124,7 @@
     <section>
         <div class="example-label">Stroked Accent</div>
         <div class="example-button-row">
-            <button mat-stroked-button class="accent">Basic Accent</button>
+            <button mat-stroked-button class="accent">Strocked Accent</button>
             <button mat-stroked-button disabled class="accent">Disabled Accent</button>
             <a mat-stroked-button href="https://www.google.com/" target="_blank" class="accent">Link Accent</a>
         </div>
@@ -116,7 +132,7 @@
     <section>
         <div class="example-label">Stroked Neutral</div>
         <div class="example-button-row">
-            <button mat-stroked-button class="neutral">Basic Neutral</button>
+            <button mat-stroked-button class="neutral">Strocked Neutral</button>
             <button mat-stroked-button disabled class="neutral">Disabled Neutral</button>
             <a mat-stroked-button href="https://www.google.com/" target="_blank" class="neutral">Link Neutral</a>
         </div>
@@ -124,9 +140,17 @@
     <section>
         <div class="example-label">Stroked Success</div>
         <div class="example-button-row">
-            <button mat-stroked-button class="success">Basic Success</button>
+            <button mat-stroked-button class="success">Strocked Success</button>
             <button mat-stroked-button disabled class="success">Disabled Success</button>
             <a mat-stroked-button href="https://www.google.com/" target="_blank" class="success">Link Success</a>
+        </div>
+    </section>
+    <section>
+        <div class="example-label">Stroked Error</div>
+        <div class="example-button-row">
+            <button mat-stroked-button class="error">Stroked Error</button>
+            <button mat-stroked-button disabled class="error">Disabled Error</button>
+            <a mat-stroked-button href="https://www.google.com/" target="_blank" class="error">Link Error</a>
         </div>
     </section>
     <mat-divider></mat-divider>
@@ -170,12 +194,41 @@
             <a mat-flat-button href="https://www.google.com/" target="_blank" class="success">Link Success</a>
         </div>
     </section>
+    <section>
+        <div class="example-label">Flat Error</div>
+        <div class="example-button-row">
+            <button mat-flat-button class="error">Flat Error</button>
+            <button mat-flat-button disabled class="error">Disabled Error</button>
+            <a mat-flat-button href="https://www.google.com/" target="_blank" class="error">Link Error</a>
+        </div>
+    </section>
     <mat-divider></mat-divider>
     <section>
         <div class="example-label">Icon</div>
         <div class="example-button-row">
             <div class="example-flex-container">
-                <button mat-icon-button aria-label="Example icon button with a vertical three dot icon">
+                <button mat-icon-button color="primary" class="primary"
+                    aria-label="Example icon button with a vertical three dot icon">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" class="warn"
+                    aria-label="Example icon button with a vertical three dot icon">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" class="accent"
+                    aria-label="Example icon button with a vertical three dot icon">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <button mat-icon-button color="neutral" class="neutral"
+                    aria-label="Example icon button with a vertical three dot icon">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <button mat-icon-button color="success" class="success"
+                    aria-label="Example icon button with a vertical three dot icon">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <button mat-icon-button color="error" class="error"
+                    aria-label="Example icon button with a vertical three dot icon">
                     <mat-icon>more_vert</mat-icon>
                 </button>
                 <button mat-icon-button disabled aria-label="Example icon button with a open in new tab icon">
@@ -190,7 +243,24 @@
         <div class="example-button-row">
             <div class="example-flex-container">
                 <div class="example-button-container">
-                    <button mat-fab aria-label="Example icon button with a delete icon">
+                    <button mat-fab color="primary" class="primary" aria-label="Example icon button with a delete icon">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+
+                    <button mat-fab color="warn" class="warn" aria-label="Example icon button with a delete icon">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+
+                    <button mat-fab color="accent" class="accent" aria-label="Example icon button with a delete icon">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-fab color="neutral" class="neutral" aria-label="Example icon button with a delete icon">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-fab color="error" class="error" aria-label="Example icon button with a delete icon">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-fab color="success" class="success" aria-label="Example icon button with a delete icon">
                         <mat-icon>delete</mat-icon>
                     </button>
                 </div>
@@ -208,7 +278,29 @@
         <div class="example-button-row">
             <div class="example-flex-container">
                 <div class="example-button-container">
-                    <button mat-mini-fab aria-label="Example icon button with a menu icon">
+                    <button mat-mini-fab color="primary" class="primary"
+                        aria-label="Example icon button with a menu icon">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+
+                    <button mat-mini-fab color="warn" class="warn" aria-label="Example icon button with a menu icon">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+                    <button mat-mini-fab color="accent" class="accent"
+                        aria-label="Example icon button with a menu icon">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+
+                    <button mat-mini-fab color="neutral" class="neutral"
+                        aria-label="Example icon button with a menu icon">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+                    <button mat-mini-fab color="error" class="error"
+                        aria-label="Example icon button with a menu icon">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+                    <button mat-mini-fab color="success" class="success"
+                        aria-label="Example icon button with a menu icon">
                         <mat-icon>menu</mat-icon>
                     </button>
                 </div>
@@ -226,7 +318,31 @@
         <div class="example-button-row">
             <div class="example-flex-container">
                 <div class="example-button-container">
-                    <button mat-fab extended>
+                    <button mat-fab color="primary" class="primary" extended>
+                        <mat-icon>favorite</mat-icon>
+                        Basic
+                    </button>
+
+                    <button mat-fab color="warn" class="warn" extended>
+                        <mat-icon>favorite</mat-icon>
+                        Basic
+                    </button>
+
+
+                    <button mat-fab color="accent" class="accent" extended>
+                        <mat-icon>favorite</mat-icon>
+                        Basic
+                    </button>
+                    <button mat-fab color="neutral" class="neutral" extended>
+                        <mat-icon>favorite</mat-icon>
+                        Basic
+                    </button>
+                    <button mat-fab color="error" class="error" extended>
+                        <mat-icon>favorite</mat-icon>
+                        Basic
+                    </button>
+
+                    <button mat-fab color="success" class="success" extended>
                         <mat-icon>favorite</mat-icon>
                         Basic
                     </button>

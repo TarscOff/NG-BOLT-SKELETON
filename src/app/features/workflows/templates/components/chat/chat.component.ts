@@ -18,7 +18,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { catchError, finalize, interval, Observable, of, Subject, switchMap, takeUntil, takeWhile, tap } from 'rxjs';
+import { catchError, finalize, interval, map, Observable, of, Subject, switchMap, takeUntil, takeWhile, tap } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,9 +36,11 @@ import {
   ChatInputData,
 } from '../../utils/tplsInterfaces/chatTpl.interface';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
-import { WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import { ChatMessageResponseDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
 import { ToastService } from '@cadai/pxs-ng-core/services';
 import { DateTime } from 'luxon';
+import { ProjectsService } from '@features/projects/services/projects.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-chat-tpl',
@@ -57,6 +59,29 @@ import { DateTime } from 'luxon';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('taskAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateX(-20px)', height: 0 }),
+        animate('100ms ease-out', style({ opacity: 1, transform: 'translateX(0)', height: '*' }))
+      ]),
+      transition('* => completed', [
+        animate('200ms ease-in-out', style({
+          opacity: 0.5,
+          transform: 'translateX(-30px)',
+        }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({
+          opacity: 0,
+          transform: 'translateX(-50px)',
+          height: '0px',
+          padding: '0',
+          margin: '0'
+        }))
+      ])
+    ])
+  ]
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
@@ -64,6 +89,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
   private readonly store = inject(Store);
   private readonly chatService = inject(ChatService);
+  private readonly projectService = inject(ProjectsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -109,8 +135,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this._sessionId.set(value);
   }
 
-  @Input() set templateId(value: string) {
-    this._templateId.set(value);
+  @Input() set chatTemplateId(value: string) {
+    this._chatTemplateId.set(value);
+  }
+
+  @Input() set fileTemplateId(value: string) {
+    this._fileTemplateId.set(value);
   }
 
   @Input() disabled = false;
@@ -144,15 +174,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly _isLoading = signal<boolean>(false);
   private readonly _projectId = signal<string>('');
   private readonly _sessionId = signal<string>('');
-  private readonly _templateId = signal<string>('');
+  private readonly _chatTemplateId = signal<string>('');
+  private readonly _fileTemplateId = signal<string>('');
   private readonly _workflowStatus = signal<WorkflowStatusDto | null>(null);
   private readonly _isPolling = signal<boolean>(false);
+  private readonly _hasRunningWorkflows = signal<boolean>(false);
 
   // ============================================================================
   // PRIVATE PROPERTIES
   // ============================================================================
   private readonly destroy$ = new Subject<void>();
   private intersectionObserver?: IntersectionObserver;
+  private taskStatesMap = new Map<string, string>();
+  private completedTasksTimestamps = new Map<string, number>();
+  private readonly TASK_REMOVAL_DELAY = 2000; // 2 seconds delay before removal
 
   // ============================================================================
   // PUBLIC COMPUTED SIGNALS
@@ -165,10 +200,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoading$ = computed(() => this._isLoading());
   projectId$ = computed(() => this._projectId());
   sessionId$ = computed(() => this._sessionId());
-  templateId$ = computed(() => this._templateId());
+  chatTemplateId$ = computed(() => this._chatTemplateId());
+  fileTemplateId$ = computed(() => this._fileTemplateId());
   workflowStatus$ = computed(() => this._workflowStatus());
   isPolling$ = computed(() => this._isPolling());
   isPreloadedMode$ = computed(() => this._mode().mode === 'preloaded');
+  hasRunningWorkflows$ = computed(() => this._hasRunningWorkflows());
+
+  showWorkflowStatus$ = computed(() => this._isPolling() || this._hasRunningWorkflows());
 
   effectiveMaxLength$ = computed(() => {
     const config = this._config();
@@ -258,12 +297,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
   // LIFECYCLE HOOKS
   // ============================================================================
-  ngOnInit(): void {
-    this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
-    this.lang$ = this.store.select(AppSelectors.LangSelectors.selectLang);
-    this.loadChatHistory();
-  }
-
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.scrollToBottom();
@@ -275,6 +308,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroy$.next();
     this.destroy$.complete();
     this.intersectionObserver?.disconnect();
+  }
+
+  ngOnInit(): void {
+    this.isDark$ = this.store.select(AppSelectors.ThemeSelectors.selectIsDark);
+    this.lang$ = this.store.select(AppSelectors.LangSelectors.selectLang);
+    this.loadChatHistory();
+    this.checkForRunningWorkflows(); // Check on load
   }
 
   // ============================================================================
@@ -316,7 +356,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       id: this.generateMessageId(),
       content: data.message,
       sender: this._currentUser(),
-      attachments: data.files.map(f => ({
+      attachments: data.files?.map(f => ({
         name: f.name,
         size: f.size,
         type: f.type
@@ -327,16 +367,27 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.messageSent.emit(data.message);
     this._isTyping.set(true);
 
-    const sendMessage = await this.chatService
-      .sendMessage(
-        this.projectId$(),
+    // Determine which service method to call based on content type
+    let sendMessageObs: Observable<ChatMessageResponseDto>;
+
+    if (data.files && data.files.length > 0) {
+      // Handle file uploads
+      sendMessageObs = this.chatService.submitArtifacts(
         this.sessionId$(),
-        this.templateId$(),
-        data.message,
+        this.fileTemplateId$(),
         data.files
       );
+    } else {
+      // Handle text messages
+      sendMessageObs = this.chatService.sendMessage(
+        this.projectId$(),
+        this.sessionId$(),
+        this.chatTemplateId$(),
+        data.message
+      );
+    }
 
-    sendMessage
+    sendMessageObs
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: response => {
@@ -344,7 +395,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
           if (response.workflow_instance_id) {
             this._isPolling.set(true);
-
             this.startPollingWorkflowStatus(response.workflow_instance_id);
           } else {
             console.warn('No workflow_instance_id received from response');
@@ -424,62 +474,172 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+
   // ============================================================================
   // PRIVATE METHODS
   // ============================================================================
-  private setupVisibilityObserver(): void {
-    if (!this.messagesContainer?.nativeElement) {
+
+  /**
+   * Check for running workflows when component loads
+   */
+  private checkForRunningWorkflows(): void {
+    if (!this.sessionId$()) {
       return;
     }
 
-    this.intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              this.scrollToBottom();
-              this.cdr.detectChanges();
-            }, 100);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
+    this.projectService.getSessionStatusById(this.sessionId$())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: sessionStatus => {
+          // Find all running workflows
+          const runningWorkflows = sessionStatus.workflow_executions.filter(
+            wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+          );
 
-    this.intersectionObserver.observe(this.messagesContainer.nativeElement);
+          if (runningWorkflows.length > 0) {
+            console.log(`Found ${runningWorkflows.length} running workflows on load`);
+            this._hasRunningWorkflows.set(true);
+
+            // Start polling for the most recent running workflow
+            const mostRecentWorkflow = runningWorkflows.sort((a, b) => {
+              const dateA = typeof a.created_on === 'string'
+                ? new Date(a.created_on).getTime()
+                : a.created_on.toMillis();
+              const dateB = typeof b.created_on === 'string'
+                ? new Date(b.created_on).getTime()
+                : b.created_on.toMillis();
+              return dateB - dateA;
+            })[0];
+
+            console.log(`Starting polling for workflow: ${mostRecentWorkflow.workflow_instance_id} (${mostRecentWorkflow.workflow_status})`);
+            this.startPollingWorkflowStatus(mostRecentWorkflow.workflow_instance_id);
+          } else {
+            console.log('No running workflows found on load');
+            this._hasRunningWorkflows.set(false);
+            this._workflowStatus.set(null);
+          }
+        },
+        error: err => {
+          console.error('Error checking for running workflows:', err);
+          this._hasRunningWorkflows.set(false);
+          this._workflowStatus.set(null);
+        }
+      });
+  }
+
+  trackByTaskId(index: number, task: TaskDto): string {
+    return task.task_id;
   }
 
   private startPollingWorkflowStatus(workflowInstanceId: string): void {
-
     const maxNotFoundRetries = 5;
-
     let notFoundCount = 0;
+
+    this._isPolling.set(true);
 
     interval(2000)
       .pipe(
         switchMap(() => {
-          this.cdr.detectChanges();
-          this.scrollToBottom();
-          //console.log(`Polling attempt ${notFoundCount + 1} for workflow:`, workflowInstanceId);
-          return this.chatService.getChatStatus(workflowInstanceId).pipe(
+          return this.projectService.getSessionStatusById(this.sessionId$()).pipe(
+            map(sessionStatus => {
+              // Check if session is already completed or failed
+              if (sessionStatus.status === 'completed' || sessionStatus.status === 'failed') {
+                return {
+                  workflow_status: sessionStatus.status,
+                  workflow_instance_id: workflowInstanceId,
+                  workflow_name: 'Session completed',
+                  tasks: [], // No tasks to show when session is done
+                  created_on: DateTime.now(),
+                  updated_on: DateTime.now(),
+                  completed_on: DateTime.now()
+                } as WorkflowStatusDto;
+              }
+
+              // Find the specific workflow execution
+              const workflowExecution = sessionStatus.workflow_executions.find(
+                wf => wf.workflow_instance_id === workflowInstanceId
+              );
+
+              if (!workflowExecution) {
+                throw { status: 404, message: 'Workflow execution not found in session' };
+              }
+
+              // Get ALL tasks from ALL running/pending workflows for display
+              const allRunningWorkflows = sessionStatus.workflow_executions.filter(
+                wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+              );
+
+              // Include ALL task statuses (pending, running, completed, failed)
+              const allActiveTasks = allRunningWorkflows
+                .flatMap(wf => wf.tasks?.map(task => ({
+                  ...task,
+                  workflow_name: wf.workflow_name,
+                  workflow_id: wf.workflow_instance_id
+                })) || [])
+                .sort((a, b) => {
+                  const dateA = typeof a.created_on === 'string'
+                    ? new Date(a.created_on).getTime()
+                    : a.created_on.toMillis();
+                  const dateB = typeof b.created_on === 'string'
+                    ? new Date(b.created_on).getTime()
+                    : b.created_on.toMillis();
+                  return dateA - dateB;
+                });
+
+              // Track newly completed tasks and mark when they completed
+              const now = Date.now();
+              allActiveTasks.forEach(task => {
+                if (task.task_status === 'completed' && !this.completedTasksTimestamps.has(task.task_id)) {
+                  console.log(`Task ${task.task_name} just completed, marking for removal`);
+                  this.completedTasksTimestamps.set(task.task_id, now);
+                }
+              });
+
+              // Filter out tasks that have been completed for longer than TASK_REMOVAL_DELAY
+              const visibleTasks = allActiveTasks.filter(task => {
+                const completedTime = this.completedTasksTimestamps.get(task.task_id);
+                if (completedTime) {
+                  const timeSinceCompletion = now - completedTime;
+                  const shouldKeep = timeSinceCompletion < this.TASK_REMOVAL_DELAY;
+
+                  if (!shouldKeep) {
+                    console.log(`Removing task ${task.task_name} after ${timeSinceCompletion}ms`);
+                  }
+
+                  return shouldKeep;
+                }
+                return true; // Keep non-completed tasks
+              });
+
+              console.log(`Total tasks to display: ${visibleTasks.length} (filtered from ${allActiveTasks.length})`);
+              console.log('Visible task statuses:', visibleTasks.map(t => `${t.task_name}: ${t.task_status}`));
+
+              // Return workflow status based on SESSION status
+              return {
+                workflow_status: sessionStatus.status === 'running' ? 'running' : sessionStatus.status,
+                workflow_instance_id: workflowInstanceId,
+                workflow_name: workflowExecution.workflow_name,
+                tasks: visibleTasks,
+                created_on: workflowExecution.created_on,
+                updated_on: workflowExecution.updated_on,
+                completed_on: workflowExecution.completed_on
+              } as WorkflowStatusDto;
+            }),
             tap(() => {
-              //console.log('Received workflow status:', status);
               notFoundCount = 0;
             }),
             catchError(err => {
-              //console.log('Error caught in polling:', err);
-
               const is404 = err?.status === 404 ||
                 err?.error?.error?.includes('code=404') ||
                 err?.error?.message?.includes('no matching operation was found') ||
+                err?.message?.includes('Workflow execution not found') ||
                 (typeof err === 'string' && err.includes('no matching operation was found'));
 
               if (is404) {
                 notFoundCount++;
-                //console.log(`Workflow not found yet (${notFoundCount}/${maxNotFoundRetries}), continuing to poll...`);
 
                 if (notFoundCount >= maxNotFoundRetries) {
-                  //console.error('Max retries reached for workflow status');
+                  console.error('Max retries reached for workflow status');
                   return of({
                     workflow_status: 'failed',
                     workflow_instance_id: workflowInstanceId,
@@ -502,7 +662,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                 } as WorkflowStatusDto);
               }
 
-              //console.error('Unexpected error while polling (continuing):', err);
+              console.error('Unexpected error while polling (continuing):', err);
               notFoundCount++;
 
               if (notFoundCount >= maxNotFoundRetries) {
@@ -531,82 +691,92 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           );
         }),
         tap(status => {
-          //console.log('Current workflow status:', status.workflow_status);
+          console.log('Current workflow status:', status.workflow_status);
+          console.log('Setting workflowStatus signal with tasks:', status.tasks.length);
+
+          // Track task state changes for animation
+          status.tasks?.forEach(task => {
+            const previousState = this.taskStatesMap.get(task.task_id);
+            if (previousState !== task.task_status) {
+              console.log(`Task ${task.task_name} changed from ${previousState} to ${task.task_status}`);
+              this.taskStatesMap.set(task.task_id, task.task_status);
+            }
+          });
+
           this._workflowStatus.set(status);
+          this._hasRunningWorkflows.set(
+            status.workflow_status === 'running' || status.workflow_status === 'pending'
+          );
+          this.cdr.detectChanges();
+          this.scrollToBottom();
         }),
         takeWhile(status => {
           const shouldContinue = status.workflow_status === 'pending' || status.workflow_status === 'running';
-          //console.log(`Should continue polling: ${shouldContinue} (status: ${status.workflow_status})`);
+          console.log(`Should continue polling: ${shouldContinue} (session status: ${status.workflow_status})`);
           return shouldContinue;
         }, true),
         takeUntil(this.destroy$),
         finalize(() => {
-          //console.log('Polling finalized');
+          console.log('Polling finalized for workflow:', workflowInstanceId);
           this._isPolling.set(false);
+          this._hasRunningWorkflows.set(false);
+
+          // Clear task states map and completed timestamps
+          this.taskStatesMap.clear();
+          this.completedTasksTimestamps.clear();
+
+          // Give time for completed animations to play
           setTimeout(() => {
             this._workflowStatus.set(null);
-          }, 3000);
+            // Reload messages after workflow completes
+            this.loadChatHistory();
+          }, 2000);
         })
       )
       .subscribe({
         next: status => {
-          //console.log('Status emitted:', status);
-
           if (status.workflow_status === 'completed' || status.workflow_status === 'failed') {
-            //console.log('Workflow reached final state, handling completion');
+            console.log('Session/Workflow reached final state');
             if (status.workflow_status === 'failed') {
               this.toast.showError(this.translate.instant('projects.error.workflow-status-polling-failed'));
             }
-            this.handleWorkflowCompletion(status);
           }
         },
         error: err => {
-          //console.error('Polling subscription error (should not happen):', err);
+          console.error('Polling subscription error:', err);
           this._isPolling.set(false);
+          this._hasRunningWorkflows.set(false);
           this._workflowStatus.set(null);
+          this.taskStatesMap.clear();
+          this.completedTasksTimestamps.clear();
           this.errorEmitter.emit(err);
         },
         complete: () => {
-          //console.log('Polling observable completed');
+          console.log('Polling observable completed for workflow:', workflowInstanceId);
         }
       });
   }
 
-  private async handleWorkflowCompletion(status: WorkflowStatusDto): Promise<void> {
-    const allTasksCompleted = status.tasks.every(task =>
-      task.task_status === 'completed' || task.task_status === 'failed'
+  private setupVisibilityObserver(): void {
+    if (!this.messagesContainer?.nativeElement) {
+      return;
+    }
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              this.scrollToBottom();
+              this.cdr.detectChanges();
+            }, 100);
+          }
+        });
+      },
+      { threshold: 0.1 }
     );
 
-    if (status.workflow_status === 'completed' && allTasksCompleted) {
-      const previousMessages = [...this._messages()];
-
-      try {
-        const updatedMessages = await this.chatService.getChatHistory(this.sessionId$());
-        if (this.hasMessagesChanged(previousMessages, updatedMessages)) {
-          this._messages.set(updatedMessages);
-        }
-      } catch (err) {
-        console.error('Error reloading chat history after workflow completion:', err);
-        this.errorEmitter.emit(err as Error);
-
-      }
-    }
-
-    this._workflowStatus.set(null);
-  }
-
-  private hasMessagesChanged(previous: ChatMessage[], updated: ChatMessage[]): boolean {
-    if (previous.length !== updated.length) {
-      return true;
-    }
-
-    return updated.some((msg, index) => {
-      const prevMsg = previous[index];
-      return !prevMsg ||
-        prevMsg.content !== msg.content ||
-        prevMsg.sender.name !== msg.sender.name ||
-        JSON.stringify(prevMsg.attachments) !== JSON.stringify(msg.attachments);
-    });
+    this.intersectionObserver.observe(this.messagesContainer.nativeElement);
   }
 
   private generateMessageId(): string {

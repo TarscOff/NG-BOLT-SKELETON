@@ -124,18 +124,18 @@ export class ChatInputComponent implements OnInit, OnChanges {
   }
 
   fileIcon(name: string, type?: string): string {
-    const ext = name.split('.').pop()?.toLowerCase();
-    if (type?.includes('pdf') || ext === 'pdf') return 'picture_as_pdf';
+    const ext = name.split('.')[1]?.toLowerCase() ?? type;
+    if (ext === 'pdf') return 'picture_as_pdf';
+    if (ext === 'json' || ext === 'application/json') return 'code';
     if (
-      type?.startsWith('image/') ||
-      ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext ?? '')
+      ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'image'].includes(ext ?? '')
     )
       return 'image';
     if (['csv', 'xls', 'xlsx'].includes(ext ?? '')) return 'table_chart';
     if (['ppt', 'pptx', 'key'].includes(ext ?? '')) return 'slideshow';
     if (['doc', 'docx', 'rtf', 'odt', 'txt', 'md'].includes(ext ?? ''))
       return 'description';
-    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext ?? ''))
+    if (['zip', 'rar', '7z', 'tar', 'gz', 'collection_metadata'].includes(ext ?? ''))
       return 'folder_zip';
     return 'attach_file';
   }

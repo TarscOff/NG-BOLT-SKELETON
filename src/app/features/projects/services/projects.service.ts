@@ -7,16 +7,19 @@ import {
     Member,
     ProjectDto,
     ProjectArtifactsTypesDto,
-    ProjectArtifactsDataDto,
     WorkflowItem,
     ProjectSessionDto,
     ProjectTemplateDto,
     ProjectTemplateConfigDto,
     SessionChatHistoryDto,
     SessionChatHistoryContentDto,
-    ChatMessageDto
+    ChatMessageDto,
+    ProjectSessionStatusDto,
+    UpdateSessionNameDto,
+    ArtifactsDataDto,
+    ChatMessageResponseDto
 } from "../interfaces/project.model";
-import { map, Observable } from "rxjs";
+import { map, Observable, throwError } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { DateTime } from "luxon";
 
@@ -42,6 +45,11 @@ export class ProjectsService {
     getProjectsList(): Observable<ProjectDto[]> {
         const url = `${this.base}/projects`;
         return this.http.get<ProjectDto[]>(url);
+    }
+
+    deleteProject(projectId: string): Observable<void> {
+        const url = `${this.base}/projects/${projectId}`;
+        return this.http.delete<void>(url);
     }
 
     getProjectTemplates(projectId: string): Observable<ProjectTemplateDto[]> {
@@ -87,9 +95,9 @@ export class ProjectsService {
         return this.http.get<ProjectArtifactsTypesDto[]>(url);
     }
 
-    getProjectsFilesData(projectId: string): Observable<ProjectArtifactsDataDto[]> {
+    getProjectsFilesData(projectId: string): Observable<ArtifactsDataDto[]> {
         const url = `${this.base}/projects/${projectId}/artifacts`;
-        return this.http.get<ProjectArtifactsDataDto[]>(url);
+        return this.http.get<ArtifactsDataDto[]>(url);
     }
 
     getProjectsSessions(projectId: string): Observable<ProjectSessionDto[]> {
@@ -107,6 +115,21 @@ export class ProjectsService {
     getSessionById(sessionId: string): Observable<ProjectSessionDto> {
         const url = `${this.base}/sessions/${sessionId}`;
         return this.http.get<ProjectSessionDto>(url);
+    }
+
+    getSessionArtifacts(sessionId: string): Observable<ArtifactsDataDto[]> {
+        const url = `${this.base}/sessions/${sessionId}/artifacts`;
+        return this.http.get<ArtifactsDataDto[]>(url);
+    }
+
+    getSessionStatusById(sessionId: string): Observable<ProjectSessionStatusDto> {
+        const url = `${this.base}/sessions/${sessionId}/status`;
+        return this.http.get<ProjectSessionStatusDto>(url);
+    }
+
+    updateSessionName(sessionId: string, payload: { session_name: string, session_visibility: "none" | string }): Observable<UpdateSessionNameDto> {
+        const url = `${this.base}/sessions/${sessionId}`;
+        return this.http.patch<UpdateSessionNameDto>(url, payload);
     }
 
     deleteSessionById(sessionId: string): Observable<void> {
@@ -129,6 +152,50 @@ export class ProjectsService {
         const url = `${this.base}/artifacts/${artifactId}/data`;
         return this.http.get<SessionChatHistoryContentDto>(url);
     }
+
+    sendMessage(
+        projectId: string,
+        sessionId: string,
+        templateId: string,
+        content: string
+    ): Observable<ChatMessageResponseDto> {
+        if (!content.trim()) {
+            return throwError(() => new Error('No content to send'));
+        }
+
+        // TODO. this is hardcoded, should be removed in the future and only handled on BE side
+        const messageInputId = "6c34cfd1-ac55-492c-b730-4f3815a2309d";
+        const userPromptId = "c9d2e9dd-77c8-4c72-8157-cc079498994b";
+
+        const textFormData = new FormData();
+        textFormData.append(messageInputId, content);
+        textFormData.append(userPromptId, content);
+
+        const textEndpoint = `${this.base}/sessions/${sessionId}/execute/${templateId}`;
+        return this.http.post<ChatMessageResponseDto>(textEndpoint, textFormData);
+    }
+
+    submitArtifacts(
+        sessionId: string,
+        fileTemplateId: string,
+        files: File[]
+    ): Observable<ChatMessageResponseDto> {
+        if (!files || files.length === 0) {
+            return throwError(() => new Error('No files to upload'));
+        }
+
+        // TODO. this is hardcoded, should be removed in the future and only handled on BE side
+        const fileInputId = "442f052c-f371-4b30-8f97-89109cc61fb2";
+
+        const fileFormData = new FormData();
+        files.forEach((file) => {
+            fileFormData.append(fileInputId, file);
+        });
+
+        const fileEndpoint = `${this.base}/sessions/${sessionId}/execute/${fileTemplateId}`;
+        return this.http.post<ChatMessageResponseDto>(fileEndpoint, fileFormData);
+    }
+
 
     /*     // TODO: remove this mocked data when API is ready
         private getMockedProjects(): ProjectDto[] {

@@ -67,7 +67,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%);
+    background: linear-gradient(135deg, var(--mat-primary) 20%, var(--mat-accent) 100%);
     color: white;
     border-radius: 50%;
     width: 40px;
@@ -109,11 +109,11 @@
   border: 2px solid transparent;
   background:
     linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
-    linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
+    linear-gradient(135deg, var(--mat-primary) 60%, var(--mat-accent) 100%) border-box;
 
   &::after {
     content: "";
-    background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
+    background: linear-gradient(135deg, var(--mat-primary) 60%, var(--mat-accent) 100%) border-box;
     position: absolute;
     top: 0;
     left: 0;
@@ -142,7 +142,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%  );
+    background: linear-gradient(135deg, var(--mat-primary) 20%, var(--mat-accent) 100%  );
     border-radius: 50%;
     width: 40px;
     height: 40px;

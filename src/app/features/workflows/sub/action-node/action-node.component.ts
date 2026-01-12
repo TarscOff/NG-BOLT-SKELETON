@@ -82,7 +82,6 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   translate = inject(TranslateService);
   store = inject(Store);
 
-
   ngOnInit(): void {
     queueMicrotask(() => this.tryBuildFromModel());
 
@@ -165,51 +164,51 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     });
   }
 
-private wireFormToCanvas(form: FormGroup | null) {
-  if (!form) {
-    this.bus.nodeFormStatus$.next({ nodeId: this.nodeId, invalid: false });
-    return;
+  private wireFormToCanvas(form: FormGroup | null) {
+    if (!form) {
+      this.bus.nodeFormStatus$.next({ nodeId: this.nodeId, invalid: false });
+      return;
+    }
+
+    const emit = () => {
+      const invalidFields = Object.entries(form.controls)
+        .filter(([, c]) => c.invalid)
+        .map(([name]) => name);
+
+      this.bus.nodeFormStatus$.next({
+        nodeId: this.nodeId,
+        invalid: form.invalid,
+        invalidFields,
+      });
+    };
+
+    emit();
+    this.subs.add(form.statusChanges.pipe(startWith(form.status)).subscribe(emit));
   }
 
-  const emit = () => {
-    const invalidFields = Object.entries(form.controls)
+  private currentForm(): FormGroup {
+    return this.visualType() === 'input' ? this.formInputs : this.form;
+  }
+  private currentConfig(): FieldConfig[] {
+    return this.visualType() === 'input' ? this.configInputs : this.config;
+  }
+
+  hasInvalidParams(): boolean {
+    const f = this.currentForm();
+    return this.formFlags.invalid || (!!f && f.invalid);
+  }
+
+  getInvalidFieldLabels(): string[] {
+    const form = this.currentForm();
+    if (!form) return [];
+
+    const cfg = this.currentConfig();
+    const labelsByName = new Map(cfg.map(f => [f.name, f.label]));
+
+    return Object.entries(form.controls)
       .filter(([, c]) => c.invalid)
-      .map(([name]) => name);
-
-    this.bus.nodeFormStatus$.next({
-      nodeId: this.nodeId,
-      invalid: form.invalid,
-      invalidFields, 
-    });
-  };
-
-  emit();
-  this.subs.add(form.statusChanges.pipe(startWith(form.status)).subscribe(emit));
-}
-
-    private currentForm(): FormGroup {
-  return this.visualType() === 'input' ? this.formInputs : this.form;
-}
-private currentConfig(): FieldConfig[] {
-  return this.visualType() === 'input' ? this.configInputs : this.config;
-}
-
-hasInvalidParams(): boolean {
-  const f = this.currentForm();
-  return this.formFlags.invalid || (!!f && f.invalid);
-}
-
-getInvalidFieldLabels(): string[] {
-  const form = this.currentForm();
-  if (!form) return [];
-
-  const cfg = this.currentConfig();
-  const labelsByName = new Map(cfg.map(f => [f.name, f.label]));
-
-  return Object.entries(form.controls)
-    .filter(([, c]) => c.invalid) 
-    .map(([name]) => this.translate.instant(labelsByName.get(name) ?? name));
-}
+      .map(([name]) => this.translate.instant(labelsByName.get(name) ?? name));
+  }
 
   private coerceModel(raw: unknown): RunNodeDTO {
     const data = (raw ?? {}) as RunNodeDTO;
@@ -280,36 +279,35 @@ getInvalidFieldLabels(): string[] {
           required: false,
           fileVariant: 'dropzone',
           validators: undefined,
-          errorMessages: {required: "files are mandatory"}
+          errorMessages: { required: "files are mandatory" }
         }),
-       /*  this.fields.getDropdownField({
-          name: 'workflows',
-          label: 'Based on workflow',
-          placeholder: 'form.placeholders.role',
-          options: [
-            { label: 'WF1', value: 'WF1' },
-            { label: 'WF2', value: 'WF2' },
-          ],
-          multiple: false,
-          required: false,
-          color: "primary",
-          layoutClass: "primary",
-          validators: undefined
-        }),
-        this.fields.getToggleField({
-          name: 'file_mandatory',
-          label: 'Files mandatory',
-          helperText: undefined,
-          required: false,
-          validators: undefined,
-          color: "primary",
-          layoutClass: "primary",
-        }), */
+        /*  this.fields.getDropdownField({
+           name: 'workflows',
+           label: 'Based on workflow',
+           placeholder: 'form.placeholders.role',
+           options: [
+             { label: 'WF1', value: 'WF1' },
+             { label: 'WF2', value: 'WF2' },
+           ],
+           multiple: false,
+           required: false,
+           color: "primary",
+           layoutClass: "primary",
+           validators: undefined
+         }),
+         this.fields.getToggleField({
+           name: 'file_mandatory',
+           label: 'Files mandatory',
+           helperText: undefined,
+           required: false,
+           validators: undefined,
+           color: "primary",
+           layoutClass: "primary",
+         }), */
       ];
 
       this.formInputs.reset({}, { emitEvent: false });
       queueMicrotask(() => {
-
         const payload = this.stripReserved(this.formInputs.getRawValue());
         this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
       });
@@ -437,8 +435,6 @@ getInvalidFieldLabels(): string[] {
     this.bus.toggleRunPanel$.next({ anchorNodeId: this.nodeId });
   }
 
-
-  // ---- type-guards (no `any`) ----
   private isLikeFile(v: unknown): v is File {
     if (!isObject(v)) return false;
 

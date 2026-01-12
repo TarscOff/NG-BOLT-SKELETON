@@ -72,6 +72,7 @@
   &.dark-theme {
     &.current-user .message-content {
       background: rgba(193, 193, 195, 0.2);
+      color: #fff;
     }
 
     &.assistant .message-content {

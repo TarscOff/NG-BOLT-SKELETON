@@ -449,9 +449,10 @@ export const COLOR = {
   warn: () => cssVar('--mat-warn', '#ec9a00ff'),
   neutral: () => cssVar('--mat-neutral', '#9e9e9e'),
   success: () => cssVar('--mat-success', '#4caf50'),
+  error: () => cssVar('--mat-error', '#b9093eff'),
 };
 
-export const paletteFns = [COLOR.primary, COLOR.accent, COLOR.warn, COLOR.neutral, COLOR.success, COLOR.primaryVariant];
+export const paletteFns = [COLOR.primary, COLOR.accent,COLOR.error, COLOR.warn, COLOR.neutral, COLOR.success, COLOR.primaryVariant];
 
 export const pick = (ctx: any) => paletteFns[ctx.dataIndex % paletteFns.length]();
 export const fill30 = (ctx: any) => `color-mix(in srgb, ${pick(ctx)} 30%, transparent)`;
@@ -461,7 +462,13 @@ export const neutral = () => COLOR.neutral();
 export const warn = () => COLOR.warn();
 export const success = () => COLOR.success();
 export const accent = () => COLOR.accent();
+export const error = () => COLOR.error();
 
+export const linearGradientError =(ctx: any, isDark: boolean)=> linearGradient(
+          ctx,
+          cssVar('--mat-error', 'rgba(255,64,129,0.35)'),
+          isDark ? 'rgba(0,0,0,0)' : 'rgba(255, 255, 255, 0)'
+        )
 export const linearGradientSuccess =(ctx: any, isDark: boolean)=> linearGradient(
           ctx,
           cssVar('--mat-success', 'rgba(255,64,129,0.35)'),

@@ -14,6 +14,7 @@
   },
   "HELLO": "Hello",
   "SAVE": "Save",
+  "cancel": "Cancel",
   "LANG": "Language",
   "running": "Running",
   "completed": "Completed",
@@ -133,7 +134,17 @@
       "today": "Today",
       "yesterday": "Yesterday",
       "pastWeek": "Past Week",
-      "older": "Older"
+      "older": "Older",
+      "edit": "Edit",
+      "title-updated": "Session title updated successfully",
+      "confirm-rename-title": "Confirm Rename",
+      "confirm-rename-message": "Are you sure you want to rename \"{{oldTitle}}\" to \"{{newTitle}}\"?"
+    },
+    "delete": {
+      "confirm-title": "Confirm Delete",
+      "confirm-message": "Are you sure you want to delete the project \"{{name}}\"? This action cannot be undone.",
+      "success": "Project \"{{title}}\" deleted successfully",
+      "error": "Failed to delete \"{{title}}\""
     },
     "error": {
       "not-found": "Project not found",
@@ -143,7 +154,13 @@
       "session-not-found": "Session not found",
       "failed-to-load-templates": "Failed to load templates",
       "workflow-status-polling-failed": "Failed to poll workflow status",
-      "delete-failed": "Failed to delete {{title}}"
+      "delete-failed": "Failed to delete {{title}}",
+      "failed-to-update-title": "Failed to update session title",
+      "no-files-selected": "No files selected",
+      "failed-to-upload-artifacts": "Failed to upload artifacts"
+    },
+    "success": {
+      "artifacts-uploaded": "Artifacts uploaded successfully"
     }
   },
   "chatPage": {
@@ -207,6 +224,14 @@
     "variant": "Variant",
     "value": "Value"
   },
+  "ai_progress": {
+    "embed": "Documents integration",
+    "retrieve": "Retrieve relevant documents",
+    "convert_and_chunk": " Document conversion",
+    "chat": "AI query",
+    "embed_langchain_documents": "Convert documents to vectors",
+    "store_embedded_langchain_documents": "Store document vectors"
+  },
   "error": {
     "403": {
       "title": "Forbidden",
@@ -247,6 +272,7 @@
     "editContent": "Edit content",
     "acceptedFormats": "Accepted formats: {{formats}}",
     "removeFile": "Remove file",
+    "waitingForTasks": "Waiting for ongoing tasks to complete...",
     "emptyState": "No messages yet. Start a conversation!",
     "error": {
       "maxFilesExceeded": "You can attach a maximum of {{maxFiles}} files.",
@@ -274,7 +300,8 @@
       "auto": "Auto",
       "params": "Params",
       "logs": "Logs",
-      "preview": "Preview"
+      "preview": "Preview",
+      "submit": "Submit"
     },
     "errors": {
       "exactlyOneInput": "The workflow must have exactly one Input node.",

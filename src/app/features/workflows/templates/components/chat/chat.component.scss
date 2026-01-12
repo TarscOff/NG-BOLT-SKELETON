@@ -10,7 +10,7 @@
 }
 
 :host {
-  height:100%;
+  height: 100%;
 }
 
 .chat-header {
@@ -183,24 +183,27 @@
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 600;
-      
-      &.pending { 
-        background: var(--mat-warn); 
+
+      &.pending {
+        background: var(--mat-warn);
         color: white;
         animation: pulse 2s ease-in-out infinite;
       }
-      &.running { 
-        background: var(--mat-primary); 
+
+      &.running {
+        background: var(--mat-primary);
         color: white;
         animation: pulse 1.5s ease-in-out infinite;
       }
-      &.completed { 
-        background: var(--mat-success); 
-        color: white; 
+
+      &.completed {
+        background: var(--mat-success);
+        color: white;
       }
-      &.failed { 
-        background: var(--mat-accent); 
-        color: white; 
+
+      &.failed {
+        background: var(--mat-accent);
+        color: white;
       }
     }
   }
@@ -209,6 +212,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-top: 15px;
 
     .task-item {
       display: flex;
@@ -218,6 +222,7 @@
       border-radius: 4px;
       background: rgba(255, 255, 255, 0.5);
       transition: all 0.3s ease;
+      overflow: hidden;
 
       &:hover {
         background: rgba(255, 255, 255, 0.8);
@@ -229,60 +234,85 @@
         width: 20px;
         height: 20px;
         transition: all 0.3s ease;
+        flex-shrink: 0;
       }
 
       .task-name {
         flex: 1;
+        transition: opacity 0.3s ease;
       }
 
       &.completed {
-        .task-icon { 
+        .task-icon {
           color: var(--mat-success);
-          animation: scaleIn 0.3s ease-out;
+          animation: completePulse 0.6s ease-out;
         }
+
+        background: rgba(76, 175, 80, 0.1);
       }
-      
+
       &.failed {
-        .task-icon { 
+        .task-icon {
           color: var(--mat-accent);
           animation: shake 0.5s ease;
         }
+
+        background: rgba(244, 67, 54, 0.1);
       }
-      
+
       &.running {
-        .task-icon { 
+        .task-icon {
           color: var(--mat-primary);
           animation: rotate 2s linear infinite;
         }
+
         border-left: 3px solid var(--mat-primary);
+        background: rgba(33, 150, 243, 0.1);
       }
-      
+
       &.pending {
-        .task-icon { 
+        .task-icon {
           color: var(--mat-neutral);
           opacity: 0.6;
         }
+
+        opacity: 0.8;
       }
 
       .task-comment {
+        width: 50%;
         margin-left: auto;
         font-size: 0.875rem;
         color: #757575;
         font-style: italic;
       }
     }
+
+
   }
 }
 
 // Animations
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes fadeIn {
@@ -290,30 +320,69 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
+
 @keyframes scaleIn {
   from {
-    transform: scale(0);
+    transform: scale(0.8);
+    opacity: 0;
   }
+
   to {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+
+@keyframes completePulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
   }
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 // Dark mode support
@@ -331,5 +400,15 @@
         }
       }
     }
+  }
+
+  .task-item {
+    border-left-color: var(--mat-primary-variant) !important;
+  }
+
+  .task-info *,
+  .task-icon,
+  .workflow-header * {
+    color: var(--mat-primary-variant) !important;
   }
 }

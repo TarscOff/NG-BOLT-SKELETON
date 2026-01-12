@@ -118,6 +118,14 @@
     "variant": "Variante",
     "value": "Valeur"
   },
+  "ai_progress": {
+    "embed": "Conversion de la requète en vecteurs",
+    "retrieve": "Récupérer les documents pertinents",
+    "convert_and_chunk": " Convertion des documents",
+    "chat": "Requête a l'IA",
+    "embed_langchain_documents": "Convertir les documents en vecteurs",
+    "store_embedded_langchain_documents": "Stocker les vecteurs des documents"
+  },
   "loading": "Chargement...",
   "projects": {
     "subtitle": "Gérez et organisez vos projets GenAI",
@@ -195,7 +203,17 @@
       "today": "Aujourd'hui",
       "yesterday": "Hier",
       "pastWeek": "La semaine dernière",
-      "older": "Plus ancien"
+      "older": "Plus ancien",
+      "edit": "Modifier",
+      "title-updated": "Titre de la session mis à jour avec succès",
+      "confirm-rename-title": "Confirmer le renommage",
+      "confirm-rename-message": "Êtes-vous sûr de vouloir renommer \"{{oldTitle}}\" en \"{{newTitle}}\" ?"
+    },
+    "delete": {
+      "success": "Projet \"{{title}}\" supprimé avec succès",
+      "error": "Échec de la suppression de \"{{title}}\"",
+      "confirm-title": "Confirmer la suppression",
+      "confirm-message": "Êtes-vous sûr de vouloir supprimer le projet \"{{name}}\" ? Cette action est irréversible."
     },
     "error": {
       "not-found": "Projet introuvable",
@@ -205,7 +223,13 @@
       "session-not-found": "Session introuvable",
       "failed-to-load-templates": "Échec du chargement des modèles",
       "workflow-status-polling-failed": "Échec du sondage du statut du workflow",
-      "delete-failed": "Échec de la suppression de {{title}}"
+      "delete-failed": "Échec de la suppression de {{title}}",
+      "failed-to-update-title": "Échec de la mise à jour du titre de la session",
+      "no-files-selected": "Aucun fichier sélectionné",
+      "failed-to-upload-artifacts": "Échec du téléchargement des artéfacts"
+    },
+    "success":{
+      "artifacts-uploaded": "Artéfacts téléchargés avec succès"
     }
   },
   "error": {
@@ -249,6 +273,7 @@
     "editContent": "Modifier le contenu",
     "acceptedFormats": "Formats acceptés : {{formats}}",
     "removeFile": "Supprimer le fichier",
+    "waitingForTasks": "En attente de la fin des tâches en cours...",
     "error": {
       "maxFilesExceeded": "Vous pouvez joindre un maximum de {{maxFiles}} fichiers.",
       "emptyMessage": "Le message ne peut pas être vide."
@@ -275,7 +300,8 @@
       "params": "Paramètres",
       "logs": "Logs",
       "auto": "Auto",
-      "preview": "Visualiser"
+      "preview": "Visualiser",
+      "submit": "Soumettre"
     },
     "errors": {
       "exactlyOneInput": "Le workflow doit comporter exactement un nœud d’entrée.",

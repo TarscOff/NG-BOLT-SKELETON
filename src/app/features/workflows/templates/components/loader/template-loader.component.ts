@@ -154,6 +154,7 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
   @Input({ required: true }) sessionId!: string;
   @Input({ required: true }) projectId!: string;
   @Input({ required: true }) templateId!: string;
+  @Input({ required: true }) filetemplateId!: string;
 
   @Input() context?: TemplateContext;
 
@@ -282,7 +283,8 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
 
     instance.projectId = this.projectId;
     instance.sessionId = this.sessionId;
-    instance.templateId = this.templateId;
+    instance.chatTemplateId = this.templateId;
+    instance.fileTemplateId = this.filetemplateId;
 
     // Wire outputs to forward events
     instance.messageSent.subscribe((content: string) => {

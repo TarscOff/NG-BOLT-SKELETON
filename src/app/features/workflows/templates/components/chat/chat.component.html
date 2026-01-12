@@ -10,25 +10,26 @@
         [disabled]="disabled" class="success">
         <mat-icon>arrow_downward</mat-icon>
       </button>
-      <button mat-icon-button [matTooltip]="'chatTpl.clear' | translate" (click)="clearChat()" disabled class="accent">
-        <!-- [disabled]="disabled || isEmpty()"  -->
+      <button mat-icon-button [matTooltip]="'chatTpl.clear' | translate" (click)="clearChat()"
+        [disabled]="disabled || isEmpty()" class="error">
         <mat-icon>delete_sweep</mat-icon>
       </button>
     </div>
   </div>
 
   <!-- Messages Container -->
-  <div #messagesContainer class="chat-messages" [class.empty]="isEmpty()"
+  <div #messagesContainer class="chat-messages" [class.empty]="isEmpty() && !showWorkflowStatus$()"
     [attr.aria-label]="'chatTpl.messages' | translate">
-    <!-- Empty State -->
-    @if (isEmpty()) {
+
+    <!-- Empty State (only when no messages AND no workflows) -->
+    @if (isEmpty() && !showWorkflowStatus$()) {
     <div class="chat-empty">
       <mat-icon>chat_bubble_outline</mat-icon>
       <p>{{ effectiveEmptyMessage$() | translate }}</p>
     </div>
     }
 
-    <!-- Messages List -->
+    <!-- Messages List (always show if there are messages) -->
     @if (!isEmpty()) {
     <div class="messages-list">
       @for (message of messages$(); track trackByMessageId($index, message)) {
@@ -37,45 +38,8 @@
         [allowMarkdown]="config$().allowMarkdown !== false"
         [allowEdit]="config$().allowEdit !== false && canEditDelete$()"
         [allowDelete]="config$().allowDelete !== false && canEditDelete$()" [isDark]="(isDark$ | async) || false"
-        (edit)="onEditMessage($event.id, $event.content)" (delete)="onDeleteMessage($event)"></app-chat-message-tpl>
-      }
-
-      @if (isPolling$()) {
-      <div class="workflow-progress">
-        <div class="workflow-header">
-          <mat-icon class="spinning">sync</mat-icon>
-          @if(workflowStatus$()) {
-          <span>{{ workflowStatus$()!.workflow_name }}</span>
-          <span class="status-badge" [class]="workflowStatus$()!.workflow_status">
-            {{ workflowStatus$()!.workflow_status | translate}}
-          </span>
-          }
-        </div>
-        <!--    <div class="tasks-list">
-          @if (workflowStatus$()!.tasks.length === 0) {
-            <p style="padding: 0.5rem; color: #666;">Waiting for tasks...</p>
-          }
-          @for (task of workflowStatus$()!.tasks; track task.task_id) {
-          <div class="task-item" [class]="task.task_status">
-            <mat-icon class="task-icon">
-              @if (task.task_status === 'completed') {
-              check_circle
-              } @else if (task.task_status === 'failed') {
-              error
-              } @else if (task.task_status === 'running') {
-              pending
-              } @else {
-              radio_button_unchecked
-              }
-            </mat-icon>
-            <span class="task-name">{{ task.task_name }}</span>
-            @if (task.task_status_comment) {
-            <span class="task-comment">{{ task.task_status_comment }}</span>
-            }
-          </div>
-          }
-        </div> -->
-      </div>
+        (edit)="onEditMessage($event.id, $event.content)" (delete)="onDeleteMessage($event)">
+      </app-chat-message-tpl>
       }
 
       <!-- Typing Indicator -->
@@ -91,14 +55,58 @@
       }
     </div>
     }
+
+    <!-- Workflow Status Block (shown when workflows are running) -->
+    @if (showWorkflowStatus$()) {
+    <div class="workflow-progress">
+      <div class="workflow-header">
+        <mat-icon class="spinning">sync</mat-icon>
+
+        @if(workflowStatus$()) {
+        <span>{{ workflowStatus$()?.workflow_name | translate}}</span>
+        <span class="status-badge" [class]="workflowStatus$()?.workflow_status">
+          {{ workflowStatus$()?.workflow_status | translate}}
+        </span>
+        }
+      </div>
+      <div class="tasks-list">
+        @if (workflowStatus$()?.tasks?.length === 0) {
+        <p style="padding: 0.5rem; color: #666;">{{ 'chatTpl.waitingForTasks' | translate }}</p>
+        }
+        @for (task of workflowStatus$()?.tasks; track trackByTaskId($index, task)) {
+        <div class="task-item" [class]="task.task_status" [@taskAnimation]="task.task_status">
+          <mat-icon class="task-icon">
+            @if (task.task_status === 'completed') {
+            check_circle
+            } @else if (task.task_status === 'failed') {
+            error
+            } @else if (task.task_status === 'running') {
+            sync
+            } @else {
+            radio_button_unchecked
+            }
+          </mat-icon>
+          <div class="task-info">
+            <span class="task-name">{{ "ai_progress." + task.task_name | translate }}</span>
+          </div>
+          <div class="task-comment">
+            <span class="task-name">{{ task.task_status_comment }}</span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    }
   </div>
+
   <!-- Input Area -->
   <div class="chat-footer">
-    <app-chat-input-tpl [disabled]="!canSendMessage$() || disabled" [maxLength]="effectiveMaxLength$()"
-      [placeholder]="effectivePlaceholder$()" [enableAttachments]="config$().enableAttachments === true"
-      [acceptedFileTypes]="config$().acceptedFileTypes || ''" [maxFiles]="config$().maxFiles || 5"
-      [allowMultipleFiles]="(config$().maxFiles || 5) > 1" [loading]="isLoading$()"
-      (send)="onSendMessage($event)"></app-chat-input-tpl>
+    <app-chat-input-tpl [disabled]="!canSendMessage$() || disabled || showWorkflowStatus$()"
+      [maxLength]="effectiveMaxLength$()" [placeholder]="effectivePlaceholder$()"
+      [enableAttachments]="config$().enableAttachments === true" [acceptedFileTypes]="config$().acceptedFileTypes || ''"
+      [maxFiles]="config$().maxFiles || 5" [allowMultipleFiles]="(config$().maxFiles || 5) > 1" [loading]="isLoading$()"
+      (send)="onSendMessage($event)">
+    </app-chat-input-tpl>
   </div>
 
   <!-- Loading Overlay -->

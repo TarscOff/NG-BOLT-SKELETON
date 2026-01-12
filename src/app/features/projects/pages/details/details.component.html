@@ -60,8 +60,7 @@
 
                             @for (h of groupedSessions().today; track trackHist($index, h)) {
                             <div tabindex="0" role="button" [attr.aria-label]="h.title"
-                                (keydown.enter)="viewItem('session', h)"
-                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (keydown.enter)="!editingSessionId() && viewItem('session', h)"
                                 (click)="viewItem('session', h)" class="custom-list-item">
                                 <mat-icon class="item-icon">view_timeline</mat-icon>
 
@@ -69,19 +68,50 @@
                                     <span class="item-title">
                                         <mat-chip class="success" color="success" selected="false"
                                             [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        @if (editingSessionId() === h.id) {
+                                        <div class="inline-edit-container">
+
+                                            <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                                                class="inline-edit-field">
+                                                <input matInput [value]="h.meta?.['session_name'] ?? ''"
+                                                    (keydown.enter)="saveTitle('session', h, $any($event.target).value)"
+                                                    (keydown.escape)="cancelEdit()" (click)="$event.stopPropagation()"
+                                                    #titleInput>
+                                            </mat-form-field>
+                                            <div class="inline-edit-actions">
+                                                <button mat-icon-button color="success"
+                                                    [matTooltip]="'SAVE' | translate"
+                                                    (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
+                                                    <mat-icon>check</mat-icon>
+                                                </button>
+                                                <button mat-icon-button color="accent"
+                                                    [matTooltip]="'cancel' | translate"
+                                                    (click)="cancelEdit(); $event.stopPropagation()">
+                                                    <mat-icon>close</mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        } @else {
                                         {{h.title }}
+                                        }
                                     </span>
                                     <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
                                         }}</span>
                                 </div>
 
                                 <div class="item-actions">
-                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    <button mat-icon-button color="primary"
+                                        [matTooltip]="'projects.details.edit' | translate"
+                                        (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="success"
+                                        [matTooltip]="'projects.details.view' | translate"
                                         (click)="viewItem('session', h); $event.stopPropagation()">
                                         <mat-icon>open_in_new</mat-icon>
                                     </button>
-                                    <button mat-icon-button color="accent"
-                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                    <button mat-icon-button color="error"
+                                        [matTooltip]="'projects.details.delete' | translate"
                                         (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                     </button>
@@ -104,26 +134,56 @@
 
                             @for (h of groupedSessions().yesterday; track trackHist($index, h)) {
                             <div tabindex="0" role="button" [attr.aria-label]="h.title"
-                                (keydown.enter)="viewItem('session', h)"
-                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (keydown.enter)="!editingSessionId() && viewItem('session', h)"
                                 (click)="viewItem('session', h)" class="custom-list-item">
                                 <mat-icon class="item-icon">view_timeline</mat-icon>
                                 <div class="item-content">
                                     <span class="item-title">
                                         <mat-chip class="success" color="success" selected="false"
                                             [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        @if (editingSessionId() === h.id) {
+                                        <div class="inline-edit-container">
+
+                                            <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                                                class="inline-edit-field">
+                                                <input matInput [value]="h.meta?.['session_name'] ?? ''"
+                                                    (keydown.enter)="saveTitle('session', h, $any($event.target).value)"
+                                                    (keydown.escape)="cancelEdit()" (click)="$event.stopPropagation()"
+                                                    #titleInput>
+                                            </mat-form-field>
+                                            <div class="inline-edit-actions">
+                                                <button mat-icon-button color="success"
+                                                    [matTooltip]="'SAVE' | translate"
+                                                    (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
+                                                    <mat-icon>check</mat-icon>
+                                                </button>
+                                                <button mat-icon-button color="accent"
+                                                    [matTooltip]="'cancel' | translate"
+                                                    (click)="cancelEdit(); $event.stopPropagation()">
+                                                    <mat-icon>close</mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        } @else {
                                         {{h.title }}
+                                        }
                                     </span>
                                     <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    <button mat-icon-button color="primary"
+                                        [matTooltip]="'projects.details.edit' | translate"
+                                        (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="success"
+                                        [matTooltip]="'projects.details.view' | translate"
                                         (click)="viewItem('session', h); $event.stopPropagation()">
                                         <mat-icon>open_in_new</mat-icon>
                                     </button>
-                                    <button mat-icon-button color="accent"
-                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                    <button mat-icon-button color="error"
+                                        [matTooltip]="'projects.details.delete' | translate"
                                         (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                     </button>
@@ -146,26 +206,56 @@
 
                             @for (h of groupedSessions().pastWeek; track trackHist($index, h)) {
                             <div tabindex="0" role="button" [attr.aria-label]="h.title"
-                                (keydown.enter)="viewItem('session', h)"
-                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (keydown.enter)="!editingSessionId() && viewItem('session', h)"
                                 (click)="viewItem('session', h)" class="custom-list-item">
                                 <mat-icon class="item-icon">view_timeline</mat-icon>
                                 <div class="item-content">
                                     <span class="item-title">
                                         <mat-chip class="success" color="success" selected="false"
                                             [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        @if (editingSessionId() === h.id) {
+                                        <div class="inline-edit-container">
+
+                                            <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                                                class="inline-edit-field">
+                                                <input matInput [value]="h.meta?.['session_name'] ?? ''"
+                                                    (keydown.enter)="saveTitle('session', h, $any($event.target).value)"
+                                                    (keydown.escape)="cancelEdit()" (click)="$event.stopPropagation()"
+                                                    #titleInput>
+                                            </mat-form-field>
+                                            <div class="inline-edit-actions">
+                                                <button mat-icon-button color="success"
+                                                    [matTooltip]="'SAVE' | translate"
+                                                    (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
+                                                    <mat-icon>check</mat-icon>
+                                                </button>
+                                                <button mat-icon-button color="accent"
+                                                    [matTooltip]="'cancel' | translate"
+                                                    (click)="cancelEdit(); $event.stopPropagation()">
+                                                    <mat-icon>close</mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        } @else {
                                         {{h.title }}
+                                        }
                                     </span>
                                     <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    <button mat-icon-button color="primary"
+                                        [matTooltip]="'projects.details.edit' | translate"
+                                        (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="success"
+                                        [matTooltip]="'projects.details.view' | translate"
                                         (click)="viewItem('session', h); $event.stopPropagation()">
                                         <mat-icon>open_in_new</mat-icon>
                                     </button>
-                                    <button mat-icon-button color="accent"
-                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                    <button mat-icon-button color="error"
+                                        [matTooltip]="'projects.details.delete' | translate"
                                         (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                     </button>
@@ -188,26 +278,56 @@
 
                             @for (h of groupedSessions().older; track trackHist($index, h)) {
                             <div tabindex="0" role="button" [attr.aria-label]="h.title"
-                                (keydown.enter)="viewItem('session', h)"
-                                (keydown.space)="viewItem('session', h); $event.preventDefault()"
+                                (keydown.enter)="!editingSessionId() && viewItem('session', h)"
                                 (click)="viewItem('session', h)" class="custom-list-item">
                                 <mat-icon class="item-icon">view_timeline</mat-icon>
                                 <div class="item-content">
                                     <span class="item-title">
                                         <mat-chip class="success" color="success" selected="false"
                                             [matTooltip]="h.id">{{ h.id }}</mat-chip>
+                                        @if (editingSessionId() === h.id) {
+                                        <div class="inline-edit-container">
+
+                                            <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                                                class="inline-edit-field">
+                                                <input matInput [value]="h.meta?.['session_name'] ?? ''"
+                                                    (keydown.enter)="saveTitle('session', h, $any($event.target).value)"
+                                                    (keydown.escape)="cancelEdit()" (click)="$event.stopPropagation()"
+                                                    #titleInput>
+                                            </mat-form-field>
+                                            <div class="inline-edit-actions">
+                                                <button mat-icon-button color="success"
+                                                    [matTooltip]="'SAVE' | translate"
+                                                    (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
+                                                    <mat-icon>check</mat-icon>
+                                                </button>
+                                                <button mat-icon-button color="accent"
+                                                    [matTooltip]="'cancel' | translate"
+                                                    (click)="cancelEdit(); $event.stopPropagation()">
+                                                    <mat-icon>close</mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        } @else {
                                         {{h.title }}
+                                        }
                                     </span>
                                     <span class="item-subtitle muted">{{ h.createdAt.toFormat("yyyy-MM-dd - HH:mm")
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [matTooltip]="'projects.details.view' | translate"
+                                    <button mat-icon-button color="primary"
+                                        [matTooltip]="'projects.details.edit' | translate"
+                                        (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                    <button mat-icon-button color="success"
+                                        [matTooltip]="'projects.details.view' | translate"
                                         (click)="viewItem('session', h); $event.stopPropagation()">
                                         <mat-icon>open_in_new</mat-icon>
                                     </button>
-                                    <button mat-icon-button color="accent"
-                                        [matTooltip]="'projects.details.delete' | translate" disabled
+                                    <button mat-icon-button color="error"
+                                        [matTooltip]="'projects.details.delete' | translate"
                                         (click)="deleteItem('session', h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>delete</mat-icon>
                                     </button>
@@ -244,14 +364,21 @@
                     <div class="custom-list">
                         @for (f of files(); track trackFile($index, f)) {
                         <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null"
-                            (keydown.space)="null; $event.preventDefault()" (click)="null" class="custom-list-item">
+                            (click)="null" class="custom-list-item">
                             <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
-                            <div class="item-content">
 
-                                <div matListItemTitle>{{ f.name }}</div>
+                            <div class="item-content">
+                                <div matListItemTitle>
+                                    {{ f.name }}
+                                    <mat-chip appearance="outlined" [color]="'primary'">
+                                        {{ f.type| translate }}
+                                    </mat-chip>
+                                </div>
+
                                 <div matListItemLine class="muted">
                                     {{ prettySize(f.size) }} • {{ f.uploadedAt.toFormat("yyyy-MM-dd - HH:mm") }}
                                 </div>
+
                             </div>
                             <div class="item-actions">
                                 <button mat-icon-button [matMenuTriggerFor]="fileMenu" [disabled]="true"

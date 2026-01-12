@@ -8,7 +8,8 @@
   --mat-accent: #4492c7;
   --mat-warn: #ec9a00ff;
   --mat-neutral: #c1c1c3;
-  --mat-success: #4caf50;
+  --mat-success: #62d3b1;
+  --mat-error: #ff0c49;
 
   // Make scrollbar more visible
   &::-webkit-scrollbar {
@@ -42,6 +43,7 @@ html.dark {
   --mat-warn: #ef7000;
   --mat-neutral: #f1ebeb;
   --mat-success: #1aa21e;
+  --mat-error: #ff0c49;
 }
 
 .flex {
@@ -361,6 +363,73 @@ html.dark {
   --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-success) 10%, transparent);
   --mat-fab-small-foreground-color: var(--mat-success);
   --mdc-icon-button-icon-color: var(--mat-success);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+}
+
+.mat-error,
+.error {
+  --mat-primary: var(--mat-error);
+  --md-sys-color-primary: var(--mat-error);
+  --md-sys-color-surface-tint: var(--mat-error);
+  --md-sys-color-primary-container: var(--mat-error);
+  --mdc-protected-button-label-text-color: var(--mat-error);
+  --mdc-text-button-label-text-color: var(--mat-error);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-error);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-error);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-error);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-error);
+  --mdc-slider-handle-color: var(--mat-error);
+  --mdc-slider-focus-handle-color: var(--mat-error);
+  --mdc-slider-hover-handle-color: var(--mat-error);
+  --mat-slider-ripple-color: var(--mat-error);
+  --mdc-slider-active-track-color: var(--mat-error);
+  --mat-radio-checked-ripple-color: var(--mat-error);
+  --mdc-radio-selected-focus-icon-color: var(--mat-error);
+  --mdc-radio-selected-hover-icon-color: var(--mat-error);
+  --mdc-radio-selected-icon-color: var(--mat-error);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-error);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-hover-track-color: var(--mat-error);
+  --mdc-switch-selected-pressed-track-color: var(--mat-error);
+  --mdc-switch-selected-track-track-color: var(--mat-error);
+  --mdc-switch-selected-icon-color: var(--mat-error);
+  --mdc-outlined-text-field-caret-color: var(--mat-error);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-error);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-error);
+  --mdc-filled-text-field-caret-color: var(--mat-error);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-error);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-error);
+  --mdc-linear-progress-active-indicator-color: var(--mat-error);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-error);
+  --mat-text-button-state-layer-color: var(--mat-error);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-error);
+  --mdc-slider-handle-color: var(--mat-error);
+  --mdc-slider-label-container-color: var(--mat-error);
+  --mdc-switch-selected-track-color: var(--mat-error);
+  --mdc-switch-selected-icon-color: var(--mat-error);
+  --mdc-chip-elevated-selected-container-color: var(--mat-error);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-error);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-error);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-error);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-error);
+  --mdc-circular-progress-active-indicator-color: var(--mat-error);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-error);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-error);
+  --mat-snack-bar-button-color: var(--mat-error);
+  --mdc-switch-selected-focus-track-color: var(--mat-error);
+  --mat-protected-button-state-layer-color: var(--mat-error);
+  --mdc-outlined-button-label-text-color: var(--mat-error);
+  --mat-outlined-button-state-layer-color: var(--mat-error);
+  --mdc-filled-button-container-color: var(--mat-error);
+  --mat-fab-foreground-color: var(--mat-error);
+  --mat-fab-state-layer-color: var(--mat-error);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-error) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-error) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-error);
+  --mdc-icon-button-icon-color: var(--mat-error);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
 }
