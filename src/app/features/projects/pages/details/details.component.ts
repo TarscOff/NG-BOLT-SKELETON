@@ -270,8 +270,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
         try {
             // Load artifacts data
-            const projects = await firstValueFrom(this.projectsService.getProjectsFilesData(projectId));
-            this.files.set(this.mapToFiles(projects));
+            const files = await firstValueFrom(this.projectsService.getProjectsFilesData(projectId));
+
+            this.files.set(this.mapToFiles(files));
 
         } catch (err) {
             this.error.set(
@@ -294,6 +295,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             size: e.artifact_size,
             type: e.artifact_type,
             uploadedAt: DateTime.fromJSDate(new Date(e.created_on)),
+            extraInfo: e
         }));
     }
 
@@ -384,9 +386,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         return `${mb.toFixed(1)} MB`;
     }
 
-    fileIcon(name: string, type?: string): string {
-        const ext = name.split('.')[1]?.toLowerCase() ?? type;
-        if (ext === 'pdf') return 'picture_as_pdf';
+    fileIcon(type?: string): string {
+        const ext = type;
+        if (ext === 'pdf' || ext === 'application/pdf') return 'picture_as_pdf';
         if (ext === 'json' || ext === 'application/json') return 'code';
         if (
             ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'image'].includes(ext ?? '')
@@ -398,6 +400,18 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             return 'description';
         if (['zip', 'rar', '7z', 'tar', 'gz', 'collection_metadata'].includes(ext ?? ''))
             return 'folder_zip';
+        if (['mp4', 'avi', 'mov', 'wmv', 'mkv', 'video'].includes(ext ?? ''))
+            return 'movie';
+        if (['mp3', 'wav', 'flac', 'aac', 'audio'].includes(ext ?? '')) return 'audiotrack';
+        if (['rar', 'zip', '7z', 'tar', 'gz', 'bz2', 'xz', 'tar.gz', 'tgz', 'tar.bz2'].includes(ext ?? ''))
+            return 'folder_zip';
+        if (['xml', 'html', 'htm', 'css', 'js', 'ts', 'jsx', 'tsx', 'vue', 'php', 'py', 'java', 'cpp', 'c', 'h'].includes(ext ?? ''))
+            return 'code';
+        if (['exe', 'msi', 'dmg', 'pkg', 'deb', 'rpm', 'appimage'].includes(ext ?? ''))
+            return 'launch';
+        if (['ttf', 'otf', 'woff', 'woff2', 'eot'].includes(ext ?? ''))
+            return 'font_download';
+
         return 'attach_file';
     }
 

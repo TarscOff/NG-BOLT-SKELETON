@@ -56,7 +56,11 @@ export class TemplatingService {
               initialMessages: [],
               config: {
                 ...CHAT_CONFIG,
-                enableAttachments: false // or add_file ? true : false,
+                enableAttachments: false ,// or add_file ? true : false,
+                acceptedFileTypes: '*', // or specify like: 'image/*,.pdf,.doc,.docx'
+                multiFile: true, // or add_file ? true : false,
+                maxFiles: 5,
+                maxFileSize: 20 * 1024 * 1024, // 20MB
               },
               templateId: template.template_id || '',
               fileTemplateId: add_file ? add_file.template_id || '' : '',

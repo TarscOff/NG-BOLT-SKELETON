@@ -11,7 +11,8 @@
         <mat-icon>arrow_downward</mat-icon>
       </button>
       <button mat-icon-button [matTooltip]="'chatTpl.clear' | translate" (click)="clearChat()"
-        [disabled]="disabled || isEmpty()" class="error">
+        [disabled]="true"  class="error">
+        <!-- [disabled]="disabled || isEmpty()" -->
         <mat-icon>delete_sweep</mat-icon>
       </button>
     </div>

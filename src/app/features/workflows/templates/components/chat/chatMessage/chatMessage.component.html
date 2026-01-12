@@ -43,7 +43,7 @@
       <div class="message-attachments">
         @for (attachment of message.attachments; track attachment.name) {
         <div class="attachment-item">
-          <mat-icon class="attachment-icon">{{ getFileIcon(attachment.name, attachment.type) }}</mat-icon>
+          <mat-icon class="attachment-icon">{{ getFileIcon(attachment.type) }}</mat-icon>
           <div class="attachment-info">
             <span class="attachment-name" [matTooltip]="attachment.name">{{ attachment.name }}</span>
             <span class="attachment-size">{{ formatFileSize(attachment.size) }}</span>

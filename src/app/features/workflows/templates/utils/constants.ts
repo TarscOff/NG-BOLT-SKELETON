@@ -15,7 +15,7 @@ export const CHAT_CONFIG: ChatConfig = {
     autoScroll: true,
     acceptedFileTypes: 'image/*,.pdf,.doc,.docx', // or specify like: 'image/*,.pdf,.doc,.docx'
     maxFileSize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 5
+    maxFiles: 5,
 }
 
 export const COMPARE_CONFIG: CompareConfig = {

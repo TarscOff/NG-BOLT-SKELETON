@@ -77,8 +77,8 @@
           @else {
           <div class="empty-state">
             <mat-icon>inbox</mat-icon>
-            <h3>{{ 'chat.noTemplates.title' | translate }}</h3>
-            <p>{{ 'chat.noTemplates.description' | translate }}</p>
+            <h3>{{ 'chatPage.noTemplates.title' | translate }}</h3>
+            <p>{{ 'chatPage.noTemplates.description' | translate }}</p>
           </div>
           }
         </mat-card-content>
@@ -86,16 +86,25 @@
     </div>
   </mat-sidenav-content>
 
-  <mat-sidenav #artifactsPanel mode="over" position="end" [opened]="artifactsPanelOpen()"
+  <mat-sidenav #artifactsPanel mode="side" position="end" [opened]="artifactsPanelOpen()"
     (closed)="closeArtifactsPanel()" class="artifacts-panel">
     <div class="panel-header">
       <h2>{{ 'workflow.runPanel.artifacts' | translate }}</h2>
+
       <div class="button-group">
-        <!-- Submit button -->
-        <button mat-flat-button color="success" (click)="submitArtifacts()"
-          [disabled]="!canSubmitArtifacts() && (isAdmin$ | async) === false">
-          {{ 'workflow.runPanel.submit' | translate }}
-        </button>
+        <!-- Filter Dropdown -->
+        <div class="files-filter">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'filter' | translate }}</mat-label>
+            <mat-select [(value)]="selectedFileReference" (selectionChange)="onFileReferenceChange()"
+              [disabled]="files().length === 0">
+              <mat-option value="all">{{ 'all' | translate }}</mat-option>
+              @for (ref of availableReferences(); track ref) {
+              <mat-option [value]="ref">{{ ref | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
         <!-- Close btn -->
         <button mat-icon-button (click)="closeArtifactsPanel()">
           <mat-icon>close</mat-icon>
@@ -113,10 +122,10 @@
             <p class="workflow-status">
               @if (isPolling$()) {
               <mat-spinner diameter="16"></mat-spinner>
-              <span>{{ 'workflow.status.processing' | translate }}</span>
+              <span>{{ 'processing' | translate }}</span>
               } @else {
               <mat-icon>check_circle</mat-icon>
-              <span>{{ 'workflow.status.completed' | translate }}</span>
+              <span>{{ 'completed' | translate }}</span>
               }
             </p>
           </div>
@@ -139,9 +148,9 @@
               }
             </div>
             <div class="task-info">
-              <span class="task-name">{{ task.task_name }}</span>
+              <span class="task-name">{{ "ai_progress."+task.task_name | translate }}</span>
               @if (task.task_status === 'running') {
-              <span class="task-status-text">{{ 'workflow.task.running' | translate }}</span>
+              <span class="task-status-text">{{ 'running' | translate }}</span>
               }
             </div>
           </div>
@@ -154,43 +163,51 @@
 
       <!-- Files List -->
       @if (files().length > 0) {
-      <div class="custom-list">
-        @for (f of files(); track trackFile($index, f)) {
-        <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null" (click)="null"
-          class="custom-list-item">
-          <mat-icon class="item-icon">{{ fileIcon(f.name, f.type) }}</mat-icon>
-
-          <div class="item-content">
-            <div matListItemTitle>
-              {{ f.name }}
-              <mat-chip appearance="outlined" color="primary" class="primary">
-                {{ f.type | translate }}
-              </mat-chip>
+      <div class="files-section">
+        <!-- Files Groups -->
+        <div class="custom-list">
+          @for (group of filteredGroupedFiles(); track group.reference) {
+          <div class="file-group">
+            <div class="group-header-static">
+              <mat-icon class="group-icon">folder</mat-icon>
+              <span>{{ group.reference | translate }}</span>
+              <span class="group-count">{{ group.files.length }}</span>
             </div>
 
-            <div matListItemLine class="muted">
-              {{ prettySize(f.size) }} • {{ f.uploadedAt.toFormat("yyyy-MM-dd - HH:mm") }}
+            <div class="group-files">
+              @for (f of group.files; track trackFile($index, f)) {
+              <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null" (click)="null"
+                class="custom-list-item">
+                <mat-icon class="item-icon">{{ fileIcon(f.type) }}</mat-icon>
+
+                <div class="item-content">
+                  <div matListItemTitle>
+                    {{ f.name }}
+                  </div>
+
+                  <div matListItemLine class="muted">
+                    {{ prettySize(f.size) }} • {{ f.uploadedAt.toFormat("yyyy-MM-dd - HH:mm") }}
+                  </div>
+                </div>
+
+                <div class="item-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="fileMenu"
+                    [attr.aria-label]="'projects.details.file-actions' | translate">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #fileMenu="matMenu">
+                    <button mat-menu-item (click)="null" disabled>
+                      <mat-icon>download</mat-icon>
+                      {{ 'projects.details.download' | translate }}
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              }
             </div>
           </div>
-
-          <div class="item-actions">
-            <button mat-icon-button [matMenuTriggerFor]="fileMenu"
-              [attr.aria-label]="'projects.details.file-actions' | translate">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #fileMenu="matMenu">
-              <button mat-menu-item (click)="null" disabled>
-                <mat-icon>download</mat-icon>
-                {{ 'projects.details.download' | translate }}
-              </button>
-              <button mat-menu-item (click)="$event.stopPropagation(); $event.preventDefault()" disabled>
-                <mat-icon>delete</mat-icon>
-                {{ 'projects.details.remove' | translate }}
-              </button>
-            </mat-menu>
-          </div>
+          }
         </div>
-        }
       </div>
       } @else {
       <div class="empty-tab">
@@ -198,13 +215,23 @@
         <p>{{ 'projects.details.no-files' | translate }}</p>
       </div>
       }
-      <mat-divider></mat-divider>
-
     </div>
-    <div class="file-uploader">
 
-      <!-- File Upload Form -->
-      <app-dynamic-form [form]="formInputs" [config]="configInputs"></app-dynamic-form>
+    <!-- Footer with upload and submit -->
+    @if (!loading() && (isAdmin$())) {
+    <div class="panel-footer">
+      <div class="file-uploader">
+        <app-dynamic-form [form]="formInputs" [config]="configInputs"></app-dynamic-form>
+      </div>
+
+      <!-- Submit button -->
+      <div class="submit-actions">
+        <button mat-flat-button color="success" (click)="submitArtifacts()"
+          [disabled]="!canSubmitArtifacts()">
+          {{ 'workflow.runPanel.submit' | translate }}
+        </button>
+      </div>
     </div>
+    }
   </mat-sidenav>
 </mat-sidenav-container>

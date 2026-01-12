@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { FieldConfigService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
+import { FieldConfigService, KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { TemplateLoaderComponent } from '@features/workflows/templates/components/loader/template-loader.component';
@@ -18,16 +18,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, map, interval, finalize, switchMap, tap, catchError, of, takeWhile } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { ProjectsService } from '@features/projects/services/projects.service';
-import { ArtifactsDataDto, FileItem, ProjectDto, ProjectSessionDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import { ArtifactsDataDto,FileItem, ProjectDto, ProjectSessionDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { DateTime } from 'luxon';
-import { Store } from '@ngrx/store';
-import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { MatDividerModule } from '@angular/material/divider';
-
+import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { UserRole } from '@cadai/pxs-ng-core/enums';
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -46,7 +47,11 @@ import { MatDividerModule } from '@angular/material/divider';
     DynamicFormComponent,
     MatChipsModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    MatLabel,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule
   ],
   templateUrl: './sessions.component.html',
   styleUrls: ['./sessions.component.scss'],
@@ -63,7 +68,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly fields = inject(FieldConfigService);
   private readonly fb = inject(FormBuilder);
-  private readonly store = inject(Store);
+  private readonly keycloak = inject(KeycloakService);
   configInputs: FieldConfig[] = [];
   formInputs: FormGroup = this.fb.group({});
 
@@ -81,14 +86,13 @@ export class SessionsComponent implements OnInit, OnDestroy {
   private readonly _workflowStatus = signal<WorkflowStatusDto | null>(null);
   private readonly _isPolling = signal<boolean>(false);
   private readonly _hasRunningWorkflows = signal<boolean>(false);
+  selectedFileReference = signal<string>('all');
+
   private taskStatesMap = new Map<string, string>();
   private completedTasksTimestamps = new Map<string, number>();
   private readonly TASK_REMOVAL_DELAY = 2000;
 
-  // User role from store
-  readonly isAdmin$ = this.store
-    .select(AppSelectors.UserSelectors.selectUserRole)
-    .pipe(map(roles => roles?.includes('ROLE_admin') ?? false));
+  isAdmin$ = signal(false);
   canSubmitArtifacts = signal(false);
 
 
@@ -103,6 +107,40 @@ export class SessionsComponent implements OnInit, OnDestroy {
   workflowStatus$ = computed(() => this._workflowStatus());
   isPolling$ = computed(() => this._isPolling());
   showWorkflowStatus$ = computed(() => this._isPolling() || this._hasRunningWorkflows());
+
+
+  // Group files by data_reference
+  groupedFiles = computed(() => {
+    const filesArray = this.files();
+    const groups = new Map<string, typeof filesArray>();
+
+    filesArray.forEach(file => {
+      const reference = file.extraInfo?.data_reference || 'ungrouped';
+      if (!groups.has(reference)) {
+        groups.set(reference, []);
+      }
+      groups.get(reference)!.push(file);
+    });
+
+    return Array.from(groups.entries()).map(([reference, files]) => ({
+      reference,
+      files
+    }));
+  });
+
+  // Get available references for the filter
+  availableReferences = computed(() => {
+    return this.groupedFiles().map(group => group.reference);
+  });
+
+  // Filter groups based on selection
+  filteredGroupedFiles = computed(() => {
+    const selected = this.selectedFileReference();
+    if (selected === 'all') {
+      return this.groupedFiles();
+    }
+    return this.groupedFiles().filter(group => group.reference === selected);
+  });
 
   constructor() {
     // Subscribe to route params with automatic cleanup
@@ -130,11 +168,12 @@ export class SessionsComponent implements OnInit, OnDestroy {
       this.fields.getFileField({
         name: 'files',
         label: 'form.labels.files',
-        multiple: true,
-        accept: 'image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx',
+        multiple: false,
+        accept: 'image/*,.pdf,.docx,.pptx,.txt,.xlsx',
         required: false,
         fileVariant: 'dropzone',
         validators: undefined,
+        maxFiles: 1,
       })
     ];
 
@@ -148,7 +187,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
         )
         .subscribe(values => {
           const files = values?.files || [];
-          const hasFiles = Array.isArray(files) && files.length > 0;
+          const hasFiles = Array.isArray(files) ? files.length > 0 : files != null;
           const isValid = this.formInputs.valid;
 
           this.canSubmitArtifacts.set(hasFiles && isValid);
@@ -162,6 +201,10 @@ export class SessionsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadPageConfig();
     this.checkForRunningWorkflows();
+
+    // Get user roles
+    const { roles } = this.keycloak.getUserCtx();
+    this.isAdmin$.set(roles.includes(UserRole.ROLE_admin));
   }
 
   ngOnDestroy(): void {
@@ -239,8 +282,8 @@ export class SessionsComponent implements OnInit, OnDestroy {
 
     try {
       // Load artifacts data
-      const projects = await firstValueFrom(this.projectsService.getSessionArtifacts(this.sessionId()!));
-      this.files.set(this.mapToFiles(projects));
+      const files = await firstValueFrom(this.projectsService.getSessionArtifacts(this.sessionId()!));
+      this.files.set(this.mapToFiles(files));
 
       // Setup toolbar actions
       const back: ToolbarAction = {
@@ -291,6 +334,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
       size: e.artifact_size,
       type: e.artifact_type,
       uploadedAt: DateTime.fromJSDate(new Date(e.created_on)),
+      extraInfo: e,
     }));
   }
 
@@ -363,9 +407,9 @@ export class SessionsComponent implements OnInit, OnDestroy {
     return `${mb.toFixed(1)} MB`;
   }
 
-  fileIcon(name: string, type?: string): string {
-    const ext = name.split('.')[1]?.toLowerCase() ?? type;
-    if (ext === 'pdf') return 'picture_as_pdf';
+  fileIcon(type?: string): string {
+    const ext = type;
+    if (ext === 'pdf' || ext === 'application/pdf') return 'picture_as_pdf';
     if (ext === 'json' || ext === 'application/json') return 'code';
     if (
       ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'image'].includes(ext ?? '')
@@ -377,6 +421,18 @@ export class SessionsComponent implements OnInit, OnDestroy {
       return 'description';
     if (['zip', 'rar', '7z', 'tar', 'gz', 'collection_metadata'].includes(ext ?? ''))
       return 'folder_zip';
+    if (['mp4', 'avi', 'mov', 'wmv', 'mkv', 'video'].includes(ext ?? ''))
+      return 'movie';
+    if (['mp3', 'wav', 'flac', 'aac', 'audio'].includes(ext ?? '')) return 'audiotrack';
+    if (['rar', 'zip', '7z', 'tar', 'gz', 'bz2', 'xz', 'tar.gz', 'tgz', 'tar.bz2'].includes(ext ?? ''))
+      return 'folder_zip';
+    if (['xml', 'html', 'htm', 'css', 'js', 'ts', 'jsx', 'tsx', 'vue', 'php', 'py', 'java', 'cpp', 'c', 'h'].includes(ext ?? ''))
+      return 'code';
+    if (['exe', 'msi', 'dmg', 'pkg', 'deb', 'rpm', 'appimage'].includes(ext ?? ''))
+      return 'launch';
+    if (['ttf', 'otf', 'woff', 'woff2', 'eot'].includes(ext ?? ''))
+      return 'font_download';
+
     return 'attach_file';
   }
 
@@ -384,9 +440,10 @@ export class SessionsComponent implements OnInit, OnDestroy {
     if (!this.canSubmitArtifacts()) {
       return;
     }
+    this.loading.set(true);
 
     const filesControl = this.formInputs.get('files');
-    const files: File[] = filesControl?.value || [];
+    const files: File[] = Array.isArray(filesControl?.value) ? filesControl.value : [filesControl?.value].filter(Boolean);
 
     if (files.length === 0) {
       this.toast.showError(
@@ -631,5 +688,9 @@ export class SessionsComponent implements OnInit, OnDestroy {
   // Trackers
   trackFile = (_: number, f: FileItem) => f.id;
   trackByTaskId = (_: number, task: TaskDto) => task.task_id;
+
+  onFileReferenceChange() {
+    // Optional: Add any additional logic when filter changes
+  }
 
 }

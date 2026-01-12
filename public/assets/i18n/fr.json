@@ -12,6 +12,9 @@
     "lastPage": "Dernière page",
     "rangeLabel": "{{start}} - {{end}} sur {{total}}"
   },
+  "filter": "Filtrer",
+  "all": "Tous",
+  "file":"Fichier",
   "HELLO": "Bonjour",
   "SAVE": "Enregistrer",
   "LANG": "Langue",
@@ -54,8 +57,26 @@
   "run-panel": "Panneau d'éxécutions",
   "threshold": "Threshold",
   "toggle": "Plier",
+  "toolbox": "Boite a outils",
+  "loading": "Chargement...",
+  "chat": "chat",
   "untoggle": "Déplier",
   "jump_to_view": "Aller à la vue",
+  "query_string": "Chaîne de requête",
+  "embeddings": "Embeddings",
+  "collection": "Collection",
+  "filter_document_publication_datetime": "Filtrer par date de publication",
+  "context": "Contexte",
+  "user_prompt": "Prompt utilisateur",
+  "system_prompt": "Prompt système",
+  "chat_history": "Historique du chat",
+  "response": "Réponse",
+  "source_file": "Fichier source",
+  "langchain_documents": "Documents Langchain",
+  "collection_metadata": "Métadonnées de collection",
+  "converted_file": "Fichier converti",
+  "retrieved_documents": "Documents récupérés",
+  "llm_response": "Réponse LLM",
   "chatPage": {
     "loading": "Chargement des modèles...",
     "reload": "Recharger",
@@ -90,7 +111,6 @@
     },
     "searchPlaceholder": "Rechercher…"
   },
-  "toolbox": "Boite a outils",
   "nav": {
     "dashboard": "GenAI Tableau de bord",
     "reports": "GenAI Rapports",
@@ -126,7 +146,6 @@
     "embed_langchain_documents": "Convertir les documents en vecteurs",
     "store_embedded_langchain_documents": "Stocker les vecteurs des documents"
   },
-  "loading": "Chargement...",
   "projects": {
     "subtitle": "Gérez et organisez vos projets GenAI",
     "create-new": "Nouveau Projet",
@@ -172,7 +191,6 @@
       "add-files": "Ajouter des Fichiers",
       "file-actions": "Actions de fichier",
       "download": "Télécharger",
-      "remove": "Supprimer",
       "view": "Voir",
       "delete": "Supprimer",
       "updated": "Mis à jour",
@@ -228,7 +246,7 @@
       "no-files-selected": "Aucun fichier sélectionné",
       "failed-to-upload-artifacts": "Échec du téléchargement des artéfacts"
     },
-    "success":{
+    "success": {
       "artifacts-uploaded": "Artéfacts téléchargés avec succès"
     }
   },
@@ -251,7 +269,6 @@
     "home": "Accueil",
     "signIn": "Se connecter"
   },
-  "chat": "chat",
   "chatTpl": {
     "name": "chat",
     "title": "Discussion",
