@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.18](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.17...v2.0.18) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
+
 ### [2.0.17](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.16...v2.0.17) (2026-01-12)
 
 
