@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.22](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.21...v2.0.22) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([29b55f8](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
+
 ### [2.0.21](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.20...v2.0.21) (2026-01-13)
 
 
