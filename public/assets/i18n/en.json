@@ -1,649 +1,690 @@
 {
+  "DASHBOARD_TITLE": "Dashboard",
+  "HELLO": "Hello",
+  "LANG": "Language",
+  "LANG_HINT": "Used Language",
+  "SAVE": "Save",
+  "TEAM_MEMBERS": "Team members",
+  "add_favorite": "Add to Favorite",
+  "ai": {
+    "chat": "Chat Scope",
+    "compare": "Compare Scope",
+    "global": "Global Scope",
+    "max_tokens": "Max tokens",
+    "model": "Model",
+    "projects": "Projects Scope",
+    "provider": "Provider",
+    "scope": "Scope",
+    "temperature": "Temperature",
+    "value": "Value",
+    "variant": "Variant",
+    "workflows": "Workflows Scope"
+  },
+  "ai_progress": {
+    "chat": "AI query",
+    "convert_and_chunk": " Document conversion",
+    "embed": "Documents integration",
+    "embed_langchain_documents": "Convert documents to vectors",
+    "retrieve": "Retrieve relevant documents",
+    "store_embedded_langchain_documents": "Store document vectors"
+  },
+  "ai_settings": "AI Settings",
+  "all": "All",
+  "apply": "Apply",
+  "back": "Back",
+  "cancel": "Cancel",
+  "chat": "chat",
+  "chatPage": {
+    "error": {
+      "title": "Failed to Load"
+    },
+    "loading": "Loading templates...",
+    "noTemplates": {
+      "description": "No templates are currently enabled or configured",
+      "title": "No Templates Available"
+    },
+    "reload": "Reload",
+    "retry": "Retry",
+    "templateLoader": {
+      "error": "Failed to load template",
+      "loading": "Loading template..."
+    }
+  },
+  "chatTpl": {
+    "acceptedFormats": "Accepted formats: {{formats}}",
+    "attachFile": "Attach file",
+    "cancel": "Cancel",
+    "clear": "Clear chat",
+    "delete": "Delete message",
+    "edit": "Edit message",
+    "editContent": "Edit content",
+    "editMessage": "Edit message",
+    "empty": "No messages yet. Start a conversation!",
+    "emptyState": "No messages yet. Start a conversation!",
+    "error": {
+      "emptyMessage": "Message cannot be empty.",
+      "maxFilesExceeded": "You can attach a maximum of {{maxFiles}} files."
+    },
+    "input": "Message input",
+    "messages": "Chat messages",
+    "name": "chat",
+    "placeholder": "Type your message...",
+    "removeFile": "Remove file",
+    "save": "Save",
+    "scrollToBottom": "Scroll to bottom",
+    "send": "Send message",
+    "title": "Chat",
+    "typing": "Typing...",
+    "waitingForTasks": "Waiting for ongoing tasks to complete..."
+  },
+  "chat_history": "Chat history",
+  "clear_all": "Clear all",
+  "close": "Close",
+  "collection": "Collection",
+  "collection_metadata": "Collection metadata",
+  "common": {
+    "back": "Back",
+    "home": "Home",
+    "signIn": "Sign in"
+  },
+  "compare": "Compare",
+  "compareTpl": {
+    "added": "Added",
+    "clear": "Clear All",
+    "clearFile": "Remove File",
+    "comparing": "Comparing documents...",
+    "file1": "First Document",
+    "file2": "Second Document",
+    "fileRequired": "File is required",
+    "line": "Line",
+    "loadedFiles": "Loaded Documents",
+    "modified": "Modified",
+    "noDifferences": "No differences found! Documents are identical.",
+    "removed": "Removed",
+    "results": "Comparison Results",
+    "similar": "similar",
+    "start": "Compare Documents",
+    "title": "Document Comparison",
+    "uploading": "Uploading file..."
+  },
+  "completed": "Completed",
+  "configure": "Configure",
+  "confirm": "Confirm",
+  "context": "Context",
+  "converted_file": "Converted file",
+  "created": "Created at",
+  "delete": "Delete",
+  "edit": "Edit",
+  "embeddings": "Embeddings",
+  "error": {
+    "403": {
+      "text": "You don't have access to this page.",
+      "title": "Forbidden"
+    },
+    "404": {
+      "text": "We couldn't find",
+      "title": "Page not found"
+    },
+    "failed-to-load-project-artifacts": "Failed to load artifacts for project {{projectId}}",
+    "failed-to-load-projects": "Failed to load projects",
+    "label": "Error",
+    "user_registration_failed": "User registration failed"
+  },
+  "export": "Export",
+  "exportTpl": {
+    "error": {
+      "copy": "Failed to copy to clipboard",
+      "docx": "Failed to export Word document",
+      "pdf": "Failed to export PDF",
+      "txt": "Failed to export text file"
+    },
+    "exporting": "Exporting Document...",
+    "stages": {
+      "adding_content": "Adding content...",
+      "adding_keypoints": "Adding key points...",
+      "building_document": "Building document structure...",
+      "capturing": "Capturing screenshot...",
+      "complete": "Export complete!",
+      "copying": "Copying to clipboard...",
+      "creating_file": "Creating file...",
+      "embedding": "Embedding images...",
+      "finalizing": "Finalizing...",
+      "formatting": "Formatting document...",
+      "initializing": "Initializing export...",
+      "preparing": "Preparing document...",
+      "processing": "Processing content...",
+      "saving": "Saving file..."
+    },
+    "success": {
+      "copy": "Content copied to clipboard!",
+      "docx": "Word document exported successfully!",
+      "pdf": "PDF exported successfully!",
+      "txt": "Text file exported successfully!"
+    }
+  },
+  "extract": "Extract",
+  "extractResult": {
+    "completed": "Completed",
+    "details": "Extraction Details",
+    "entityTypes": "Entity Types",
+    "exportResults": "Export Results",
+    "failed": "Failed",
+    "filesProcessed": "Files Processed",
+    "noEntitiesFound": "No entities found",
+    "pending": "Pending",
+    "processing": "Processing",
+    "sourceText": "Source Text",
+    "status": "Status",
+    "title": "Extraction Results",
+    "totalEntities": "Total Entities",
+    "viewContext": "View Context"
+  },
+  "extractTpl": {
+    "clear": "Clear All",
+    "entities": "Entity Types",
+    "entitiesHelper": "Enter entity types separated by commas",
+    "entitiesPlaceholder": "person, organization, location, date, email",
+    "entitiesRequired": "At least one entity type is required",
+    "exportDocx": "Export as DOCX",
+    "exportPdf": "Export as PDF",
+    "exportTxt": "Export as TXT",
+    "extractionError": "Extraction failed",
+    "filesRequired": "At least one file or text is required",
+    "format": "Output Format",
+    "noEntities": "Please specify entity types",
+    "noFilesOrText": "Please upload files or enter text",
+    "options": "Extraction Options",
+    "processing": "Extracting entities...",
+    "selectFormat": "Select output format",
+    "start": "Extract Entities",
+    "text": "Text Input",
+    "textPlaceholder": "Enter or paste text to extract entities from...",
+    "title": "Entity Extraction",
+    "uploadError": "Failed to upload file",
+    "uploadFiles": "Upload Files",
+    "uploading": "Uploading files..."
+  },
+  "failed": "Failed",
+  "favorites": {
+    "add-all": "Add All to Favorites",
+    "add-all-sessions": "Add All Sessions",
+    "add-all-sessions-message": "Add all {{count}} sessions to your favorites?",
+    "added": "Added to favorites",
+    "categories": {
+      "chats": "Chats",
+      "comparisons": "Comparisons",
+      "extracts": "Extracts",
+      "other": "Other",
+      "projects": "Projects",
+      "sessions": "Sessions",
+      "summaries": "Summaries"
+    },
+    "clear-all": "Clear All",
+    "cleared": "All favorites cleared",
+    "confirm-clear-message": "Are you sure you want to remove all {{count}} favorites? This action cannot be undone.",
+    "confirm-clear-title": "Clear All Favorites",
+    "confirm-remove-message": "Are you sure you want to remove \"{{title}}\" from your favorites?",
+    "confirm-remove-title": "Remove Favorite",
+    "empty": {
+      "description": "Start adding pages to your favorites to access them quickly!",
+      "title": "No Favorites Yet"
+    },
+    "error": {
+      "failed-to-load": "Failed to load favorites",
+      "unknown": "An error occurred with favorites"
+    },
+    "item": "item",
+    "items": "items",
+    "my-favorites": "My Favorites",
+    "remove": "Remove favorite",
+    "removed": "Removed from favorites"
+  },
+  "file": "File",
+  "filter": "Filter",
+  "filter_document_publication_datetime": "Filter by publication date",
+  "form": {
+    "actions": {
+      "addFiles": "Add files",
+      "browse": "Browse Files",
+      "clear": "Clear",
+      "dropFilesHere": "Drop files here (or click to browse)",
+      "dropHere": "Drop files here",
+      "or": "or",
+      "remove": "Delete",
+      "replaceFile": "Replace file"
+    },
+    "errors": {
+      "country": {
+        "invalid": "Select a country.",
+        "notAllowed": "Selected value is not allowed.",
+        "required": "Country is required."
+      },
+      "dob": {
+        "dateNotAllowed": "This date is not allowed.",
+        "format": "Invalid date format: {{text}}",
+        "maxDate": "Date must be on or before {{max}}",
+        "minDate": "Date must be on or after {{min}}",
+        "parse": "Invalid date: {{text}}",
+        "pattern": "Invalid date: {{text}}",
+        "required": "Date is required."
+      },
+      "email": {
+        "domain": "The email domain must contain a dot (e.g. example.com).",
+        "invalid": "Enter a valid email address.",
+        "maxlength": "Email can't exceed {{requiredLength}} characters.",
+        "required": "Email is required.",
+        "tld": "The domain extension must be at least 2 letters."
+      },
+      "file": {
+        "accept": "Field only accepts the following types: {{requiredTypes}}.",
+        "maxFileSize": "Maximum file size {{requiredLength}} allowed.",
+        "maxFiles": "Maximum {{requiredLength}} file(s) allowed (you selected {{actualLength}}).",
+        "maxTotalSize": "Maximum total size {{requiredLength}} allowed.",
+        "required": "Field is required."
+      },
+      "fixFields": "Please fix the highlighted fields.",
+      "fullname": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "input": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "name": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "notify": {
+        "invalid": "Toggle On Notifications.",
+        "required": "Notify is required."
+      },
+      "password": {
+        "digit": "Include at least one number.",
+        "maxlength": "Password can't exceed {{requiredLength}} characters.",
+        "minlength": "At least {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Password is required.",
+        "special": "Include at least one special character.",
+        "uppercase": "Include at least one uppercase letter."
+      },
+      "phone": {
+        "invalid": "Enter a valid phone number (e.g., +35212345678).",
+        "phoneDigitsLen": "Phone must have {{min}}–{{max}} digits (currently {{actual}}).",
+        "required": "Phone number is required."
+      },
+      "prompt": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "role": {
+        "required": "Role is required."
+      },
+      "tags": {
+        "invalid": "Select a tag.",
+        "minOne": "Please select at least one.",
+        "required": "Tags are required."
+      },
+      "textarea": {
+        "invalidChars": "Unsupported character: {{char}}",
+        "maxlength": "Please keep it under {{requiredLength}} characters (currently {{actualLength}}).",
+        "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}})."
+      },
+      "threshold": {
+        "required": "Threshold is required."
+      },
+      "volume": {
+        "max": "Maximum is {{max}} (current {{actual}}).",
+        "min": "Minimum is {{min}} (current {{actual}}).",
+        "required": "Volume is required."
+      }
+    },
+    "files": {
+      "count": "{{count}} Files"
+    },
+    "hints": {
+      "country": "Your current country of residence",
+      "dob": "Format: YYYY-MM-DD",
+      "dropAccepted": "Accepted: {{types}}",
+      "email": "Must be a valid email address",
+      "file": "Select a File",
+      "input": "Free text",
+      "notify": "Receive alerts and notifications",
+      "password": "At least 8 characters, including a number",
+      "phone": "Include country code",
+      "role": "User role in the app",
+      "tags": "Separate with commas",
+      "textarea": "Max {{max}} characters.",
+      "threshold": "Adjust between 0 and 100",
+      "volume": "Adjust between 0 and 200"
+    },
+    "labels": {
+      "country": "Country",
+      "dob": "Date of Birth",
+      "email": "Email",
+      "file": "File",
+      "files": "Files",
+      "fullname": "Full name",
+      "input": "Text",
+      "language": "Language",
+      "name": "Name",
+      "notify": "Notification",
+      "password": "Password",
+      "phone": "Phone",
+      "price": "Price",
+      "role": "Role",
+      "tags": "Tags",
+      "textarea": "Textarea",
+      "themeSwitcher": "Theme",
+      "threshold": "Threshold",
+      "volume": "Volume"
+    },
+    "placeholders": {
+      "country": "Select a country",
+      "dob": "Select a date",
+      "email": "Enter your email",
+      "file": "Upload file(s)",
+      "fullname": "Enter the full name",
+      "input": "Enter text",
+      "name": "Name...",
+      "notify": "Enable notifications",
+      "password": "Enter your password",
+      "phone": "Enter your phone number",
+      "price": "Enter the price",
+      "role": "Select a role",
+      "tags": "Add tags",
+      "textarea": "Write your text...",
+      "threshold": "Threshold ...",
+      "volume": "Set the volume"
+    }
+  },
+  "in": "Input",
+  "input": "Input",
+  "jump_to_view": "Go to view",
+  "langchain_documents": "Language chain documents",
   "languages": {
     "en": "English",
     "fr": "French",
     "nl": "Dutch"
   },
+  "llm_response": "LLM response",
+  "loading": "Loading ...",
+  "name": "Name",
+  "nav": {
+    "admin": "Admin",
+    "components": "GenAI Components",
+    "dashboard": "GenAI Dashboard",
+    "genai-admin": "GenAI Admin",
+    "genai-chat": "GenAI Chat",
+    "genai-compare": "GenAI Compare",
+    "genai-favorites": "GenAI Favorites",
+    "genai-projects": "GenAI Projects",
+    "genai-sessions": "GenAI Session :  {{name}}",
+    "genai-workflows": "GenAI Workflows",
+    "reports": "GenAI Reports",
+    "team": "GenAI Team"
+  },
+  "navigationTitle": "Menu",
+  "navigation_home": "Navigate to home page",
+  "new-session": "New Session",
+  "new_workflow": "New Workflow",
+  "out": "Output",
   "paginator": {
+    "firstPage": "First page",
     "itemsPerPage": "Items per page:",
+    "lastPage": "Last page",
     "nextPage": "Next page",
     "previousPage": "Previous page",
-    "firstPage": "First page",
-    "lastPage": "Last page",
     "rangeLabel": "{{start}} - {{end}} of {{total}}"
   },
-  "file":"File",
-  "filter": "Fillter",
-  "all":"All",
-  "HELLO": "Hello",
-  "SAVE": "Save",
-  "cancel": "Cancel",
-  "LANG": "Language",
-  "running": "Running",
-  "completed": "Completed",
   "processing": "Processing",
-  "failed": "Failed",
-  "LANG_HINT": "Used Language",
-  "DASHBOARD_TITLE": "Dashboard",
-  "TEAM_MEMBERS": "Team members",
-  "quick_settings": "Quick settings",
-  "ai_settings": "AI Settings",
-  "navigation_home": "Navigate to home page",
-  "confirm": "Confirm",
-  "navigationTitle": "Menu",
-  "selection": "Selection",
-  "name": "Name",
-  "role": "Role",
-  "created": "Created at",
-  "toolbox": "Toolbox",
-  "delete": "Delete",
-  "close": "Close",
-  "configure": "Configure",
-  "apply": "Apply",
-  "edit": "Edit",
-  "back": "Back",
-  "export": "Export",
-  "refresh": "Refresh",
-  "new_workflow": "New Workflow",
-  "tip": "Tip",
-  "in": "Input",
-  "out": "Output",
-  "workflow_help": "Drag from the palette. Click a node’s right port (source) then another node’s left port (target) to connect. Right-click nodes for options.",
-  "input": "Input",
-  "result": "Result",
-  "compare": "Compare",
-  "summarize": "Summarize",
-  "extract": "Extract",
-  "run-panel": "Run panel",
-  "threshold": "Threshold",
-  "toggle": "Fold",
-  "untoggle": "Unfold",
-  "jump_to_view": "Go to view",
-  "new-session": "New Session",
-  "loading": "Loading ...",
-  "query_string":"Query string",
-  "embeddings":"Embeddings",
-  "collection":"Collection",
-  "filter_document_publication_datetime":"Filter by publication date",
-  "context":"Context",
-  "user_prompt":"User prompt",
-  "system_prompt":"System prompt",
-  "chat_history":"Chat history",
-  "response":"Response",
-  "source_file":"Source file",
-  "langchain_documents":"Language chain documents",
-  "collection_metadata":"Collection metadata",
-  "converted_file":"Converted file",
-  "retrieved_documents":"Retrieved documents",
-  "llm_response":"LLM response",
   "projects": {
-    "subtitle": "Manage and organize your GenAI projects",
-    "create-new": "New Project",
+    "clearFilters": "Clear filters",
     "create-first": "Create your first project",
-    "id": "ID",
+    "create-new": "New Project",
+    "delete": {
+      "confirm-message": "Are you sure you want to delete the project \"{{name}}\"? This action cannot be undone.",
+      "confirm-title": "Confirm Delete",
+      "error": "Failed to delete \"{{title}}\"",
+      "success": "Project \"{{title}}\" deleted successfully"
+    },
+    "delete-success": "Project \"{{title}}\" deleted successfully",
     "designed-workflows": "Designed Workflows",
-    "published-workflows": "Published Workflows",
+    "details": {
+      "add-files": "Add Files",
+      "compare": "Compare History",
+      "confirm-delete": "Delete \"{{title}}\"?",
+      "confirm-remove-member": "Remove {{name}} from this project?",
+      "confirm-rename-message": "Are you sure you want to rename \"{{oldTitle}}\" to \"{{newTitle}}\"?",
+      "confirm-rename-title": "Confirm Rename",
+      "delete": "Delete",
+      "designed-steps": "Designed Steps",
+      "download": "Download",
+      "draft": "Draft",
+      "edit": "Edit",
+      "email-placeholder": "user@company.com",
+      "extract": "Extract History",
+      "file-actions": "File actions",
+      "invite-email": "Invite by email",
+      "invite-member": "Invite Member",
+      "make-member": "Set as Member",
+      "make-owner": "Promote to Owner",
+      "member-actions": "Member actions",
+      "no-chat-history": "No chat history available",
+      "no-compare-history": "No comparison history available",
+      "no-extract-history": "No extraction history available",
+      "no-files": "No files uploaded",
+      "no-members": "No members added",
+      "no-sessions": "No sessions available",
+      "no-summarize-history": "No summary history available",
+      "no-workflows": "No workflows available",
+      "older": "Older",
+      "open": "Open",
+      "pastWeek": "Past Week",
+      "publish": "Publish",
+      "published": "Published",
+      "remove-member": "Remove Member",
+      "send-invite": "Send Invitation",
+      "status": "Status",
+      "subtitle": "View and manage project",
+      "summarize": "Summary History",
+      "tabs": {
+      "chat": "Chat History",
+      "compare": "Compare History",
+      "extract": "Extract History",
+      "files": "Artifacts",
+      "members": "Members",
+      "sessions": "My Sessions",
+      "summarize": "Summary History",
+      "workflows": "Workflows"
+      },
+      "title": "Details: {{name}}",
+      "title-updated": "Session title updated successfully",
+      "today": "Today",
+      "updated": "Updated",
+      "view": "View",
+      "workflows-pagination": "Workflows pagination",
+      "yesterday": "Yesterday"
+    },
+    "error": {
+      "delete-failed": "Failed to delete {{title}}",
+      "failed-to-create-session": "Failed to create session",
+      "failed-to-load": "Failed to load project details",
+      "failed-to-load-session": "Failed to load session details",
+      "failed-to-load-templates": "Failed to load templates",
+      "failed-to-update-title": "Failed to update session title",
+      "failed-to-upload-artifacts": "Failed to upload artifacts",
+      "no-files-selected": "No files selected",
+      "not-found": "Project not found",
+      "session-not-found": "Session not found",
+      "workflow-status-polling-failed": "Failed to poll workflow status"
+    },
     "files": "Project Files",
-    "users": "Users",
-    "owners": "Owners",
+    "id": "ID",
     "members": "Members",
-    "total": "Total",
-    "open": "Open project",
-    "pagination": "Project pagination",
     "no-projects": "No projects available",
     "no-projects-description": "Get started by creating your first project to organize your GenAI workflows and files",
-    "delete-success": "Project \"{{title}}\" deleted successfully",
+    "open": "Open project",
+    "orderBy": {
+      "id": "ID",
+      "label": "Order By",
+      "name": "Name",
+      "placeholder": "Select order"
+    },
+    "owners": "Owners",
+    "pagination": "Project pagination",
+    "published-workflows": "Published Workflows",
     "search": {
       "label": "Search",
       "placeholder": "Search by name or ID..."
     },
-    "orderBy": {
-      "label": "Order By",
-      "placeholder": "Select order",
-      "name": "Name",
-      "id": "ID"
-    },
-    "clearFilters": "Clear filters",
-    "details": {
-      "title": "Details : {{name}}",
-      "subtitle": "View and manage project",
-      "tabs": {
-        "files": "Artifacts",
-        "chat": "Chat History",
-        "sessions": "My Sessions",
-        "compare": "Compare History",
-        "summarize": "Summarize History",
-        "extract": "Extract History",
-        "workflows": "Workflows",
-        "members": "Members"
-      },
-      "no-sessions": "No sessions available",
-      "add-files": "Add Files",
-      "file-actions": "File actions",
-      "download": "Download",
-      "view": "View",
-      "delete": "Delete",
-      "updated": "Updated",
-      "designed-steps": "Designed Steps",
-      "status": "Status",
-      "published": "Published",
-      "draft": "Draft",
-      "open": "Open",
-      "publish": "Publish",
-      "invite-email": "Invite by email",
-      "email-placeholder": "user@company.com",
-      "send-invite": "Send invite",
-      "invite-member": "Invite member",
-      "member-actions": "Member actions",
-      "make-owner": "Make owner",
-      "make-member": "Make member",
-      "remove-member": "Remove member",
-      "workflows-pagination": "Workflows pagination",
-      "no-files": "No files uploaded yet",
-      "no-chat-history": "No chat history available",
-      "no-compare-history": "No compare history available",
-      "no-summarize-history": "No summarize history available",
-      "no-extract-history": "No extract history available",
-      "no-workflows": "No workflows available",
-      "no-members": "No members added yet",
-      "confirm-delete": "Delete \"{{title}}\"?",
-      "confirm-remove-member": "Remove {{name}} from this project?",
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "pastWeek": "Past Week",
-      "older": "Older",
-      "edit": "Edit",
-      "title-updated": "Session title updated successfully",
-      "confirm-rename-title": "Confirm Rename",
-      "confirm-rename-message": "Are you sure you want to rename \"{{oldTitle}}\" to \"{{newTitle}}\"?"
-    },
-    "delete": {
-      "confirm-title": "Confirm Delete",
-      "confirm-message": "Are you sure you want to delete the project \"{{name}}\"? This action cannot be undone.",
-      "success": "Project \"{{title}}\" deleted successfully",
-      "error": "Failed to delete \"{{title}}\""
-    },
-    "error": {
-      "not-found": "Project not found",
-      "failed-to-load": "Failed to load project details",
-      "failed-to-load-session": "Failed to load session details",
-      "failed-to-create-session": "Failed to create session",
-      "session-not-found": "Session not found",
-      "failed-to-load-templates": "Failed to load templates",
-      "workflow-status-polling-failed": "Failed to poll workflow status",
-      "delete-failed": "Failed to delete {{title}}",
-      "failed-to-update-title": "Failed to update session title",
-      "no-files-selected": "No files selected",
-      "failed-to-upload-artifacts": "Failed to upload artifacts"
-    },
+    "subtitle": "Manage and organize your GenAI projects",
     "success": {
       "artifacts-uploaded": "Artifacts uploaded successfully"
+    },
+    "total": "Total",
+    "users": "Users"
+  },
+  "query_string": "Query string",
+  "quick_settings": "Quick settings",
+  "refresh": "Refresh",
+  "remove_favorite": "Remove from Favorite",
+  "response": "Response",
+  "result": "Result",
+  "retrieved_documents": "Retrieved documents",
+  "role": "Role",
+  "run-panel": "Run panel",
+  "running": "Running",
+  "selection": "Selection",
+  "source_file": "Source file",
+  "summarize": "Summarize",
+  "summarizeTpl": {
+    "addMore": "Add More Files",
+    "clear": "Clear All",
+    "copied": "Copied!",
+    "copy": "Copy to Clipboard",
+    "exportDocx": "Export as DOCX",
+    "exportError": {
+      "docx": "Failed to export DOCX. Please try again.",
+      "pdf": "Failed to export PDF. Please try again.",
+      "txt": "Failed to export TXT. Please try again."
+    },
+    "exportPdf": "Export as PDF",
+    "exportSuccess": {
+      "copy": "Summary copied to clipboard!",
+      "docx": "Summary exported as DOCX successfully!",
+      "pdf": "Summary exported as PDF successfully!",
+      "txt": "Summary exported as TXT successfully!"
+    },
+    "exportTxt": "Export as TXT",
+    "filesRequired": "At least one file is required",
+    "keyPoints": "Key Points",
+    "language": "Language",
+    "length": "Summary Length",
+    "lengths": {
+      "long": "Detailed",
+      "medium": "Medium",
+      "short": "Short"
+    },
+    "newSummary": "New Summary",
+    "options": "Summary Options",
+    "processedIn": "Processed in",
+    "processing": "Generating summary...",
+    "removeFile": "Remove File",
+    "results": "Summary Results",
+    "selectLanguage": "Select language",
+    "selectLength": "Select length",
+    "selectStyle": "Select style",
+    "sourceFiles": "Source Documents",
+    "start": "Generate Summary",
+    "statistics": "Statistics",
+    "style": "Summary Style",
+    "styles": {
+      "bullets": "Bullet Points",
+      "executive": "Executive Summary",
+      "paragraph": "Paragraph"
+    },
+    "summaryText": "Summary",
+    "title": "Document Summary",
+    "uploadFiles": "Upload Documents",
+    "uploading": "Uploading files...",
+    "wordCount": {
+      "original": "Original Words",
+      "reduction": "Reduction",
+      "summary": "Summary Words"
     }
   },
-  "chatPage": {
-    "loading": "Loading templates...",
-    "reload": "Reload",
-    "retry": "Retry",
-    "error": {
-      "title": "Failed to Load"
-    },
-    "noTemplates": {
-      "title": "No Templates Available",
-      "description": "No templates are currently enabled or configured"
-    },
-    "templateLoader": {
-      "loading": "Loading template...",
-      "error": "Failed to load template"
-    }
-  },
+  "system_prompt": "System prompt",
   "table": {
-    "paginator": {
-      "itemsPerPage": "Items per page",
-      "nextPage": "Next page",
-      "prevPage": "Previous page",
-      "firstPage": "First page",
-      "lastPage": "Last page",
-      "range": "{{start}}–{{end}} of {{length}}",
-      "rangeEmpty": "0 of {{length}}"
-    },
     "columns": "Columns",
     "filter": "Filter",
     "filter.contains": "Contains",
     "hint": {
       "reorder": "Drag headers to reorder columns"
     },
+    "paginator": {
+      "firstPage": "First page",
+      "itemsPerPage": "Items per page",
+      "lastPage": "Last page",
+      "nextPage": "Next page",
+      "prevPage": "Previous page",
+      "range": "{{start}}–{{end}} of {{length}}",
+      "rangeEmpty": "0 of {{length}}"
+    },
     "searchPlaceholder": "Search…"
   },
-  "nav": {
-    "dashboard": "GenAI Dashboard",
-    "reports": "GenAI Reports",
-    "team": "GenAI Team",
-    "components": "GenAI Components",
-    "genai-chat": "GenAI Chat",
-    "genai-compare": "GenAI Compare",
-    "genai-workflows": "GenAI Workflows",
-    "genai-projects": "GenAI Projects",
-    "genai-sessions": "GenAI Session :  {{name}}",
-    "genai-admin": "GenAI Admin",
-    "admin": "Admin"
-  },
-  "ai": {
-    "chat": "Chat Scope",
-    "projects": "Projects Scope",
-    "compare": "Compare Scope",
-    "workflows": "Workflows Scope",
-    "provider": "Provider",
-    "model": "Model",
-    "temperature": "Temperature",
-    "max_tokens": "Max tokens",
-    "global": "Global Scope",
-    "scope": "Scope",
-    "variant": "Variant",
-    "value": "Value"
-  },
-  "ai_progress": {
-    "embed": "Documents integration",
-    "retrieve": "Retrieve relevant documents",
-    "convert_and_chunk": " Document conversion",
-    "chat": "AI query",
-    "embed_langchain_documents": "Convert documents to vectors",
-    "store_embedded_langchain_documents": "Store document vectors"
-  },
-  "error": {
-    "403": {
-      "title": "Forbidden",
-      "text": "You don’t have access to this page."
-    },
-    "404": {
-      "title": "Page not found",
-      "text": "We couldn’t find"
-    },
-    "label": "Error",
-    "failed-to-load-projects": "Failed to load projects",
-    "failed-to-load-project-artifacts": "Failed to load artifacts for project {{projectId}}",
-    "user_registration_failed": "User registration failed"
-  },
-  "common": {
-    "back": "Back",
-    "home": "Home",
-    "signIn": "Sign in"
-  },
-  "chat": "chat",
-  "chatTpl": {
-    "name": "chat",
-    "title": "Chat",
-    "placeholder": "Type your message...",
-    "empty": "No messages yet. Start a conversation!",
-    "typing": "Typing...",
-    "send": "Send message",
-    "edit": "Edit message",
-    "delete": "Delete message",
-    "save": "Save",
-    "attachFile": "Attach file",
-    "cancel": "Cancel",
-    "clear": "Clear chat",
-    "scrollToBottom": "Scroll to bottom",
-    "input": "Message input",
-    "editMessage": "Edit message",
-    "messages": "Chat messages",
-    "editContent": "Edit content",
-    "acceptedFormats": "Accepted formats: {{formats}}",
-    "removeFile": "Remove file",
-    "waitingForTasks": "Waiting for ongoing tasks to complete...",
-    "emptyState": "No messages yet. Start a conversation!",
-    "error": {
-      "maxFilesExceeded": "You can attach a maximum of {{maxFiles}} files.",
-      "emptyMessage": "Message cannot be empty."
-    }
-  },
+  "threshold": "Threshold",
+  "tip": "Tip",
+  "toggle": "Fold",
+  "toolbox": "Toolbox",
+  "untoggle": "Unfold",
+  "user_prompt": "User prompt",
   "workflow": {
-    "runPanel": {
-      "title": "Runs panel",
-      "run": "Run workflow",
-      "empty": "No workflow available.",
-      "queued": "Queued",
-      "running": "Running",
-      "success": "Success",
-      "error": "Error",
-      "skipped": "Skipped",
-      "cancel_pipe": "Cancel pipeline",
-      "now_stages": "No stages to show.",
-      "cancel_stage": "Cancel stage",
-      "options": "View options",
-      "go_chat": "Go to chat",
-      "artifacts": "Artifacts",
-      "details": "Details",
-      "results": "Results",
-      "auto": "Auto",
-      "params": "Params",
-      "logs": "Logs",
-      "preview": "Preview",
-      "submit": "Submit"
-    },
     "errors": {
+      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
       "exactlyOneInput": "The workflow must have exactly one Input node.",
       "exactlyOneResult": "The workflow must have exactly one Result node.",
+      "invalid_fields": "Node has invalid fields",
+      "noCompatibleActions": "No node available",
+      "noDirectInputToResult": "You cannot connect Input directly to Result.",
       "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
       "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
-      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
-      "saveFailed": "Failed to save the workflow.",
-      "noDirectInputToResult": "You cannot connect Input directly to Result.",
-      "invalid_fields": "Node has invalid fields",
-      "noCompatibleActions": "No node available"
+      "saveFailed": "Failed to save the workflow."
     },
     "labels": {
-      "quickAdd": "Connections",
-      "already_dropped": "Existing nodes"
+      "already_dropped": "Existing nodes",
+      "quickAdd": "Connections"
+    },
+    "runPanel": {
+      "artifacts": "Artifacts",
+      "auto": "Auto",
+      "cancel_pipe": "Cancel pipeline",
+      "cancel_stage": "Cancel stage",
+      "details": "Details",
+      "empty": "No workflow available.",
+      "error": "Error",
+      "go_chat": "Go to chat",
+      "logs": "Logs",
+      "now_stages": "No stages to show.",
+      "options": "View options",
+      "params": "Params",
+      "preview": "Preview",
+      "queued": "Queued",
+      "results": "Results",
+      "run": "Run workflow",
+      "running": "Running",
+      "skipped": "Skipped",
+      "submit": "Submit",
+      "success": "Success",
+      "title": "Runs panel"
     }
   },
-  "compareTpl": {
-    "title": "Document Comparison",
-    "file1": "First Document",
-    "file2": "Second Document",
-    "clear": "Clear All",
-    "clearFile": "Remove File",
-    "fileRequired": "File is required",
-    "uploading": "Uploading file...",
-    "comparing": "Comparing documents...",
-    "start": "Compare Documents",
-    "results": "Comparison Results",
-    "similar": "similar",
-    "added": "Added",
-    "removed": "Removed",
-    "modified": "Modified",
-    "line": "Line",
-    "noDifferences": "No differences found! Documents are identical.",
-    "loadedFiles": "Loaded Documents"
-  },
-  "summarizeTpl": {
-    "title": "Document Summary",
-    "uploadFiles": "Upload Documents",
-    "addMore": "Add More Files",
-    "removeFile": "Remove File",
-    "filesRequired": "At least one file is required",
-    "uploading": "Uploading files...",
-    "processing": "Generating summary...",
-    "start": "Generate Summary",
-    "results": "Summary Results",
-    "keyPoints": "Key Points",
-    "summaryText": "Summary",
-    "wordCount": {
-      "original": "Original Words",
-      "summary": "Summary Words",
-      "reduction": "Reduction"
-    },
-    "statistics": "Statistics",
-    "sourceFiles": "Source Documents",
-    "processedIn": "Processed in",
-    "clear": "Clear All",
-    "newSummary": "New Summary",
-    "options": "Summary Options",
-    "length": "Summary Length",
-    "style": "Summary Style",
-    "language": "Language",
-    "selectLength": "Select length",
-    "selectStyle": "Select style",
-    "selectLanguage": "Select language",
-    "lengths": {
-      "short": "Short",
-      "medium": "Medium",
-      "long": "Detailed"
-    },
-    "styles": {
-      "bullets": "Bullet Points",
-      "paragraph": "Paragraph",
-      "executive": "Executive Summary"
-    },
-    "copy": "Copy to Clipboard",
-    "copied": "Copied!",
-    "exportPdf": "Export as PDF",
-    "exportDocx": "Export as DOCX",
-    "exportTxt": "Export as TXT",
-    "exportSuccess": {
-      "copy": "Summary copied to clipboard!",
-      "pdf": "Summary exported as PDF successfully!",
-      "docx": "Summary exported as DOCX successfully!",
-      "txt": "Summary exported as TXT successfully!"
-    },
-    "exportError": {
-      "pdf": "Failed to export PDF. Please try again.",
-      "docx": "Failed to export DOCX. Please try again.",
-      "txt": "Failed to export TXT. Please try again."
-    }
-  },
-  "exportTpl": {
-    "exporting": "Exporting Document...",
-    "stages": {
-      "initializing": "Initializing export...",
-      "preparing": "Preparing document...",
-      "capturing": "Capturing screenshot...",
-      "processing": "Processing content...",
-      "formatting": "Formatting document...",
-      "embedding": "Embedding images...",
-      "adding_content": "Adding content...",
-      "adding_keypoints": "Adding key points...",
-      "building_document": "Building document structure...",
-      "creating_file": "Creating file...",
-      "finalizing": "Finalizing...",
-      "saving": "Saving file...",
-      "copying": "Copying to clipboard...",
-      "complete": "Export complete!"
-    },
-    "success": {
-      "pdf": "PDF exported successfully!",
-      "docx": "Word document exported successfully!",
-      "txt": "Text file exported successfully!",
-      "copy": "Content copied to clipboard!"
-    },
-    "error": {
-      "pdf": "Failed to export PDF",
-      "docx": "Failed to export Word document",
-      "txt": "Failed to export text file",
-      "copy": "Failed to copy to clipboard"
-    }
-  },
-  "extractTpl": {
-    "title": "Entity Extraction",
-    "uploadFiles": "Upload Files",
-    "options": "Extraction Options",
-    "text": "Text Input",
-    "textPlaceholder": "Enter or paste text to extract entities from...",
-    "entities": "Entity Types",
-    "entitiesPlaceholder": "person, organization, location, date, email",
-    "entitiesHelper": "Enter entity types separated by commas",
-    "entitiesRequired": "At least one entity type is required",
-    "format": "Output Format",
-    "selectFormat": "Select output format",
-    "uploading": "Uploading files...",
-    "processing": "Extracting entities...",
-    "start": "Extract Entities",
-    "clear": "Clear All",
-    "exportPdf": "Export as PDF",
-    "exportDocx": "Export as DOCX",
-    "exportTxt": "Export as TXT",
-    "noFilesOrText": "Please upload files or enter text",
-    "noEntities": "Please specify entity types",
-    "uploadError": "Failed to upload file",
-    "extractionError": "Extraction failed",
-    "filesRequired": "At least one file or text is required"
-  },
-  "extractResult": {
-    "title": "Extraction Results",
-    "details": "Extraction Details",
-    "status": "Status",
-    "totalEntities": "Total Entities",
-    "filesProcessed": "Files Processed",
-    "entityTypes": "Entity Types",
-    "sourceText": "Source Text",
-    "noEntitiesFound": "No entities found",
-    "viewContext": "View Context",
-    "exportResults": "Export Results",
-    "pending": "Pending",
-    "processing": "Processing",
-    "completed": "Completed",
-    "failed": "Failed"
-  },
-  "form": {
-    "files": {
-      "count": "{{count}} Files"
-    },
-    "actions": {
-      "browse": "Browse Files",
-      "addFiles": "Add files",
-      "clear": "Clear",
-      "remove": "Delete",
-      "replaceFile": "Replace file",
-      "dropHere": "Drop files here",
-      "dropFilesHere": "Drop files here (or click to browse)",
-      "or": "or"
-    },
-    "labels": {
-      "files": "Files",
-      "file": "File",
-      "input": "Text",
-      "email": "Email",
-      "password": "Password",
-      "notify": "Notification",
-      "role": "Role",
-      "volume": "Volume",
-      "dob": "Date of Birth",
-      "tags": "Tags",
-      "country": "Country",
-      "phone": "Phone",
-      "fullname": "Full name",
-      "price": "Price",
-      "themeSwitcher": "Theme",
-      "language": "Language",
-      "textarea": "Textarea",
-      "name": "Name",
-      "threshold": "Threshold"
-    },
-    "placeholders": {
-      "file": "Upload file(s)",
-      "input": "Enter text",
-      "email": "Enter your email",
-      "password": "Enter your password",
-      "notify": "Enable notifications",
-      "role": "Select a role",
-      "volume": "Set the volume",
-      "dob": "Select a date",
-      "tags": "Add tags",
-      "country": "Select a country",
-      "phone": "Enter your phone number",
-      "fullname": "Enter the full name",
-      "price": "Enter the price",
-      "textarea": "Write your text...",
-      "name": "Name...",
-      "threshold": "Threshold ..."
-    },
-    "hints": {
-      "file": "Select a File",
-      "input": "Free text",
-      "email": "Must be a valid email address",
-      "password": "At least 8 characters, including a number",
-      "notify": "Receive alerts and notifications",
-      "role": "User role in the app",
-      "volume": "Adjust between 0 and 200",
-      "threshold": "Adjust between 0 and 100",
-      "dob": "Format: YYYY-MM-DD",
-      "tags": "Separate with commas",
-      "country": "Your current country of residence",
-      "phone": "Include country code",
-      "textarea": "Max {{max}} characters.",
-      "dropAccepted": "Accepted: {{types}}"
-    },
-    "errors": {
-      "fixFields": "Please fix the highlighted fields.",
-      "prompt": {
-        "required": "Field is required.",
-        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
-        "maxlength": "Maximum {{requiredLength}} characters allowed.",
-        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
-      },
-      "name": {
-        "required": "Field is required.",
-        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
-        "maxlength": "Maximum {{requiredLength}} characters allowed.",
-        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
-      },
-      "fullname": {
-        "required": "Field is required.",
-        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
-        "maxlength": "Maximum {{requiredLength}} characters allowed.",
-        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
-      },
-      "file": {
-        "accept": "Field only accepts the following types: {{requiredTypes}}.",
-        "required": "Field is required.",
-        "maxFiles": "Maximum {{requiredLength}} file(s) allowed (you selected {{actualLength}}).",
-        "maxFileSize": "Maximum file size {{requiredLength}} allowed.",
-        "maxTotalSize": "Maximum total size {{requiredLength}} allowed."
-      },
-      "input": {
-        "required": "Field is required.",
-        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
-        "maxlength": "Maximum {{requiredLength}} characters allowed.",
-        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\")."
-      },
-      "email": {
-        "required": "Email is required.",
-        "invalid": "Enter a valid email address.",
-        "tld": "The domain extension must be at least 2 letters.",
-        "domain": "The email domain must contain a dot (e.g. example.com).",
-        "maxlength": "Email can’t exceed {{requiredLength}} characters."
-      },
-      "password": {
-        "required": "Password is required.",
-        "minlength": "At least {{requiredLength}} characters (you entered {{actualLength}}).",
-        "maxlength": "Password can’t exceed {{requiredLength}} characters.",
-        "uppercase": "Include at least one uppercase letter.",
-        "digit": "Include at least one number.",
-        "special": "Include at least one special character."
-      },
-      "role": {
-        "required": "Role is required."
-      },
-      "dob": {
-        "required": "Date is required.",
-        "format": "Invalid date format: {{text}}",
-        "pattern": "Invalid date: {{text}}",
-        "parse": "Invalid date: {{text}}",
-        "minDate": "Date must be on or after {{min}}",
-        "maxDate": "Date must be on or before {{max}}",
-        "dateNotAllowed": "This date is not allowed."
-      },
-      "phone": {
-        "required": "Phone number is required.",
-        "invalid": "Enter a valid phone number (e.g., +35212345678).",
-        "phoneDigitsLen": "Phone must have {{min}}–{{max}} digits (currently {{actual}})."
-      },
-      "country": {
-        "required": "Country is required.",
-        "invalid": "Select a country.",
-        "notAllowed": "Selected value is not allowed."
-      },
-      "volume": {
-        "required": "Volume is required.",
-        "min": "Minimum is {{min}} (current {{actual}}).",
-        "max": "Maximum is {{max}} (current {{actual}})."
-      },
-      "notify": {
-        "required": "Notify is required.",
-        "invalid": "Toggle On Notifications."
-      },
-      "tags": {
-        "required": "Tags are required.",
-        "invalid": "Select a tag.",
-        "minOne": "Please select at least one."
-      },
-      "threshold": {
-        "required": "Threshold is required."
-      },
-      "textarea": {
-        "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}}).",
-        "maxlength": "Please keep it under {{requiredLength}} characters (currently {{actualLength}}).",
-        "invalidChars": "Unsupported character: {{char}}"
-      }
-    }
-  }
+  "workflow_help": "Drag from the palette. Click a node's right port (source) then another node's left port (target) to connect. Right-click nodes for options."
 }

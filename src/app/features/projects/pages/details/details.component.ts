@@ -8,7 +8,7 @@ import {
     OnInit,
     signal,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -37,6 +37,8 @@ import { DateTime } from 'luxon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
+import { FavoritesFacade } from '@shared/services/favorites.facade';
+import { FavoriteType } from '@store/interfaces/favorites.model';
 
 @Component({
     selector: 'app-project-details',
@@ -76,11 +78,19 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     private readonly destroyRef = inject(DestroyRef);
     private readonly toast = inject(ToastService);
     private readonly store = inject(Store);
+    private readonly favoritesFacade = inject(FavoritesFacade);
+    private dialog = inject(MatDialog);
 
     // State
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
     readonly project = signal<ProjectDto | null>(null);
+
+    // Computed URL for favorites
+    private readonly currentUrl = computed(() => {
+        const projectId = this.project()?.project_id;
+        return projectId ? `/genai-projects/${projectId}` : null;
+    });
 
     // User role from store
     readonly isAdmin$ = this.store
@@ -142,6 +152,11 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             [group]: !state[group]
         }));
     }
+    private readonly loading$ = toObservable(this.loading);
+    private readonly favoriteSessionUrls = toSignal(
+        this.favoritesFacade.favorites$,
+        { initialValue: [] }
+    );
 
     /* 
         // Chat History
@@ -183,51 +198,8 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         );
      */
 
-    constructor(
-        private dialog: MatDialog,
-    ) {
-        // Toolbar actions
-        const back: ToolbarAction = {
-            id: 'back',
-            icon: 'arrow_back',
-            tooltip: this.translateService.instant("common.back"),
-            class: "error",
-            variant: "flat",
-            label: this.translateService.instant("common.back"),
-            click: () => this.router.navigate(['/genai-projects']),
-        };
-        const newSession: ToolbarAction = {
-            id: 'new-session',
-            icon: 'add',
-            tooltip: this.translateService.instant("new-session"),
-            class: "primary",
-            variant: "flat",
-            label: this.translateService.instant("new-session"),
-            disabled$: toObservable(computed(() => this.loading())),
-            click: async () => {
-                const projectId = this.project()?.project_id;
-                if (projectId) {
-                    this.loading.set(true);
-                    try {
-                        const createdSession = await firstValueFrom(this.projectsService.createProjectsSessions(projectId));
-                        if (createdSession && createdSession.session_id) {
-                            this.router.navigate(['/genai-projects', projectId, 'sessions', createdSession.session_id]);
-                            return;
-                        }
-                    } catch (error) {
-                        this.error.set(
-                            this.translateService.instant('projects.error.failed-to-create-session')
-                        );
-                        this.toast.showError(
-                            this.translateService.instant('projects.error.failed-to-create-session') + " " + (error instanceof Error ? `: ${error.message}` : ''),
-                        );
-                    } finally {
-                        this.loading.set(false);
-                    }
-                }
-            },
-        };
-        this.toolbarService.scope(this.destroyRef, [back, newSession]);
+    constructor() {
+        this.setupToolbarActions();
     }
 
     ngOnInit(): void {
@@ -238,6 +210,211 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         }
         this.loadProjectDetails(projectId);
     }
+
+    private async loadProjectDetails(projectId: string): Promise<void> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        try {
+            const projects = await firstValueFrom(this.projectsService.getProjectsList());
+            const project = projects?.find((p) => p.project_id === projectId);
+
+            if (!project) {
+                this.error.set(
+                    this.translateService.instant('projects.error.not-found')
+                );
+                return;
+            }
+
+            this.project.set(project);
+
+            // Update toolbar with favorites after project is loaded
+            this.updateToolbarWithFavorites();
+
+            // Breadcrumbs
+            this.layoutService.setBreadcrumbs([
+                { label: this.translateService.instant("nav.genai-projects"), route: '/genai-projects' },
+                { label: project.name || "" },
+            ]);
+
+            this.loadProjectArtifacts(projectId);
+            this.loadProjectSessions(projectId);
+        } catch (err) {
+            this.error.set(
+                this.translateService.instant('projects.error.failed-to-load')
+            );
+            this.toast.showError(
+                this.translateService.instant('projects.error.failed-to-load')
+            );
+            console.error('Failed to load project details:', err);
+        } finally {
+            this.loading.set(false);
+        }
+    }
+
+
+    private updateToolbarWithFavorites(): void {
+        const url = this.currentUrl();
+        if (!url) return;
+
+        const back: ToolbarAction = {
+            id: 'back',
+            icon: 'arrow_back',
+            tooltip: this.translateService.instant("common.back"),
+            class: "error",
+            variant: "flat",
+            label: this.translateService.instant("common.back"),
+            click: () => this.router.navigate(['/genai-projects']),
+        };
+
+        const newSession: ToolbarAction = {
+            id: 'new-session',
+            icon: 'add',
+            tooltip: this.translateService.instant("new-session"),
+            class: "primary",
+            variant: "flat",
+            label: this.translateService.instant("new-session"),
+            disabled$: this.loading$, // Use the pre-created observable
+            click: async () => {
+                const projectId = this.project()?.project_id;
+                if (projectId) {
+                    this.loading.set(true);
+                    try {
+                        const createdSession = await firstValueFrom(
+                            this.projectsService.createProjectsSessions(projectId)
+                        );
+                        if (createdSession?.session_id) {
+                            this.router.navigate([
+                                '/genai-projects',
+                                projectId,
+                                'sessions',
+                                createdSession.session_id
+                            ]);
+                        }
+                    } catch (error) {
+                        this.error.set(
+                            this.translateService.instant('projects.error.failed-to-create-session')
+                        );
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.failed-to-create-session') +
+                            (error instanceof Error ? `: ${error.message}` : '')
+                        );
+                    } finally {
+                        this.loading.set(false);
+                    }
+                }
+            },
+        };
+
+        this.favoritesFacade.loadFavorites();
+
+        this.favoritesFacade.isFavorite(url).pipe(
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(isFavorited => {
+            const favoriteAction: ToolbarAction = isFavorited
+                ? {
+                    id: 'unfavorite',
+                    icon: 'favorite',
+                    tooltip: 'remove_favorite',
+                    class: "warn",
+                    variant: "icon",
+                    label: this.translateService.instant("remove_favorite"),
+                    click: () => this.handleRemoveFavorite(),
+                }
+                : {
+                    id: 'favorite',
+                    icon: 'favorite_border',
+                    tooltip: 'add_favorite',
+                    class: "primary",
+                    variant: "icon",
+                    label: this.translateService.instant("add_favorite"),
+                    click: () => this.handleAddFavorite(),
+                };
+
+            this.toolbarService.scope(this.destroyRef, [back, newSession, favoriteAction]);
+        });
+    }
+
+    private setupToolbarActions(): void {
+        const back: ToolbarAction = {
+            id: 'back',
+            icon: 'arrow_back',
+            tooltip: this.translateService.instant("common.back"),
+            class: "error",
+            variant: "flat",
+            label: this.translateService.instant("common.back"),
+            click: () => this.router.navigate(['/genai-projects']),
+        };
+
+        const newSession: ToolbarAction = {
+            id: 'new-session',
+            icon: 'add',
+            tooltip: this.translateService.instant("new-session"),
+            class: "primary",
+            variant: "flat",
+            label: this.translateService.instant("new-session"),
+            disabled$: this.loading$, // Use the pre-created observable
+            click: async () => {
+                const projectId = this.project()?.project_id;
+                if (projectId) {
+                    this.loading.set(true);
+                    try {
+                        const createdSession = await firstValueFrom(
+                            this.projectsService.createProjectsSessions(projectId)
+                        );
+                        if (createdSession?.session_id) {
+                            this.router.navigate([
+                                '/genai-projects',
+                                projectId,
+                                'sessions',
+                                createdSession.session_id
+                            ]);
+                        }
+                    } catch (error) {
+                        this.error.set(
+                            this.translateService.instant('projects.error.failed-to-create-session')
+                        );
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.failed-to-create-session') +
+                            (error instanceof Error ? `: ${error.message}` : '')
+                        );
+                    } finally {
+                        this.loading.set(false);
+                    }
+                }
+            },
+        };
+
+        // Initial toolbar setup
+        this.toolbarService.scope(this.destroyRef, [back, newSession]);
+    }
+
+    private handleAddFavorite(): void {
+        const url = this.currentUrl();
+        const project = this.project();
+
+        if (!url || !project) return;
+
+        const title = project.name || project.project_id || this.translateService.instant('projects.untitled');
+
+        this.favoritesFacade.addFavorite(url, title, FavoriteType.PROJECT);
+
+        setTimeout(() => this.updateToolbarWithFavorites(), 100);
+    }
+
+    private handleRemoveFavorite(): void {
+        const url = this.currentUrl();
+        if (!url) return;
+
+        firstValueFrom(this.favoritesFacade.favorites$).then(allFavorites => {
+            const matchingFavorite = allFavorites.find(fav => fav.url === url);
+            if (matchingFavorite) {
+                this.favoritesFacade.removeFavorite(matchingFavorite.id);
+                setTimeout(() => this.updateToolbarWithFavorites(), 100);
+            }
+        });
+    }
+
 
     ngOnDestroy(): void {
         this.layoutService.clearBreadcrumbs();
@@ -311,46 +488,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         })).sort(
             (a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()
         );
-    }
-
-    private async loadProjectDetails(projectId: string): Promise<void> {
-        this.loading.set(true);
-        this.error.set(null);
-
-        try {
-            // Load project data
-            const projects = await firstValueFrom(this.projectsService.getProjectsList());
-            const project = projects?.find((p) => p.project_id === projectId);
-
-            if (!project) {
-                this.error.set(
-                    this.translateService.instant('projects.error.not-found')
-                );
-                return;
-            }
-
-            this.project.set(project);
-
-            // Breadcrumbs items
-            this.layoutService.setBreadcrumbs([
-                { label: this.translateService.instant("nav.genai-projects"), route: '/genai-projects' },
-                { label: project.name || "" }, // Current page, no route
-            ]);
-
-            // Load mock data - replace with actual API calls
-            this.loadProjectArtifacts(projectId);
-            this.loadProjectSessions(projectId);
-        } catch (err) {
-            this.error.set(
-                this.translateService.instant('projects.error.failed-to-load')
-            );
-            this.toast.showError(
-                this.translateService.instant('projects.error.failed-to-load'),
-            );
-            console.error('Failed to load project details:', err);
-        } finally {
-            this.loading.set(false);
-        }
     }
 
     // File operations
@@ -662,6 +799,85 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             this.members.update((arr) => arr.filter((x) => x.id !== m.id));
         }
      */
+
+    // Check if a session is favorited
+    isFavoriteSession(sessionId: string): boolean {
+        const projectId = this.project()?.project_id;
+        if (!projectId) return false;
+
+        const sessionUrl = `/genai-projects/${projectId}/sessions/${sessionId}`;
+        return this.favoriteSessionUrls().some(fav => fav.url === sessionUrl);
+    }
+
+    // Toggle session favorite
+    async toggleSessionFavorite(session: HistoryItem): Promise<void> {
+        const projectId = this.project()?.project_id;
+        if (!projectId) return;
+
+        const sessionUrl = `/genai-projects/${projectId}/sessions/${session.id}`;
+        const isFavorited = this.isFavoriteSession(session.id);
+
+        if (isFavorited) {
+            // Remove from favorites
+            const favorite = this.favoriteSessionUrls().find(fav => fav.url === sessionUrl);
+            if (favorite) {
+                const confirmed = await firstValueFrom(
+                    this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+                        ConfirmDialogComponent,
+                        {
+                            data: {
+                                title: this.translateService.instant('favorites.confirm-remove-title'),
+                                message: this.translateService.instant('favorites.confirm-remove-message', {
+                                    title: session.title
+                                }),
+                                context: { session },
+                            }
+                        }
+                    ).afterClosed()
+                );
+
+                if (!confirmed) return;
+
+                this.favoritesFacade.removeFavorite(favorite.id);
+            }
+        } else {
+            // Add to favorites
+            const title = session.title || session.id || this.translateService.instant('new-session');
+            this.favoritesFacade.addFavorite(sessionUrl, title, FavoriteType.CHAT);
+        }
+    }
+
+    // Batch operations for favorites
+    async addAllSessionsToFavorites(): Promise<void> {
+        const projectId = this.project()?.project_id;
+        if (!projectId) return;
+
+        const confirmed = await firstValueFrom(
+            this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+                ConfirmDialogComponent,
+                {
+                    data: {
+                        title: this.translateService.instant('favorites.add-all-sessions'),
+                        message: this.translateService.instant('favorites.add-all-sessions-message', {
+                            count: this.sessionsCount()
+                        }),
+                    }
+                }
+            ).afterClosed()
+        );
+
+        if (!confirmed) return;
+
+        this.sessionsHistory().forEach(session => {
+            if (!this.isFavoriteSession(session.id)) {
+                const sessionUrl = `/genai-projects/${projectId}/sessions/${session.id}`;
+                const title = session.title || session.id || this.translateService.instant('new-session');
+                this.favoritesFacade.addFavorite(sessionUrl, title, FavoriteType.CHAT);
+            }
+        });
+
+        this.toast.show(this.translateService.instant('favorites.added'));
+    }
 
     onTitleChange(title: string): void {
         // Handle title change if needed
