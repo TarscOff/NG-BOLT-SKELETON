@@ -270,7 +270,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
       // Load session data
       const session = await firstValueFrom(this.projectsService.getProjectsSessions(projectId));
       const current_session = session?.find((s) => s.session_id === this.sessionId());
-      if (!session) {
+      if (!current_session) {
         this.error.set(
           this.translateService.instant('projects.error.session-not-found')
         );
@@ -279,7 +279,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
 
       this.session.set(current_session || null);
 
-      if (this.sessionId()) {
+      if (current_session) {
         this.loadSessionArtifacts();
       }
     } catch (err) {
@@ -343,46 +343,51 @@ export class SessionsComponent implements OnInit, OnDestroy {
       click: () => this.router.navigate(['/genai-projects', this.projectId()]),
     };
 
-    const artifactsBtn: ToolbarAction = {
-      id: 'artifacts',
-      icon: 'folder',
-      tooltip: 'artifacts',
-      class: "primary",
-      variant: "flat",
-      label: this.translateService.instant("workflow.runPanel.artifacts") + ` (${this.filesCount()})`,
-      click: () => this.toggleArtifactsPanel(),
-    };
+    if (this.session()) {
+      const artifactsBtn: ToolbarAction = {
+        id: 'artifacts',
+        icon: 'folder',
+        tooltip: 'artifacts',
+        class: "primary",
+        variant: "flat",
+        label: this.translateService.instant("workflow.runPanel.artifacts") + ` (${this.filesCount()})`,
+        click: () => this.toggleArtifactsPanel(),
+      };
 
-    // Re-check favorite status when setting toolbar buttons
-    this.favoritesFacade.loadFavorites(); // Force reload from storage
+      // Re-check favorite status when setting toolbar buttons
+      this.favoritesFacade.loadFavorites(); // Force reload from storage
 
-    this.favoritesFacade.isFavorite(currentUrl).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(isFav => {
-      if (isFav) {
-        const favBtnOff: ToolbarAction = {
-          id: 'unfavorite',
-          icon: 'favorite',
-          tooltip: 'remove_favorite',
-          class: "warn",
-          variant: "icon",
-          label: this.translateService.instant("remove_favorite"),
-          click: () => this.removeFavorite(),
-        };
-        this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOff]);
-      } else {
-        const favBtnOn: ToolbarAction = {
-          id: 'favorite',
-          icon: 'favorite_border',
-          tooltip: 'add_favorite',
-          class: "primary",
-          variant: "icon",
-          label: this.translateService.instant("add_favorite"),
-          click: () => this.addFavorite(),
-        };
-        this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOn]);
-      }
-    });
+      this.favoritesFacade.isFavorite(currentUrl).pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(isFav => {
+        if (isFav) {
+          const favBtnOff: ToolbarAction = {
+            id: 'unfavorite',
+            icon: 'favorite',
+            tooltip: 'remove_favorite',
+            class: "error",
+            variant: "icon",
+            label: this.translateService.instant("remove_favorite"),
+            click: () => this.removeFavorite(),
+          };
+          this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOff]);
+        } else {
+          const favBtnOn: ToolbarAction = {
+            id: 'favorite',
+            icon: 'favorite_border',
+            tooltip: 'add_favorite',
+            class: "primary",
+            variant: "icon",
+            label: this.translateService.instant("add_favorite"),
+            click: () => this.addFavorite(),
+          };
+          this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOn]);
+        }
+      });
+    } else {
+      // If error do not show favorite/artifacts buttons
+      this.toolbarService.scope(this.destroyRef, [back]);
+    }
   }
 
   private addFavorite(): void {

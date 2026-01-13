@@ -316,7 +316,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                     id: 'unfavorite',
                     icon: 'favorite',
                     tooltip: 'remove_favorite',
-                    class: "warn",
+                    class: "error",
                     variant: "icon",
                     label: this.translateService.instant("remove_favorite"),
                     click: () => this.handleRemoveFavorite(),

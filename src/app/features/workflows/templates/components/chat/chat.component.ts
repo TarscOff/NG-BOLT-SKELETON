@@ -40,7 +40,6 @@ import { ChatMessageResponseDto, TaskDto, WorkflowStatusDto } from '@features/pr
 import { ToastService } from '@cadai/pxs-ng-core/services';
 import { DateTime } from 'luxon';
 import { ProjectsService } from '@features/projects/services/projects.service';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-chat-tpl',
@@ -59,29 +58,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('taskAnimation', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(-20px)', height: 0 }),
-        animate('100ms ease-out', style({ opacity: 1, transform: 'translateX(0)', height: '*' }))
-      ]),
-      transition('* => completed', [
-        animate('200ms ease-in-out', style({
-          opacity: 0.5,
-          transform: 'translateX(-30px)',
-        }))
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({
-          opacity: 0,
-          transform: 'translateX(-50px)',
-          height: '0px',
-          padding: '0',
-          margin: '0'
-        }))
-      ])
-    ])
-  ]
+
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
@@ -185,9 +162,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
   private readonly destroy$ = new Subject<void>();
   private intersectionObserver?: IntersectionObserver;
-  private taskStatesMap = new Map<string, string>();
-  private completedTasksTimestamps = new Map<string, number>();
-  private readonly TASK_REMOVAL_DELAY = 2000; // 2 seconds delay before removal
 
   // ============================================================================
   // PUBLIC COMPUTED SIGNALS
@@ -206,31 +180,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   isPolling$ = computed(() => this._isPolling());
   isPreloadedMode$ = computed(() => this._mode().mode === 'preloaded');
   hasRunningWorkflows$ = computed(() => this._hasRunningWorkflows());
-
-  showWorkflowStatus$ = computed(() => this._isPolling() || this._hasRunningWorkflows());
-
   effectiveMaxLength$ = computed(() => {
     const config = this._config();
     return config.maxLength ?? config.maxMessageLength ?? 4000;
   });
-
   effectivePlaceholder$ = computed(() => {
     const config = this._config();
     return config.placeholder ?? 'chatTpl.placeholder';
   });
-
   effectiveEmptyMessage$ = computed(() => {
     const config = this._config();
     return config.emptyStateMessage ?? 'chatTpl.empty';
   });
-
   canSendMessage$ = computed(() => {
     const isLoading = this._isLoading();
     const isTyping = this._isTyping();
     const disabled = this.disabled;
     return !isLoading && !isTyping && !disabled;
   });
-
   canEditDelete$ = computed(() => {
     const mode = this._mode();
     const config = this._config();
@@ -497,7 +464,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           );
 
           if (runningWorkflows.length > 0) {
-            console.log(`Found ${runningWorkflows.length} running workflows on load`);
+            // console.log(`Found ${runningWorkflows.length} running workflows on load`);
             this._hasRunningWorkflows.set(true);
 
             // Start polling for the most recent running workflow
@@ -511,10 +478,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
               return dateB - dateA;
             })[0];
 
-            console.log(`Starting polling for workflow: ${mostRecentWorkflow.workflow_instance_id} (${mostRecentWorkflow.workflow_status})`);
+            // console.log(`Starting polling for workflow: ${mostRecentWorkflow.workflow_instance_id} (${mostRecentWorkflow.workflow_status})`);
             this.startPollingWorkflowStatus(mostRecentWorkflow.workflow_instance_id);
           } else {
-            console.log('No running workflows found on load');
+            // console.log('No running workflows found on load');
             this._hasRunningWorkflows.set(false);
             this._workflowStatus.set(null);
           }
@@ -536,6 +503,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     let notFoundCount = 0;
 
     this._isPolling.set(true);
+
+    // Set initial state  of this._workflowStatus.set(status);
+    this._workflowStatus.set({
+      workflow_status: 'pending',
+      workflow_instance_id: workflowInstanceId,
+      workflow_name: 'Initializing workflow...',
+      tasks: [],
+      created_on: DateTime.now(),
+      updated_on: DateTime.now(),
+      completed_on: DateTime.now()
+    });
 
     interval(2000)
       .pipe(
@@ -570,6 +548,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
               );
 
               // Include ALL task statuses (pending, running, completed, failed)
+              // Include ALL task statuses (pending, running, completed, failed)
               const allActiveTasks = allRunningWorkflows
                 .flatMap(wf => wf.tasks?.map(task => ({
                   ...task,
@@ -586,40 +565,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                   return dateA - dateB;
                 });
 
-              // Track newly completed tasks and mark when they completed
-              const now = Date.now();
-              allActiveTasks.forEach(task => {
-                if (task.task_status === 'completed' && !this.completedTasksTimestamps.has(task.task_id)) {
-                  console.log(`Task ${task.task_name} just completed, marking for removal`);
-                  this.completedTasksTimestamps.set(task.task_id, now);
-                }
-              });
-
-              // Filter out tasks that have been completed for longer than TASK_REMOVAL_DELAY
-              const visibleTasks = allActiveTasks.filter(task => {
-                const completedTime = this.completedTasksTimestamps.get(task.task_id);
-                if (completedTime) {
-                  const timeSinceCompletion = now - completedTime;
-                  const shouldKeep = timeSinceCompletion < this.TASK_REMOVAL_DELAY;
-
-                  if (!shouldKeep) {
-                    console.log(`Removing task ${task.task_name} after ${timeSinceCompletion}ms`);
-                  }
-
-                  return shouldKeep;
-                }
-                return true; // Keep non-completed tasks
-              });
-
-              console.log(`Total tasks to display: ${visibleTasks.length} (filtered from ${allActiveTasks.length})`);
-              console.log('Visible task statuses:', visibleTasks.map(t => `${t.task_name}: ${t.task_status}`));
-
               // Return workflow status based on SESSION status
               return {
                 workflow_status: sessionStatus.status === 'running' ? 'running' : sessionStatus.status,
                 workflow_instance_id: workflowInstanceId,
                 workflow_name: workflowExecution.workflow_name,
-                tasks: visibleTasks,
+                tasks: allActiveTasks, // Show all tasks without filtering
                 created_on: workflowExecution.created_on,
                 updated_on: workflowExecution.updated_on,
                 completed_on: workflowExecution.completed_on
@@ -639,7 +590,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                 notFoundCount++;
 
                 if (notFoundCount >= maxNotFoundRetries) {
-                  console.error('Max retries reached for workflow status');
+                  // console.error('Max retries reached for workflow status');
                   return of({
                     workflow_status: 'failed',
                     workflow_instance_id: workflowInstanceId,
@@ -691,18 +642,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           );
         }),
         tap(status => {
-          console.log('Current workflow status:', status.workflow_status);
-          console.log('Setting workflowStatus signal with tasks:', status.tasks.length);
-
-          // Track task state changes for animation
-          status.tasks?.forEach(task => {
-            const previousState = this.taskStatesMap.get(task.task_id);
-            if (previousState !== task.task_status) {
-              console.log(`Task ${task.task_name} changed from ${previousState} to ${task.task_status}`);
-              this.taskStatesMap.set(task.task_id, task.task_status);
-            }
-          });
-
+          // console.log('Current workflow status:', status.workflow_status);
+          // console.log('Setting workflowStatus signal with tasks:', status.tasks.length);
+          status.workflow_name = ("ai_progress." +status.workflow_name.toLocaleLowerCase()) || 'Workflow Status';
           this._workflowStatus.set(status);
           this._hasRunningWorkflows.set(
             status.workflow_status === 'running' || status.workflow_status === 'pending'
@@ -712,18 +654,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         }),
         takeWhile(status => {
           const shouldContinue = status.workflow_status === 'pending' || status.workflow_status === 'running';
-          console.log(`Should continue polling: ${shouldContinue} (session status: ${status.workflow_status})`);
+          // console.log(`Should continue polling: ${shouldContinue} (session status: ${status.workflow_status})`);
           return shouldContinue;
         }, true),
         takeUntil(this.destroy$),
         finalize(() => {
-          console.log('Polling finalized for workflow:', workflowInstanceId);
+          // console.log('Polling finalized for workflow:', workflowInstanceId);
           this._isPolling.set(false);
           this._hasRunningWorkflows.set(false);
-
-          // Clear task states map and completed timestamps
-          this.taskStatesMap.clear();
-          this.completedTasksTimestamps.clear();
 
           // Give time for completed animations to play
           setTimeout(() => {
@@ -736,7 +674,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe({
         next: status => {
           if (status.workflow_status === 'completed' || status.workflow_status === 'failed') {
-            console.log('Session/Workflow reached final state');
+            // console.log('Session/Workflow reached final state');
             if (status.workflow_status === 'failed') {
               this.toast.showError(this.translate.instant('projects.error.workflow-status-polling-failed'));
             }
@@ -747,12 +685,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           this._isPolling.set(false);
           this._hasRunningWorkflows.set(false);
           this._workflowStatus.set(null);
-          this.taskStatesMap.clear();
-          this.completedTasksTimestamps.clear();
           this.errorEmitter.emit(err);
         },
         complete: () => {
-          console.log('Polling observable completed for workflow:', workflowInstanceId);
+          // console.log('Polling observable completed for workflow:', workflowInstanceId);
         }
       });
   }

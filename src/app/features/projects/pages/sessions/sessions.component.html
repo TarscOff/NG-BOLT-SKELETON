@@ -2,7 +2,7 @@
   <mat-sidenav-content>
     <!-- SEO -->
     <app-seo
-      [pageTitle]="'nav.genai-sessions' | translate : { name: session()?.session_name || session()?.session_id || ('new-session' | translate) }"
+      [pageTitle]="'nav.genai-sessions' | translate : { name: error() ? 'undefined' : session()?.session_name || session()?.session_id || ('new-session' | translate) }"
       [description]="'This is the sessions page of the AI product app.'" [keywords]="'sessions, ai, analytics'"
       (titleChange)="onTitleChange($event)">
     </app-seo>
@@ -226,8 +226,7 @@
 
       <!-- Submit button -->
       <div class="submit-actions">
-        <button mat-flat-button color="success" (click)="submitArtifacts()"
-          [disabled]="!canSubmitArtifacts()">
+        <button mat-flat-button color="success" (click)="submitArtifacts()" [disabled]="!canSubmitArtifacts()">
           {{ 'workflow.runPanel.submit' | translate }}
         </button>
       </div>
