@@ -192,6 +192,7 @@
   min-height: 300px;
   text-align: center;
   padding: 2rem;
+  color: var(--mat-neutral);
 
   mat-icon {
     font-size: 64px;
@@ -202,7 +203,6 @@
 
   p {
     margin: 0;
-    color: rgba(0, 0, 0, 0.6);
   }
 }
 

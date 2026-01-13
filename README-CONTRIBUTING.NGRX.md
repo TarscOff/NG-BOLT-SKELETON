@@ -1,6 +1,7 @@
 
 # 🧭 Contributing Guide — Adding New NgRx Features
->_Last updated: 2025-09-04_
+>
+>_Last updated: 2026-01-13_
 
 _This document explains how to add **host-specific** NgRx features to an app that already uses the SDK store. It covers project structure, wiring, patterns, runtime flags, testing, and common pitfalls._
 
@@ -11,17 +12,20 @@ _This document explains how to add **host-specific** NgRx features to an app tha
 ## 1) Architecture & Responsibilities
 
 ### SDK (Core)
+
 - Bootstraps the **root** NgRx store (`provideAppStore()`).
 - Provides shared slices (e.g., theme, language, AI variants, auth) and shared effects.
 - Optionally integrates Keycloak and feature flags.
 - Exposes selectors/actions for host consumption.
 
 ### Host Application
+
 - Adds **project-specific features** as separate NgRx slices.
 - Wires those features **on top of** the SDK store via `provideState` / `provideEffects`.
 - Optionally uses `@ngrx/component-store` for local, page-scoped state.
 
 ### Runtime flags
+
 - **`hasNgrx`** (in `/assets/config.json`): when `false`, the app should run without global NgRx. Only register host features when this flag is `true`.
 - **`auth.hasKeycloak`**: independent of NgRx. If `false`, the SDK runs in guest mode (guards allow, auth interceptor off).
 
@@ -51,129 +55,113 @@ src/app/store/
 
 ## 3) Step-by-Step: Create a Feature
 
-### 3.1 Actions
-```ts
-// src/app/store/my-feature/my-feature.actions.ts
-import { createAction, props } from '@ngrx/store';
+### 3.1 Define Your State Model
 
-export const loadItems   = createAction('[MyFeature] Load Items');
-export const loadSuccess = createAction('[MyFeature] Load Success', props<{ items: string[] }>());
+Create interfaces in `src/app/store/interfaces/`:
 
-export const loadFailure = createAction('[MyFeature] Load Failure', props<{ error: string }>()); // serialize errors!
-```
+- Define your feature state interface
+- Include `loading: boolean` and `error?: string` for async operations
+- Add enums for typed constants (e.g., status types, categories)
 
-### 3.2 Reducer (with `createFeature`)
-```ts
-// src/app/store/my-feature/my-feature.reducer.ts
-import { createFeature, createReducer, on } from '@ngrx/store';
-import * as MyFeatureActions from './my-feature.actions';
+### 3.2 Create Actions
 
-export const MY_FEATURE_KEY = 'myFeature';
+In `my-feature.actions.ts`:
 
-export interface MyFeatureState {
-  items: string[];
-  loading: boolean;
-  error?: string;
-}
+- Use descriptive action names with feature prefix: `[MyFeature] Action Name`
+- Create action triplets for async operations: `load`, `loadSuccess`, `loadFailure`
+- Always serialize errors in failure actions: `props<{ error: string }>()`
+- Include all necessary data in action payloads
 
-const initialState: MyFeatureState = {
-  items: [],
-  loading: false,
-};
+### 3.3 Build Your Reducer
 
-const reducer = createReducer(
-  initialState,
-  on(MyFeatureActions.loadItems,  (s) => ({ ...s, loading: true, error: undefined })),
-  on(MyFeatureActions.loadSuccess,(s, { items }) => ({ ...s, loading: false, items })),
-  on(MyFeatureActions.loadFailure,(s, { error }) => ({ ...s, loading: false, error })),
-);
+In `my-feature.reducer.ts`:
 
-export const myFeatureFeature = createFeature({
-  name: MY_FEATURE_KEY,
-  reducer,
-});
+- Export a feature key constant for uniqueness
+- Use `createReducer` with `on()` handlers
+- Handle loading states consistently across async actions
+- Reset errors when starting new operations
+- Use immutable updates with spread syntax
 
-// Re-export selectors for convenience
-export const {
-  name: myFeatureKey,
-  reducer: myFeatureReducer,
-  selectMyFeatureState,
-  selectItems,
-  selectLoading,
-  selectError,
-} = myFeatureFeature;
-```
+### 3.4 Create Selectors
 
-### 3.3 Selectors (if you’re not using `createFeature`)
-```ts
-// src/app/store/my-feature/my-feature.selectors.ts
-import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { MY_FEATURE_KEY, MyFeatureState } from './my-feature.reducer';
+In `my-feature.selectors.ts`:
 
-export const selectMyFeatureState = createFeatureSelector<MyFeatureState>(MY_FEATURE_KEY);
+- Start with `createFeatureSelector` using your feature key
+- Build basic selectors for each state property
+- Create parameterized selectors for filtering/finding items
+- Add computed selectors for derived state (counts, sorted lists)
+- Group related data with combined selectors
 
-export const selectItems   = createSelector(selectMyFeatureState, s => s.items);
-export const selectLoading = createSelector(selectMyFeatureState, s => s.loading);
-export const selectError   = createSelector(selectMyFeatureState, s => s.error);
-```
+### 3.5 Add Effects (if needed)
 
-### 3.4 Effects (optional)
-```ts
-// src/app/store/my-feature/my-feature.effects.ts
-import { inject } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
-import * as MyFeatureActions from './my-feature.actions';
+In `my-feature.effects.ts`:
 
-// Example API service can be any injected service
-class MyApi {
-  fetchItems() { return of(['A', 'B', 'C']); }
-}
+- Use functional effects with `createEffect(() => {}, { functional: true })`
+- Inject services with `inject()` pattern
+- Handle errors gracefully and return failure actions
+- Use appropriate operators (`mergeMap`, `switchMap`, `concatMap`)
+- Add side-effects like toast notifications with `dispatch: false`
 
-export const loadItemsEffect = createEffect(
-  () => {
-    const actions$ = inject(Actions);
-    const api = inject(MyApi);
+### 3.6 Export Your Feature
 
-    return actions$.pipe(
-      ofType(MyFeatureActions.loadItems),
-      mergeMap(() =>
-        api.fetchItems().pipe(
-          map(items => MyFeatureActions.loadSuccess({ items })),
-          catchError(err => of(MyFeatureActions.loadFailure({ error: String(err?.message || err) }))),
-        ),
-      ),
-    );
-  },
-  { functional: true }
-);
-```
+In `src/app/store/index.ts`:
+
+- Export your reducer and effects for easy importing
+- Follow consistent naming patterns
 
 ---
 
-## 4) Registering Your Feature
+## 4) Registration Guidelines
 
-### 4.1 Eager (global) registration in the Host
-Add to your `ApplicationConfig.providers` (Host app). **Do not** call `provideStore()` again — the SDK already did that.
+### Choose Your Registration Strategy
+
+- **Eager (global)**: Add to `app.config.ts` for features used app-wide
+- **Lazy (route-scoped)**: Register in route providers for feature-specific functionality
+
+### Registration Syntax
 
 ```ts
-// src/app/app.config.ts
-import { provideEffects } from '@ngrx/effects';
-import { provideState } from '@ngrx/store';
-import { myFeatureFeature } from './store/my-feature/my-feature.reducer';
-import { loadItemsEffect } from './store/my-feature/my-feature.effects';
-
-export const appConfig = {
-  providers: [
-    // SDK store & router already provided elsewhere
-    provideState(myFeatureFeature),     // reducer
-    provideEffects(loadItemsEffect),    // effects (functional or class-based)
-  ],
-};
+// In app.config.ts or route providers
+provideState("featureName", MyFeatureReducer),
+provideEffects(MyFeatureEffects),
 ```
 
-### 4.2 Lazy (route-scoped) registration
+**Remember**: Never call `provideStore()` - the SDK already provides the root store.
+
+---
+
+### 4.1 Development Best Practices
+
+#### Naming Conventions
+
+- Feature keys: unique, descriptive constants
+- Actions: `[FeatureName] Verb Object`
+- Selectors: `select` + descriptive name
+- Effects: descriptive name + `Effect`
+
+#### State Management
+
+- Keep state normalized and flat when possible
+- Use selectors for all data access, never access state directly
+- Compose complex selectors from simpler ones
+- Handle loading and error states consistently
+
+#### Error Handling
+
+- Always serialize errors before dispatching
+- Provide meaningful error messages
+- Reset errors when retrying operations
+- Consider user-facing error notifications
+
+#### Testing Strategy
+
+- Unit test reducers with various action scenarios
+- Test selectors with mock state
+- Mock dependencies in effect tests
+- Verify action dispatching in components
+
+#### 4.2 Lazy (route-scoped) registration
+
 Register on the route where the feature lives:
 
 ```ts
@@ -301,8 +289,6 @@ Yes, but register it **once** at a shared parent route or guard against duplicat
 ---
 
 Happy building!
-
-
 
 ## 🧑‍💻 Author
 

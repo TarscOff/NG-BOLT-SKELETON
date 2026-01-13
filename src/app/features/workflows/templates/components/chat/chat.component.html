@@ -19,11 +19,11 @@
   </div>
 
   <!-- Messages Container -->
-  <div #messagesContainer class="chat-messages" [class.empty]="isEmpty() && !showWorkflowStatus$()"
+  <div #messagesContainer class="chat-messages" [class.empty]="isEmpty()"
     [attr.aria-label]="'chatTpl.messages' | translate">
 
     <!-- Empty State (only when no messages AND no workflows) -->
-    @if (isEmpty() && !showWorkflowStatus$()) {
+    @if (isEmpty()) {
     <div class="chat-empty">
       <mat-icon>chat_bubble_outline</mat-icon>
       <p>{{ effectiveEmptyMessage$() | translate }}</p>
@@ -58,7 +58,7 @@
     }
 
     <!-- Workflow Status Block (shown when workflows are running) -->
-    @if (showWorkflowStatus$()) {
+    @if (workflowStatus$()) {
     <div class="workflow-progress">
       <div class="workflow-header">
         <mat-icon class="spinning">sync</mat-icon>
@@ -72,10 +72,10 @@
       </div>
       <div class="tasks-list">
         @if (workflowStatus$()?.tasks?.length === 0) {
-        <p style="padding: 0.5rem; color: #666;">{{ 'chatTpl.waitingForTasks' | translate }}</p>
+        <p style="padding: 0.5rem;">{{ 'chatTpl.waitingForTasks' | translate }}</p>
         }
         @for (task of workflowStatus$()?.tasks; track trackByTaskId($index, task)) {
-        <div class="task-item" [class]="task.task_status" [@taskAnimation]="task.task_status">
+        <div class="task-item" [class]="task.task_status" >
           <mat-icon class="task-icon">
             @if (task.task_status === 'completed') {
             check_circle
@@ -88,7 +88,7 @@
             }
           </mat-icon>
           <div class="task-info">
-            <span class="task-name">{{ "ai_progress." + task.task_name | translate }}</span>
+            <span class="task-name">{{ task.task_name | translate }}</span>
           </div>
           <div class="task-comment">
             <span class="task-name">{{ task.task_status_comment }}</span>
@@ -102,18 +102,11 @@
 
   <!-- Input Area -->
   <div class="chat-footer">
-    <app-chat-input-tpl [disabled]="!canSendMessage$() || disabled || showWorkflowStatus$()"
+    <app-chat-input-tpl [disabled]="!canSendMessage$() || disabled "
       [maxLength]="effectiveMaxLength$()" [placeholder]="effectivePlaceholder$()"
       [enableAttachments]="config$().enableAttachments === true" [acceptedFileTypes]="config$().acceptedFileTypes || ''"
       [maxFiles]="config$().maxFiles || 5" [allowMultipleFiles]="(config$().maxFiles || 5) > 1" [loading]="isLoading$()"
       (send)="onSendMessage($event)">
     </app-chat-input-tpl>
   </div>
-
-  <!-- Loading Overlay -->
-  @if (isLoading$()) {
-  <div class="loading-overlay">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-  }
 </div>

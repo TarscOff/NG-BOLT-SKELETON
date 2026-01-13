@@ -58,6 +58,10 @@
   }
 }
 
+.error-state {
+  color: var(--mat-error) !important;
+}
+
 .loading-state,
 .error-state,
 .empty-state {
@@ -69,7 +73,7 @@
   padding: 48px;
   text-align: center;
   min-height: 400px;
-
+  color: var(--mat-neutral);
   mat-icon {
     font-size: 64px;
     width: 64px;
@@ -135,7 +139,7 @@
 
     mat-chip-set {
       mat-chip {
-        background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%);
+        background: linear-gradient(135deg, var(--mat-primary-variant) 40%, var(--mat-accent) 100%);
         color: white;
         font-weight: 500;
 
@@ -209,12 +213,12 @@
   transition: all 0.2s ease-in-out;
   border: 2px solid transparent;
   background:
-    linear-gradient(white,white) padding-box,
-    linear-gradient(135deg, var(--mat-accent) 50%, var(--mat-primary) 100%) border-box;
+    linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
+    linear-gradient(135deg, var(--mat-accent) 20%, var(--mat-primary) 100%) border-box;
 
   &::after {
     content: "";
-    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 80%) border-box;
+    background: linear-gradient(135deg, var(--mat-accent) 40%, var(--mat-primary) 80%) border-box;
     position: absolute;
     top: 0;
     left: 0;
@@ -222,6 +226,7 @@
     height: 100%;
     opacity: .05;
     transition: all 0.2s ease-in-out;
+    z-index: -1;
   }
 
   &:hover {
@@ -234,9 +239,13 @@
 
     .card-icon {
       transform: translate(25px, -10px) scale(1.5);
+      z-index: 99;
+      opacity: 0.2;
     }
 
-
+    * {
+      color: #fff !important;
+    }
 
   }
 
@@ -264,7 +273,7 @@
     position: absolute;
     bottom: 8px;
     right: 8px;
-    z-index: 2;
+    z-index: 999;
     transition: all 0.2s ease;
   }
 
@@ -357,8 +366,22 @@
 // Dark mode support
 :host-context(.dark) {
   .favorite-card {
+    color: #fff !important;
+
     .delete-button {
       background: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  .header-info {
+    h2 {
+      color: #fff;
+    }
+  }
+
+  .category-title {
+    h3 {
+      color: #fff;
     }
   }
 }

@@ -37,6 +37,10 @@ body {
   * {
     font-family: 'ProximusRegular', sans-serif;
   }
+
+  main.app-content {
+    padding: 0 !important;
+  }
 }
 
 // Sidenav + Toolbar should follow theme tokens
@@ -48,6 +52,12 @@ body {
   color: var(--md-sys-color-on-surface);
 }
 
+// spacing between left menu navigation
+.menu-list {
+  .menu-link {
+    margin: 5px 0 !important;
+  }
+}
 .mat-toolbar {
   flex-wrap: wrap;
 }
@@ -80,7 +90,7 @@ body {
 
 // Darkmode overlay overrides
 html.dark {
-  
+
   --mat-sidenav-content-text-color: var(--mat-primary);
 
   .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {

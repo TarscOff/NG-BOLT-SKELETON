@@ -1053,24 +1053,26 @@ This project uses Angular strict mode with:
 
 ---
 
-## 📃 Documentation Index
-
-**Legend:** ✅ Complete · 🟡 In Progress · ❌ Planned
 
 ### Core Documentation
+
 - [✅ Global Core Overview](./README-OVERVIEW.md) - Architecture and design patterns
 - [✅ Change Log](./CHANGELOG.md) - Version history and release notes
 - [✅ CI/CD Setup](./README-GIT.md) - GitLab CI, GitHub Actions, Azure Pipelines
 
 ### Features & Components
+
 - [✅ Theming & Translations](./README-ASSETS-TRANSLATIONS.md) - i18n, theme switching
 - [✅ App Layout](./README-LAYOUT.md) - Header, sidebar, navigation
 - [✅ Form Builder](./README-FormBuilder.md) - Dynamic forms with validation
 - [✅ Smart Tables](./README-SMARTABLES.md) - Advanced data tables
 - [✅ Workflow Builder](./README-WORKFLOWBUILDER.md) - Visual flow designer
+- [✅ Workflow Templating](./README-TEMPLATING.md) - Templating form AI features
 - [✅ Charts](./README-CHARTS.md) - Data visualization
 
 ### Development Guides
+
+- [✅ Favorits](./README-FAVORITS.md) - How to contribute and use Favorits in the whole app
 - [✅ Contribution Guide](./CONTRIBUTING.md) - How to contribute
 - [✅ NgRx Guide](./README-CONTRIBUTING.NGRX.md) - State management patterns
 - [🟡 CSP Configuration](./README-CSP.md) - Content Security Policy setup

@@ -46,13 +46,13 @@
                     </ng-template>
 
                     @if (sessionsHistory().length > 0) {
-                    <div class="tab-actions">
+         <!--            <div class="tab-actions">
                         <button mat-flat-button color="success" (click)="addAllSessionsToFavorites()"
                             [disabled]="sessionsHistory().length === 0">
                             <mat-icon>favorite</mat-icon>
                             {{ 'favorites.add-all' | translate }}
                         </button>
-                    </div>
+                    </div> -->
                     <div class="custom-list">
                         <!-- Today -->
                         @if (groupedSessions().today.length > 0) {
@@ -109,7 +109,7 @@
                                 </div>
 
                                 <div class="item-actions">
-                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'error' : 'primary'"
                                         [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
                                         (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
@@ -189,7 +189,7 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'error' : 'primary'"
                                         [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
                                         (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
@@ -269,7 +269,7 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'error' : 'primary'"
                                         [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
                                         (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
@@ -349,7 +349,7 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
-                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'error' : 'primary'"
                                         [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
                                         (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
                                         <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'

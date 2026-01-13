@@ -86,7 +86,7 @@
   align-items: center;
   justify-content: center;
   flex: 1; // Take all available space
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--mat-neutral);
   text-align: center;
 
   mat-icon {
@@ -240,55 +240,53 @@
       .task-name {
         flex: 1;
         transition: opacity 0.3s ease;
+        color: #fff;
       }
 
       &.completed {
         .task-icon {
-          color: var(--mat-success);
-          animation: completePulse 0.6s ease-out;
+          color: #fff;       
         }
 
-        background: rgba(76, 175, 80, 0.1);
+        background: var(--mat-success);
       }
 
       &.failed {
         .task-icon {
-          color: var(--mat-accent);
-          animation: shake 0.5s ease;
+          color: #fff;
         }
 
-        background: rgba(244, 67, 54, 0.1);
+        background: var(--mat-error);
       }
 
       &.running {
         .task-icon {
-          color: var(--mat-primary);
+          color: #fff;
           animation: rotate 2s linear infinite;
         }
 
         border-left: 3px solid var(--mat-primary);
-        background: rgba(33, 150, 243, 0.1);
+        background: var(--mat-primary-variant);
       }
 
       &.pending {
         .task-icon {
-          color: var(--mat-neutral);
+          color: #fff;            
           opacity: 0.6;
         }
 
         opacity: 0.8;
+        background: var(--mat-accent);
       }
 
       .task-comment {
         width: 50%;
         margin-left: auto;
         font-size: 0.875rem;
-        color: #757575;
+        color: #fff;
         font-style: italic;
       }
     }
-
-
   }
 }
 
@@ -327,38 +325,6 @@
   }
 }
 
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-
-
-@keyframes completePulse {
-  0% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-
-  50% {
-    transform: scale(1.1);
-    filter: brightness(1.2);
-  }
-
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-}
-
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -366,49 +332,5 @@
 
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  75% {
-    transform: translateX(5px);
-  }
-}
-
-// Dark mode support
-.chat-container.dark {
-  .workflow-progress {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-
-    .tasks-list {
-      .task-item {
-        background: rgba(0, 0, 0, 0.3);
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.5);
-        }
-      }
-    }
-  }
-
-  .task-item {
-    border-left-color: var(--mat-primary-variant) !important;
-  }
-
-  .task-info *,
-  .task-icon,
-  .workflow-header * {
-    color: var(--mat-primary-variant) !important;
   }
 }

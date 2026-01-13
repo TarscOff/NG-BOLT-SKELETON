@@ -33,11 +33,20 @@
   // Firefox
   scrollbar-width: auto; // Normal width (not thin)
   scrollbar-color: var(--mat-primary) rgba(0, 0, 0, 0.1);
-
+  --mat-card-subtitle-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-chip-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-list-list-item-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-button-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-list-list-item-trailing-supporting-text-font: 'ProximusRegular',
+  sans-serif;
 }
 
 html.dark {
-  --mat-primary: #4492c7;
+ --mat-primary: #4492c7;
   --mat-primary-variant: #8534c2;
   --mat-accent: #66d3b3;
   --mat-warn: #ef7000;
@@ -159,6 +168,10 @@ html.dark {
   --mdc-switch-selected-handle-color: #fff;
   --mdc-switch-selected-hover-handle-color: #fff;
   --mdc-switch-selected-pressed-handle-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-primary);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
   --mdc-outlined-card-container-color: transparent;
   --mat-sidenav-container-background-color: transparent;
   --mat-toolbar-container-background-color: transparent;
@@ -231,6 +244,10 @@ html.dark {
   --mdc-icon-button-icon-color: var(--mat-accent);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-accent);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
 }
 
 .mat-warn,
@@ -298,6 +315,10 @@ html.dark {
   --mdc-icon-button-icon-color: var(--mat-warn);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-warn);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
 }
 
 .mat-success,
@@ -365,6 +386,10 @@ html.dark {
   --mdc-icon-button-icon-color: var(--mat-success);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-success);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
 }
 
 .mat-error,
@@ -499,6 +524,10 @@ html.dark {
   --mdc-icon-button-icon-color: var(--mat-neutral);
   --mdc-chip-selected-label-text-color: #fff;
   --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-neutral);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
 }
 
 
