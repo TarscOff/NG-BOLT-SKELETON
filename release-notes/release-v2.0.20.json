@@ -1,0 +1,105 @@
+{
+  "version": "2.0.20",
+  "tag": "v2.0.20",
+  "previousTag": "v2.0.19",
+  "date": "2026-01-13T09:27:08.046Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "59d63b5",
+        "type": "feat",
+        "scope": "favorites",
+        "subject": "adding favorites feature",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "f3d304b",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.20 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b9d851b",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.19",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "e910f05",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #57 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "f3d304bd7e326601a665b6eaecd70a50dd56004e",
+      "shortHash": "f3d304b",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.20 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e910f05c7ba8492542f7fc040a1979f65beca90e",
+      "shortHash": "e910f05",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #57 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(favorites): adding favorites feature"
+    },
+    {
+      "hash": "59d63b5f409edc9bc83daa866f43a86909447b19",
+      "shortHash": "59d63b5",
+      "type": "feat",
+      "scope": "favorites",
+      "subject": "adding favorites feature",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b9d851b7f1cd49904db2ced92adb6cae9ec086fd",
+      "shortHash": "b9d851b",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.19",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
