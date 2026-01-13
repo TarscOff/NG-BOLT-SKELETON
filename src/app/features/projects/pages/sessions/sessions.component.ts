@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FieldConfigService, KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
 import { TemplateLoaderComponent } from '@features/workflows/templates/components/loader/template-loader.component';
 import { TemplatingService } from '@features/workflows/templates/services/templating.service';
@@ -18,7 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, map, interval, finalize, switchMap, tap, catchError, of, takeWhile } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { ProjectsService } from '@features/projects/services/projects.service';
-import { ArtifactsDataDto,FileItem, ProjectDto, ProjectSessionDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import { ArtifactsDataDto, FileItem, ProjectDto, ProjectSessionDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
@@ -29,6 +29,8 @@ import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { UserRole } from '@cadai/pxs-ng-core/enums';
+import { FavoritesFacade } from '@shared/services/favorites.facade';
+import { FavoriteType } from '@store/interfaces/favorites.model';
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -63,12 +65,14 @@ export class SessionsComponent implements OnInit, OnDestroy {
   private projectsService = inject(ProjectsService);
   private toolbarService = inject(ToolbarActionsService);
   private router = inject(Router);
-  private translateService = inject(TranslateService)
+  private translateService = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly fields = inject(FieldConfigService);
   private readonly fb = inject(FormBuilder);
   private readonly keycloak = inject(KeycloakService);
+  private favoritesFacade = inject(FavoritesFacade);
+
   configInputs: FieldConfig[] = [];
   formInputs: FormGroup = this.fb.group({});
 
@@ -95,6 +99,20 @@ export class SessionsComponent implements OnInit, OnDestroy {
   isAdmin$ = signal(false);
   canSubmitArtifacts = signal(false);
 
+  // Favorites state
+  private readonly currentUrl = computed(() => {
+    const projectId = this.projectId();
+    const sessionId = this.sessionId();
+    if (projectId && sessionId) {
+      return `/genai-projects/${projectId}/sessions/${sessionId}`;
+    }
+    return null;
+  });
+
+  readonly isFavorite = toSignal(
+    this.favoritesFacade.isFavorite(this.currentUrl() || ''),
+    { initialValue: false }
+  );
 
   // Computed
   enabledTemplates = computed(() => {
@@ -199,6 +217,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
   pageDescription = computed(() => this.pageConfig()?.pageDescription);
 
   ngOnInit(): void {
+    this.setToolbarButtons();
     this.loadPageConfig();
     this.checkForRunningWorkflows();
 
@@ -276,6 +295,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
     }
   }
 
+
   private async loadSessionArtifacts(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
@@ -285,26 +305,8 @@ export class SessionsComponent implements OnInit, OnDestroy {
       const files = await firstValueFrom(this.projectsService.getSessionArtifacts(this.sessionId()!));
       this.files.set(this.mapToFiles(files));
 
-      // Setup toolbar actions
-      const back: ToolbarAction = {
-        id: 'back',
-        icon: 'arrow_back',
-        tooltip: 'back',
-        class: "error",
-        variant: "flat",
-        label: this.translateService.instant("common.back"),
-        click: () => this.router.navigate(['/genai-projects', this.projectId()]),
-      };
-      const artifactsBtn: ToolbarAction = {
-        id: 'artifacts',
-        icon: 'folder',
-        tooltip: 'artifacts',
-        class: "primary",
-        variant: "flat",
-        label: this.translateService.instant("workflow.runPanel.artifacts") + ` (${this.filesCount()})`,
-        click: () => this.toggleArtifactsPanel(),
-      };
-      this.toolbarService.scope(this.destroyRef, [back, artifactsBtn]);
+      // Set toolbar buttons with favorite state
+      this.setToolbarButtons();
 
       // Breadcrumbs items
       this.layoutService.setBreadcrumbs([
@@ -324,6 +326,97 @@ export class SessionsComponent implements OnInit, OnDestroy {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  setToolbarButtons(): void {
+    const currentUrl = this.currentUrl();
+    if (!currentUrl) return;
+
+    // Setup toolbar actions
+    const back: ToolbarAction = {
+      id: 'back',
+      icon: 'arrow_back',
+      tooltip: 'back',
+      class: "error",
+      variant: "flat",
+      label: this.translateService.instant("common.back"),
+      click: () => this.router.navigate(['/genai-projects', this.projectId()]),
+    };
+
+    const artifactsBtn: ToolbarAction = {
+      id: 'artifacts',
+      icon: 'folder',
+      tooltip: 'artifacts',
+      class: "primary",
+      variant: "flat",
+      label: this.translateService.instant("workflow.runPanel.artifacts") + ` (${this.filesCount()})`,
+      click: () => this.toggleArtifactsPanel(),
+    };
+
+    // Re-check favorite status when setting toolbar buttons
+    this.favoritesFacade.loadFavorites(); // Force reload from storage
+
+    this.favoritesFacade.isFavorite(currentUrl).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(isFav => {
+      if (isFav) {
+        const favBtnOff: ToolbarAction = {
+          id: 'unfavorite',
+          icon: 'favorite',
+          tooltip: 'remove_favorite',
+          class: "warn",
+          variant: "icon",
+          label: this.translateService.instant("remove_favorite"),
+          click: () => this.removeFavorite(),
+        };
+        this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOff]);
+      } else {
+        const favBtnOn: ToolbarAction = {
+          id: 'favorite',
+          icon: 'favorite_border',
+          tooltip: 'add_favorite',
+          class: "primary",
+          variant: "icon",
+          label: this.translateService.instant("add_favorite"),
+          click: () => this.addFavorite(),
+        };
+        this.toolbarService.scope(this.destroyRef, [back, artifactsBtn, favBtnOn]);
+      }
+    });
+  }
+
+  private addFavorite(): void {
+    const url = this.currentUrl();
+    if (!url) return;
+
+    const title = this.session()?.session_name ||
+      this.session()?.session_id ||
+      this.translateService.instant('new-session');
+
+    this.favoritesFacade.addFavorite(url, title, FavoriteType.CHAT);
+
+    // Small delay to ensure state is updated before refreshing toolbar
+    setTimeout(() => {
+      this.setToolbarButtons();
+    }, 100);
+  }
+
+  private removeFavorite(): void {
+    const url = this.currentUrl();
+    if (!url) return;
+
+    // Use firstValueFrom to get the current favorites once
+    firstValueFrom(this.favoritesFacade.favorites$).then(favorites => {
+      const favorite = favorites.find(f => f.url === url);
+      if (favorite) {
+        this.favoritesFacade.removeFavorite(favorite.id);
+
+        // Small delay to ensure state is updated before refreshing toolbar
+        setTimeout(() => {
+          this.setToolbarButtons();
+        }, 100);
+      }
+    });
   }
 
   mapToFiles(artifacts: ArtifactsDataDto[]): FileItem[] {

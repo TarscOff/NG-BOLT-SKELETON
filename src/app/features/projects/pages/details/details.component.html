@@ -46,6 +46,13 @@
                     </ng-template>
 
                     @if (sessionsHistory().length > 0) {
+                    <div class="tab-actions">
+                        <button mat-flat-button color="success" (click)="addAllSessionsToFavorites()"
+                            [disabled]="sessionsHistory().length === 0">
+                            <mat-icon>favorite</mat-icon>
+                            {{ 'favorites.add-all' | translate }}
+                        </button>
+                    </div>
                     <div class="custom-list">
                         <!-- Today -->
                         @if (groupedSessions().today.length > 0) {
@@ -79,15 +86,17 @@
                                                     #titleInput>
                                             </mat-form-field>
                                             <div class="inline-edit-actions">
-                                                <button mat-icon-button color="success"
+                                                <button mat-flat-button color="success"
                                                     [matTooltip]="'SAVE' | translate"
                                                     (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
                                                     <mat-icon>check</mat-icon>
+                                                    {{ 'SAVE' | translate }}
                                                 </button>
-                                                <button mat-icon-button color="accent"
+                                                <button mat-flat-button color="accent"
                                                     [matTooltip]="'cancel' | translate"
                                                     (click)="cancelEdit(); $event.stopPropagation()">
                                                     <mat-icon>close</mat-icon>
+                                                    {{ 'cancel' | translate }}
                                                 </button>
                                             </div>
                                         </div>
@@ -100,6 +109,12 @@
                                 </div>
 
                                 <div class="item-actions">
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                        [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
+                                        (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
+                                            }}</mat-icon>
+                                    </button>
                                     <button mat-icon-button color="primary"
                                         [matTooltip]="'projects.details.edit' | translate"
                                         (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
@@ -152,15 +167,17 @@
                                                     #titleInput>
                                             </mat-form-field>
                                             <div class="inline-edit-actions">
-                                                <button mat-icon-button color="success"
+                                                <button mat-flat-button color="success"
                                                     [matTooltip]="'SAVE' | translate"
                                                     (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
                                                     <mat-icon>check</mat-icon>
+                                                    {{'SAVE' | translate}}
                                                 </button>
-                                                <button mat-icon-button color="accent"
+                                                <button mat-flat-button color="accent"
                                                     [matTooltip]="'cancel' | translate"
                                                     (click)="cancelEdit(); $event.stopPropagation()">
                                                     <mat-icon>close</mat-icon>
+                                                    {{'cancel' | translate}}
                                                 </button>
                                             </div>
                                         </div>
@@ -172,6 +189,12 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                        [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
+                                        (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
+                                            }}</mat-icon>
+                                    </button>
                                     <button mat-icon-button color="primary"
                                         [matTooltip]="'projects.details.edit' | translate"
                                         (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
@@ -224,15 +247,17 @@
                                                     #titleInput>
                                             </mat-form-field>
                                             <div class="inline-edit-actions">
-                                                <button mat-icon-button color="success"
+                                       <button mat-flat-button color="success"
                                                     [matTooltip]="'SAVE' | translate"
                                                     (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
                                                     <mat-icon>check</mat-icon>
+                                                    {{ 'SAVE' | translate }}
                                                 </button>
-                                                <button mat-icon-button color="accent"
+                                                <button mat-flat-button color="accent"
                                                     [matTooltip]="'cancel' | translate"
                                                     (click)="cancelEdit(); $event.stopPropagation()">
                                                     <mat-icon>close</mat-icon>
+                                                    {{ 'cancel' | translate }}
                                                 </button>
                                             </div>
                                         </div>
@@ -244,6 +269,12 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                        [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
+                                        (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
+                                            }}</mat-icon>
+                                    </button>
                                     <button mat-icon-button color="primary"
                                         [matTooltip]="'projects.details.edit' | translate"
                                         (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
@@ -296,15 +327,17 @@
                                                     #titleInput>
                                             </mat-form-field>
                                             <div class="inline-edit-actions">
-                                                <button mat-icon-button color="success"
+                                                <button mat-flat-button color="success"
                                                     [matTooltip]="'SAVE' | translate"
                                                     (click)="saveTitle('session', h, titleInput.value); $event.stopPropagation()">
                                                     <mat-icon>check</mat-icon>
+                                                    {{ 'SAVE' | translate }}
                                                 </button>
-                                                <button mat-icon-button color="accent"
+                                                <button mat-flat-button color="accent"
                                                     [matTooltip]="'cancel' | translate"
                                                     (click)="cancelEdit(); $event.stopPropagation()">
                                                     <mat-icon>close</mat-icon>
+                                                    {{ 'cancel' | translate }}
                                                 </button>
                                             </div>
                                         </div>
@@ -316,6 +349,12 @@
                                         }}</span>
                                 </div>
                                 <div class="item-actions">
+                                    <button mat-icon-button [color]="isFavoriteSession(h.id) ? 'warn' : 'primary'"
+                                        [matTooltip]="(isFavoriteSession(h.id) ? 'remove_favorite' : 'add_favorite') | translate"
+                                        (click)="toggleSessionFavorite(h); $event.stopPropagation(); $event.preventDefault()">
+                                        <mat-icon>{{ isFavoriteSession(h.id) ? 'favorite' : 'favorite_border'
+                                            }}</mat-icon>
+                                    </button>
                                     <button mat-icon-button color="primary"
                                         [matTooltip]="'projects.details.edit' | translate"
                                         (click)="editItem('session', h); $event.stopPropagation(); $event.preventDefault()">
@@ -363,8 +402,8 @@
                     @if (files().length > 0) {
                     <div class="custom-list">
                         @for (f of files(); track trackFile($index, f)) {
-                        <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null"
-                            (click)="null" class="custom-list-item">
+                        <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null" (click)="null"
+                            class="custom-list-item">
                             <mat-icon class="item-icon">{{ fileIcon(f.type) }}</mat-icon>
 
                             <div class="item-content">

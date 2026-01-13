@@ -31,6 +31,23 @@
     }
   },
   "features": {
+    "favorites": {
+    "enabled": true,
+      "roles": [
+        "ROLE_admin"
+      ],
+      "allow": {
+        "tenants": [
+          "clarence",
+          "other_tenant"
+        ]
+      },
+      "key": "favorites",
+      "label": "nav.genai-favorites",
+      "icon": "favorite",
+      "route": "/favorites",
+      "requireAuth": true
+    },
     "dashboard": {
       "enabled": true,
       "roles": [

@@ -558,3 +558,46 @@ mat-list-item.historyItem {
     display: none;
   }
 }
+
+
+.tab-actions {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  button {
+    mat-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  button[mat-icon-button] {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    // Favorite button specific styles
+    &[color="warn"] mat-icon {
+      animation: pulse 0.3s ease-in-out;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}

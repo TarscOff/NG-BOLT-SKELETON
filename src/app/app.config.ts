@@ -6,11 +6,17 @@ import { provideCharts } from '@cadai/pxs-ng-core/providers';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { CustomPaginatorIntl } from '@shared/services/paginator.service';
+import { provideState } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { FavoritesReducer, FavoritesEffects } from '@store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     ...provideAppStore(),
+    provideState("favorites", FavoritesReducer),
+    provideEffects(FavoritesEffects),
+
     ...provideCharts({
       defaults: {
         responsive: true,
