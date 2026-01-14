@@ -1,4 +1,5 @@
 import { FileVM } from '@cadai/pxs-ng-core/interfaces';
+import { WorkflowStatus } from '@features/projects/interfaces/project.model';
 
 export interface CompareFile extends FileVM {
   url?: string;
@@ -12,7 +13,7 @@ export interface ComparisonResult {
   file2: CompareFile;
   differences: ComparisonDifference[];
   similarity: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: WorkflowStatus;
   createdAt: Date;
   completedAt?: Date;
   error?: string;

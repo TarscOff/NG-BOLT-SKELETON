@@ -89,7 +89,6 @@ export class SessionsComponent implements OnInit, OnDestroy {
   readonly files = signal<FileItem[]>([]);
   private readonly _workflowStatus = signal<WorkflowStatusDto | null>(null);
   private readonly _isPolling = signal<boolean>(false);
-  private readonly _hasRunningWorkflows = signal<boolean>(false);
   selectedFileReference = signal<string>('all');
 
   private taskStatesMap = new Map<string, string>();
@@ -124,7 +123,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
 
   workflowStatus$ = computed(() => this._workflowStatus());
   isPolling$ = computed(() => this._isPolling());
-  showWorkflowStatus$ = computed(() => this._isPolling() || this._hasRunningWorkflows());
+  showWorkflowStatus$ = computed(() => this._isPolling());
 
 
   // Group files by data_reference
@@ -297,9 +296,6 @@ export class SessionsComponent implements OnInit, OnDestroy {
 
 
   private async loadSessionArtifacts(): Promise<void> {
-    this.loading.set(true);
-    this.error.set(null);
-
     try {
       // Load artifacts data
       const files = await firstValueFrom(this.projectsService.getSessionArtifacts(this.sessionId()!));
@@ -486,6 +482,11 @@ export class SessionsComponent implements OnInit, OnDestroy {
     this.toast.showError(`Error: ${error}`);
   }
 
+  onMessageSent(): void {
+    // Reload session artifacts when a template signals completion
+    this.loadSessionArtifacts();
+  }
+
   /**
    * Track by function for templates
    */
@@ -539,6 +540,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading.set(true);
+    this._isPolling.set(true);
 
     const filesControl = this.formInputs.get('files');
     const files: File[] = Array.isArray(filesControl?.value) ? filesControl.value : [filesControl?.value].filter(Boolean);
@@ -563,9 +565,6 @@ export class SessionsComponent implements OnInit, OnDestroy {
       files
     ).subscribe({
       next: (response) => {
-        this.toast.show(
-          this.translateService.instant('projects.success.artifacts-uploaded')
-        );
         this.formInputs.reset();
         this.canSubmitArtifacts.set(false);
 
@@ -579,6 +578,13 @@ export class SessionsComponent implements OnInit, OnDestroy {
         this.toast.showError(
           this.translateService.instant('projects.error.failed-to-upload-artifacts')
         );
+
+        this._isPolling.set(false);
+        this.taskStatesMap.clear();
+        this.completedTasksTimestamps.clear();
+        this.formInputs.reset();
+        this._workflowStatus.set(null);
+        this.loading.set(false);
       }
     });
   }
@@ -587,18 +593,18 @@ export class SessionsComponent implements OnInit, OnDestroy {
     if (!this.sessionId()) {
       return;
     }
+    this.loading.set(true);
 
     this.projectsService.getSessionStatusById(this.sessionId()!)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: sessionStatus => {
-          const runningWorkflows = sessionStatus.workflow_executions.filter(
-            wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+          const runningWorkflows = sessionStatus?.workflow_executions?.filter(
+            wf => wf.workflow_status === 'running' || wf.workflow_status === 'queued' || wf.workflow_status === 'waiting'
           );
 
-          if (runningWorkflows.length > 0) {
-            console.log(`Found ${runningWorkflows.length} running workflows on load`);
-            this._hasRunningWorkflows.set(true);
+          if (runningWorkflows?.length > 0) {
+            //console.log(`Found ${runningWorkflows.length} running workflows on load`);
 
             const mostRecentWorkflow = runningWorkflows.sort((a, b) => {
               const dateA = typeof a.created_on === 'string'
@@ -612,13 +618,11 @@ export class SessionsComponent implements OnInit, OnDestroy {
 
             this.startPollingWorkflowStatus(mostRecentWorkflow.workflow_instance_id);
           } else {
-            this._hasRunningWorkflows.set(false);
             this._workflowStatus.set(null);
           }
         },
         error: err => {
           console.error('Error checking for running workflows:', err);
-          this._hasRunningWorkflows.set(false);
           this._workflowStatus.set(null);
         }
       });
@@ -628,14 +632,12 @@ export class SessionsComponent implements OnInit, OnDestroy {
     const maxNotFoundRetries = 5;
     let notFoundCount = 0;
 
-    this._isPolling.set(true);
-
     interval(2000)
       .pipe(
         switchMap(() => {
           return this.projectsService.getSessionStatusById(this.sessionId()!).pipe(
             map(sessionStatus => {
-              if (sessionStatus.status === 'completed' || sessionStatus.status === 'failed') {
+              if (sessionStatus.status === 'completed' || sessionStatus.status === 'error') {
 
                 return {
                   workflow_status: sessionStatus.status,
@@ -658,7 +660,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
               }
 
               const allRunningWorkflows = sessionStatus.workflow_executions.filter(
-                wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+                wf => wf.workflow_status === 'running' || wf.workflow_status === 'queued' || wf.workflow_status === 'waiting'
               );
 
               const allActiveTasks = allRunningWorkflows
@@ -712,7 +714,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
                 notFoundCount++;
                 if (notFoundCount >= maxNotFoundRetries) {
                   return of({
-                    workflow_status: 'failed',
+                    workflow_status: 'error',
                     workflow_instance_id: workflowInstanceId,
                     workflow_name: 'Workflow not found',
                     tasks: [],
@@ -724,7 +726,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
               }
 
               return of({
-                workflow_status: 'pending',
+                workflow_status: 'waiting',
                 workflow_instance_id: workflowInstanceId,
                 workflow_name: 'Initializing workflow...',
                 tasks: [],
@@ -744,20 +746,20 @@ export class SessionsComponent implements OnInit, OnDestroy {
           });
 
           this._workflowStatus.set(status);
-          this._hasRunningWorkflows.set(
-            status.workflow_status === 'running' || status.workflow_status === 'pending'
-          );
         }),
         takeWhile(status => {
-          return status.workflow_status === 'pending' || status.workflow_status === 'running';
+          return status.workflow_status === 'waiting' || status.workflow_status === 'running' || status.workflow_status === 'queued';
         }, true),
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this._isPolling.set(false);
-          this._hasRunningWorkflows.set(false);
           this.taskStatesMap.clear();
           this.completedTasksTimestamps.clear();
           this.closeArtifactsPanel();
+
+          this.toast.show(
+            this.translateService.instant('projects.success.artifacts-uploaded')
+          );
 
           setTimeout(() => {
             this._workflowStatus.set(null);
@@ -767,7 +769,7 @@ export class SessionsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: status => {
-          if (status.workflow_status === 'failed') {
+          if (status.workflow_status === 'error') {
             this.toast.showError(
               this.translateService.instant('projects.error.workflow-failed')
             );
@@ -776,7 +778,6 @@ export class SessionsComponent implements OnInit, OnDestroy {
         error: err => {
           console.error('Polling error:', err);
           this._isPolling.set(false);
-          this._hasRunningWorkflows.set(false);
           this._workflowStatus.set(null);
           this.loading.set(false);
         }

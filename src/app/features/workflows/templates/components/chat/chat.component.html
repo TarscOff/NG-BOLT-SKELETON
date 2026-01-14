@@ -79,16 +79,24 @@
           <mat-icon class="task-icon">
             @if (task.task_status === 'completed') {
             check_circle
-            } @else if (task.task_status === 'failed') {
+            } @else if (task.task_status === 'error') {
             error
             } @else if (task.task_status === 'running') {
             sync
+            } @else if (task.task_status === 'started') {
+            play_arrow
+            } @else if (task.task_status === 'queued') {
+            schedule
+            } @else if (task.task_status === 'waiting') {
+            hourglass_empty
+            } @else if (task.task_status === 'not_started') {
+            radio_button_unchecked
             } @else {
             radio_button_unchecked
             }
           </mat-icon>
           <div class="task-info">
-            <span class="task-name">{{ task.task_name | translate }}</span>
+            <span class="task-name">{{ "ai_progress." + task.task_name | translate }}</span>
           </div>
           <div class="task-comment">
             <span class="task-name">{{ task.task_status_comment }}</span>

@@ -74,6 +74,11 @@
   text-align: center;
   min-height: 400px;
   color: var(--mat-neutral);
+
+  * {
+    color: var(--mat-neutral);
+  }
+
   mat-icon {
     font-size: 64px;
     width: 64px;
@@ -90,7 +95,6 @@
 
   p {
     margin: 0 0 24px 0;
-    color: var(--mat-sys-on-surface-variant);
   }
 }
 

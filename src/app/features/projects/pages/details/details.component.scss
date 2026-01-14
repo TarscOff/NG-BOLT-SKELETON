@@ -18,11 +18,15 @@
   justify-content: center;
   min-height: 400px;
   gap: 1rem;
+  color: var(--mat-neutral);
+
+  * {
+    color: var(--mat-neutral);
+  }
 
   p {
     margin: 0;
     font-size: 1rem;
-    color: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -46,7 +50,7 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
-  color: var(--mat-accent);
+  color: var(--mat-error);
 
   mat-icon {
     font-size: 64px;
@@ -193,6 +197,10 @@
   text-align: center;
   padding: 2rem;
   color: var(--mat-neutral);
+
+  * {
+    color: var(--mat-neutral);
+  }
 
   mat-icon {
     font-size: 64px;
@@ -594,9 +602,12 @@ mat-list-item.historyItem {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }

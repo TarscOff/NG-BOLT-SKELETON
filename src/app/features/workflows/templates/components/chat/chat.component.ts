@@ -127,7 +127,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
   // OUTPUTS
   // ============================================================================
-  @Output() messageSent = new EventEmitter<string>();
+  @Output() messageSent = new EventEmitter<void>();
   @Output() messageDeleted = new EventEmitter<string>();
   @Output() messageEdited = new EventEmitter<{ id: string; content: string }>();
   @Output() chatCleared = new EventEmitter<void>();
@@ -331,7 +331,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     };
 
     this._messages.update(msgs => [...msgs, userMessage]);
-    this.messageSent.emit(data.message);
     this._isTyping.set(true);
 
     // Determine which service method to call based on content type
@@ -459,11 +458,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe({
         next: sessionStatus => {
           // Find all running workflows
-          const runningWorkflows = sessionStatus.workflow_executions.filter(
-            wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+          const runningWorkflows = sessionStatus?.workflow_executions?.filter(
+            wf => wf.workflow_status === 'running' || wf.workflow_status === 'queued' || wf.workflow_status === 'waiting'
           );
 
-          if (runningWorkflows.length > 0) {
+          if (runningWorkflows?.length > 0) {
             // console.log(`Found ${runningWorkflows.length} running workflows on load`);
             this._hasRunningWorkflows.set(true);
 
@@ -506,7 +505,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Set initial state  of this._workflowStatus.set(status);
     this._workflowStatus.set({
-      workflow_status: 'pending',
+      workflow_status: 'queued',
       workflow_instance_id: workflowInstanceId,
       workflow_name: 'Initializing workflow...',
       tasks: [],
@@ -521,7 +520,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           return this.projectService.getSessionStatusById(this.sessionId$()).pipe(
             map(sessionStatus => {
               // Check if session is already completed or failed
-              if (sessionStatus.status === 'completed' || sessionStatus.status === 'failed') {
+              if (sessionStatus.status === 'completed' || sessionStatus.status === 'error') {
                 return {
                   workflow_status: sessionStatus.status,
                   workflow_instance_id: workflowInstanceId,
@@ -544,10 +543,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
               // Get ALL tasks from ALL running/pending workflows for display
               const allRunningWorkflows = sessionStatus.workflow_executions.filter(
-                wf => wf.workflow_status === 'running' || wf.workflow_status === 'pending'
+                wf => wf.workflow_status === 'running' || wf.workflow_status === 'queued' || wf.workflow_status === 'waiting'
               );
 
-              // Include ALL task statuses (pending, running, completed, failed)
               // Include ALL task statuses (pending, running, completed, failed)
               const allActiveTasks = allRunningWorkflows
                 .flatMap(wf => wf.tasks?.map(task => ({
@@ -592,7 +590,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                 if (notFoundCount >= maxNotFoundRetries) {
                   // console.error('Max retries reached for workflow status');
                   return of({
-                    workflow_status: 'failed',
+                    workflow_status: 'error',
                     workflow_instance_id: workflowInstanceId,
                     workflow_name: 'Workflow not found',
                     tasks: [],
@@ -603,7 +601,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
                 }
 
                 return of({
-                  workflow_status: 'pending',
+                  workflow_status: 'waiting',
                   workflow_instance_id: workflowInstanceId,
                   workflow_name: 'Initializing workflow...',
                   tasks: [],
@@ -619,7 +617,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
               if (notFoundCount >= maxNotFoundRetries) {
                 console.error('Max retries reached due to errors');
                 return of({
-                  workflow_status: 'failed',
+                  workflow_status: 'error',
                   workflow_instance_id: workflowInstanceId,
                   workflow_name: 'Error occurred',
                   tasks: [],
@@ -630,7 +628,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
               }
 
               return of({
-                workflow_status: 'pending',
+                workflow_status: 'waiting',
                 workflow_instance_id: workflowInstanceId,
                 workflow_name: 'Processing...',
                 tasks: [],
@@ -644,16 +642,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         tap(status => {
           // console.log('Current workflow status:', status.workflow_status);
           // console.log('Setting workflowStatus signal with tasks:', status.tasks.length);
-          status.workflow_name = ("ai_progress." +status.workflow_name.toLocaleLowerCase()) || 'Workflow Status';
           this._workflowStatus.set(status);
           this._hasRunningWorkflows.set(
-            status.workflow_status === 'running' || status.workflow_status === 'pending'
+            status.workflow_status === 'running' || status.workflow_status === 'waiting' || status.workflow_status === 'queued'
           );
           this.cdr.detectChanges();
           this.scrollToBottom();
         }),
         takeWhile(status => {
-          const shouldContinue = status.workflow_status === 'pending' || status.workflow_status === 'running';
+          const shouldContinue = status.workflow_status === 'waiting' || status.workflow_status === 'running' || status.workflow_status === 'queued';
           // console.log(`Should continue polling: ${shouldContinue} (session status: ${status.workflow_status})`);
           return shouldContinue;
         }, true),
@@ -663,7 +660,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           this._isPolling.set(false);
           this._hasRunningWorkflows.set(false);
 
-          // Give time for completed animations to play
+          this.messageSent.emit();
+
           setTimeout(() => {
             this._workflowStatus.set(null);
             // Reload messages after workflow completes
@@ -673,9 +671,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       )
       .subscribe({
         next: status => {
-          if (status.workflow_status === 'completed' || status.workflow_status === 'failed') {
+          if (status.workflow_status === 'completed' || status.workflow_status === 'error') {
             // console.log('Session/Workflow reached final state');
-            if (status.workflow_status === 'failed') {
+            if (status.workflow_status === 'error') {
               this.toast.showError(this.translate.instant('projects.error.workflow-status-polling-failed'));
             }
           }

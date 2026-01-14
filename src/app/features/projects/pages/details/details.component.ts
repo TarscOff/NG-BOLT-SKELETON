@@ -711,6 +711,10 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                         this.toast.show(
                             this.translateService.instant('projects.delete-success', { title: item.title })
                         );
+
+                        // reload sessions and artifacts after deletion
+                        this.loadProjectSessions(this.project()!.project_id);
+                        this.loadProjectArtifacts(this.project()!.project_id);
                     },
                     error: (error: Error) => {
                         this.toast.showError(

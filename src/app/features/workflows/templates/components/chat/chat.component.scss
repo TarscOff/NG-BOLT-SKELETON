@@ -95,11 +95,13 @@
     height: 64px;
     margin-bottom: 16px;
     opacity: 0.5;
+    color: var(--mat-neutral);
   }
 
   p {
     font-size: 14px;
     margin: 0;
+    color: var(--mat-neutral);
   }
 }
 
@@ -183,11 +185,9 @@
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 600;
-
-      &.pending {
-        background: var(--mat-warn);
+      &.queued {
+        background: var(--mat-accent);
         color: white;
-        animation: pulse 2s ease-in-out infinite;
       }
 
       &.running {
@@ -201,9 +201,27 @@
         color: white;
       }
 
-      &.failed {
-        background: var(--mat-accent);
+      &.error {
+        background: var(--mat-error);
         color: white;
+      }
+
+      &.started {
+        background: var(--mat-primary-variant);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      &.waiting {
+        background: var(--mat-warn);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      &.not_started {
+        background: var(--mat-neutral);
+        color: rgba(255, 255, 255, 0.6);
+        opacity: 0.7;
       }
     }
   }
@@ -245,13 +263,13 @@
 
       &.completed {
         .task-icon {
-          color: #fff;       
+          color: #fff;
         }
 
         background: var(--mat-success);
       }
 
-      &.failed {
+      &.error {
         .task-icon {
           color: #fff;
         }
@@ -266,17 +284,47 @@
         }
 
         border-left: 3px solid var(--mat-primary);
+        background: var(--mat-primary);
+      }
+
+      &.started {
+        .task-icon {
+          color: #fff;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        border-left: 3px solid var(--mat-primary);
         background: var(--mat-primary-variant);
       }
 
-      &.pending {
+      &.queued {
         .task-icon {
-          color: #fff;            
+          color: #fff;
           opacity: 0.6;
         }
 
         opacity: 0.8;
         background: var(--mat-accent);
+      }
+
+      &.waiting {
+        .task-icon {
+          color: #fff;
+          opacity: 0.7;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        background: var(--mat-warn);
+      }
+
+      &.not_started {
+        .task-icon {
+          color: #666;
+          opacity: 0.5;
+        }
+
+        opacity: 0.6;
+        background: var(--mat-neutral);
       }
 
       .task-comment {

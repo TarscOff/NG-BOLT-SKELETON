@@ -351,7 +351,7 @@ export class CompareComponent implements OnInit, OnDestroy {
               clearInterval(pollInterval);
               this._comparisonProgress.set(100);
               this.handleComparisonComplete(result);
-            } else if (result.status === 'failed') {
+            } else if (result.status === 'error') {
               clearInterval(pollInterval);
               this._isComparing.set(false);
               this._comparisonProgress.set(0);

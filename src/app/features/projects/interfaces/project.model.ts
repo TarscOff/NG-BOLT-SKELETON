@@ -8,7 +8,7 @@ export enum ProjectSessionVisibility {
 export interface ProjectSessionStatusDto {
   updated_on: string;
   session_id: string;
-  status: Status;
+  status: WorkflowStatus;
   workflow_executions: WorkflowStatusDto[];
 }
 
@@ -326,7 +326,7 @@ export interface TaskDto {
   created_on: DateTime;
   task_id: string;
   task_name: string;
-  task_status: Status;
+  task_status: WorkflowStatus;
   task_status_comment: string;
   updated_on: DateTime;
 }
@@ -338,7 +338,7 @@ export interface WorkflowStatusDto {
   updated_on: DateTime;
   workflow_instance_id: string;
   workflow_name: string;
-  workflow_status: Status;
+  workflow_status: WorkflowStatus;
 }
 
-export type Status = "pending" | "running" | "completed" | "failed";
+export type WorkflowStatus = 'queued' | 'running' | 'completed' | 'error' | 'started' | 'waiting' | 'not_started';

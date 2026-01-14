@@ -19,6 +19,11 @@
   justify-content: center;
   min-height: 400px;
   gap: 1rem;
+  color: var(--mat-neutral);
+
+  * {
+    color: var(--mat-neutral);
+  }
 
   p {
     margin: 0;
@@ -35,7 +40,7 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
-  color: var(--mat-accent);
+  color: var(--mat-error);
 
   mat-icon {
     font-size: 64px;
@@ -58,16 +63,11 @@
 .header-card {
   margin-bottom: 1.5rem;
 
-  mat-card-header {
-    display: flex;
-    align-items: center;
-  }
-
   .header-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--mat-primary) 20%, var(--mat-accent) 100%);
+    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%);
     color: white;
     border-radius: 50%;
     width: 40px;
@@ -97,6 +97,31 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+
+    ::ng-deep {
+      .mat-mdc-card-header-text {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  mat-card-subtitle,
+  mat-card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
 }
 
 // Project card
@@ -109,11 +134,11 @@
   border: 2px solid transparent;
   background:
     linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
-    linear-gradient(135deg, var(--mat-primary) 60%, var(--mat-accent) 100%) border-box;
+    linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
 
   &::after {
     content: "";
-    background: linear-gradient(135deg, var(--mat-primary) 60%, var(--mat-accent) 100%) border-box;
+    background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
     position: absolute;
     top: 0;
     left: 0;
@@ -133,16 +158,22 @@
 
   }
 
-  mat-card-subtitle  {
+  mat-card-subtitle {
     font-size: 14px;
     color: var(--mat-accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    flex-wrap: wrap;
+
   }
 
   .avatar-folder {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--mat-primary) 20%, var(--mat-accent) 100%  );
+    background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -182,7 +213,12 @@
   min-height: 400px;
   text-align: center;
   padding: 2rem;
-  color: var(--mat-accent);
+  color: var(--mat-neutral);
+
+  * {
+    color: var(--mat-neutral);
+  }
+
   h3 {
     margin: 0.5rem 0;
     font-size: 1.5rem;
@@ -250,7 +286,7 @@ mat-paginator {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        
+
         app-field-host {
           flex: 1;
         }
