@@ -15,11 +15,6 @@ interface DeleteMessageResponse {
     messageId: string;
 }
 
-interface UploadAttachmentResponse {
-    url: string;
-    filename: string;
-}
-
 @Injectable({
     providedIn: 'root',
 })
@@ -51,7 +46,8 @@ export class ChatService {
             const historyDataContent = await firstValueFrom(this.projectService.getChatHistoryDataContent(sessionData.artifact_id));
 
             const mappedItems = this.mapToChatTemplateData(historyDataContent);
-            return mappedItems;
+            // skip system messages
+            return mappedItems.filter(item => item.sender.type!== 'system');
         } else {
             return [];
         }
@@ -63,7 +59,7 @@ export class ChatService {
             content: item.content,
             sender: {
                 name: item.role,
-                type: item.role === 'user' ? 'user' : 'assistant',
+                type: item.role,
             },
             type: "mixed"
             // TODO Add attachments when provided BE side
@@ -148,18 +144,5 @@ export class ChatService {
             edited: true,
             timestamp: new Date(),
         }).pipe(delay(300));
-    }
-
-    private mockUploadAttachment(file: File): Observable<UploadAttachmentResponse> {
-        // Simulate upload delay based on file size
-        const uploadDelay = Math.min(1000 + (file.size / 10000), 3000);
-
-        // Mock URL generation
-        const mockUrl = `https://mock-storage.example.com/uploads/${Date.now()}-${file.name}`;
-
-        return of({
-            url: mockUrl,
-            filename: file.name,
-        }).pipe(delay(uploadDelay));
     }
 }

@@ -23,7 +23,7 @@
           <!-- Loading State -->
           @if (loading()) {
           <div class="loading-state">
-            <mat-spinner diameter="64"></mat-spinner>
+            <mat-spinner color="neutral" class="neutral" diameter="64"></mat-spinner>
             <p>{{ 'loading' | translate }}</p>
           </div>
           }
@@ -43,7 +43,7 @@
             @if (enabledTemplates().length === 1) {
             @if (session()?.session_id && project()) {
             <app-template-loader [config]="enabledTemplates()[0]" (templateError)="onTemplateError($event)"
-              [sessionId]="sessionId() || ''" [projectId]="projectId() || ''"
+              (messageSent)="onMessageSent()" [sessionId]="sessionId() || ''" [projectId]="projectId() || ''"
               [templateId]="enabledTemplates()[0]?.templateId || ''"
               [filetemplateId]="enabledTemplates()[0]?.fileTemplateId || ''" />
             }
@@ -62,7 +62,7 @@
                 <div class="tab-content">
                   @if (session()?.session_id && project()) {
                   <app-template-loader [config]="template" (templateError)="onTemplateError($event)"
-                    [sessionId]="sessionId() || ''" [projectId]="projectId() || ''"
+                    [sessionId]="sessionId() || ''" [projectId]="projectId() || ''" (messageSent)="onMessageSent()"
                     [templateId]="template?.templateId || ''" [filetemplateId]="template?.fileTemplateId || ''" />
                   }
                 </div>
@@ -92,6 +92,7 @@
       <h2>{{ 'workflow.runPanel.artifacts' | translate }}</h2>
 
       <div class="button-group">
+        @if (files().length > 0) {
         <!-- Filter Dropdown -->
         <div class="files-filter">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -105,8 +106,9 @@
             </mat-select>
           </mat-form-field>
         </div>
+        }
         <!-- Close btn -->
-        <button mat-icon-button (click)="closeArtifactsPanel()">
+        <button color="error" mat-icon-button (click)="closeArtifactsPanel()">
           <mat-icon>close</mat-icon>
         </button>
       </div>
@@ -121,7 +123,7 @@
             <h4>{{ workflowStatus$()?.workflow_name }}</h4>
             <p class="workflow-status">
               @if (isPolling$()) {
-              <mat-spinner diameter="16"></mat-spinner>
+              <mat-spinner color="neutral" class="neutral" diameter="16"></mat-spinner>
               <span>{{ 'processing' | translate }}</span>
               } @else {
               <mat-icon>check_circle</mat-icon>
@@ -134,15 +136,16 @@
         @if (workflowStatus$()?.tasks && workflowStatus$()!.tasks.length > 0) {
         <div class="tasks-list">
           @for (task of workflowStatus$()!.tasks; track trackByTaskId($index, task)) {
-          <div class="task-item" [class.completed]="task.task_status === 'completed'"
-            [class.running]="task.task_status === 'running'" [class.failed]="task.task_status === 'failed'">
+          <div class="task-item" [class]="task.task_status">
             <div class="task-status-icon">
               @if (task.task_status === 'completed') {
               <mat-icon color="success">check_circle</mat-icon>
-              } @else if (task.task_status === 'running') {
-              <mat-spinner diameter="20"></mat-spinner>
-              } @else if (task.task_status === 'failed') {
+              } @else if (task.task_status === 'running' || task.task_status === 'started') {
+              <mat-spinner color="neutral" class="neutral" diameter="20"></mat-spinner>
+              } @else if (task.task_status === 'error') {
               <mat-icon color="warn">error</mat-icon>
+              } @else if (task.task_status === 'queued' || task.task_status === 'waiting') {
+              <mat-icon>schedule</mat-icon>
               } @else {
               <mat-icon>radio_button_unchecked</mat-icon>
               }
@@ -181,7 +184,7 @@
                 <mat-icon class="item-icon">{{ fileIcon(f.type) }}</mat-icon>
 
                 <div class="item-content">
-                  <div matListItemTitle>
+                  <div matListItemTitle class="title" [matTooltip]="f.name">
                     {{ f.name }}
                   </div>
 

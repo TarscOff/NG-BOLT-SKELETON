@@ -10,7 +10,7 @@
     <!-- Loading State -->
     @if (loading()) {
     <div class="loading-state">
-      <mat-spinner diameter="64"></mat-spinner>
+      <mat-spinner diameter="64" color="neutral" class="neutral"></mat-spinner>
       <p>{{ 'loading' | translate }}</p>
     </div>
     }
@@ -61,7 +61,7 @@
           <div mat-card-avatar class="avatar-folder">
             <mat-icon>folder_special</mat-icon>
           </div>
-          <mat-card-title>{{ project.name }}</mat-card-title>
+          <mat-card-title [matTooltip]="project.name">{{ project.name }}</mat-card-title>
           <mat-card-subtitle>{{ 'projects.id' | translate }}: {{ project.project_id }}</mat-card-subtitle>
         </mat-card-header>
 

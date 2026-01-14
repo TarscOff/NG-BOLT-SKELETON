@@ -23,7 +23,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import {
   TemplateConfig,
-  TemplateContext,
   ChatTemplateConfig,
   CompareTemplateConfig,
   SummarizeTemplateConfig,
@@ -38,10 +37,10 @@ import { CompareComponent } from '../compare/compare.component';
 import { SummarizeComponent } from '../summarize/summarize.component';
 import { ExtractComponent } from '../extract/extract.component';
 
-import { CompareConfig, CompareFile } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
-import { ChatConfig } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
-import { SummarizeConfig } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
-import { ExtractConfig, ExtractFile } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
+import { CompareConfig, CompareFile, ComparisonResult } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
+import { ChatConfig, ChatMessage } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
+import { SummarizeConfig, SummaryResult } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
+import { ExtractConfig, ExtractFile, ExtractionResult } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
 
 @Component({
   selector: 'app-template-loader',
@@ -156,11 +155,18 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
   @Input({ required: true }) templateId!: string;
   @Input({ required: true }) filetemplateId!: string;
 
-  @Input() context?: TemplateContext;
-
   @Output() templateLoaded = new EventEmitter<ComponentRef<TemplateComponentInstance>>();
   @Output() templateError = new EventEmitter<Error>();
   @Output() resultCompleted = new EventEmitter<TemplateResult>();
+
+  @Output() success = new EventEmitter<ChatMessage[] | ComparisonResult | SummaryResult | ExtractionResult>();
+  @Output() started = new EventEmitter<void>();
+  @Output() progression = new EventEmitter<number>();
+  @Output() fileUploaded = new EventEmitter<File | { name: string; size?: number }>();
+  @Output() messageSent = new EventEmitter<string>();
+  @Output() messageDeleted = new EventEmitter<string>();
+  @Output() messageEdited = new EventEmitter<{ id: string; content: string }>();
+  @Output() cleared = new EventEmitter<void>();
 
   @ViewChild('templateHost', { read: ViewContainerRef })
   templateHost?: ViewContainerRef;
@@ -288,23 +294,22 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
 
     // Wire outputs to forward events
     instance.messageSent.subscribe((content: string) => {
-      this.context?.events?.onMessageSent?.(content);
+      this.messageSent.emit(content);
     });
 
     instance.messageDeleted.subscribe((id: string) => {
-      this.context?.events?.onMessageDeleted?.(id);
+      this.messageDeleted.emit(id);
     });
 
     instance.messageEdited.subscribe((event: { id: string; content: string }) => {
-      this.context?.events?.onMessageEdited?.(event);
+      this.messageEdited.emit(event);
     });
 
     instance.chatCleared.subscribe(() => {
-      this.context?.events?.onCleared?.();
+      this.cleared.emit();
     });
 
     instance.errorEmitter.subscribe((error: Error) => {
-      this.context?.events?.onError?.(error);
       this.templateError.emit(error);
     });
   }
@@ -335,20 +340,19 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
         result,
       };
       this.resultCompleted.emit(templateResult);
-      this.context?.events?.onSuccess?.(result);
+      this.success.emit(result);
     });
 
     instance.comparisonError.subscribe((error) => {
-      this.context?.events?.onError?.(error);
       this.templateError.emit(error);
     });
 
     instance.fileUploaded.subscribe((event: { slot: 1 | 2; file: CompareFile }) => {
-      this.context?.events?.onFileUploaded?.(event.file);
+      this.fileUploaded.emit(event.file);
     });
 
     instance.comparisonStarted.subscribe(() => {
-      this.context?.events?.onStarted?.();
+      this.started.emit();
     });
   }
 
@@ -378,20 +382,19 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
         result,
       };
       this.resultCompleted.emit(templateResult);
-      this.context?.events?.onSuccess?.(result);
+      this.success.emit(result);
     });
 
     instance.summarizeError.subscribe((error) => {
-      this.context?.events?.onError?.(error);
       this.templateError.emit(error);
     });
 
     instance.fileUploaded.subscribe((file) => {
-      this.context?.events?.onFileUploaded?.(file);
+      this.fileUploaded.emit(file);
     });
 
     instance.summarizeStarted.subscribe(() => {
-      this.context?.events?.onStarted?.();
+      this.started.emit();
     });
   }
 
@@ -421,20 +424,19 @@ export class TemplateLoaderComponent implements OnInit, AfterViewInit, OnDestroy
         result,
       };
       this.resultCompleted.emit(templateResult);
-      this.context?.events?.onSuccess?.(result);
+      this.success.emit(result);
     });
 
     instance.extractionError.subscribe((error) => {
-      this.context?.events?.onError?.(error);
       this.templateError.emit(error);
     });
 
     instance.fileUploaded.subscribe((file: ExtractFile) => {
-      this.context?.events?.onFileUploaded?.(file);
+      this.fileUploaded.emit(file);
     });
 
     instance.extractionStarted.subscribe(() => {
-      this.context?.events?.onStarted?.();
+      this.started.emit();
     });
   }
 
