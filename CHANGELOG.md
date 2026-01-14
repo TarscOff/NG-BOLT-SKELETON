@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.24](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.23...v2.0.24) (2026-01-14)
+
+
+### Bug Fixes
+
+* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
+
 ### [2.0.23](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.22...v2.0.23) (2026-01-13)
 
 
