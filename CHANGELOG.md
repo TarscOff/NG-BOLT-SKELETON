@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.26](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.25...v2.0.26) (2026-01-26)
+
+
+### Features
+
+* **workflows:** workflows ([8e8219d](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
+* **workflows:** workflows ([14bd08c](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
+
 ### [2.0.25](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.24...v2.0.25) (2026-01-26)
 
 
