@@ -51,7 +51,6 @@ build_app:
     - npm run lint
 
 # ---------- Release (bump version, CHANGELOG, tag) ----------
-
 release:
   stage: release
   image: node:${NODE_VERSION}
@@ -182,7 +181,7 @@ docker_build:
       artifacts: true
       optional: true
   rules:
-    - if: $CI_PIPELINE_SOURCE != "merge_request_event" && ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "staging" || $CI_COMMIT_BRANCH == "uat") && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event" && ($CI_COMMIT_BRANCH == "develop") && $CI_COMMIT_MESSAGE !~ /^chore\(release\):/
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_DRIVER: overlay2
@@ -190,69 +189,15 @@ docker_build:
     - apk add --no-cache ca-certificates git nodejs npm
     - git config --global safe.directory ${CI_PROJECT_DIR}
     - git config --global http.sslVerify false
-    
-    # Configure Docker to trust the internal CA certificate
-    - |
-      if [ -n "$GITLAB_REGISTRY_CERT" ]; then
-        echo "GITLAB_REGISTRY_CERT is set"
-        
-        # Check if it's a file path or certificate content
-        if [ -f "$GITLAB_REGISTRY_CERT" ]; then
-          echo "Reading certificate from file: $GITLAB_REGISTRY_CERT"
-          CERT_CONTENT=$(cat "$GITLAB_REGISTRY_CERT")
-        else
-          echo "Using certificate content from variable"
-          CERT_CONTENT="$GITLAB_REGISTRY_CERT"
-        fi
-        
-        # Validate certificate content
-        echo "$CERT_CONTENT" | head -n 1 | grep -q "BEGIN CERTIFICATE" || {
-          echo "ERROR: GITLAB_REGISTRY_CERT does not contain valid certificate"
-          exit 1
-        }
-        
-        # Add to system trust store (Alpine Linux format)
-        echo "$CERT_CONTENT" > /usr/local/share/ca-certificates/telindus-registry.crt
-        update-ca-certificates
-        
-        # Add to Docker daemon trust store (for the DinD service)
-        mkdir -p /etc/docker/certs.d/${CR_REGISTRY}
-        echo "$CERT_CONTENT" > /etc/docker/certs.d/${CR_REGISTRY}/ca.crt
-        
-        # Wait for Docker daemon to be ready
-        timeout 30 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
-        
-        # Restart Docker daemon to pick up certificate changes
-        # Note: In DinD, we can't restart the daemon, so we configure insecure registry as fallback
-        echo "✅ CA certificate configured"
-        echo "Certificate preview:"
-        openssl x509 -in /etc/docker/certs.d/${CR_REGISTRY}/ca.crt -noout -subject -issuer 2>/dev/null || echo "Certificate installed but openssl validation failed"
-        ls -la /etc/docker/certs.d/${CR_REGISTRY}/ || true
-        
-        # Configure Docker client to use the certificate
-        mkdir -p ~/.docker
-        echo "{\"insecure-registries\": []}" > ~/.docker/config.json
-      else
-        echo "⚠️ WARNING: GITLAB_REGISTRY_CERT not set."
-        echo "Configuring Docker to skip TLS verification for ${CR_REGISTRY}..."
-        
-        # Fallback: configure Docker to skip TLS verification
-        mkdir -p /etc/docker
-        echo '{"insecure-registries":["'${CR_REGISTRY}'"]}' > /etc/docker/daemon.json
-        echo "Docker daemon configuration:"
-        cat /etc/docker/daemon.json
-      fi
   script:
-    # Pull latest changes (including release commit if any)
-    - git fetch origin ${CI_COMMIT_BRANCH}
-    - git reset --hard origin/${CI_COMMIT_BRANCH}
-    - echo "Current commit:"
-    - git log -1 --oneline
-    - echo "Current version:"
-    - cat package.json | grep '"version"'
-    
-    # Configure npm for Azure Artifacts
     - |
+      set -euo pipefail
+      
+      # Pull latest changes
+      git fetch origin ${CI_COMMIT_BRANCH}
+      git reset --hard origin/${CI_COMMIT_BRANCH}
+      
+      # Configure npm for Azure Artifacts
       if [ -n "$AZURE_ARTIFACT_PAT" ]; then
         {
           echo ""
@@ -260,82 +205,32 @@ docker_build:
           echo "always-auth=true"
         } >> .npmrc
       fi
-    
-    # Install dependencies and build Angular app
-    - |
-      set -euo pipefail
+      
+      # Install and build (PRODUCTION ONLY - no config copying)
       npm ci
+      echo "Building Angular with PRODUCTION configuration..."
+      npm run buildProd
       
-      echo "Branch: $CI_COMMIT_BRANCH"
-      
-      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        echo "Using PROD config"
-        cp public/assets/config.prod.json public/assets/config.json
-        NG_CONFIG="production"
-      elif [ "$CI_COMMIT_BRANCH" = "uat" ]; then
-        echo "Using UAT config"
-        cp public/assets/config.uat.json public/assets/config.json
-        NG_CONFIG="uat"
-      elif [ "$CI_COMMIT_BRANCH" = "staging" ]; then
-        echo "Using UAT config"
-        cp public/assets/config.uat.json public/assets/config.json
-        NG_CONFIG="uat"
-      else
-        echo "Using DEV config"
-        cp public/assets/config.dev.json public/assets/config.json
-        NG_CONFIG="development"
-      fi
-      
-      echo "Building Angular with configuration: $NG_CONFIG"
-      npm run build -- --configuration=$NG_CONFIG
-      
-      echo "Dist content:"
-      ls -R dist || true
-    
-    # Build and push Docker image
-    - |
-      VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+      # Get version
+      VERSION=$(node -p "require('./package.json').version")
       echo "Detected version: $VERSION"
       
-      # Compute safe branch name
-      SAFE_BRANCH=$(echo "${CI_COMMIT_BRANCH}" | tr '/' '-')
-      
-      echo "Repository: ${CI_PROJECT_PATH}"
-      echo "Safe branch: $SAFE_BRANCH"
-      echo "Registry: ${CR_REGISTRY}"
-      
-      # Determine environment based on branch
-      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        BUILD_ENV="production"
-      elif [ "$CI_COMMIT_BRANCH" = "uat" ] || [ "$CI_COMMIT_BRANCH" = "staging" ]; then
-        BUILD_ENV="uat"
-      else
-        BUILD_ENV="development"
-      fi
-      
-      echo "Environment: $BUILD_ENV"
-      
-      # Test Docker connectivity
-      echo "Testing Docker daemon connectivity..."
-      docker info || exit 1
-      
-      # Log in to GitLab Container Registry using CI_JOB_TOKEN
-      echo "Attempting Docker login to ${CR_REGISTRY}..."
+      # Log in to GitLab Container Registry
       echo "${CI_JOB_TOKEN}" | docker login ${CR_REGISTRY} -u ${CI_REGISTRY_USER} --password-stdin
-      echo "✅ Docker login successful"
       
-      # Build and push image to GitLab Container Registry
       IMAGE_BASE="${CR_REGISTRY}/${CI_PROJECT_PATH}"
-      echo "Building Docker image with ENVIRONMENT=${BUILD_ENV}..."
-      docker build --build-arg ENVIRONMENT=${BUILD_ENV} \
-                   -t "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}" \
-                   -t "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}" \
-                   -f ./Dockerfile .
+      
+      # Build single image (no environment arg)
+      echo "Building single Docker image (runtime config via env vars)..."
+      docker build \
+        -t "${IMAGE_BASE}:${VERSION}" \
+        -t "${IMAGE_BASE}:latest" \
+        -f ./Dockerfile .
       
       echo "Pushing Docker images..."
-      docker push "${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
-      docker push "${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"
+      docker push "${IMAGE_BASE}:${VERSION}"
+      docker push "${IMAGE_BASE}:latest"
       
       echo "✅ Pushed images:"
-      echo "   ${IMAGE_BASE}:${SAFE_BRANCH}-psx-ng-skeleton-${VERSION}"
-      echo "   ${IMAGE_BASE}:latest-psx-ng-skeleton-${SAFE_BRANCH}"
+      echo "   ${IMAGE_BASE}:${VERSION}"
+      echo "   ${IMAGE_BASE}:latest"

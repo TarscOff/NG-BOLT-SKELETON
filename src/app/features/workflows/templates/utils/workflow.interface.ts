@@ -13,20 +13,28 @@ export interface NodeData {
 export type PortType = 'json' | string;
 export interface WorkflowPort {
   id: string;
-  label: string;
+  label?: string;
   type?: PortType;
   required?: boolean;
+  readonly?: boolean;
+  data_reference?: string;
+  artifact_type?: string;
 }
 export interface WorkflowPorts {
   inputs: WorkflowPort[];
   outputs: WorkflowPort[];
 }
+
+export type PortsMapValue = { required?: boolean; readonly?: boolean } | boolean;
+export type PortsMap = Record<string, PortsMapValue>;
 export type InspectorActionType = string;
 export type PaletteType = InspectorActionType;
 export interface ActionDefinitionLite {
   type: PaletteType;
   params?: {
     icon: string;
+    ports?: WorkflowPorts;
+    ports_map?: PortsMap;
     [K: string]: unknown
   };
 }
