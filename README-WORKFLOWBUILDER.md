@@ -1,7 +1,7 @@
 
 # Workflow Canvas — How to Use, Configure & Extend (`@ng-draw-flow/core`)
 
-> _Last updated: 2025-10-07_
+> _Last updated: 2026-01-24_
 
 This guide documents **your current implementation** of the Workflow Canvas based on **`@ng-draw-flow/core`**, including:
 - palette → canvas drag & drop,
@@ -12,6 +12,13 @@ This guide documents **your current implementation** of the Workflow Canvas base
 - auto-center/fit on load,
 - how to add new **action types** safely,
 - and a short troubleshooting section.
+
+> New (v2.1+):
+> - Workflows persisted in NGRX ComponentStore (`workflows.store.ts`) + `localStorage` (`app_workflows_v1`).
+> - Reusable workflows exposed as **composite nodes** (`type: 'composite'`, `aiType: wf:<id>`) with ports inferred from first/last inner nodes.
+> - Graph validity badge beside the name input; publish/draft buttons use single source of truth (`canPublish$`, `canDraft$`).
+> - Run panel stores executions (runs) in store: workflow snapshot, node/edge payloads, logs. Run view dialog renders snapshot in read-only canvas.
+> - Read-only mode closes palette, disables drops & inputs; palette/search/name inputs are disabled when viewing a run.
 
 > Assumptions: Angular 17-19+, standalone components, strict TS. You already have `ConfirmDialogComponent`, `DynamicFormComponent`, and `FieldConfigService` in your Core SDK.
 
@@ -50,10 +57,13 @@ type PaletteType         = 'input' | 'result' | InspectorActionType;
 
 // palette (what appears as draggable pills)
 availableActions: ActionDefinitionLite[] = [
-  { type: 'chat' },
-  { type: 'compare' },
-  { type: 'summarize' },
-  { type: 'extract' },
+  // primitive blocks (kept)
+  { type: 'embed',   params: { icon: 'scatter_plot' } },
+  { type: 'retrieve', params: { icon: 'travel_explore' } },
+  { type: 'convert_and_chunk', params: { icon: 'description' } },
+  { type: 'embed_langchain_documents', params: { icon: 'hive' } },
+  { type: 'store_embedded_langchain_documents', params: { icon: 'inventory_2' } },
+  // reusable workflows arrive as type `wf:<id>` with params.workflowId + ports inferred
 ];
 ```
 
@@ -94,10 +104,15 @@ providers: [
     nodes: {
       input: WfNodeComponent,
       result: WfNodeComponent,
-      'chat': WfNodeComponent,
-      compare: WfNodeComponent,
-      summarize: WfNodeComponent,
-      extract: WfNodeComponent,
+      embed: WfNodeComponent,
+      retrieve: WfNodeComponent,
+      convert_and_chunk: WfNodeComponent,
+      embed_langchain_documents: WfNodeComponent,
+      store_embedded_langchain_documents: WfNodeComponent,
+      composite: WfNodeComponent,   // reusable workflows rendered like other nodes
+      'run-panel': WfRunPanelNodeComponent,
+      details: WfDetailsNodeComponent,
+      preview: WfPreviewNodeComponent,
     },
     connection: {
       type: DfConnectionType.SmoothStep,
@@ -109,7 +124,7 @@ providers: [
 ]
 ```
 
-> If you later prefer a **single visual type** for all actions (recommended for scalability), register `{ node: WfNodeComponent }` and normalize non-terminal nodes to `type: 'node'` while keeping their real subtype in `data.aiType`. (See §10 “Extending with new action types”.)
+> Composites: any action whose type starts with `wf:` is normalized to `type: 'composite'` with `data.params.__workflowId` preserved for mapping inner inputs/outputs.
 
 ---
 
@@ -184,38 +199,53 @@ This reuses your existing context menu logic.
 - Keep connector IDs consistent with your `WorkflowEdge` mapping (`sourcePort: 'out'`, `targetPort: 'in'`).
 
 
-## 8) Contributing and Extending with new action types
+## 8) Adding new workers / nodes (contribution guide)
 
-### Your current approach (per-type registration) — **Confirmed**
-When you add a new action (e.g., `'classify'`), do all of the following:
+Use this checklist when a backend worker is added so the node shows up automatically:
 
-1) **Types & palette**
-```ts
-type InspectorActionType = /* … */ | 'classify';
-type PaletteType = 'input' | 'result' | InspectorActionType;
-availableActions = [..., {{ type: 'classify' }}];
-```
+1) **Backend contract**  
+   - Each worker (task) exposes inputs/outputs with `data_reference` + `artifact_type`.  
+   - Reusable workflows are delivered as `wf:<id>` with `data.nodes` + `data.edges` (see `DOCS/Workflow_*` examples).
 
-2) **Renderer registration**
-```ts
-provideNgDrawFlowConfigs({
-  nodes: {{ /* …existing… */, classify: WfNodeComponent }},
-  connection: {{ /* unchanged */ }},
-});
-```
+2) **Catalog ingestion**  
+   - Catalog comes from backend; fallback list is `fallbackCatalog` in `workflows.component.ts`.  
+   - To add a new worker manually, append to `fallbackCatalog` with `type`, `icon`, optional `class`, and (ideally) `ports` if the backend hasn’t shipped them yet.
 
-3) **Styling class**
-```html
-<div class="wf-node"
-     [class.input]="visualType()==='input'"
-     [class.result]="visualType()==='result'"
-     [class.action]="visualType()!=='input' && visualType()!=='result'">
-</div>
-```
+3) **Renderer registration**  
+   - If it’s a primitive worker (not `wf:`), ensure `provideNgDrawFlowConfigs.nodes` has an entry; most map to `WfNodeComponent`.  
+   - If it’s delivered as `wf:<id>`, no extra renderer is required; it is normalized to `type: 'composite'`.
 
-4) **Labels & forms**
-- `displayLabel()` (or `humanLabelFor`) add `'classify'`.
-- `ACTION_FORMS['classify'] = {{ make: (F) => [...], defaults?: {{...}} }};`
+4) **Ports**  
+   - Port types supported: `query_string`, `embeddings`, `json`, `collection`, `string` (see `DEFAULT_PORT_TYPES` in `workflows.store.ts`).  
+   - For composites, ports are inferred from inner graph: **inputs = first layer nodes**, **outputs = last layer nodes** (id/label from `data_reference`, type from `artifact_type`).
+
+5) **Forms**  
+   - Add an `ActionFormSpec` entry in `action-forms.ts` keyed by the worker `type` (or `wf:<id>` if you want a dedicated form).  
+   - Use `DynamicFormComponent` fields; keep required/placeholder/helperText populated for validation.
+
+6) **Validation & buttons**  
+   - Graph validity recomputed on load/drop/connect/delete; badge appears beside the workflow name.  
+   - Publish button: enabled when graph valid AND (workflow draft OR dirty OR needsRepublish).  
+   - Draft button: enabled when dirty; disabled when workflow visibility is `public` and no changes.
+
+7) **Execution records**  
+   - Runs are stored in NGRX with workflow snapshot + node/edge payloads; run view dialog renders the snapshot in read-only mode.  
+   - When wiring a new worker, make sure its params are serializable (files are stripped to placeholders).
+
+8) **Styling**  
+   - Ports/labels themed in `action-node.component.scss`; port badges use `--mat-error` for missing required links.
+
+9) **Testing**  
+   - Drop the new node from palette, connect required ports, ensure validation badge clears.  
+   - Run from canvas → check run panel shows statuses and payloads.
+
+### Minimal code touchpoints for a new worker
+- `workflows.component.ts` → ensure it appears in `availableActions()` (catalog or fallback).  
+- `workflow-canvas.component.ts` → nothing if renderer is `WfNodeComponent`; add to `provideNgDrawFlowConfigs.nodes` if you need a custom view.  
+- `action-forms.ts` → form spec.  
+- `i18n` → labels for type and form fields.
+
+> Tip: If a worker arrives without explicit ports, the canvas falls back to one `in` / one `out` (`ensurePorts`). Provide `ports` in catalog to avoid surprises.
 
 > Alternative for scalability: normalize all non-terminal nodes to a single `type: 'node'` and keep subtype in `data.aiType`. Then you only add palette + forms + label (no renderer/provider edits).
 

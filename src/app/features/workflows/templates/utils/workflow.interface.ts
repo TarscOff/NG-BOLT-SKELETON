@@ -15,13 +15,14 @@ export interface WorkflowPort {
   id: string;
   label: string;
   type?: PortType;
+  required?: boolean;
 }
 export interface WorkflowPorts {
   inputs: WorkflowPort[];
   outputs: WorkflowPort[];
 }
 export type InspectorActionType = string;
-export type PaletteType = 'input' | 'result' | InspectorActionType;
+export type PaletteType = InspectorActionType;
 export interface ActionDefinitionLite {
   type: PaletteType;
   params?: {
@@ -59,10 +60,19 @@ export interface DfDataInitialNodeData extends DfDataInitialNode {
 
 export type Status = 'queued' | 'running' | 'success' | 'error' | 'skipped';
 
+export interface PipelineWorkflowEdgeDTO {
+  id: string;
+  source: string;
+  target: string;
+  sourcePort?: string;
+  targetPort?: string;
+  label?: string;
+}
+
 export interface PipelineWorkflowDTO {
   name: string;
-  nodes: { id: string; type: string; data?: RunNodeDTO }[];
-  edges: { id: string; source: string; target: string }[];
+  nodes: WorkflowNode[];
+  edges: PipelineWorkflowEdgeDTO[];
   meta?: { createdAt: string, version: string; filesByNode: Record<string, Record<string, Binary | Binary[]>> };
 }
 
@@ -131,10 +141,15 @@ export interface RunEntry {
   startedAt: number;
   workflow: PipelineWorkflowDTO;
   state: Record<string, Status>;
+  logs?: string[];
+  nodeData?: Record<string, RunNodePayload>;
+  edgeData?: Record<string, unknown>;
+  finishedAt?: number;
+  status?: Status;
 };
 
 
-export const RESERVED_KEYS = ['icon','ui', '__missingIn', '__missingOut'] as const;
+export const RESERVED_KEYS = ['ui', '__missingIn', '__missingOut'] as const;
 export type ReservedKeys = typeof RESERVED_KEYS[number];
 
 export type StripReservedShallow<T> =
@@ -174,3 +189,18 @@ export interface RunNodeDTO {
 
 export type PreferredTab = 'auto' | 'params' | 'results' | 'error' | 'logs' | 'artifacts';
 
+export interface RunPortInfo {
+  id: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  connected?: boolean;
+  sources?: { from?: string }[];
+  targets?: { to?: string }[];
+}
+
+export interface RunNodePayload {
+  inputs?: RunPortInfo[];
+  outputs?: RunPortInfo[];
+  params?: unknown;
+}

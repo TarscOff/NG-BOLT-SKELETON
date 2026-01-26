@@ -30,7 +30,6 @@ export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract' | string
  */
 export interface BaseTemplateConfig {
   config?: Partial<ChatConfig | CompareConfig | SummarizeConfig | ExtractConfig>;
-  context?: TemplateContext;
   templateId: string;
   fileTemplateId: string;
 }
