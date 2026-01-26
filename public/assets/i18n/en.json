@@ -1,0 +1,981 @@
+{
+  "not_started": "Not Started",
+  "pending": "Pending",
+  "queued": "Queued",
+  "started": "Started",
+  "waiting": "Waiting",
+  "DASHBOARD_TITLE": "Dashboard",
+  "HELLO": "Hello",
+  "LANG": "Language",
+  "LANG_HINT": "Used Language",
+  "SAVE": "Save",
+  "TEAM_MEMBERS": "Team members",
+  "add_favorite": "Add to Favorite",
+  "workflow": {
+    "saved_workflows": "Saved workflows",
+    "filter": "Filter workflows",
+    "sidebar": {
+      "collapse": "Collapse saved workflows",
+      "expand": "Expand saved workflows"
+    },
+    "new": "New",
+    "save": "Save",
+    "draft": "Save as Draft",
+    "publish": "Publish",
+    "run": "Run",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "multi_select": "Multi-select",
+    "bulk_selected": "{{count}} selected",
+    "bulk_delete_confirmation": "Delete {{count}} workflows?",
+    "unsaved_changes_title": "Unsaved changes",
+    "unsaved_changes_message": "You have unsaved changes. would you like saving?",
+    "delete_confirmation": "Are you sure you want to delete '{{name}}'?",
+    "no_workflows": "No workflows yet",
+    "create_first": "Create your first workflow",
+    "no_workflow_selected": "No workflow selected",
+    "select_or_create": "Select a workflow from the list or create a new one to get started",
+    "create_new": "Create new workflow",
+    "clear_history": "Clear history",
+    "executions": "Executions",
+    "no_history": "No executions yet",
+    "input": "Input",
+    "result": "Result",
+    "edge": {
+      "insert": "Insert node",
+      "delete": "Delete link"
+    },
+    "view": "View",
+    "exit_view": "Exit view",
+    "read_only": "Read-only snapshot",
+    "version_mismatch": "Version differs from current workflow",
+    "version": "Version",
+    "name": "Name",
+    "node": {
+      "pin": "Pin data",
+      "unpin": "Unpin data",
+      "disable": "Disable",
+      "enable": "Enable",
+      "replace": "Replace",
+      "play_from_here": "Run from here",
+      "pinned": "Pinned",
+      "disabled": "Disabled"
+    },
+    "labels": {
+      "already_dropped": "Existing nodes",
+      "quickAdd": "Connections"
+    },
+    "runPanel": {
+      "artifacts": "Artifacts",
+      "auto": "Auto",
+      "cancel_pipe": "Cancel pipeline",
+      "cancel_stage": "Cancel stage",
+      "details": "Details",
+      "empty": "No workflow available.",
+      "error": "Error",
+      "go_chat": "Go to chat",
+      "logs": "Run logs",
+      "runs": "Executions",
+      "now_stages": "No stages to show.",
+      "options": "View options",
+      "params": "Params",
+      "preview": "Preview",
+      "queued": "Queued",
+      "results": "Results",
+      "run": "Run workflow",
+      "payloads": "Node payloads",
+      "edge_data": "Edge payloads",
+      "node_payloads": "Node data flow",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "connected": "Connected",
+      "disconnected": "Not connected",
+      "no_inputs": "No inputs",
+      "no_outputs": "No outputs",
+      "no_payload": "No data yet",
+      "view": "View run",
+      "fullscreen": "Fullscreen",
+      "running": "Running",
+      "skipped": "Skipped",
+      "submit": "Submit",
+      "success": "Success",
+      "title": "Runs panel"
+    },
+    "errors": {
+      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
+      "exactlyOneInput": "The workflow must have exactly one Input node.",
+      "exactlyOneResult": "The workflow must have exactly one Result node.",
+      "invalid_fields": "Node has invalid fields",
+      "noDirectInputToResult": "You cannot connect Input directly to Result.",
+      "noCompatibleActions": "No node available",
+      "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
+      "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
+      "saveFailed": "Failed to save the workflow.",
+      "invalid_graph": "Workflow is invalid. Fix missing links or fields.",
+      "missingPinnedData": "Upstream data missing. Pin data or connect inputs before running from here.",
+      "nodeNotFound": "Node not found."
+    },
+    "validation": {
+      "missing_inputs": "Missing inputs",
+      "missing_outputs": "Missing outputs",
+      "invalid_fields": "Invalid fields"
+    },
+    "ports": {
+      "in": "In",
+      "out": "Out"
+    },
+    "dialog": {
+      "node_name": "Node name",
+      "params": "Params",
+      "ports": "Ports",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "add_input": "Add input",
+      "add_output": "Add output",
+      "port_name": "Name",
+      "port_name_placeholder": "Port name",
+      "port_name_help": "Give this port a clear, unique label.",
+      "port_type": "Type",
+      "port_type_placeholder": "Select a type",
+      "port_type_help": "Used to validate compatibility between connections.",
+      "required": "Required",
+      "port_required_help": "Required ports must be connected before running.",
+      "port_type_options": {
+        "query_string": "Query string",
+        "embeddings": "Embeddings",
+        "json": "JSON",
+        "collection": "Collection",
+        "string": "String"
+      }
+    },
+    "palette": {
+      "search": "Search nodes"
+    },
+    "toolbox": {
+      "available_nodes": "Available nodes"
+    },
+    "visibility": {
+      "draft": "Draft",
+      "public": "Public"
+    },
+    "kind": {
+      "standard": "Standard",
+      "reusable": "Reusable"
+    },
+    "needs_republish": "Needs republish",
+    "toast": {
+      "draft_saved": "Draft saved (not published)",
+      "published": "Workflow published",
+      "republish_required": "Changes detected — republish required"
+    },
+    "new_dialog": {
+      "title": "Create workflow",
+      "name": {
+        "label": "Name",
+        "placeholder": "Workflow name",
+        "required": "Name is required",
+        "helper": "Choose a descriptive name for your workflow"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "What does this workflow do?",
+        "helper": "Optional description to help others understand the purpose"
+      },
+      "visibility": {
+        "label": "Public Visibility",
+        "helper": "When enabled, this workflow is visible to all users. When disabled, it's a private draft.",
+        "options": {
+          "draft": "Draft",
+          "public": "Public"
+        }
+      },
+      "kind": {
+        "label": "Reusable Template",
+        "helper": "When enabled, this workflow can be reused as a template. When disabled, it's a standard workflow.",
+        "options": {
+          "standard": "Standard",
+          "reusable": "Reusable"
+        }
+      },
+      "cancel": "Cancel",
+      "create": "Create"
+    },
+    "forms": {
+      "vector_store": {
+        "options": {
+          "azure_cosmos_db": "Azure Cosmos DB (vector)",
+          "azure_ai_search": "Azure AI Search",
+          "pinecone": "Pinecone",
+          "qdrant": "Qdrant",
+          "pgvector": "pgvector"
+        }
+      },
+      "embed": {
+        "text": {
+          "label": "Text to embed",
+          "placeholder": "Paste the text to embed...",
+          "helper": "Supports plain text; files are defined on the input node."
+        },
+        "embedding_model": {
+          "label": "Embedding model",
+          "helper": "Choose the model used to generate the vector.",
+          "options": {
+            "openai_small": "text-embedding-3-small (OpenAI)",
+            "openai_large": "text-embedding-3-large (OpenAI)",
+            "local": "all-MiniLM-L6-v2 (local)"
+          }
+        },
+        "normalize_embeddings": {
+          "label": "Normalize embeddings (L2)",
+          "helper": "Recommended for cosine similarity search."
+        },
+        "errors": {
+          "text_required": "Text is required",
+          "model_required": "Model is required"
+        }
+      },
+      "retrieve": {
+        "query": {
+          "label": "Query",
+          "placeholder": "What are you looking for?"
+        },
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Where to run the similarity search."
+        },
+        "top_k": {
+          "label": "Top K results",
+          "helper": "How many matches to return."
+        },
+        "score_threshold": {
+          "label": "Score threshold",
+          "helper": "Discard results below this similarity score."
+        },
+        "include_metadata": {
+          "label": "Include metadata in results",
+          "helper": "Attach stored metadata alongside the content."
+        },
+        "errors": {
+          "query_required": "Query is required"
+        }
+      },
+      "convert_and_chunk": {
+        "text_splitter": {
+          "label": "Text splitter",
+          "helper": "How to split the document before chunking.",
+          "options": {
+            "recursive": "Recursive (recommended)",
+            "markdown": "Markdown-aware",
+            "token": "Token-based"
+          }
+        },
+        "chunk_size": {
+          "label": "Chunk size (chars)",
+          "helper": "Length of each chunk in characters."
+        },
+        "chunk_overlap": {
+          "label": "Chunk overlap",
+          "helper": "Characters to overlap between chunks."
+        },
+        "clean_whitespace": {
+          "label": "Normalize whitespace",
+          "helper": "Collapse duplicate spaces and trim lines."
+        },
+        "add_source_metadata": {
+          "label": "Keep source metadata",
+          "helper": "Preserve filename/page info on each chunk."
+        }
+      },
+      "embed_langchain_documents": {
+        "embedding_model": {
+          "label": "Embedding model"
+        },
+        "batch_size": {
+          "label": "Batch size",
+          "helper": "Number of chunks to embed per batch."
+        }
+      },
+      "store_embedded_langchain_documents": {
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Destination for storing embeddings."
+        },
+        "collection_name": {
+          "label": "Collection / index name",
+          "placeholder": "documents"
+        },
+        "namespace": {
+          "label": "Namespace",
+          "placeholder": "default",
+          "helper": "Logical namespace within the vector store."
+        },
+        "upsert": {
+          "label": "Upsert existing ids",
+          "helper": "Update if an id exists; insert otherwise."
+        },
+        "errors": {
+          "collection_required": "Collection name is required"
+        }
+      }
+    }
+  },
+  "status": {
+    "queued": "Queued",
+    "running": "Running",
+    "success": "Success",
+    "error": "Error",
+    "skipped": "Skipped"
+  },
+  "chat": "Chat",
+  "compare": "Compare",
+  "summarize": "Summarize",
+  "extract": "Extract",
+  "jira": "Jira",
+  "embed": "Embed",
+  "retrieve": "Retrieve",
+  "convert_and_chunk": "Convert and Chunk",
+  "embed_langchain_documents": "Embed Documents",
+  "store_embedded_langchain_documents": "Store Embeddings",
+  "ai": {
+    "chat": "Chat Scope",
+    "compare": "Compare Scope",
+    "global": "Global Scope",
+    "max_tokens": "Max tokens",
+    "model": "Model",
+    "projects": "Projects Scope",
+    "provider": "Provider",
+    "scope": "Scope",
+    "temperature": "Temperature",
+    "value": "Value",
+    "variant": "Variant",
+    "workflows": "Workflows Scope"
+  },
+  "ai_progress": {
+    "chat": "AI query",
+    "convert_and_chunk": " Document conversion",
+    "embed": "Documents integration",
+    "embed_langchain_documents": "Convert documents to vectors",
+    "retrieve": "Retrieve relevant documents",
+    "store_embedded_langchain_documents": "Store document vectors"
+  },
+  "ai_settings": "AI Settings",
+  "all": "All",
+  "apply": "Apply",
+  "back": "Back",
+  "cancel": "Cancel",
+  "chatPage": {
+    "error": {
+      "title": "Failed to Load"
+    },
+    "loading": "Loading templates...",
+    "noTemplates": {
+      "description": "No templates are currently enabled or configured",
+      "title": "No Templates Available"
+    },
+    "reload": "Reload",
+    "retry": "Retry",
+    "templateLoader": {
+      "error": "Failed to load template",
+      "loading": "Loading template..."
+    }
+  },
+  "chatTpl": {
+    "acceptedFormats": "Accepted formats: {{formats}}",
+    "attachFile": "Attach file",
+    "cancel": "Cancel",
+    "clear": "Clear chat",
+    "delete": "Delete message",
+    "edit": "Edit message",
+    "editContent": "Edit content",
+    "editMessage": "Edit message",
+    "empty": "No messages yet. Start a conversation!",
+    "emptyState": "No messages yet. Start a conversation!",
+    "error": {
+      "emptyMessage": "Message cannot be empty.",
+      "maxFilesExceeded": "You can attach a maximum of {{maxFiles}} files."
+    },
+    "input": "Message input",
+    "messages": "Chat messages",
+    "name": "chat",
+    "placeholder": "Type your message...",
+    "removeFile": "Remove file",
+    "save": "Save",
+    "scrollToBottom": "Scroll to bottom",
+    "send": "Send message",
+    "title": "Chat",
+    "typing": "Typing...",
+    "waitingForTasks": "Waiting for ongoing tasks to complete..."
+  },
+  "chat_history": "Chat history",
+  "clear_all": "Clear all",
+  "close": "Close",
+  "collection": "Collection",
+  "collection_metadata": "Collection metadata",
+  "common": {
+    "back": "Back",
+    "home": "Home",
+    "signIn": "Sign in"
+  },
+  "compareTpl": {
+    "added": "Added",
+    "clear": "Clear All",
+    "clearFile": "Remove File",
+    "comparing": "Comparing documents...",
+    "file1": "First Document",
+    "file2": "Second Document",
+    "fileRequired": "File is required",
+    "line": "Line",
+    "loadedFiles": "Loaded Documents",
+    "modified": "Modified",
+    "noDifferences": "No differences found! Documents are identical.",
+    "removed": "Removed",
+    "results": "Comparison Results",
+    "similar": "similar",
+    "start": "Compare Documents",
+    "title": "Document Comparison",
+    "uploading": "Uploading file..."
+  },
+  "completed": "Completed",
+  "configure": "Configure",
+  "confirm": "Confirm",
+  "context": "Context",
+  "converted_file": "Converted file",
+  "created": "Created at",
+  "delete": "Delete",
+  "edit": "Edit",
+  "embeddings": "Embeddings",
+  "error": {
+    "403": {
+      "text": "You don't have access to this page.",
+      "title": "Forbidden"
+    },
+    "404": {
+      "text": "We couldn't find",
+      "title": "Page not found"
+    },
+    "failed-to-load-project-artifacts": "Failed to load artifacts for project {{projectId}}",
+    "failed-to-load-projects": "Failed to load projects",
+    "label": "Error",
+    "user_registration_failed": "User registration failed"
+  },
+  "export": "Export",
+  "exportTpl": {
+    "error": {
+      "copy": "Failed to copy to clipboard",
+      "docx": "Failed to export Word document",
+      "pdf": "Failed to export PDF",
+      "txt": "Failed to export text file"
+    },
+    "exporting": "Exporting Document...",
+    "stages": {
+      "adding_content": "Adding content...",
+      "adding_keypoints": "Adding key points...",
+      "building_document": "Building document structure...",
+      "capturing": "Capturing screenshot...",
+      "complete": "Export complete!",
+      "copying": "Copying to clipboard...",
+      "creating_file": "Creating file...",
+      "embedding": "Embedding images...",
+      "finalizing": "Finalizing...",
+      "formatting": "Formatting document...",
+      "initializing": "Initializing export...",
+      "preparing": "Preparing document...",
+      "processing": "Processing content...",
+      "saving": "Saving file..."
+    },
+    "success": {
+      "copy": "Content copied to clipboard!",
+      "docx": "Word document exported successfully!",
+      "pdf": "PDF exported successfully!",
+      "txt": "Text file exported successfully!"
+    }
+  },
+  "extractResult": {
+    "error": "Extraction Error",
+    "failed": "Extraction Failed",
+    "not_started": "Not Started",
+    "pending": "Pending",
+    "processing": "Processing",
+    "queued": "Queued",
+    "running": "Running",
+    "started": "Started",
+    "waiting": "Waiting",
+    "details": "Extraction Details",
+    "entityTypes": "Entity Types",
+    "exportResults": "Export Results",
+    "filesProcessed": "Files Processed",
+    "noEntitiesFound": "No entities found",
+    "sourceText": "Source Text",
+    "status": "Status",
+    "title": "Extraction Results",
+    "totalEntities": "Total Entities",
+    "viewContext": "View Context"
+  },
+  "extractTpl": {
+    "clear": "Clear All",
+    "entities": "Entity Types",
+    "entitiesHelper": "Enter entity types separated by commas",
+    "entitiesPlaceholder": "person, organization, location, date, email",
+    "entitiesRequired": "At least one entity type is required",
+    "exportDocx": "Export as DOCX",
+    "exportPdf": "Export as PDF",
+    "exportTxt": "Export as TXT",
+    "extractionError": "Extraction failed",
+    "filesRequired": "At least one file or text is required",
+    "format": "Output Format",
+    "noEntities": "Please specify entity types",
+    "noFilesOrText": "Please upload files or enter text",
+    "options": "Extraction Options",
+    "processing": "Extracting entities...",
+    "selectFormat": "Select output format",
+    "start": "Extract Entities",
+    "text": "Text Input",
+    "textPlaceholder": "Enter or paste text to extract entities from...",
+    "title": "Entity Extraction",
+    "uploadError": "Failed to upload file",
+    "uploadFiles": "Upload Files",
+    "uploading": "Uploading files..."
+  },
+  "failed": "Failed",
+  "favorites": {
+    "add-all": "Add All to Favorites",
+    "add-all-sessions": "Add All Sessions",
+    "add-all-sessions-message": "Add all {{count}} sessions to your favorites?",
+    "added": "Added to favorites",
+    "categories": {
+      "chats": "Chats",
+      "comparisons": "Comparisons",
+      "extracts": "Extracts",
+      "other": "Other",
+      "projects": "Projects",
+      "sessions": "Sessions",
+      "summaries": "Summaries"
+    },
+    "clear-all": "Clear All",
+    "cleared": "All favorites cleared",
+    "confirm-clear-message": "Are you sure you want to remove all {{count}} favorites? This action cannot be undone.",
+    "confirm-clear-title": "Clear All Favorites",
+    "confirm-remove-message": "Are you sure you want to remove \"{{title}}\" from your favorites?",
+    "confirm-remove-title": "Remove Favorite",
+    "empty": {
+      "description": "Start adding pages to your favorites to access them quickly!",
+      "title": "No Favorites Yet"
+    },
+    "error": {
+      "failed-to-load": "Failed to load favorites",
+      "unknown": "An error occurred with favorites"
+    },
+    "item": "item",
+    "items": "items",
+    "my-favorites": "My Favorites",
+    "remove": "Remove favorite",
+    "removed": "Removed from favorites"
+  },
+  "file": "File",
+  "filter": "Filter",
+  "filter_document_publication_datetime": "Filter by publication date",
+  "form": {
+    "actions": {
+      "addFiles": "Add files",
+      "browse": "Browse Files",
+      "clear": "Clear",
+      "dropFilesHere": "Drop files here (or click to browse)",
+      "dropHere": "Drop files here",
+      "or": "or",
+      "remove": "Delete",
+      "replaceFile": "Replace file"
+    },
+    "errors": {
+      "country": {
+        "invalid": "Select a country.",
+        "notAllowed": "Selected value is not allowed.",
+        "required": "Country is required."
+      },
+      "dob": {
+        "dateNotAllowed": "This date is not allowed.",
+        "format": "Invalid date format: {{text}}",
+        "maxDate": "Date must be on or before {{max}}",
+        "minDate": "Date must be on or after {{min}}",
+        "parse": "Invalid date: {{text}}",
+        "pattern": "Invalid date: {{text}}",
+        "required": "Date is required."
+      },
+      "email": {
+        "domain": "The email domain must contain a dot (e.g. example.com).",
+        "invalid": "Enter a valid email address.",
+        "maxlength": "Email can't exceed {{requiredLength}} characters.",
+        "required": "Email is required.",
+        "tld": "The domain extension must be at least 2 letters."
+      },
+      "file": {
+        "accept": "Field only accepts the following types: {{requiredTypes}}.",
+        "maxFileSize": "Maximum file size {{requiredLength}} allowed.",
+        "maxFiles": "Maximum {{requiredLength}} file(s) allowed (you selected {{actualLength}}).",
+        "maxTotalSize": "Maximum total size {{requiredLength}} allowed.",
+        "required": "Field is required."
+      },
+      "fixFields": "Please fix the highlighted fields.",
+      "fullname": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "input": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "name": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "notify": {
+        "invalid": "Toggle On Notifications.",
+        "required": "Notify is required."
+      },
+      "password": {
+        "digit": "Include at least one number.",
+        "maxlength": "Password can't exceed {{requiredLength}} characters.",
+        "minlength": "At least {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Password is required.",
+        "special": "Include at least one special character.",
+        "uppercase": "Include at least one uppercase letter."
+      },
+      "phone": {
+        "invalid": "Enter a valid phone number (e.g., +35212345678).",
+        "phoneDigitsLen": "Phone must have {{min}}–{{max}} digits (currently {{actual}}).",
+        "required": "Phone number is required."
+      },
+      "prompt": {
+        "invalidChars": "Only letters, numbers, _ - . and spaces are allowed (invalid: \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} characters allowed.",
+        "minlength": "Minimum {{requiredLength}} characters (you entered {{actualLength}}).",
+        "required": "Field is required."
+      },
+      "role": {
+        "required": "Role is required."
+      },
+      "tags": {
+        "invalid": "Select a tag.",
+        "minOne": "Please select at least one.",
+        "required": "Tags are required."
+      },
+      "textarea": {
+        "invalidChars": "Unsupported character: {{char}}",
+        "maxlength": "Please keep it under {{requiredLength}} characters (currently {{actualLength}}).",
+        "minlength": "Add at least {{requiredLength}} characters (you have {{actualLength}})."
+      },
+      "threshold": {
+        "required": "Threshold is required."
+      },
+      "volume": {
+        "max": "Maximum is {{max}} (current {{actual}}).",
+        "min": "Minimum is {{min}} (current {{actual}}).",
+        "required": "Volume is required."
+      }
+    },
+    "files": {
+      "count": "{{count}} Files"
+    },
+    "hints": {
+      "country": "Your current country of residence",
+      "dob": "Format: YYYY-MM-DD",
+      "dropAccepted": "Accepted: {{types}}",
+      "email": "Must be a valid email address",
+      "file": "Select a File",
+      "input": "Free text",
+      "notify": "Receive alerts and notifications",
+      "password": "At least 8 characters, including a number",
+      "phone": "Include country code",
+      "role": "User role in the app",
+      "tags": "Separate with commas",
+      "textarea": "Max {{max}} characters.",
+      "threshold": "Adjust between 0 and 100",
+      "volume": "Adjust between 0 and 200"
+    },
+    "labels": {
+      "country": "Country",
+      "dob": "Date of Birth",
+      "email": "Email",
+      "file": "File",
+      "files": "Files",
+      "fullname": "Full name",
+      "input": "Text",
+      "language": "Language",
+      "name": "Name",
+      "notify": "Notification",
+      "password": "Password",
+      "phone": "Phone",
+      "price": "Price",
+      "role": "Role",
+      "tags": "Tags",
+      "textarea": "Textarea",
+      "themeSwitcher": "Theme",
+      "threshold": "Threshold",
+      "volume": "Volume"
+    },
+    "placeholders": {
+      "country": "Select a country",
+      "dob": "Select a date",
+      "email": "Enter your email",
+      "file": "Upload file(s)",
+      "fullname": "Enter the full name",
+      "input": "Enter text",
+      "name": "Name...",
+      "notify": "Enable notifications",
+      "password": "Enter your password",
+      "phone": "Enter your phone number",
+      "price": "Enter the price",
+      "role": "Select a role",
+      "tags": "Add tags",
+      "textarea": "Write your text...",
+      "threshold": "Threshold ...",
+      "volume": "Set the volume"
+    }
+  },
+  "in": "Input",
+  "input": "Input",
+  "jump_to_view": "Go to view",
+  "langchain_documents": "Language chain documents",
+  "languages": {
+    "en": "English",
+    "fr": "French",
+    "nl": "Dutch"
+  },
+  "llm_response": "LLM response",
+  "loading": "Loading ...",
+  "name": "Name",
+  "nav": {
+    "admin": "Admin",
+    "components": "GenAI Components",
+    "dashboard": "GenAI Dashboard",
+    "genai-admin": "GenAI Admin",
+    "genai-chat": "GenAI Chat",
+    "genai-compare": "GenAI Compare",
+    "genai-favorites": "GenAI Favorites",
+    "genai-projects": "GenAI Projects",
+    "genai-sessions": "GenAI Session :  {{name}}",
+    "genai-workflows": "GenAI Workflows",
+    "reports": "GenAI Reports",
+    "team": "GenAI Team"
+  },
+  "navigationTitle": "Menu",
+  "navigation_home": "Navigate to home page",
+  "new-session": "New Session",
+  "new_workflow": "New Workflow",
+  "out": "Output",
+  "paginator": {
+    "firstPage": "First page",
+    "itemsPerPage": "Items per page:",
+    "lastPage": "Last page",
+    "nextPage": "Next page",
+    "previousPage": "Previous page",
+    "rangeLabel": "{{start}} - {{end}} of {{total}}"
+  },
+  "processing": "Processing",
+  "projects": {
+    "clearFilters": "Clear filters",
+    "create-first": "Create your first project",
+    "create-new": "New Project",
+    "delete": {
+      "confirm-message": "Are you sure you want to delete the project \"{{name}}\"? This action cannot be undone.",
+      "confirm-title": "Confirm Delete",
+      "error": "Failed to delete \"{{title}}\"",
+      "success": "Project \"{{title}}\" deleted successfully"
+    },
+    "delete-success": "Project \"{{title}}\" deleted successfully",
+    "designed-workflows": "Designed Workflows",
+    "details": {
+      "add-files": "Add Files",
+      "compare": "Compare History",
+      "confirm-delete": "Delete \"{{title}}\"?",
+      "confirm-remove-member": "Remove {{name}} from this project?",
+      "confirm-rename-message": "Are you sure you want to rename \"{{oldTitle}}\" to \"{{newTitle}}\"?",
+      "confirm-rename-title": "Confirm Rename",
+      "delete": "Delete",
+      "designed-steps": "Designed Steps",
+      "download": "Download",
+      "draft": "Draft",
+      "edit": "Edit",
+      "email-placeholder": "user@company.com",
+      "extract": "Extract History",
+      "file-actions": "File actions",
+      "invite-email": "Invite by email",
+      "invite-member": "Invite Member",
+      "make-member": "Set as Member",
+      "make-owner": "Promote to Owner",
+      "member-actions": "Member actions",
+      "no-chat-history": "No chat history available",
+      "no-compare-history": "No comparison history available",
+      "no-extract-history": "No extraction history available",
+      "no-files": "No files uploaded",
+      "no-members": "No members added",
+      "no-sessions": "No sessions available",
+      "no-summarize-history": "No summary history available",
+      "no-workflows": "No workflows available",
+      "older": "Older",
+      "open": "Open",
+      "pastWeek": "Past Week",
+      "publish": "Publish",
+      "published": "Published",
+      "remove-member": "Remove Member",
+      "send-invite": "Send Invitation",
+      "status": "Status",
+      "subtitle": "View and manage project",
+      "summarize": "Summary History",
+      "tabs": {
+        "chat": "Chat History",
+        "compare": "Compare History",
+        "extract": "Extract History",
+        "files": "Artifacts",
+        "members": "Members",
+        "sessions": "My Sessions",
+        "summarize": "Summary History",
+        "workflows": "Workflows"
+      },
+      "title": "Details: {{name}}",
+      "title-updated": "Session title updated successfully",
+      "today": "Today",
+      "updated": "Updated",
+      "view": "View",
+      "workflows-pagination": "Workflows pagination",
+      "yesterday": "Yesterday"
+    },
+    "error": {
+      "delete-failed": "Failed to delete {{title}}",
+      "failed-to-create-session": "Failed to create session",
+      "failed-to-load": "Failed to load project details",
+      "failed-to-load-session": "Failed to load session details",
+      "failed-to-load-templates": "Failed to load templates",
+      "failed-to-update-title": "Failed to update session title",
+      "failed-to-upload-artifacts": "Failed to upload artifacts",
+      "no-files-selected": "No files selected",
+      "not-found": "Project not found",
+      "session-not-found": "Session not found",
+      "workflow-status-polling-failed": "Failed to poll workflow status"
+    },
+    "files": "Project Files",
+    "id": "ID",
+    "members": "Members",
+    "no-projects": "No projects available",
+    "no-projects-description": "Get started by creating your first project to organize your GenAI workflows and files",
+    "open": "Open project",
+    "orderBy": {
+      "id": "ID",
+      "label": "Order By",
+      "name": "Name",
+      "placeholder": "Select order"
+    },
+    "owners": "Owners",
+    "pagination": "Project pagination",
+    "published-workflows": "Published Workflows",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search by name or ID..."
+    },
+    "subtitle": "Manage and organize your GenAI projects",
+    "success": {
+      "artifacts-uploaded": "Artifacts uploaded successfully"
+    },
+    "total": "Total",
+    "users": "Users"
+  },
+  "query_string": "Query string",
+  "quick_settings": "Quick settings",
+  "refresh": "Refresh",
+  "remove_favorite": "Remove from Favorite",
+  "response": "Response",
+  "result": "Result",
+  "retrieved_documents": "Retrieved documents",
+  "role": "Role",
+  "run-panel": "Run panel",
+  "running": "Running",
+  "selection": "Selection",
+  "source_file": "Source file",
+  "summarizeTpl": {
+    "addMore": "Add More Files",
+    "clear": "Clear All",
+    "copied": "Copied!",
+    "copy": "Copy to Clipboard",
+    "exportDocx": "Export as DOCX",
+    "exportError": {
+      "docx": "Failed to export DOCX. Please try again.",
+      "pdf": "Failed to export PDF. Please try again.",
+      "txt": "Failed to export TXT. Please try again."
+    },
+    "exportPdf": "Export as PDF",
+    "exportSuccess": {
+      "copy": "Summary copied to clipboard!",
+      "docx": "Summary exported as DOCX successfully!",
+      "pdf": "Summary exported as PDF successfully!",
+      "txt": "Summary exported as TXT successfully!"
+    },
+    "exportTxt": "Export as TXT",
+    "filesRequired": "At least one file is required",
+    "keyPoints": "Key Points",
+    "language": "Language",
+    "length": "Summary Length",
+    "lengths": {
+      "long": "Detailed",
+      "medium": "Medium",
+      "short": "Short"
+    },
+    "newSummary": "New Summary",
+    "options": "Summary Options",
+    "processedIn": "Processed in",
+    "processing": "Generating summary...",
+    "removeFile": "Remove File",
+    "results": "Summary Results",
+    "selectLanguage": "Select language",
+    "selectLength": "Select length",
+    "selectStyle": "Select style",
+    "sourceFiles": "Source Documents",
+    "start": "Generate Summary",
+    "statistics": "Statistics",
+    "style": "Summary Style",
+    "styles": {
+      "bullets": "Bullet Points",
+      "executive": "Executive Summary",
+      "paragraph": "Paragraph"
+    },
+    "summaryText": "Summary",
+    "title": "Document Summary",
+    "uploadFiles": "Upload Documents",
+    "uploading": "Uploading files...",
+    "wordCount": {
+      "original": "Original Words",
+      "reduction": "Reduction",
+      "summary": "Summary Words"
+    }
+  },
+  "system_prompt": "System prompt",
+  "table": {
+    "columns": "Columns",
+    "filter": "Filter",
+    "filter.contains": "Contains",
+    "hint": {
+      "reorder": "Drag headers to reorder columns"
+    },
+    "paginator": {
+      "firstPage": "First page",
+      "itemsPerPage": "Items per page",
+      "lastPage": "Last page",
+      "nextPage": "Next page",
+      "prevPage": "Previous page",
+      "range": "{{start}}–{{end}} of {{length}}",
+      "rangeEmpty": "0 of {{length}}"
+    },
+    "searchPlaceholder": "Search…"
+  },
+  "threshold": "Threshold",
+  "tip": "Tip",
+  "toggle": "Fold",
+  "toolbox": "Toolbox",
+  "untoggle": "Unfold",
+  "user_prompt": "User prompt",
+  "workflow_help": "Drag from the palette. Click a node's right port (source) then another node's left port (target) to connect. Right-click nodes for options."
+}

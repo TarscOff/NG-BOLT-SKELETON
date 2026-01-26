@@ -1,0 +1,239 @@
+<mat-sidenav-container class="sessions-container">
+  <mat-sidenav-content>
+    <!-- SEO -->
+    <app-seo
+      [pageTitle]="'nav.genai-sessions' | translate : { name: error() ? 'undefined' : session()?.session_name || session()?.session_id || ('new-session' | translate) }"
+      [description]="'This is the sessions page of the AI product app.'" [keywords]="'sessions, ai, analytics'"
+      (titleChange)="onTitleChange($event)">
+    </app-seo>
+
+    <div class="session-page-container">
+      <mat-card appearance="outlined" class="project-shell">
+        <!--     <mat-card-header>
+      <div mat-card-avatar class="avatar-folder">
+        <mat-icon>folder_special</mat-icon>
+      </div>
+      <mat-card-title>{{ pageTitle() }} {{ session()?.session_name || session()?.session_id || ('new-session' | translate) }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ pageDescription() | translate }}
+      </mat-card-subtitle>
+    </mat-card-header> -->
+
+        <mat-card-content>
+          <!-- Loading State -->
+          @if (loading()) {
+          <div class="loading-state">
+            <mat-spinner color="neutral" class="neutral" diameter="64"></mat-spinner>
+            <p>{{ 'loading' | translate }}</p>
+          </div>
+          }
+
+          <!-- Error State -->
+          @else if (error()) {
+          <div class="error-state">
+            <mat-icon>error</mat-icon>
+            <h3>{{ 'projects.error.failed-to-load-session' | translate }}</h3>
+            <p>{{ error() }}</p>
+          </div>
+          }
+          <!-- Templates Content -->
+          @else if (enabledTemplates().length > 0) {
+          <div class="templates-container">
+            <!-- Single Template (No Tabs) -->
+            @if (enabledTemplates().length === 1) {
+            @if (session()?.session_id && project()) {
+            <app-template-loader [config]="enabledTemplates()[0]" (templateError)="onTemplateError($event)"
+              (messageSent)="onMessageSent()" [sessionId]="sessionId() || ''" [projectId]="projectId() || ''"
+              [templateId]="enabledTemplates()[0]?.templateId || ''"
+              [filetemplateId]="enabledTemplates()[0]?.fileTemplateId || ''" />
+            }
+            }
+
+            <!-- Multiple Templates (Tabs) -->
+            @else {
+            <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)"
+              animationDuration="300ms" class="templates-tabs">
+              @for (template of enabledTemplates(); track trackByTemplateId($index, template)) {
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <span class="tab-label">{{ template?.type | translate }}</span>
+                </ng-template>
+
+                <div class="tab-content">
+                  @if (session()?.session_id && project()) {
+                  <app-template-loader [config]="template" (templateError)="onTemplateError($event)"
+                    [sessionId]="sessionId() || ''" [projectId]="projectId() || ''" (messageSent)="onMessageSent()"
+                    [templateId]="template?.templateId || ''" [filetemplateId]="template?.fileTemplateId || ''" />
+                  }
+                </div>
+              </mat-tab>
+              }
+            </mat-tab-group>
+            }
+          </div>
+          }
+
+          <!-- No Templates -->
+          @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <h3>{{ 'chatPage.noTemplates.title' | translate }}</h3>
+            <p>{{ 'chatPage.noTemplates.description' | translate }}</p>
+          </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-sidenav-content>
+
+  <mat-sidenav #artifactsPanel mode="side" position="end" [opened]="artifactsPanelOpen()"
+    (closed)="closeArtifactsPanel()" class="artifacts-panel">
+    <div class="panel-header">
+      <h2>{{ 'workflow.runPanel.artifacts' | translate }}</h2>
+
+      <div class="button-group">
+        @if (files().length > 0) {
+        <!-- Filter Dropdown -->
+        <div class="files-filter">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'filter' | translate }}</mat-label>
+            <mat-select [(value)]="selectedFileReference" (selectionChange)="onFileReferenceChange()"
+              [disabled]="files().length === 0">
+              <mat-option value="all">{{ 'all' | translate }}</mat-option>
+              @for (ref of availableReferences(); track ref) {
+              <mat-option [value]="ref">{{ ref | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        }
+        <!-- Close btn -->
+        <button color="error" mat-icon-button (click)="closeArtifactsPanel()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="panel-content">
+      <!-- Workflow Progress Section -->
+      @if (showWorkflowStatus$()) {
+      <div class="workflow-progress-section">
+        <div class="workflow-header">
+          <mat-icon class="workflow-icon">auto_awesome</mat-icon>
+          <div class="workflow-info">
+            <h4>{{ workflowStatus$()?.workflow_name }}</h4>
+            <p class="workflow-status">
+              @if (isPolling$()) {
+              <mat-spinner color="neutral" class="neutral" diameter="16"></mat-spinner>
+              <span>{{ 'processing' | translate }}</span>
+              } @else {
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ 'completed' | translate }}</span>
+              }
+            </p>
+          </div>
+        </div>
+
+        @if (workflowStatus$()?.tasks && workflowStatus$()!.tasks.length > 0) {
+        <div class="tasks-list">
+          @for (task of workflowStatus$()!.tasks; track trackByTaskId($index, task)) {
+          <div class="task-item" [class]="task.task_status">
+            <div class="task-status-icon">
+              @if (task.task_status === 'completed') {
+              <mat-icon color="success">check_circle</mat-icon>
+              } @else if (task.task_status === 'running' || task.task_status === 'started') {
+              <mat-spinner color="neutral" class="neutral" diameter="20"></mat-spinner>
+              } @else if (task.task_status === 'error') {
+              <mat-icon color="warn">error</mat-icon>
+              } @else if (task.task_status === 'queued' || task.task_status === 'waiting') {
+              <mat-icon>schedule</mat-icon>
+              } @else {
+              <mat-icon>radio_button_unchecked</mat-icon>
+              }
+            </div>
+            <div class="task-info">
+              <span class="task-name">{{ "ai_progress."+task.task_name | translate }}</span>
+              @if (task.task_status === 'running') {
+              <span class="task-status-text">{{ 'running' | translate }}</span>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        }
+      </div>
+      <mat-divider></mat-divider>
+      }
+
+      <!-- Files List -->
+      @if (files().length > 0) {
+      <div class="files-section">
+        <!-- Files Groups -->
+        <div class="custom-list">
+          @for (group of filteredGroupedFiles(); track group.reference) {
+          <div class="file-group">
+            <div class="group-header-static">
+              <mat-icon class="group-icon">folder</mat-icon>
+              <span>{{ group.reference | translate }}</span>
+              <span class="group-count">{{ group.files.length }}</span>
+            </div>
+
+            <div class="group-files">
+              @for (f of group.files; track trackFile($index, f)) {
+              <div tabindex="0" role="button" [attr.aria-label]="f.name" (keydown.enter)="null" (click)="null"
+                class="custom-list-item">
+                <mat-icon class="item-icon">{{ fileIcon(f.type) }}</mat-icon>
+
+                <div class="item-content">
+                  <div matListItemTitle class="title" [matTooltip]="f.name">
+                    {{ f.name }}
+                  </div>
+
+                  <div matListItemLine class="muted">
+                    {{ prettySize(f.size) }} • {{ f.uploadedAt.toFormat("yyyy-MM-dd - HH:mm") }}
+                  </div>
+                </div>
+
+                <div class="item-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="fileMenu"
+                    [attr.aria-label]="'projects.details.file-actions' | translate">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #fileMenu="matMenu">
+                    <button mat-menu-item (click)="null" disabled>
+                      <mat-icon>download</mat-icon>
+                      {{ 'projects.details.download' | translate }}
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      } @else {
+      <div class="empty-tab">
+        <mat-icon>folder_open</mat-icon>
+        <p>{{ 'projects.details.no-files' | translate }}</p>
+      </div>
+      }
+    </div>
+
+    <!-- Footer with upload and submit -->
+    @if (!loading() && (isAdmin$())) {
+    <div class="panel-footer">
+      <div class="file-uploader">
+        <app-dynamic-form [form]="formInputs" [config]="configInputs"></app-dynamic-form>
+      </div>
+
+      <!-- Submit button -->
+      <div class="submit-actions">
+        <button mat-flat-button color="success" (click)="submitArtifacts()" [disabled]="!canSubmitArtifacts()">
+          {{ 'workflow.runPanel.submit' | translate }}
+        </button>
+      </div>
+    </div>
+    }
+  </mat-sidenav>
+</mat-sidenav-container>

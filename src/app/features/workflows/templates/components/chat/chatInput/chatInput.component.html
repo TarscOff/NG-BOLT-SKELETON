@@ -1,0 +1,52 @@
+<div class="chat-input-container">
+  <div class="chat-input-form" (keydown)="onKeyDown($event)" tabindex="0" role="region"
+    aria-label="Chat input container">
+    @if (enableAttachments) {
+    <div class="file-attachments-section">
+      <input #fileInput type="file" id="fileUpload" [multiple]="allowMultipleFiles" [accept]="acceptedFileTypes"
+      (change)="onFileSelected($event)" style="display: none;" aria-label="Upload files" />
+      <button mat-icon-button type="button" [matTooltip]="'chatTpl.attachFile' | translate" (click)="fileInput.click()"
+      [attr.aria-label]="'chatTpl.attachFile' | translate" class="attach-button">
+      <mat-icon>attach_file</mat-icon>
+    </button>
+    <label class="accepted-formats-label" for="fileUpload">{{ "chatTpl.acceptedFormats" | translate:{ formats: acceptedFileTypes } }}</label>
+
+      @if (attachedFiles.length > 0) {
+      <div class="attached-files-list">
+        @for (file of attachedFiles; track file.name) {
+        <div class="attached-file-chip">
+          <mat-icon class="file-icon">{{ fileIcon(file.type) }}</mat-icon>
+          <span class="file-name">{{ file.name }}</span>
+          <span class="file-size">({{ formatFileSize(file.size) }})</span>
+          <button mat-icon-button (click)="removeFile(file)" [matTooltip]="'chatTpl.removeFile' | translate"
+            class="remove-file-button">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+    <app-dynamic-form [config]="fieldConfig" [form]="form" (keydown.delete)="$event.stopPropagation()"
+      (keydown.backspace)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()"
+      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()" />
+  </div>
+
+  <div class="chat-input-actions">
+    <button mat-icon-button color="primary" [disabled]="!canSend()" [matTooltip]="'chatTpl.send' | translate"
+      (click)="onSend()" [attr.aria-label]="'chatTpl.send' | translate" class="send-button">
+      @if (loading) {
+      <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+      <mat-icon>send</mat-icon>
+      }
+    </button>
+  </div>
+
+  @if (isOverLimit()) {
+  <div class="character-limit-warning">
+    {{ 'form.errors.textarea.maxlength' | translate: { requiredLength: maxLength } }}
+  </div>
+  }
+</div>

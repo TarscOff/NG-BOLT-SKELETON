@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://acd.pxl-codit.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": "/api"
+    }
+  }
+}

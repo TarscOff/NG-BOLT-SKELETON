@@ -1,0 +1,232 @@
+trigger:
+  branches:
+    include:
+      - master
+      - develop
+      - staging
+      - uat
+
+pr:
+  branches:
+    include:
+      - master
+      - develop
+      - staging
+      - uat
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  NODE_VERSION: '20.x'
+  DOCKER_REPOSITORY: 'pxs-ng-starter-app'
+  DOCKER_SERVICE_CONNECTION: 'FrontSocleServiceConn'
+  PKG_PATH: 'package.json'
+  APP_NAME: 'pxs-ng-starter-app'
+  # default release type; can be overridden when running pipeline manually
+  RELEASE_TYPE: 'patch'
+
+stages:
+
+# ---------- Build, Test, Docker, Release ----------
+- stage: build_test_docker
+  displayName: 'Build, Test, Dockerize & Release'
+  jobs:
+  - job: build
+    displayName: 'Build Angular, Docker & (optionally) Release'
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        fetchDepth: 0  
+        fetchTags: true 
+
+      # 1) Authenticate to Azure Artifacts npm feed based on repo .npmrc
+      - task: npmAuthenticate@0
+        displayName: 'Authenticate to Azure Artifacts (npm)'
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        inputs:
+          workingFile: '.npmrc'
+
+      # 2) Use Node
+      - task: NodeTool@0
+        displayName: 'Use Node.js $(NODE_VERSION)'
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        inputs:
+          versionSpec: '$(NODE_VERSION)'
+
+      # 3) Install dependencies + lint
+      - script: |
+          set -euo pipefail
+          npm ci
+          npm run lint
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        displayName: 'Install & Lint App'
+
+      # 4) Configure Git identity for release commits
+      - script: |
+          set -euo pipefail
+          git config --global user.email "build-bot@azure-pipelines.com"
+          git config --global user.name "Azure Pipeline Bot"
+          git config --global safe.directory $(Build.SourcesDirectory)
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        displayName: 'Configure Git identity'
+
+      # 5) CI release step (bump version + CHANGELOG.md + tag)
+      #    Only on develop, not PR, and not already a release commit
+      - script: |
+          set -euo pipefail
+
+          echo "Running CI release of type: $(RELEASE_TYPE)"
+          
+          # Check current version
+          CURRENT_VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "Current version in package.json: $CURRENT_VERSION"
+          
+          # Calculate next version based on release type
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          if [ "$(RELEASE_TYPE)" = "patch" ]; then
+            NEXT_VERSION="$major.$minor.$((patch + 1))"
+          elif [ "$(RELEASE_TYPE)" = "minor" ]; then
+            NEXT_VERSION="$major.$((minor + 1)).0"
+          elif [ "$(RELEASE_TYPE)" = "major" ]; then
+            NEXT_VERSION="$((major + 1)).0.0"
+          else
+            echo "Unknown RELEASE_TYPE: $(RELEASE_TYPE)"
+            exit 1
+          fi
+          
+          echo "Next version will be: $NEXT_VERSION"
+          
+          # Check if tag already exists locally
+          if git rev-parse "v$NEXT_VERSION" >/dev/null 2>&1; then
+            echo "WARNING: Tag v$NEXT_VERSION already exists locally"
+            echo "Deleting local tag to allow standard-version to recreate it"
+            git tag -d "v$NEXT_VERSION"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/v$NEXT_VERSION$"; then
+            echo "ERROR: Tag v$NEXT_VERSION already exists on remote"
+            echo "This version has already been released. Skipping release."
+            exit 0
+          fi
+
+          # Run standard-version
+          if [ "$(RELEASE_TYPE)" = "patch" ]; then
+            npm run release:patch:nopush -- -m "chore(release): v%s – CI release $(Build.SourceBranchName)"
+          elif [ "$(RELEASE_TYPE)" = "minor" ]; then
+            npm run release:minor:nopush -- -m "chore(release): v%s – CI release $(Build.SourceBranchName)"
+          elif [ "$(RELEASE_TYPE)" = "major" ]; then
+            npm run release:major:nopush -- -m "chore(release): v%s – CI release $(Build.SourceBranchName)"
+          else
+            echo "Unknown RELEASE_TYPE: $(RELEASE_TYPE)"
+            exit 1
+          fi
+
+          # Show latest tag & commit
+          git describe --tags --abbrev=0 || true
+          git log -1 --oneline
+        displayName: 'Bump version + CHANGELOG + tag (standard-version)'
+        condition: |
+          and(
+            succeeded(),
+            eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+          
+      # 6) Build Angular with PRODUCTION configuration only
+      #    (No more environment-specific builds or config copying)
+      - script: |
+          set -euo pipefail
+
+          echo "Building Angular with PRODUCTION configuration..."
+          echo "Runtime environment will be injected via Docker env vars"
+          
+          npm run buildProd
+          
+          echo "Build complete. Files will be in dist/psx-ng-skeleton/browser/"
+          ls -la dist/psx-ng-skeleton/browser/ || true
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        displayName: 'Build Angular App (Production only)'
+
+      # 7) Extract version from (possibly bumped) package.json
+      - script: |
+          set -euo pipefail
+
+          VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "Detected version from $PKG_PATH: $VERSION"
+          echo "##vso[task.setvariable variable=APP_VERSION]$VERSION"
+        displayName: 'Read version from package.json'
+        condition: |
+          and(
+            succeeded(),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        env:
+          PKG_PATH: $(PKG_PATH)
+        name: SetVersion
+
+      # 8) Build & push single Docker image (no ENVIRONMENT build arg)
+      #    Runtime configuration will be injected via env vars at container startup
+      - task: Docker@2
+        displayName: 'Build & Push Docker image (single universal image)'
+        condition: and(
+            succeeded(),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        inputs:
+          containerRegistry: '$(DOCKER_SERVICE_CONNECTION)'
+          repository: '$(DOCKER_REPOSITORY)'
+          command: 'buildAndPush'
+          dockerfile: 'Dockerfile'
+          buildContext: '.'
+          tags: |
+            $(APP_VERSION)
+            latest
+
+      # 9) Push release commit + tags (only when we actually did a release)
+      - script: |
+          set -euo pipefail
+
+          # Use the System.AccessToken for git HTTPS ops
+          git config --global http.https://dev.azure.com/.extraheader "AUTHORIZATION: bearer $(System.AccessToken)"
+
+          echo "Current git status:"
+          git status
+          git log -1 --oneline
+
+          echo "Pushing HEAD + tags to origin/$(Build.SourceBranchName)"
+          git push origin HEAD:refs/heads/$(Build.SourceBranchName) --follow-tags
+        displayName: 'Push release commit & tags'
+        condition: |
+          and(
+            succeeded(),
+            eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            not(startsWith(variables['Build.SourceVersionMessage'], 'chore(release):'))
+          )
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)

@@ -1,0 +1,115 @@
+<mat-sidenav-container class="favorites-container">
+  <mat-sidenav-content>
+    <!-- SEO -->
+    <app-seo [pageTitle]="'nav.genai-favorites' | translate"
+      [description]="'This is the favorites page of the AI product app.'" [keywords]="'favorites, ai, analytics'"
+      (titleChange)="onTitleChange($event)">
+    </app-seo>
+
+    <div class="favorites-page-container">
+      <mat-card appearance="outlined" class="favorites-shell">
+        <mat-card-content>
+          <!-- Loading State -->
+          @if (showLoading()) {
+          <div class="loading-state">
+            <mat-spinner color="neutral" class="neutral" diameter="64"></mat-spinner>
+            <p>{{ 'loading' | translate }}</p>
+          </div>
+          }
+
+          <!-- Error State -->
+          @else if (showError()) {
+          <div class="error-state">
+            <mat-icon>error</mat-icon>
+            <h3>{{ 'favorites.error.failed-to-load' | translate }}</h3>
+            <p>{{ error() }}</p>
+          </div>
+          }
+
+          <!-- Empty State -->
+          @else if (showEmpty()) {
+          <div class="empty-state">
+            <mat-icon>star_border</mat-icon>
+            <h3>{{ 'favorites.empty.title' | translate }}</h3>
+            <p>{{ 'favorites.empty.description' | translate }}</p>
+          </div>
+          }
+
+          <!-- Favorites List with Categories -->
+          @else if (showContent()) {
+          <div class="favorites-content">
+            <!-- Header with Count -->
+            <div class="favorites-header">
+              <div class="header-info">
+                <h2>{{ 'favorites.my-favorites' | translate }}</h2>
+                <mat-chip-set aria-label="Favorites count">
+                  <mat-chip highlighted class="chip-content">
+                    <mat-icon>star</mat-icon>
+                    {{ count() }} {{ count() === 1 ? ('favorites.item' | translate) : ('favorites.items' | translate) }}
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+            </div>
+
+            <!-- Categories as Sections -->
+            @for (type of [FavoriteType.PROJECT, FavoriteType.CHAT, FavoriteType.EXTRACT, FavoriteType.COMPARE, FavoriteType.SUMMARIZE]; track type) {
+              @if (favoritesCountByType()[type] > 0) {
+                <div class="category-section">
+                  <!-- Category Header -->
+                  <div class="category-header">
+                    <div class="category-title">
+                      <mat-icon>{{ getCategoryIcon(type) }}</mat-icon>
+                      <h3>{{ getCategoryLabel(type) }}</h3>
+                      <mat-chip>{{ favoritesCountByType()[type] }}</mat-chip>
+                    </div>
+                  </div>
+
+                  <!-- Category Items as Cards -->
+                  <div class="category-grid">
+                    @for (fav of groupedFavorites()[type]; track fav.id) {
+                      <mat-card class="favorite-card" 
+                        tabindex="0" 
+                        role="button"
+                        [attr.aria-label]="fav.title"
+                        (keydown.enter)="navigateToUrl(fav.url)"
+                        (click)="navigateToUrl(fav.url)">
+                        
+                        <!-- Delete Button -->
+                        <button mat-icon-button 
+                          class="delete-button"
+                          color="error"
+                          (click)="removeFavorite(fav.id, $event)" 
+                          [matTooltip]="'delete' | translate"
+                          [attr.aria-label]="'favorites.remove' | translate">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+
+                        <mat-card-content>
+                          <!-- Large Icon -->
+                          <div class="card-icon">
+                            <mat-icon>{{ getCategoryIcon(type) }}</mat-icon>
+                          </div>
+
+                          <!-- Card Info -->
+                          <div class="card-info">
+                            <h4 class="card-title">{{ fav.title }}</h4>
+<!--                             <p class="card-url">{{ fav.url }}</p>
+ -->                            <div class="card-meta">
+                              <mat-icon>schedule</mat-icon>
+                              <small>{{ fav.timestamp | date:'short' }}</small>
+                            </div>
+                          </div>
+                        </mat-card-content>
+                      </mat-card>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

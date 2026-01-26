@@ -1,0 +1,29 @@
+<app-seo [pageTitle]="'nav.team' | translate" [description]="'This is a team manager.'" [keywords]="'teams, groups'"
+  (titleChange)="onTitleChange($event)">
+</app-seo>
+
+<!-- DYNAMIC FORM -->
+<app-dynamic-form [config]="fieldConfig" [form]="form"></app-dynamic-form>
+<button mat-stroked-button color="primary" class="primary" (click)="submit()" [disabled]="form.invalid">
+  {{ 'SAVE' | translate }}
+</button>
+
+<div>
+  <!-- Team list -->
+  @if (members$ | async; as members) {
+  <mat-list>
+    @for (member of members; track member.id) {
+    <mat-list-item>
+      <button mat-stroked-button (click)="editMember(member)" [class.active]="selectedMemberId === member.id"
+        style="flex: 1; text-align: left;">
+        {{ member.fullname }}
+      </button>
+
+      <button mat-icon-button (click)="removeMember(member)" matTooltip="Remove">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-list-item>
+    }
+  </mat-list>
+  }
+</div>

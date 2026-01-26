@@ -1,0 +1,123 @@
+<div class="extract-container">
+    <app-export-overlay-tpl />
+
+    <!-- Header with Title and Actions -->
+    <div class="extract-header">
+        <div class="header-left">
+            <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">text_snippet</mat-icon>
+            <h2 class="extract-title">{{ "extractTpl.title" | translate }}</h2>
+        </div>
+
+        <div class="header-actions">
+            @if (result$()) {
+            <!-- Export Actions -->
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'pdf', result: result$()! })"
+                [disabled]="exportService.isExporting$ | async" [matTooltip]="'extractTpl.exportPdf' | translate">
+                <mat-icon>picture_as_pdf</mat-icon>
+            </button>
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'docx', result: result$()! })"
+                [disabled]="exportService.isExporting$ | async" [matTooltip]="'extractTpl.exportDocx' | translate">
+                <mat-icon>description</mat-icon>
+            </button>
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                (click)="handleExport({ format: 'txt', result: result$()! })"
+                [disabled]="exportService.isExporting$ | async" [matTooltip]="'extractTpl.exportTxt' | translate">
+                <mat-icon>notes</mat-icon>
+            </button>
+            <button
+                mat-icon-button
+                [matTooltip]="(copied() ? 'common.copied' : 'common.copy') | translate"
+                (click)="copyToClipboard()"
+                [color]="copied() ? 'accent' : (isDark$ | async) ? 'neutral' : 'success'"
+                >
+                <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+            </button>
+            } @if (!isPreloadedMode$()) {
+            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'accent'"
+                [disabled]="!isUploading$() && !isExtracting$() && !(formFiles.get('files')?.value || formOptions.get('entities')?.value || formOptions.get('text')?.value)"
+                [matTooltip]="'extractTpl.clear' | translate" (click)="clearAll()">
+                <mat-icon>clear_all</mat-icon>
+            </button>
+            }
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    @if (!result$()) {
+    <div class="extract-upload-section">
+        <!-- File Upload -->
+        <div class="upload-area">
+            <div class="section-header">
+                <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">cloud_upload</mat-icon>
+                <span class="section-title">{{ 'extractTpl.uploadFiles' | translate }}</span>
+            </div>
+
+            <app-dynamic-form [form]="formFiles" [config]="configFiles" />
+        </div>
+
+        <!-- Options -->
+        @if (!isPreloadedMode$()) {
+        <div class="options-area">
+            <div class="section-header">
+                <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">settings</mat-icon>
+                <span class="section-title">{{ 'extractTpl.options' | translate }}</span>
+            </div>
+
+            <app-dynamic-form [form]="formOptions" [config]="configOptions" />
+        </div>
+        }
+    </div>
+    <!-- Progress Indicators -->
+    @if (isUploading$() || isExtracting$()) {
+    <div class="progress-section">
+        @if (isUploading$()) {
+        <div class="progress-item">
+            <div class="progress-header">
+                <span class="progress-label">{{
+                    "extractTpl.uploading" | translate
+                    }}</span>
+                <span class="progress-value">{{ uploadProgress$() }}%</span>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="uploadProgress$()" color="primary"></mat-progress-bar>
+        </div>
+        } @if (isExtracting$()) {
+        <div class="progress-item">
+            <div class="progress-header">
+                <span class="progress-label">{{
+                    "extractTpl.processing" | translate
+                    }}</span>
+                <span class="progress-value">{{ extractProgress$() }}%</span>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="extractProgress$()" color="accent"></mat-progress-bar>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Action Buttons -->
+    @if (!isPreloadedMode$()) {
+    <div class="action-buttons">
+        <button mat-flat-button color="primary" class="extract-btn"
+            [disabled]="!(formFiles.valid && formOptions.valid) && !isUploading$() && !isExtracting$()"
+            (click)="triggerExtract()">
+            @if (isExtracting$()) {
+            <mat-icon class="spinning-icon">sync</mat-icon>
+            } @else {
+            <mat-icon>find_in_page</mat-icon>
+            }
+            <span>{{
+                (isExtracting$() ? "extractTpl.processing" : "extractTpl.start")
+                | translate
+                }}</span>
+        </button>
+    </div>
+    }
+    } @else {
+    <!-- Results Display -->
+    <div class="results-section" #extractResultContainer>
+        <app-extraction-result-tpl [result]="result$()!" />
+    </div>
+    }
+</div>

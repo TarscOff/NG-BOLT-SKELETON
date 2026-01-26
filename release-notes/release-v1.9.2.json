@@ -1,0 +1,232 @@
+{
+  "version": "1.9.2",
+  "tag": "v1.9.2",
+  "previousTag": "v1.9.0",
+  "date": "2025-10-20T16:34:51.498Z",
+  "stats": {
+    "features": 8,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 1,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "51af30c",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic workflow builder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6f88d64",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "e81e562",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "325d284",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "36dd9d5",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2461a5d",
+        "type": "feat",
+        "scope": "wortkflow",
+        "subject": "dynamic entrypoints enabled",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c314382",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflow builder instance",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c6d09a",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflow builder instance",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [
+      {
+        "hash": "29c7cc9",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "workflows fix",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "63748c1",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "a61b9c4",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.2",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "a61b9c42676a7c74a81694d54e39dadab77ee470",
+      "shortHash": "a61b9c4",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "51af30ce14b30b73ba633283c49c88774eaa634f",
+      "shortHash": "51af30c",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic workflow builder",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6f88d649c2499c346e08e1693b4247f3499334f4",
+      "shortHash": "6f88d64",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e81e56224bc4851b870ea4098c860121ad98a593",
+      "shortHash": "e81e562",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "325d28470cf48b13521bd7fbcd25afe4765c7487",
+      "shortHash": "325d284",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "36dd9d53f48e51aac777e9b1943bfd1dfff69288",
+      "shortHash": "36dd9d5",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2461a5dbd26419129de12533e182f87a589791e1",
+      "shortHash": "2461a5d",
+      "type": "feat",
+      "scope": "wortkflow",
+      "subject": "dynamic entrypoints enabled",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "29c7cc94f8665433d61ca989114b032b34802279",
+      "shortHash": "29c7cc9",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "workflows fix",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c314382e79d099206f2f655836b7ca1f1ad40c70",
+      "shortHash": "c314382",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflow builder instance",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4c6d09acb7a1ad7e207b78efd606b59a605a3517",
+      "shortHash": "4c6d09a",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflow builder instance",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "63748c1b1ba603754d6326e5976e756a1f2a8202",
+      "shortHash": "63748c1",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

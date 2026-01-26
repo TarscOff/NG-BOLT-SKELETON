@@ -1,0 +1,68 @@
+{
+  "version": "1.9.79",
+  "tag": "v1.9.79",
+  "previousTag": "v1.9.78",
+  "date": "2025-12-02T19:26:17.260Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 1,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "3e1be8c",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.78",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "2ae56bb",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.79",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "2ae56bb82521e09e91f5fb282ed3fb847a57eddc",
+      "shortHash": "2ae56bb",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.79",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "3e1be8cc93de6172c21d75479a07e825c6bd07f6",
+      "shortHash": "3e1be8c",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.78",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

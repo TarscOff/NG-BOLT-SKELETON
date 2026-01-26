@@ -1,0 +1,216 @@
+.extract-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--mat-sys-surface);
+  overflow: hidden;
+  height:100%
+}
+
+:host {
+    height:100%
+}
+
+.extract-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--mat-neutral);
+  flex-shrink: 0;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    mat-icon {
+      color: var(--mat-primary);
+    }
+
+    .extract-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// Progress Section
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--mat-sys-surface-container-low);
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  .progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .progress-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .progress-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--mat-sys-primary);
+      }
+    }
+
+    mat-progress-bar {
+      height: 6px;
+      border-radius: 3px;
+    }
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 24px 0;
+
+  button {
+    min-width: 200px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 500;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+
+    &.extract-btn {
+      .spinning-icon {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+// Results Section
+.results-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  app-extract-result-tpl {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.extract-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .upload-area {
+    ::ng-deep {
+      app-dynamic-form {
+        .form-field-wrapper {
+          margin-bottom: 0 !important;
+        }
+      }
+    }
+  }
+
+  .options-area {
+    ::ng-deep {
+      app-dynamic-form {
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+        }
+      }
+    }
+  }
+}
+// Animations
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .extract-header {
+    padding: 12px 16px;
+
+    .header-left {
+      gap: 8px;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .extract-title {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .extract-content {
+    padding: 16px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

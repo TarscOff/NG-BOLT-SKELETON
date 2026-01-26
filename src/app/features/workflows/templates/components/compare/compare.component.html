@@ -1,0 +1,129 @@
+<div class="compare-container">
+  <app-export-overlay-tpl />
+
+  <!-- Header -->
+  <div class="compare-header">
+    <div class="compare-header-info">
+      <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">compare</mat-icon>
+      <span class="compare-title">{{ 'compareTpl.title' | translate }}</span>
+    </div>
+    <div class="compare-header-actions">
+      <div class="result-actions">
+        @if (result$()) {
+        <!-- Export Actions -->
+        <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+          (click)="exportComparison({ format: 'pdf', result: result$()! })"
+          [disabled]="(exportService.isExporting$ | async)" [matTooltip]="'summarizeTpl.exportPdf' | translate">
+          <mat-icon>picture_as_pdf</mat-icon>
+        </button>
+        <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+          (click)="exportComparison({ format: 'docx', result: result$()! })"
+          [disabled]="(exportService.isExporting$ | async)" [matTooltip]="'summarizeTpl.exportDocx' | translate">
+          <mat-icon>description</mat-icon>
+        </button>
+        <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+          (click)="exportComparison({ format: 'txt', result: result$()! })"
+          [disabled]="(exportService.isExporting$ | async)" [matTooltip]="'summarizeTpl.exportTxt' | translate">
+          <mat-icon>notes</mat-icon>
+        </button>
+        <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+          (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
+          <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+        </button>
+        }
+        @if (!isPreloadedMode$()) {
+        <button mat-icon-button [matTooltip]="'compareTpl.clear' | translate" (click)="clearAll()"
+          [disabled]="!isUploading$() && !isComparing$() && !(formFile1.valid || formFile2.valid)"
+          [color]="(isDark$ | async) ? 'accent' : 'accent'">
+          <mat-icon>clear_all</mat-icon>
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="compare-container__body" #comparisonResultContainer>
+    @if (!result$()) {
+    <div class="compare-upload-section">
+      <!-- File 1 -->
+      <div class="upload-column">
+        <div class="upload-header">
+          <span class="upload-label">{{ 'compareTpl.file1' | translate }}</span>
+          @if (formFile1.get('file1')?.value) {
+          <button mat-icon-button [matTooltip]="'compareTpl.clearFile' | translate" (click)="clearFile(1)"
+            [disabled]="!isComparing$() && !isUploading$() && formFile1.get('file1')?.value" class="clear-file-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+          }
+        </div>
+        <app-dynamic-form [form]="formFile1" [config]="configFile1" />
+      </div>
+
+      <!-- Divider -->
+      <div class="upload-divider">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">compare_arrows</mat-icon>
+      </div>
+
+      <!-- File 2 -->
+      <div class="upload-column">
+        <div class="upload-header">
+          <span class="upload-label">{{ 'compareTpl.file2' | translate }}</span>
+          @if (formFile2.get('file2')?.value) {
+          <button mat-icon-button [matTooltip]="'compareTpl.clearFile' | translate" (click)="clearFile(2)"
+            [disabled]="!isUploading$() && !isComparing$() && formFile2.get('file2')?.value" class="clear-file-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+          }
+        </div>
+        <app-dynamic-form [form]="formFile2" [config]="configFile2" />
+      </div>
+    </div>
+    }
+
+    <!-- Progress Section -->
+    @if ((isUploading$() || isComparing$())) {
+    <div class="compare-progress-section">
+      @if (isUploading$()) {
+      <div class="progress-info">
+        <span class="progress-label">{{ 'compareTpl.uploading' | translate }}</span>
+        <span class="progress-value">{{ uploadProgress$() }}%</span>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="uploadProgress$()" color="primary" />
+      }
+
+      @if (isComparing$()) {
+      <div class="progress-info">
+        <span class="progress-label">{{ 'compareTpl.comparing' | translate }}</span>
+        <span class="progress-value">{{ comparisonProgress$() }}%</span>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="comparisonProgress$()" color="accent" />
+      }
+    </div>
+    }
+
+    <!-- Compare Action (Upload Mode Only) -->
+    @if (!isPreloadedMode$() && !result$()) {
+    <div class="compare-action">
+      <button mat-flat-button class="primary"
+        [disabled]="!isUploading$() && !isComparing$() && !(formFile1.valid && formFile2.valid )"
+        (click)="triggerComparison()">
+        @if (isComparing$()) {
+        <mat-icon class="spinner-icon">
+          <span class="material-icons rotating">sync</span>
+        </mat-icon>
+        } @else {
+        <mat-icon>compare</mat-icon>
+        }
+        <span>{{ 'compareTpl.start' | translate }}</span>
+      </button>
+    </div>
+    }
+
+    <!-- Results Section -->
+    @if (result$()) {
+    <div class="compare-results-section">
+      <app-comparison-result-tpl [result]="result$()!" />
+    </div>
+    }
+  </div>
+</div>

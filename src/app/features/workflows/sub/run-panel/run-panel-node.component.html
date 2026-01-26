@@ -1,0 +1,150 @@
+<div class="run-panel" [attr.data-node-id]="nodeId" [class.fullscreen]="fullscreen()">
+    <div class="header-container">
+        <div class="header">
+            <mat-icon >output_circle</mat-icon>
+            <div class="title">{{ 'workflow.runPanel.title' | translate : { default: 'Run' } }}</div>
+        </div>
+        <div class="tools">
+            <button mat-flat-button class="success" (click)="triggerRun()" [disabled]="!graphOk()">
+                <mat-icon class="neutral">play_arrow</mat-icon>
+                <span class="ml-2">{{ 'workflow.runPanel.run' | translate : { default: 'Run simulation' } }}</span>
+            </button>
+
+            <button mat-icon-button (click)="toggleFullscreen()" [matTooltip]="fullscreen() ? ('close' | translate) : ('workflow.runPanel.fullscreen' | translate)"
+                [color]="(isDark$ |async) ?'neutral': 'primary' ">
+                <mat-icon>{{ fullscreen() ? 'close_fullscreen' : 'open_in_full' }}</mat-icon>
+            </button>
+            <button mat-icon-button (click)="closePanel()" [matTooltip]="'close' | translate" [color]="(isDark$ |async) ?'neutral': 'primary' ">
+                <mat-icon>{{'close'}}</mat-icon>
+            </button>
+            <button mat-icon-button (click)="collapsed.set(!collapsed())"
+                [matTooltip]="(collapsed() ? 'untoggle' : 'toggle') | translate" [color]="(isDark$ |async) ?'neutral': 'primary' ">
+                <mat-icon>{{ collapsed() ? 'expand_more' : 'expand_less' }}</mat-icon>
+            </button>
+        </div>
+    </div>
+    <ng-container *ngIf="!collapsed()">
+        <div class="legend">
+            <span class="lg lg-queued"><i></i>{{ 'workflow.runPanel.queued' | translate }}</span>
+            <span class="lg lg-running"><i></i>{{ 'workflow.runPanel.running' | translate }}</span>
+            <span class="lg lg-success"><i></i>{{ 'workflow.runPanel.success' | translate }}</span>
+            <span class="lg lg-error"><i></i>{{ 'workflow.runPanel.error' | translate }}</span>
+            <span class="lg lg-skipped"><i></i>{{ 'workflow.runPanel.skipped' | translate }}</span>
+        </div>
+
+        @if (runs().length) {
+        <div class="panel-body">
+            <div class="run-list">
+                <div class="run-list-title">{{ 'workflow.runPanel.runs' | translate }}</div>
+                @for (r of runs(); track r.id; let i = $index) {
+                <button type="button" class="run-item" [class.active]="activeRunId() === r.id" (click)="selectRun(r.id)">
+                    <div class="run-item-title">#{{ runs().length - i }} • {{ r.workflow.name }}</div>
+                    <div class="run-item-meta">
+                        <span>{{ r.startedAt | date:'short' }}</span>
+                        <span [ngClass]="['status-chip', runStatus(r)]">{{ ('status.' + runStatus(r)) | translate }}</span>
+                    </div>
+                </button>
+                }
+            </div>
+
+            <div class="run-detail">
+                @if (selectedRun(); as r) {
+                <div class="run-detail-header">
+                    <div class="run-detail-title">
+                        <strong>{{ r.workflow.name }}</strong>
+                        <span>• {{ r.startedAt | date:'short' }}</span>
+                    </div>
+                    <div class="run-detail-actions">
+                        <button mat-flat-button color="primary" (click)="viewRun(r.id)"
+                            [disabled]="runViewOpen()">
+                            <mat-icon>visibility</mat-icon>
+                            {{ 'workflow.runPanel.view' | translate }}
+                        </button>
+                    </div>
+                </div>
+
+                <app-pipeline-progress [workflow]="r.workflow" [runState]="r.state"
+                    (stageCancel)="stageCancel(r.id, $event)" (pipelineCancel)="pipelineCancel(r.id)">
+                </app-pipeline-progress>
+
+                <div class="run-data">
+                    @if (r.logs?.length) {
+                    <details class="run-details">
+                        <summary>{{ 'workflow.runPanel.logs' | translate }}</summary>
+                        <pre>{{ r.logs?.join('\n') }}</pre>
+                    </details>
+                    }
+
+                    <div class="node-payloads">
+                        <div class="node-payloads-title">{{ 'workflow.runPanel.node_payloads' | translate }}</div>
+                        @for (p of nodePayloads(r); track p.id) {
+                        <details class="node-payload">
+                            <summary>{{ p.label }}</summary>
+                            @if (p.hasData) {
+                            <div class="payload-section">
+                                <div class="payload-title">{{ 'workflow.runPanel.inputs' | translate }}</div>
+                                @if (p.payload?.inputs && p.payload?.inputs?.length) {
+                                @for (inp of p.payload?.inputs; track inp.id) {
+                                <div class="payload-row">
+                                    <span class="payload-name">{{ inp.label }}</span>
+                                    <span class="payload-meta">{{ inp.type }}</span>
+                                    <span class="payload-meta" [class.on]="inp.connected">
+                                        {{ inp.connected ? ('workflow.runPanel.connected' | translate) : ('workflow.runPanel.disconnected' | translate) }}
+                                    </span>
+                                    <span class="payload-meta" *ngIf="inp.required">{{ 'workflow.dialog.required' | translate }}</span>
+                                    <span class="payload-meta" *ngIf="formatSources(inp.sources)">← {{ formatSources(inp.sources) }}</span>
+                                </div>
+                                }
+                                } @else {
+                                <div class="payload-empty">{{ 'workflow.runPanel.no_inputs' | translate }}</div>
+                                }
+                            </div>
+
+                            <div class="payload-section">
+                                <div class="payload-title">{{ 'workflow.runPanel.outputs' | translate }}</div>
+                                @if (p.payload?.outputs?.length) {
+                                @for (out of p.payload?.outputs; track out.id) {
+                                <div class="payload-row">
+                                    <span class="payload-name">{{ out.label }}</span>
+                                    <span class="payload-meta">{{ out.type }}</span>
+                                    <span class="payload-meta" [class.on]="out.connected">
+                                        {{ out.connected ? ('workflow.runPanel.connected' | translate) : ('workflow.runPanel.disconnected' | translate) }}
+                                    </span>
+                                    <span class="payload-meta" *ngIf="out.required">{{ 'workflow.dialog.required' | translate }}</span>
+                                    <span class="payload-meta" *ngIf="formatTargets(out.targets)">→ {{ formatTargets(out.targets) }}</span>
+                                </div>
+                                }
+                                } @else {
+                                <div class="payload-empty">{{ 'workflow.runPanel.no_outputs' | translate }}</div>
+                                }
+                            </div>
+
+                            <details class="run-details payload-raw">
+                                <summary>{{ 'workflow.runPanel.params' | translate }}</summary>
+                                <pre>{{ p.payload?.params | json }}</pre>
+                            </details>
+                            } @else {
+                            <div class="payload-empty">{{ 'workflow.runPanel.no_payload' | translate }}</div>
+                            }
+                        </details>
+                        }
+                    </div>
+
+                    <details class="run-details">
+                        <summary>{{ 'workflow.runPanel.edge_data' | translate }}</summary>
+                        <pre>{{ r.edgeData | json }}</pre>
+                    </details>
+                </div>
+                } @else {
+                <div class="empty">{{ 'workflow.runPanel.empty' | translate : { default: 'No pipeline to run yet.' } }}</div>
+                }
+            </div>
+        </div>
+        } @else {
+        <div class="empty">
+            {{ 'workflow.runPanel.empty' | translate : { default: 'No pipeline to run yet.' } }}
+        </div>
+        }
+    </ng-container>
+
+</div>

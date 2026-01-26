@@ -1,0 +1,86 @@
+{
+  "version": "2.0.0",
+  "tag": "v2.0.0",
+  "previousTag": "v1.11.5",
+  "date": "2025-12-03T14:14:11.641Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "50651a5",
+        "type": "feat",
+        "scope": "core",
+        "subject": "installing new package",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "e2374e7",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.0",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ea283ea",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v1.11.5",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "e2374e74dec526e95028ca59470f5bf7ea8ade53",
+      "shortHash": "e2374e7",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "50651a5e8272a1e2311965dedbdda1123a75b3e3",
+      "shortHash": "50651a5",
+      "type": "feat",
+      "scope": "core",
+      "subject": "installing new package",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ea283ea3ebd3a7f521544dd8ab91852b1c7d747b",
+      "shortHash": "ea283ea",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v1.11.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

@@ -1,0 +1,384 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  background: var(--mat-sys-surface);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--mat-sys-level2);
+  height: 100%; // Takes full height of parent
+  max-height: 100%; // Prevents overflow
+}
+
+:host {
+  height: 100%;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--mat-neutral);
+  flex-shrink: 0; // Prevent header from shrinking
+
+  .chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      color: var(--mat-primary);
+    }
+
+
+    .chat-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  .chat-header-actions {
+    display: flex;
+    gap: 4px;
+  }
+}
+
+.chat-messages {
+  flex: 1 1 auto; // Allow flex grow and shrink
+  overflow-y: auto; // Always show scrollbar (use 'scroll' instead of 'auto')
+  overflow-x: hidden; // Prevent horizontal scroll
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+  min-height: 0; // Critical for flex child scrolling
+  max-height: 100%;
+
+
+  // Make scrollbar more visible
+  &::-webkit-scrollbar {
+    width: 10px; // Slightly wider
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); // More visible track
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--mat-primary); // Use primary color
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--mat-primary-dark);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: auto; // Normal width (not thin)
+  scrollbar-color: var(--mat-primary) rgba(0, 0, 0, 0.1);
+}
+
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1; // Take all available space
+  color: var(--mat-neutral);
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+    color: var(--mat-neutral);
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+    color: var(--mat-neutral);
+  }
+}
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 8px;
+  max-width: fit-content;
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+
+    span {
+      width: 8px;
+      height: 8px;
+      background: var(--mat-primary);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+
+      &:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+    }
+  }
+
+  .typing-text {
+    font-size: 12px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+@keyframes typing {
+
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+.chat-footer {
+  flex-shrink: 0; // Prevent footer from shrinking
+  border-top: 1px solid var(--mat-neutral);
+  background: var(--mat-sys-surface);
+}
+
+.workflow-progress {
+  margin: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--mat-primary) 10%, transparent);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in;
+
+  .workflow-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+
+    mat-icon.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      &.queued {
+        background: var(--mat-accent);
+        color: white;
+      }
+
+      &.running {
+        background: var(--mat-primary);
+        color: white;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      &.completed {
+        background: var(--mat-success);
+        color: white;
+      }
+
+      &.error {
+        background: var(--mat-error);
+        color: white;
+      }
+
+      &.started {
+        background: var(--mat-primary-variant);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      &.waiting {
+        background: var(--mat-warn);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      &.not_started {
+        background: var(--mat-neutral);
+        color: rgba(255, 255, 255, 0.6);
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 15px;
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+      overflow: hidden;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateX(4px);
+      }
+
+      .task-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      .task-name {
+        flex: 1;
+        transition: opacity 0.3s ease;
+        color: #fff;
+      }
+
+      &.completed {
+        .task-icon {
+          color: #fff;
+        }
+
+        background: var(--mat-success);
+      }
+
+      &.error {
+        .task-icon {
+          color: #fff;
+        }
+
+        background: var(--mat-error);
+      }
+
+      &.running {
+        .task-icon {
+          color: #fff;
+          animation: rotate 2s linear infinite;
+        }
+
+        border-left: 3px solid var(--mat-primary);
+        background: var(--mat-primary);
+      }
+
+      &.started {
+        .task-icon {
+          color: #fff;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        border-left: 3px solid var(--mat-primary);
+        background: var(--mat-primary-variant);
+      }
+
+      &.queued {
+        .task-icon {
+          color: #fff;
+          opacity: 0.6;
+        }
+
+        opacity: 0.8;
+        background: var(--mat-accent);
+      }
+
+      &.waiting {
+        .task-icon {
+          color: #fff;
+          opacity: 0.7;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        background: var(--mat-warn);
+      }
+
+      &.not_started {
+        .task-icon {
+          color: #666;
+          opacity: 0.5;
+        }
+
+        opacity: 0.6;
+        background: var(--mat-neutral);
+      }
+
+      .task-comment {
+        width: 50%;
+        margin-left: auto;
+        font-size: 0.875rem;
+        color: #fff;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

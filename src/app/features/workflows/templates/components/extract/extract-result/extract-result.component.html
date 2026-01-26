@@ -1,0 +1,173 @@
+<div class="extract-result-container">
+  <!-- Header Section -->
+  <div class="result-header">
+    <div class="header-content">
+      <div class="section-header">
+        <mat-icon [color]="statusColor$()">
+          {{ statusIcon$() }}
+        </mat-icon>
+        <span class="result-title">{{ "extractResult.title" | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (result.error) {
+  <mat-card class="error-card">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon color="warn">error</mat-icon>
+        <div class="error-text">
+          <strong>{{ "common.error" | translate }}</strong>
+          <p>{{ result.error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <!-- Main Content -->
+  <div class="result-content">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon color="primary">storage</mat-icon>
+            <div class="stat-info">
+              <span class="stat-value">{{ result.totalEntitiesFound }}</span>
+              <span class="stat-label">{{
+                "extractResult.totalEntities" | translate
+                }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon color="accent">category</mat-icon>
+            <div class="stat-info">
+              <span class="stat-value">{{ entityTypes$().length }}</span>
+              <span class="stat-label">{{
+                "extractResult.entityTypes" | translate
+                }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      @if (hasFiles$()) {
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon color="primary">description</mat-icon>
+            <div class="stat-info">
+              <span class="stat-value">{{ result.files.length }}</span>
+              <span class="stat-label">{{
+                "extractResult.filesProcessed" | translate
+                }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+
+    <!-- Files Section -->
+    <div class="source-files">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">folder_open</mat-icon>
+        <span>{{ 'extractResult.filesProcessed' | translate }}</span>
+      </div>
+      <div class="files-list">
+        @for (file of result.files; track file.key) {
+        <div class="file-info-card">
+          <mat-icon class="file-icon">
+            {{ getFileIcon(file) }}
+          </mat-icon>
+          <div class="file-details">
+            <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
+            @if (file.size) {
+            <span class="file-size">{{ formatFileSize(file.size) }}</span>
+            }
+            @if (file.ext) {
+            <span class="file-type">{{ file.ext | uppercase }}</span>
+            }
+            @if (file.uploadDate) {
+            <span class="file-date">{{ file.uploadDate | date: 'short' }}</span>
+            }
+          </div>
+          <mat-icon class="status-icon success">check_circle</mat-icon>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Entity Type Filter -->
+    @if (hasEntities$()) {
+    <!-- Entities List -->
+    <div class="entities-section">
+            <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'accent'">category</mat-icon>
+        <span>{{ 'extractResult.entityTypes' | translate }}</span>
+      </div>
+      <div class="entities-grid">
+        @for (entity of filteredEntities$(); track entity.value + entity.type) {
+        <div class="entity-card">
+          <div class="entity-header">
+            <mat-chip class="entity-type-chip">
+              {{ entity.type }}
+            </mat-chip>
+            <div class="entity-value-wrapper">
+              <span class="entity-value">
+                {{ entity.value }}
+              </span>
+            </div>
+          </div>
+
+          @if (entity.context) {
+          <div class="entity-context">
+            <mat-icon class="context-icon">format_quote</mat-icon>
+            <p class="context-text">{{ entity.context }}</p>
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      @if (filteredEntities$().length === 0) {
+      <div class="no-entities">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ "extractResult.noEntitiesFound" | translate }}</p>
+      </div>
+      }
+    </div>
+    } @else {
+    <mat-card class="no-entities-card">
+      <mat-card-content>
+        <div class="no-entities">
+          <mat-icon>info</mat-icon>
+          <p>{{ "extractResult.noEntitiesFound" | translate }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Source Text Section -->
+    @if (hasSourceText$()) {
+
+    <div class="section-card source-text-card">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">text_snippet</mat-icon>
+        <span>{{ 'extractResult.sourceText' | translate }}</span>
+      </div>
+      <div class="source-text-content">
+        {{result.text}}
+      </div>
+
+    </div>
+    }
+  </div>
+</div>

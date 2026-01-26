@@ -1,0 +1,148 @@
+.chat-input-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  background: var(--mat-sys-surface); // Ensure background
+}
+
+.chat-input-form {
+  flex: 1;
+
+  ::ng-deep {
+    // Remove margins from dynamic form
+    app-dynamic-form {
+      .form-field-wrapper {
+        margin-bottom: 0 !important;
+      }
+
+      // Ensure textarea takes full width
+      mat-form-field {
+        width: 100%;
+      }
+
+      .resize-handle {
+        top: -13px !important
+      }
+
+      // Style the textarea for chat
+      textarea {
+        min-height: 48px !important;
+        line-height: 1.5 !important;
+        font-size: 14px !important;
+      }
+
+      // Hide label if present
+      .mat-mdc-form-field-label {
+        display: none;
+      }
+      
+      // Adjust form field subscript
+      .mat-mdc-form-field-subscript-wrapper {
+        height: auto;
+        min-height: 16px;
+      }
+    }
+  }
+}
+
+.chat-input-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  .send-button {
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .chat-input-container {
+    padding: 12px;
+  }
+}
+
+.file-attachments-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  margin-bottom: 10px;
+
+  .attach-button {
+    flex-shrink: 0;
+  }
+
+  .attached-files-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+
+    .attached-file-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      font-size: 12px;
+
+      .file-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      .file-name {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .file-size {
+        font-size: 11px;
+      }
+
+      .remove-file-button {
+        width: 20px;
+        height: 20px;
+        padding: 0;
+
+        mat-icon {
+          font-size: 16px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+}
+
+// if darkmode
+:host-context(.dark) {
+  .file-attachments-section {
+    background-color: var(--mat-sys-surface-variant);
+
+    .attached-file-chip {
+      border: 1px solid #fff;
+
+
+      .remove-file-button {
+        mat-icon {
+          color: var(--mat-accent);
+        }
+      }
+    }
+  }
+}
+
+.accepted-formats-label {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface);
+}

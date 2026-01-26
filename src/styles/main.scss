@@ -1,0 +1,552 @@
+@use './variables';
+@use './mixins' as *;
+@use './fonts.scss' as *;
+
+:root {
+  --mat-primary: #5c2d91;
+  --mat-primary-variant: #66d3b3;
+  --mat-accent: #4492c7;
+  --mat-warn: #ec9a00ff;
+  --mat-neutral: #c1c1c3;
+  --mat-success: #62d3b1;
+  --mat-error: #ff0c49;
+
+  // Make scrollbar more visible
+  &::-webkit-scrollbar {
+    width: 10px; // Slightly wider
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); // More visible track
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--mat-primary); // Use primary color
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--mat-primary-dark);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: auto; // Normal width (not thin)
+  scrollbar-color: var(--mat-primary) rgba(0, 0, 0, 0.1);
+  --mat-card-subtitle-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-chip-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-list-list-item-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-button-label-text-font: 'ProximusRegular',
+  sans-serif;
+  --mdc-list-list-item-trailing-supporting-text-font: 'ProximusRegular',
+  sans-serif;
+}
+
+html.dark {
+ --mat-primary: #4492c7;
+  --mat-primary-variant: #8534c2;
+  --mat-accent: #66d3b3;
+  --mat-warn: #ef7000;
+  --mat-neutral: #f1ebeb;
+  --mat-success: #1aa21e;
+  --mat-error: #ff0c49;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-justify-space-between {
+  justify-content: space-between;
+}
+
+.flex-justify-space-around {
+  justify-content: space-around;
+}
+
+.flex-justify-left {
+  justify-content: left;
+}
+
+.flex-justify-right {
+  justify-content: right;
+}
+
+.flex-align-center {
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+}
+
+.gap-2 {
+  gap: 2rem;
+}
+
+.mat-primary,
+.primary,
+:root,
+html.dark {
+  --mat-sys-primary: var(--mat-primary);
+  --md-sys-color-primary: var(--mat-primary);
+  --md-sys-color-surface-tint: var(--mat-primary);
+  --mdc-protected-button-label-text-color: var(--mat-primary);
+  --mdc-text-button-label-text-color: var(--mat-primary);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-primary);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-primary);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-primary);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-primary);
+  --mdc-slider-handle-color: var(--mat-primary);
+  --mdc-slider-focus-handle-color: var(--mat-primary);
+  --mdc-slider-hover-handle-color: var(--mat-primary);
+  --mat-slider-ripple-color: var(--mat-primary);
+  --mdc-slider-active-track-color: var(--mat-primary);
+  --mat-radio-checked-ripple-color: var(--mat-primary);
+  --mdc-radio-selected-focus-icon-color: var(--mat-primary);
+  --mdc-radio-selected-hover-icon-color: var(--mat-primary);
+  --mdc-radio-selected-icon-color: var(--mat-primary);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-primary);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-primary);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-primary);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-primary);
+  --mdc-switch-selected-hover-track-color: var(--mat-primary);
+  --mdc-switch-selected-pressed-track-color: var(--mat-primary);
+  --mdc-switch-selected-track-track-color: var(--mat-primary);
+  --mdc-outlined-text-field-caret-color: var(--mat-primary);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-primary);
+  --mdc-filled-text-field-caret-color: var(--mat-primary);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-primary);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-primary);
+  --mdc-linear-progress-active-indicator-color: var(--mat-primary);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-primary);
+  --mat-text-button-state-layer-color: var(--mat-primary);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-primary);
+  --mdc-slider-handle-color: var(--mat-primary);
+  --mdc-slider-label-container-color: var(--mat-primary);
+  --mdc-switch-selected-track-color: var(--mat-primary);
+  --mdc-switch-selected-icon-color: var(--mat-primary);
+  --mdc-chip-elevated-selected-container-color: var(--mat-primary);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-primary);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-primary);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-primary);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-primary);
+  --mdc-circular-progress-active-indicator-color: var(--mat-primary);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-primary);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-primary);
+  --mat-snack-bar-button-color: var(--mat-primary);
+  --mdc-switch-selected-focus-track-color: var(--mat-primary);
+  --mat-protected-button-state-layer-color: var(--mat-primary);
+  --mdc-outlined-button-label-text-color: var(--mat-primary);
+  --mat-outlined-button-state-layer-color: var(--mat-primary);
+  --mdc-filled-button-container-color: var(--mat-primary);
+  --mat-fab-foreground-color: var(--mat-primary);
+  --mat-fab-state-layer-color: var(--mat-primary);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-primary) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-primary) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-primary);
+  --mdc-checkbox-selected-icon-color: var(--mat-primary);
+  --mdc-checkbox-selected-hover-icon-color: var(--mat-primary);
+  --mdc-checkbox-selected-focus-icon-color: var(--mat-primary);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-primary);
+  --mdc-icon-button-icon-color: var(--mat-primary);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mdc-filled-button-label-text-color: #fff;
+  --mdc-switch-selected-handle-color: #fff;
+  --mdc-switch-selected-hover-handle-color: #fff;
+  --mdc-switch-selected-pressed-handle-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-primary);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
+  --mdc-outlined-card-container-color: transparent;
+  --mat-sidenav-container-background-color: transparent;
+  --mat-toolbar-container-background-color: transparent;
+  --mat-paginator-container-background-color: transparent;
+}
+
+
+.mat-accent,
+.accent {
+  --mat-primary: var(--mat-accent);
+  --md-sys-color-primary: var(--mat-accent);
+  --md-sys-color-surface-tint: var(--mat-accent);
+  --md-sys-color-primary-container: var(--mat-accent);
+  --mdc-protected-button-label-text-color: var(--mat-accent);
+  --mdc-text-button-label-text-color: var(--mat-accent);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-accent);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-accent);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-accent);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-accent);
+  --mdc-slider-handle-color: var(--mat-accent);
+  --mdc-slider-focus-handle-color: var(--mat-accent);
+  --mdc-slider-hover-handle-color: var(--mat-accent);
+  --mat-slider-ripple-color: var(--mat-accent);
+  --mdc-slider-active-track-color: var(--mat-accent);
+  --mat-radio-checked-ripple-color: var(--mat-accent);
+  --mdc-radio-selected-focus-icon-color: var(--mat-accent);
+  --mdc-radio-selected-hover-icon-color: var(--mat-accent);
+  --mdc-radio-selected-icon-color: var(--mat-accent);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-accent);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-accent);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-accent);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-accent);
+  --mdc-switch-selected-hover-track-color: var(--mat-accent);
+  --mdc-switch-selected-pressed-track-color: var(--mat-accent);
+  --mdc-switch-selected-track-track-color: var(--mat-accent);
+  --mdc-switch-selected-icon-color: var(--mat-accent);
+  --mdc-outlined-text-field-caret-color: var(--mat-accent);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-accent);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-accent);
+  --mdc-filled-text-field-caret-color: var(--mat-accent);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-accent);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-accent);
+  --mdc-linear-progress-active-indicator-color: var(--mat-accent);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-accent);
+  --mat-text-button-state-layer-color: var(--mat-accent);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-accent);
+  --mdc-slider-handle-color: var(--mat-accent);
+  --mdc-slider-label-container-color: var(--mat-accent);
+  --mdc-switch-selected-track-color: var(--mat-accent);
+  --mdc-switch-selected-icon-color: var(--mat-accent);
+  --mdc-chip-elevated-selected-container-color: var(--mat-accent);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-accent);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-accent);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-accent);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-accent);
+  --mdc-circular-progress-active-indicator-color: var(--mat-accent);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-accent);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-accent);
+  --mat-snack-bar-button-color: var(--mat-accent);
+  --mdc-switch-selected-focus-track-color: var(--mat-accent);
+  --mat-protected-button-state-layer-color: var(--mat-accent);
+  --mdc-outlined-button-label-text-color: var(--mat-accent);
+  --mat-outlined-button-state-layer-color: var(--mat-accent);
+  --mdc-filled-button-container-color: var(--mat-accent);
+  --mat-fab-foreground-color: var(--mat-accent);
+  --mat-fab-state-layer-color: var(--mat-accent);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-accent) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-accent) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-accent);
+  --mdc-icon-button-icon-color: var(--mat-accent);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-accent);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
+}
+
+.mat-warn,
+.warn {
+  --mat-primary: var(--mat-warn);
+  --md-sys-color-primary: var(--mat-warn);
+  --md-sys-color-surface-tint: var(--mat-warn);
+  --md-sys-color-primary-container: var(--mat-warn);
+  --mdc-protected-button-label-text-color: var(--mat-warn);
+  --mdc-text-button-label-text-color: var(--mat-warn);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-warn);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-warn);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-warn);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-warn);
+  --mdc-slider-handle-color: var(--mat-warn);
+  --mdc-slider-focus-handle-color: var(--mat-warn);
+  --mdc-slider-hover-handle-color: var(--mat-warn);
+  --mat-slider-ripple-color: var(--mat-warn);
+  --mdc-slider-active-track-color: var(--mat-warn);
+  --mat-radio-checked-ripple-color: var(--mat-warn);
+  --mdc-radio-selected-focus-icon-color: var(--mat-warn);
+  --mdc-radio-selected-hover-icon-color: var(--mat-warn);
+  --mdc-radio-selected-icon-color: var(--mat-warn);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-warn);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-warn);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-warn);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-warn);
+  --mdc-switch-selected-hover-track-color: var(--mat-warn);
+  --mdc-switch-selected-pressed-track-color: var(--mat-warn);
+  --mdc-switch-selected-track-track-color: var(--mat-warn);
+  --mdc-switch-selected-icon-color: var(--mat-warn);
+  --mdc-outlined-text-field-caret-color: var(--mat-warn);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-warn);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-warn);
+  --mdc-filled-text-field-caret-color: var(--mat-warn);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-warn);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-warn);
+  --mdc-linear-progress-active-indicator-color: var(--mat-warn);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-warn);
+  --mat-text-button-state-layer-color: var(--mat-warn);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-warn);
+  --mdc-slider-handle-color: var(--mat-warn);
+  --mdc-slider-label-container-color: var(--mat-warn);
+  --mdc-switch-selected-track-color: var(--mat-warn);
+  --mdc-switch-selected-icon-color: var(--mat-warn);
+  --mdc-chip-elevated-selected-container-color: var(--mat-warn);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-warn);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-warn);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-warn);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-warn);
+  --mdc-circular-progress-active-indicator-color: var(--mat-warn);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-warn);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-warn);
+  --mat-snack-bar-button-color: var(--mat-warn);
+  --mdc-switch-selected-focus-track-color: var(--mat-warn);
+  --mat-protected-button-state-layer-color: var(--mat-warn);
+  --mdc-outlined-button-label-text-color: var(--mat-warn);
+  --mat-outlined-button-state-layer-color: var(--mat-warn);
+  --mdc-filled-button-container-color: var(--mat-warn);
+  --mat-fab-foreground-color: var(--mat-warn);
+  --mat-fab-state-layer-color: var(--mat-warn);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-warn) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-warn) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-warn);
+  --mdc-icon-button-icon-color: var(--mat-warn);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-warn);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
+}
+
+.mat-success,
+.success {
+  --mat-primary: var(--mat-success);
+  --md-sys-color-primary: var(--mat-success);
+  --md-sys-color-surface-tint: var(--mat-success);
+  --md-sys-color-primary-container: var(--mat-success);
+  --mdc-protected-button-label-text-color: var(--mat-success);
+  --mdc-text-button-label-text-color: var(--mat-success);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-success);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-success);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-success);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-success);
+  --mdc-slider-handle-color: var(--mat-success);
+  --mdc-slider-focus-handle-color: var(--mat-success);
+  --mdc-slider-hover-handle-color: var(--mat-success);
+  --mat-slider-ripple-color: var(--mat-success);
+  --mdc-slider-active-track-color: var(--mat-success);
+  --mat-radio-checked-ripple-color: var(--mat-success);
+  --mdc-radio-selected-focus-icon-color: var(--mat-success);
+  --mdc-radio-selected-hover-icon-color: var(--mat-success);
+  --mdc-radio-selected-icon-color: var(--mat-success);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-success);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-success);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-success);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-success);
+  --mdc-switch-selected-hover-track-color: var(--mat-success);
+  --mdc-switch-selected-pressed-track-color: var(--mat-success);
+  --mdc-switch-selected-track-track-color: var(--mat-success);
+  --mdc-switch-selected-icon-color: var(--mat-success);
+  --mdc-outlined-text-field-caret-color: var(--mat-success);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-success);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-success);
+  --mdc-filled-text-field-caret-color: var(--mat-success);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-success);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-success);
+  --mdc-linear-progress-active-indicator-color: var(--mat-success);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-success);
+  --mat-text-button-state-layer-color: var(--mat-success);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-success);
+  --mdc-slider-handle-color: var(--mat-success);
+  --mdc-slider-label-container-color: var(--mat-success);
+  --mdc-switch-selected-track-color: var(--mat-success);
+  --mdc-switch-selected-icon-color: var(--mat-success);
+  --mdc-chip-elevated-selected-container-color: var(--mat-success);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-success);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-success);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-success);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-success);
+  --mdc-circular-progress-active-indicator-color: var(--mat-success);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-success);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-success);
+  --mat-snack-bar-button-color: var(--mat-success);
+  --mdc-switch-selected-focus-track-color: var(--mat-success);
+  --mat-protected-button-state-layer-color: var(--mat-success);
+  --mdc-outlined-button-label-text-color: var(--mat-success);
+  --mat-outlined-button-state-layer-color: var(--mat-success);
+  --mdc-filled-button-container-color: var(--mat-success);
+  --mat-fab-foreground-color: var(--mat-success);
+  --mat-fab-state-layer-color: var(--mat-success);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-success) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-success) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-success);
+  --mdc-icon-button-icon-color: var(--mat-success);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-success);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
+}
+
+.mat-error,
+.error {
+  --mat-primary: var(--mat-error);
+  --md-sys-color-primary: var(--mat-error);
+  --md-sys-color-surface-tint: var(--mat-error);
+  --md-sys-color-primary-container: var(--mat-error);
+  --mdc-protected-button-label-text-color: var(--mat-error);
+  --mdc-text-button-label-text-color: var(--mat-error);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-error);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-error);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-error);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-error);
+  --mdc-slider-handle-color: var(--mat-error);
+  --mdc-slider-focus-handle-color: var(--mat-error);
+  --mdc-slider-hover-handle-color: var(--mat-error);
+  --mat-slider-ripple-color: var(--mat-error);
+  --mdc-slider-active-track-color: var(--mat-error);
+  --mat-radio-checked-ripple-color: var(--mat-error);
+  --mdc-radio-selected-focus-icon-color: var(--mat-error);
+  --mdc-radio-selected-hover-icon-color: var(--mat-error);
+  --mdc-radio-selected-icon-color: var(--mat-error);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-error);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-error);
+  --mdc-switch-selected-hover-track-color: var(--mat-error);
+  --mdc-switch-selected-pressed-track-color: var(--mat-error);
+  --mdc-switch-selected-track-track-color: var(--mat-error);
+  --mdc-switch-selected-icon-color: var(--mat-error);
+  --mdc-outlined-text-field-caret-color: var(--mat-error);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-error);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-error);
+  --mdc-filled-text-field-caret-color: var(--mat-error);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-error);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-error);
+  --mdc-linear-progress-active-indicator-color: var(--mat-error);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-error);
+  --mat-text-button-state-layer-color: var(--mat-error);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-error);
+  --mdc-slider-handle-color: var(--mat-error);
+  --mdc-slider-label-container-color: var(--mat-error);
+  --mdc-switch-selected-track-color: var(--mat-error);
+  --mdc-switch-selected-icon-color: var(--mat-error);
+  --mdc-chip-elevated-selected-container-color: var(--mat-error);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-error);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-error);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-error);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-error);
+  --mdc-circular-progress-active-indicator-color: var(--mat-error);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-error);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-error);
+  --mat-snack-bar-button-color: var(--mat-error);
+  --mdc-switch-selected-focus-track-color: var(--mat-error);
+  --mat-protected-button-state-layer-color: var(--mat-error);
+  --mdc-outlined-button-label-text-color: var(--mat-error);
+  --mat-outlined-button-state-layer-color: var(--mat-error);
+  --mdc-filled-button-container-color: var(--mat-error);
+  --mat-fab-foreground-color: var(--mat-error);
+  --mat-fab-state-layer-color: var(--mat-error);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-error) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-error) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-error);
+  --mdc-icon-button-icon-color: var(--mat-error);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+}
+
+.mat-neutral,
+.neutral {
+  //--mat-primary: var(--mat-neutral);
+  --md-sys-color-primary: var(--mat-neutral);
+  --md-sys-color-surface-tint: var(--mat-neutral);
+  --md-sys-color-primary-container: var(--mat-neutral);
+  --mdc-protected-button-label-text-color: var(--mat-neutral);
+  --mdc-text-button-label-text-color: var(--mat-neutral);
+  --mdc-checkbox-selected-pressed-icon-color: var(--mat-neutral);
+  --mat-tab-header-active-focus-indicator-color: var(--mat-neutral);
+  --mat-tab-header-active-hover-indicator-color: var(--mat-neutral);
+  --mdc-tab-indicator-active-indicator-color: var(--mat-neutral);
+  --mdc-slider-handle-color: var(--mat-neutral);
+  --mdc-slider-focus-handle-color: var(--mat-neutral);
+  --mdc-slider-hover-handle-color: var(--mat-neutral);
+  --mat-slider-ripple-color: var(--mat-neutral);
+  --mdc-slider-active-track-color: var(--mat-neutral);
+  --mat-radio-checked-ripple-color: var(--mat-neutral);
+  --mdc-radio-selected-focus-icon-color: var(--mat-neutral);
+  --mdc-radio-selected-hover-icon-color: var(--mat-neutral);
+  --mdc-radio-selected-icon-color: var(--mat-neutral);
+  --mdc-radio-selected-pressed-icon-color: var(--mat-neutral);
+  --mdc-switch-selected-focus-state-layer-color: var(--mat-neutral);
+  --mdc-switch-selected-hover-state-layer-color: var(--mat-neutral);
+  --mdc-switch-selected-pressed-state-layer-color: var(--mat-neutral);
+  --mdc-switch-selected-hover-track-color: var(--mat-neutral);
+  --mdc-switch-selected-pressed-track-color: var(--mat-neutral);
+  --mdc-switch-selected-track-track-color: var(--mat-neutral);
+  --mdc-switch-selected-icon-color: var(--mat-neutral);
+  --mdc-outlined-text-field-caret-color: var(--mat-neutral);
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-neutral);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-neutral);
+  --mdc-filled-text-field-caret-color: var(--mat-neutral);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--mat-neutral);
+  --mdc-filled-text-field-focus-label-text-color: var(--mat-neutral);
+  --mdc-linear-progress-active-indicator-color: var(--mat-neutral);
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: var(--mat-neutral);
+  --mat-text-button-state-layer-color: var(--mat-neutral);
+  --mat-full-pseudo-checkbox-selected-icon-color: var(--mat-neutral);
+  --mdc-slider-handle-color: var(--mat-neutral);
+  --mdc-slider-label-container-color: var(--mat-neutral);
+  --mdc-switch-selected-track-color: var(--mat-neutral);
+  --mdc-switch-selected-icon-color: var(--mat-neutral);
+  --mdc-chip-elevated-selected-container-color: var(--mat-neutral);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--mat-neutral);
+  --mat-datepicker-calendar-date-today-outline-color: var(--mat-neutral);
+  --mat-datepicker-calendar-date-preview-state-outline-color: var(--mat-neutral);
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: var(--mat-neutral);
+  --mdc-circular-progress-active-indicator-color: var(--mat-neutral);
+  --mat-stepper-header-selected-state-icon-background-color: var(--mat-neutral);
+  --mat-stepper-header-edit-state-icon-background-color: var(--mat-neutral);
+  --mat-snack-bar-button-color: var(--mat-neutral);
+  --mdc-switch-selected-focus-track-color: var(--mat-neutral);
+  --mat-protected-button-state-layer-color: var(--mat-neutral);
+  --mdc-outlined-button-label-text-color: var(--mat-neutral);
+  --mat-outlined-button-state-layer-color: var(--mat-neutral);
+  --mdc-filled-button-container-color: var(--mat-neutral);
+  --mat-fab-foreground-color: var(--mat-neutral);
+  --mat-fab-state-layer-color: var(--mat-neutral);
+  --mdc-fab-container-color: color-mix(in srgb, var(--mat-neutral) 10%, transparent);
+  --mdc-fab-small-container-color: color-mix(in srgb, var(--mat-neutral) 10%, transparent);
+  --mat-fab-small-foreground-color: var(--mat-neutral);
+  --mdc-icon-button-icon-color: var(--mat-neutral);
+  --mdc-chip-selected-label-text-color: #fff;
+  --mdc-chip-with-icon-selected-icon-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-container-color: var(--mat-neutral);
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mdc-snackbar-text-color: #fff;
+}
+
+
+html.dark {
+  --mdc-switch-selected-handle-color: #fff;
+  --mdc-switch-selected-hover-handle-color: #fff;
+
+  .mdc-button.neutral {
+    --mdc-filled-button-label-text-color: var(--mat-primary);
+  }
+
+  .mdc-button,
+  .mdc-fab {
+    --mdc-list-list-item-label-text-color: var(--mat-neutral);
+    --mat-fab-foreground-color: var(--mat-neutral);
+    --mdc-text-button-label-text-color: var(--mat-neutral);
+    --mdc-switch-selected-icon-color: var(--mat-neutral);
+    --mdc-chip-selected-label-text-color: var(--mat-neutral);
+    --mdc-chip-with-icon-selected-icon-color: var(--mat-neutral);
+    --mdc-filled-button-label-text-color: var(--mat-neutral);
+  }
+}

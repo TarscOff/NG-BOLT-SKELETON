@@ -1,0 +1,194 @@
+{
+  "version": "1.11.5",
+  "tag": "v1.11.5",
+  "previousTag": "v1.11.4",
+  "date": "2025-12-03T11:37:28.252Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 4,
+    "tests": 0,
+    "others": 5,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "2aff4ad",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.11.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "949faf9",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing CI/CD  config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1618a1f",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing CI/CD  config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fca5623",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v1.11.4",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "f781930",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1872: fix ci",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "79a0de6",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1871: fix ci",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "237116b",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1870: ci fix",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5e0b661",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1869: fix ci",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ceb5dd4",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1868: fix ci",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "2aff4adf9771dfdaa1f2bf1770faee6553a0875a",
+      "shortHash": "2aff4ad",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.11.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f78193078554ad4d88684c404e2bbf202a180404",
+      "shortHash": "f781930",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1872: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "949faf94b658722ae37929955805f3e31632933c",
+      "shortHash": "949faf9",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing CI/CD  config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1618a1f177378f2bacc33f0a43e5c092788c75ea",
+      "shortHash": "1618a1f",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing CI/CD  config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "79a0de6ddebdfcc019a3b8a45e7447d4c3c84fec",
+      "shortHash": "79a0de6",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1871: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "fca56234a3d9d071756f21d33cccf107ffba1800",
+      "shortHash": "fca5623",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v1.11.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "237116bf2f224bc505808c77fede0a3a3fed63c5",
+      "shortHash": "237116b",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1870: ci fix",
+      "breaking": false,
+      "notes": [],
+      "body": "ci fix"
+    },
+    {
+      "hash": "5e0b661c9274b06abed8f3634d0ecd149e0308f7",
+      "shortHash": "5e0b661",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1869: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "ceb5dd4d1d20b3109d4108eac7d0251e67824a54",
+      "shortHash": "ceb5dd4",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1868: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+<div class="summary-result-container">
+  <!-- Header with Metadata -->
+  <div class="result-header">
+    <div class="header-row">
+      <h3 class="result-title">{{ 'summarizeTpl.results' | translate }}</h3>
+    </div>
+
+    <!-- Metadata Chips -->
+    <div class="metadata-chips">
+      <mat-chip-set>
+        <mat-chip>
+          <mat-icon matChipAvatar>{{ getStyleIcon() }}</mat-icon>
+          {{ 'summarizeTpl.styles.' + result.style | translate }}
+        </mat-chip>
+        <mat-chip>
+          <mat-icon matChipAvatar>{{ getLengthIcon() }}</mat-icon>
+          {{ 'summarizeTpl.lengths.' + result.length | translate }}
+        </mat-chip>
+        <mat-chip>
+          <mat-icon matChipAvatar>language</mat-icon>
+          {{ result.language.toUpperCase() }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+  </div>
+
+  <!-- Source Files -->
+  @if (result.files.length > 0 && showDetails) {
+    <div class="source-files">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">folder_open</mat-icon>
+        <span>{{ 'summarizeTpl.sourceFiles' | translate }}</span>
+      </div>
+      <div class="files-list">
+        @for (file of result.files; track file.key) {
+          <div class="file-info-card">
+            <mat-icon class="file-icon">
+              {{ getFileIcon(file) }}
+            </mat-icon>
+            <div class="file-details">
+              <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
+              @if (file.size) {
+                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+              }
+              @if (file.ext) {
+                <span class="file-type">{{ file.ext | uppercase }}</span>
+              }
+              @if (file.uploadDate) {
+                <span class="file-date">{{ file.uploadDate | date: 'short' }}</span>
+              }
+            </div>
+            <mat-icon class="status-icon success">check_circle</mat-icon>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Word Count Statistics -->
+  <div class="word-count-section">
+    <div class="section-header">
+      <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">analytics</mat-icon>
+      <span>{{ 'summarizeTpl.statistics' | translate }}</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">{{ 'summarizeTpl.wordCount.original' | translate }}</div>
+        <div class="stat-value">{{ result.wordCount.original }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">{{ 'summarizeTpl.wordCount.summary' | translate }}</div>
+        <div class="stat-value">{{ result.wordCount.summary }}</div>
+      </div>
+      <div class="stat-card reduction" [attr.data-level]="getReductionColor()">
+        <div class="stat-label">{{ 'summarizeTpl.wordCount.reduction' | translate }}</div>
+        <div class="stat-value">
+          {{ result.wordCount.reduction }}%
+          <mat-icon>trending_down</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Points -->
+  @if (result.keyPoints.length > 0) {
+    <div class="key-points-section">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">checklist</mat-icon>
+        <span>{{ 'summarizeTpl.keyPoints' | translate }}</span>
+      </div>
+      <ul class="key-points-list">
+        @for (point of result.keyPoints; track $index) {
+          <li class="key-point">
+            <mat-icon class="point-icon">arrow_right</mat-icon>
+            <span>{{ point }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- Summary Text -->
+  <div class="summary-section">
+    <div class="section-header">
+      <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">auto_awesome</mat-icon>
+      <span>{{ 'summarizeTpl.summaryText' | translate }}</span>
+    </div>
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="summary-text" [innerHTML]="result.summary"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Processing Time -->
+  @if (result.completedAt && showDetails) {
+    <div class="meta-footer">
+      <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">schedule</mat-icon>
+      <span>
+        {{ 'summarizeTpl.processedIn' | translate }}:
+        {{ (result.completedAt.getTime() - result.createdAt.getTime()) / 1000 | number:'1.1-1' }}s
+      </span>
+      <span class="separator">•</span>
+      <span>{{ result.createdAt | date:'short' }}</span>
+    </div>
+  }
+</div>

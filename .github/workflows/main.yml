@@ -1,0 +1,279 @@
+name: APP CI/CD
+
+on:
+  push:
+    branches: [ master, develop, staging, uat ]
+  pull_request:
+    branches: [ master, develop, staging, uat ]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  NODE_VERSION: '20'
+  PKG_PATH: 'package.json'
+  CR_REGISTRY: ghcr.io
+  RELEASE_TYPE: 'patch'  # default release type; can be overridden
+
+jobs:
+  # ---------- Build + Lint ----------
+  build_app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            echo "Configuring npm for Azure Artifacts into project .npmrc"
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+
+            echo "Final .npmrc:"
+            cat .npmrc
+          else
+            echo "AZURE_ARTIFACT_PAT is empty, skipping Azure Artifacts config"
+          fi
+
+      - name: Install dependencies & lint
+        run: |
+          npm ci
+          npm run lint
+
+  # ---------- Release (bump version, CHANGELOG, tag) ----------
+  release:
+    runs-on: ubuntu-latest
+    needs: build_app
+    if: |
+      github.event_name != 'pull_request' && 
+      contains(fromJson('["develop"]'), github.ref_name) &&
+      !startsWith(github.event.head_commit.message, 'chore(release): v')
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global safe.directory ${{ github.workspace }}
+
+      - name: Bump version + CHANGELOG + tag
+        env:
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          echo "Running CI release of type: $RELEASE_TYPE"
+          
+          # Check current version and calculate next version
+          CURRENT_VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "Current version in package.json: $CURRENT_VERSION"
+          
+          # Calculate next version based on release type
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          if [ "$RELEASE_TYPE" = "patch" ]; then
+            NEXT_VERSION="$major.$minor.$((patch + 1))"
+          elif [ "$RELEASE_TYPE" = "minor" ]; then
+            NEXT_VERSION="$major.$((minor + 1)).0"
+          elif [ "$RELEASE_TYPE" = "major" ]; then
+            NEXT_VERSION="$((major + 1)).0.0"
+          else
+            echo "Unknown RELEASE_TYPE: $RELEASE_TYPE"
+            exit 1
+          fi
+          
+          echo "Next version will be: $NEXT_VERSION"
+          
+          # Check if tag already exists locally
+          if git rev-parse "v$NEXT_VERSION" >/dev/null 2>&1; then
+            echo "WARNING: Tag v$NEXT_VERSION already exists locally"
+            echo "Deleting local tag to allow standard-version to recreate it"
+            git tag -d "v$NEXT_VERSION"
+          fi
+          
+          # Check if tag exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/v$NEXT_VERSION$"; then
+            echo "ERROR: Tag v$NEXT_VERSION already exists on remote"
+            echo "This version has already been released. Skipping release."
+            exit 0
+          fi
+
+          # Run standard-version
+          if [ "$RELEASE_TYPE" = "patch" ]; then
+            npm run release:patch:nopush -- -m "chore(release): v%s – CI release $BRANCH_NAME"
+          elif [ "$RELEASE_TYPE" = "minor" ]; then
+            npm run release:minor:nopush -- -m "chore(release): v%s – CI release $BRANCH_NAME"
+          elif [ "$RELEASE_TYPE" = "major" ]; then
+            npm run release:major:nopush -- -m "chore(release): v%s – CI release $BRANCH_NAME"
+          else
+            echo "Unknown RELEASE_TYPE: $RELEASE_TYPE"
+            exit 1
+          fi
+
+          # Show latest tag & commit
+          git describe --tags --abbrev=0 || true
+          git log -1 --oneline
+
+      - name: Push release commit & tags
+        run: |
+          set -euo pipefail
+          echo "Pushing HEAD + tags to origin"
+          git status
+          git log -1 --oneline
+          git push origin HEAD --follow-tags
+
+      - name: Read version
+        id: get_version
+        env:
+          PKG_PATH: ${{ env.PKG_PATH }}
+        run: |
+          VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+  # ---------- Docker build & push (GHCR) - Single Universal Image ----------
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: [build_app, release]
+    if: |
+      always() &&
+      needs.build_app.result == 'success' &&
+      (needs.release.result == 'success' || needs.release.result == 'skipped') &&
+      github.event_name != 'pull_request' &&
+      contains(fromJson('["develop"]'), github.ref_name) &&
+      !startsWith(github.event.head_commit.message, 'chore(release): v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Pull latest changes (including release commit)
+        run: |
+          git pull origin ${{ github.ref_name }}
+          echo "Current commit:"
+          git log -1 --oneline
+          echo "Current version:"
+          cat package.json | grep '"version"'
+          
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure npm for Azure Artifacts
+        env:
+          AZURE_ARTIFACTS_PAT: ${{ secrets.AZURE_ARTIFACT_PAT }}
+        run: |
+          if [ -n "$AZURE_ARTIFACTS_PAT" ]; then
+            {
+              echo ""
+              echo "//pkgs.dev.azure.com/cadai/:_authToken=${AZURE_ARTIFACTS_PAT}"
+              echo "always-auth=true"
+            } >> .npmrc
+          fi
+
+      - name: Build Angular (Production only - runtime config via env vars)
+        run: |
+          set -euo pipefail
+
+          npm ci
+
+          echo "Building Angular with PRODUCTION configuration..."
+          echo "Runtime environment will be injected via Docker env vars at container startup"
+          
+          npm run buildProd
+          
+          echo "Build complete. Files in dist/psx-ng-skeleton/browser/:"
+          ls -la dist/psx-ng-skeleton/browser/ || true
+
+      - name: Read version
+        id: version
+        env:
+          PKG_PATH: ${{ env.PKG_PATH }}
+        run: |
+          VERSION=$(node -p "require('./' + process.env.PKG_PATH).version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      - name: Compute image repo
+        id: image_meta
+        run: |
+          repo="${GITHUB_REPOSITORY,,}"
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.CR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push single universal Docker image
+        uses: docker/build-push-action@v6
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ env.VERSION }}
+            ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest
+
+      - name: Output image tags
+        run: |
+          echo "✅ Pushed Docker images:"
+          echo "   ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:${{ steps.version.outputs.version }}"
+          echo "   ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest"
+          echo ""
+          echo "🚀 Deploy with runtime configuration:"
+          echo "   docker run -d -p 80:80 \\"
+          echo "     -e API_URL='https://[your_app].pxl-codit.com/api' \\"
+          echo "     -e KEYCLOAK_URL='https://keycloak.pxl-codit.com/' \\"
+          echo "     -e ENVIRONMENT='production' \\"
+          echo "     ${{ env.CR_REGISTRY }}/${{ steps.image_meta.outputs.repo }}:latest"

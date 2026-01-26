@@ -1,0 +1,4 @@
+@use '@angular/material' as mat;
+
+// Include core once at app entry (keep here if this file is your global entry)
+@include mat.core();

@@ -1,0 +1,982 @@
+{
+  "not_started": "Non Démarré",
+  "pending": "En Attente",
+  "queued": "En File d'Attente",
+  "started": "Démarré",
+  "waiting": "En Attente",
+  "DASHBOARD_TITLE": "Tableau de bord",
+  "HELLO": "Bonjour",
+  "LANG": "Langue",
+  "LANG_HINT": "Langue utilisée",
+  "SAVE": "Enregistrer",
+  "TEAM_MEMBERS": "Membres de l'équipe",
+  "add_favorite": "Ajouter aux favoris",
+  "workflow": {
+    "saved_workflows": "Workflows enregistrés",
+    "filter": "Filtrer les workflows",
+    "sidebar": {
+      "collapse": "Réduire les workflows",
+      "expand": "Déployer les workflows"
+    },
+    "new": "Nouveau",
+    "save": "Enregistrer",
+    "draft": "Enregistrer comme brouillon",
+    "publish": "Publier",
+    "run": "Exécuter",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "multi_select": "Sélection multiple",
+    "bulk_selected": "{{count}} sélectionnés",
+    "bulk_delete_confirmation": "Supprimer {{count}} workflows ?",
+    "unsaved_changes_title": "Modifications non enregistrées",
+    "unsaved_changes_message": "Vous avez des modifications non enregistrées. Continuer sans enregistrer ?",
+    "delete_confirmation": "Êtes-vous sûr de vouloir supprimer '{{name}}' ?",
+    "no_workflows": "Aucun workflow pour le moment",
+    "create_first": "Créer votre premier workflow",
+    "no_workflow_selected": "Aucun workflow sélectionné",
+    "select_or_create": "Sélectionnez un workflow dans la liste ou créez-en un nouveau pour commencer",
+    "create_new": "Créer un nouveau workflow",
+    "clear_history": "Effacer l'historique",
+    "executions": "Exécutions",
+    "no_history": "Aucune exécution pour le moment",
+    "input": "Entrée",
+    "result": "Résultat",
+    "edge": {
+      "insert": "Insérer un nœud",
+      "delete": "Supprimer le lien"
+    },
+    "view": "Voir",
+    "exit_view": "Quitter la vue",
+    "read_only": "Vue en lecture seule",
+    "version_mismatch": "Version différente du workflow actuel",
+    "version": "Version",
+    "name": "Nom",
+    "node": {
+      "pin": "Épingler les données",
+      "unpin": "Désépingler",
+      "disable": "Désactiver",
+      "enable": "Activer",
+      "replace": "Remplacer",
+      "play_from_here": "Exécuter depuis ici",
+      "pinned": "Épinglé",
+      "disabled": "Désactivé"
+    },
+    "labels": {
+      "already_dropped": "Nœuds existants",
+      "quickAdd": "Connexions"
+    },
+    "runPanel": {
+      "artifacts": "Artéfacts",
+      "auto": "Auto",
+      "cancel_pipe": "Annuler la pipeline",
+      "cancel_stage": "Annuler",
+      "details": "Détails",
+      "empty": "Pas de workflow disponible.",
+      "error": "Erreur",
+      "go_chat": "Aller au chat",
+      "logs": "Logs d'exécution",
+      "payloads": "Payloads des nœuds",
+      "edge_data": "Payloads des liens",
+      "runs": "Exécutions",
+      "node_payloads": "Flux de données",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "connected": "Connecté",
+      "disconnected": "Non connecté",
+      "no_inputs": "Aucune entrée",
+      "no_outputs": "Aucune sortie",
+      "no_payload": "Pas de données",
+      "view": "Voir l'exécution",
+      "fullscreen": "Plein écran",
+      "now_stages": "Pas de file.",
+      "options": "Options",
+      "params": "Paramètres",
+      "preview": "Visualiser",
+      "queued": "En file d'attente",
+      "results": "Résultats",
+      "run": "Lancer le workflow",
+      "running": "En cours d'exécution",
+      "skipped": "Sauté",
+      "submit": "Soumettre",
+      "success": "Réussite",
+      "title": "Panneau d'éxécutions"
+    },
+    "errors": {
+      "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
+      "exactlyOneInput": "Le workflow doit comporter exactement un nœud d'entrée.",
+      "exactlyOneResult": "Le workflow doit comporter exactement un nœud de résultat.",
+      "invalid_fields": "Il reste des champs invalides",
+      "noCompatibleActions": "Aucun nœud disponible",
+      "noDirectInputToResult": "Vous ne pouvez pas relier Entrée directement à Résultat.",
+      "nodeMissingInput": "Le nœud \"{{id}}\" n'a pas de connexion entrante.",
+      "nodeMissingOutput": "Le nœud \"{{id}}\" n'a pas de connexion sortante.",
+      "saveFailed": "Échec de l'enregistrement du workflow.",
+      "invalid_graph": "Le workflow est invalide. Corrigez les liens ou les champs.",
+      "missingPinnedData": "Données amont manquantes. Épinglez ou connectez les entrées avant d'exécuter.",
+      "nodeNotFound": "Nœud introuvable."
+    },
+    "validation": {
+      "missing_inputs": "Entrées manquantes",
+      "missing_outputs": "Sorties manquantes",
+      "invalid_fields": "Champs invalides"
+    },
+    "ports": {
+      "in": "Entrée",
+      "out": "Sortie"
+    },
+    "dialog": {
+      "node_name": "Nom du nœud",
+      "params": "Paramètres",
+      "ports": "Ports",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "add_input": "Ajouter une entrée",
+      "add_output": "Ajouter une sortie",
+      "port_name": "Nom",
+      "port_name_placeholder": "Nom du port",
+      "port_name_help": "Donnez un libellé clair et unique à ce port.",
+      "port_type": "Type",
+      "port_type_placeholder": "Sélectionner un type",
+      "port_type_help": "Utilisé pour valider la compatibilité des connexions.",
+      "required": "Obligatoire",
+      "port_required_help": "Les ports obligatoires doivent être connectés avant d’exécuter.",
+      "port_type_options": {
+        "query_string": "Chaîne de requête",
+        "embeddings": "Embeddings",
+        "json": "JSON",
+        "collection": "Collection",
+        "string": "Texte"
+      }
+    },
+    "palette": {
+      "search": "Rechercher des nœuds"
+    },
+    "toolbox": {
+      "available_nodes": "Nœuds disponibles"
+    },
+    "visibility": {
+      "draft": "Brouillon",
+      "public": "Public"
+    },
+    "kind": {
+      "standard": "Standard",
+      "reusable": "Réutilisable"
+    },
+    "needs_republish": "Doit être republié",
+    "toast": {
+      "draft_saved": "Brouillon enregistré (non publié)",
+      "published": "Workflow publié",
+      "republish_required": "Modifications détectées — republiation requise"
+    },
+    "new_dialog": {
+      "title": "Créer un workflow",
+      "name": {
+        "label": "Nom",
+        "placeholder": "Nom du workflow",
+        "required": "Le nom est requis",
+        "helper": "Choisissez un nom descriptif pour votre workflow"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Que fait ce workflow ?",
+        "helper": "Description optionnelle pour aider les autres à comprendre l'objectif"
+      },
+      "visibility": {
+        "label": "Visibilité publique",
+        "helper": "Lorsqu'activé, ce workflow est visible par tous les utilisateurs. Sinon, c'est un brouillon privé.",
+        "options": {
+          "draft": "Brouillon",
+          "public": "Public"
+        }
+      },
+      "kind": {
+        "label": "Modèle réutilisable",
+        "helper": "Lorsqu'activé, ce workflow peut être réutilisé comme modèle. Sinon, c'est un workflow standard.",
+        "options": {
+          "standard": "Standard",
+          "reusable": "Réutilisable"
+        }
+      },
+      "cancel": "Annuler",
+      "create": "Créer"
+    },
+    "forms": {
+      "vector_store": {
+        "options": {
+          "azure_cosmos_db": "Azure Cosmos DB (vecteurs)",
+          "azure_ai_search": "Azure AI Search",
+          "pinecone": "Pinecone",
+          "qdrant": "Qdrant",
+          "pgvector": "pgvector"
+        }
+      },
+      "embed": {
+        "text": {
+          "label": "Texte à vectoriser",
+          "placeholder": "Collez le texte à vectoriser...",
+          "helper": "Supporte le texte brut ; les fichiers sont définis sur le nœud d'entrée."
+        },
+        "embedding_model": {
+          "label": "Modèle d'embeddings",
+          "helper": "Choisissez le modèle utilisé pour générer le vecteur.",
+          "options": {
+            "openai_small": "text-embedding-3-small (OpenAI)",
+            "openai_large": "text-embedding-3-large (OpenAI)",
+            "local": "all-MiniLM-L6-v2 (local)"
+          }
+        },
+        "normalize_embeddings": {
+          "label": "Normaliser les embeddings (L2)",
+          "helper": "Recommandé pour la similarité cosinus."
+        },
+        "errors": {
+          "text_required": "Le texte est requis",
+          "model_required": "Le modèle est requis"
+        }
+      },
+      "retrieve": {
+        "query": {
+          "label": "Requête",
+          "placeholder": "Que recherchez-vous ?"
+        },
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Où exécuter la recherche de similarité."
+        },
+        "top_k": {
+          "label": "Top K résultats",
+          "helper": "Nombre de correspondances à retourner."
+        },
+        "score_threshold": {
+          "label": "Seuil de score",
+          "helper": "Ignorer les résultats sous ce seuil de similarité."
+        },
+        "include_metadata": {
+          "label": "Inclure les métadonnées",
+          "helper": "Joindre les métadonnées stockées au contenu."
+        },
+        "errors": {
+          "query_required": "La requête est obligatoire"
+        }
+      },
+      "convert_and_chunk": {
+        "text_splitter": {
+          "label": "Découpe du texte",
+          "helper": "Comment découper le document avant le chunking.",
+          "options": {
+            "recursive": "Récursif (recommandé)",
+            "markdown": "Compatible Markdown",
+            "token": "Basé tokens"
+          }
+        },
+        "chunk_size": {
+          "label": "Taille des chunks (car.)",
+          "helper": "Longueur de chaque chunk en caractères."
+        },
+        "chunk_overlap": {
+          "label": "Chevauchement des chunks",
+          "helper": "Nombre de caractères de recouvrement entre chunks."
+        },
+        "clean_whitespace": {
+          "label": "Normaliser les espaces",
+          "helper": "Réduire les espaces doublons et nettoyer les lignes."
+        },
+        "add_source_metadata": {
+          "label": "Conserver les métadonnées source",
+          "helper": "Garder le nom de fichier/page sur chaque chunk."
+        }
+      },
+      "embed_langchain_documents": {
+        "embedding_model": {
+          "label": "Modèle d'embeddings"
+        },
+        "batch_size": {
+          "label": "Taille de lot",
+          "helper": "Nombre de chunks à vectoriser par lot."
+        }
+      },
+      "store_embedded_langchain_documents": {
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Destination de stockage des embeddings."
+        },
+        "collection_name": {
+          "label": "Nom de collection / index",
+          "placeholder": "documents"
+        },
+        "namespace": {
+          "label": "Namespace",
+          "placeholder": "default",
+          "helper": "Namespace logique dans le vector store."
+        },
+        "upsert": {
+          "label": "Upsert sur les ids existants",
+          "helper": "Mettre à jour si l'id existe, sinon insérer."
+        },
+        "errors": {
+          "collection_required": "Le nom de collection est requis"
+        }
+      }
+    }
+  },
+  "status": {
+    "queued": "En file d'attente",
+    "running": "En cours",
+    "success": "Succès",
+    "error": "Erreur",
+    "skipped": "Ignoré"
+  },
+  "chat": "Chat",
+  "compare": "Comparer",
+  "summarize": "Résumer",
+  "extract": "Extraire",
+  "jira": "Jira",
+  "embed": "Vectoriser",
+  "retrieve": "Récupérer",
+  "convert_and_chunk": "Convertir et Segmenter",
+  "embed_langchain_documents": "Vectoriser Documents",
+  "store_embedded_langchain_documents": "Stocker Vecteurs",
+  "ai": {
+    "chat": "Scope du chat",
+    "compare": "Scope de la comparaison",
+    "global": "Scope globale",
+    "max_tokens": "Tokens max",
+    "model": "Modèle",
+    "projects": "Scope des projets",
+    "provider": "Fournisseur",
+    "scope": "Scope",
+    "temperature": "température",
+    "value": "Valeur",
+    "variant": "Variante",
+    "workflows": "Scope des workflows"
+  },
+  "ai_progress": {
+    "chat": "Requête a l'IA",
+    "convert_and_chunk": " Convertion des documents",
+    "embed": "Conversion de la requète en vecteurs",
+    "embed_langchain_documents": "Convertir les documents en vecteurs",
+    "retrieve": "Récupérer les documents pertinents",
+    "store_embedded_langchain_documents": "Stocker les vecteurs des documents"
+  },
+  "ai_settings": "Paramètres AI",
+  "all": "Tous",
+  "apply": "Appliquer",
+  "back": "Retour",
+  "cancel": "Annuler",
+  "chatPage": {
+    "error": {
+      "title": "Échec du chargement"
+    },
+    "loading": "Chargement des modèles...",
+    "noTemplates": {
+      "description": "Aucun modèle n'est actuellement activé ou configuré",
+      "title": "Aucun modèle disponible"
+    },
+    "reload": "Recharger",
+    "retry": "Réessayer",
+    "templateLoader": {
+      "error": "Échec du chargement du modèle",
+      "loading": "Chargement du modèle..."
+    }
+  },
+  "chatTpl": {
+    "acceptedFormats": "Formats acceptés : {{formats}}",
+    "attachFile": "Joindre un fichier",
+    "cancel": "Annuler",
+    "clear": "Effacer la discussion",
+    "delete": "Supprimer le message",
+    "edit": "Modifier le message",
+    "editContent": "Modifier le contenu",
+    "editMessage": "Modifier le message",
+    "empty": "Aucun message. Commencez une conversation !",
+    "emptyState": "Aucun message. Commencez une conversation !",
+    "error": {
+      "emptyMessage": "Le message ne peut pas être vide.",
+      "maxFilesExceeded": "Vous pouvez joindre un maximum de {{maxFiles}} fichiers."
+    },
+    "input": "Saisie de message",
+    "messages": "Messages de discussion",
+    "name": "chat",
+    "placeholder": "Saisissez votre message...",
+    "removeFile": "Supprimer le fichier",
+    "save": "Enregistrer",
+    "scrollToBottom": "Défiler vers le bas",
+    "send": "Envoyer le message",
+    "title": "Discussion",
+    "typing": "En train d'écrire...",
+    "waitingForTasks": "En attente de la fin des tâches en cours..."
+  },
+  "chat_history": "Historique du chat",
+  "clear_all": "Effacer tous",
+  "close": "Fermer",
+  "collection": "Collection",
+  "collection_metadata": "Métadonnées de collection",
+  "common": {
+    "back": "Retour",
+    "home": "Accueil",
+    "signIn": "Se connecter"
+  },
+  "compareTpl": {
+    "added": "Ajouté",
+    "clear": "Tout effacer",
+    "clearFile": "Supprimer le fichier",
+    "comparing": "Comparaison des documents...",
+    "file1": "Premier document",
+    "file2": "Deuxième document",
+    "fileRequired": "Le fichier est requis",
+    "line": "Ligne",
+    "loadedFiles": "Documents chargés",
+    "modified": "Modifié",
+    "noDifferences": "Aucune différence trouvée ! Les documents sont identiques.",
+    "removed": "Supprimé",
+    "results": "Résultats de la comparaison",
+    "similar": "similaire",
+    "start": "Comparer les documents",
+    "title": "Comparaison de documents",
+    "uploading": "Téléchargement du fichier..."
+  },
+  "completed": "Terminé",
+  "configure": "Configurer",
+  "confirm": "Confirmer",
+  "context": "Contexte",
+  "converted_file": "Fichier converti",
+  "created": "Crée a",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "embeddings": "Embeddings",
+  "error": {
+    "403": {
+      "text": "Vous n'avez pas accès à cette page.",
+      "title": "Accès interdit"
+    },
+    "404": {
+      "text": "Nous n'avons pas pu trouver",
+      "title": "Page introuvable"
+    },
+    "failed-to-load-project-artifacts": "Échec du chargement des artéfacts pour le projet {{projectId}}",
+    "failed-to-load-projects": "Échec du chargement des projets",
+    "label": "Erreur",
+    "user_registration_failed": "Échec de l'enregistrement de l'utilisateur"
+  },
+  "export": "Exporter",
+  "exportTpl": {
+    "error": {
+      "copy": "Échec de la copie dans le presse-papiers",
+      "docx": "Échec de l'exportation du document Word",
+      "pdf": "Échec de l'exportation PDF",
+      "txt": "Échec de l'exportation du fichier texte"
+    },
+    "exporting": "Export en cours...",
+    "stages": {
+      "adding_content": "Ajout du contenu...",
+      "adding_keypoints": "Ajout des points clés...",
+      "building_document": "Construction de la structure du document...",
+      "capturing": "Capture d'écran...",
+      "complete": "Exportation terminée !",
+      "copying": "Copie dans le presse-papiers...",
+      "creating_file": "Création du fichier...",
+      "embedding": "Intégration des images...",
+      "finalizing": "Finalisation...",
+      "formatting": "Formatage du document...",
+      "initializing": "Initialisation de l'exportation...",
+      "preparing": "Préparation du document...",
+      "processing": "Traitement du contenu...",
+      "saving": "Enregistrement du fichier..."
+    },
+    "success": {
+      "copy": "Contenu copié dans le presse-papiers !",
+      "docx": "Document Word exporté avec succès !",
+      "pdf": "PDF exporté avec succès !",
+      "txt": "Fichier texte exporté avec succès !"
+    }
+  },
+  "extractResult": {
+    "completed": "Terminé",
+    "error": "Erreur",
+    "failed": "Échec",
+    "not_started": "Non Démarré",
+    "pending": "En Attente",
+    "processing": "En Cours",
+    "queued": "En File d'Attente",
+    "running": "En Cours d'Exécution",
+    "started": "Démarré",
+    "waiting": "En Attente",
+    "details": "Détails de l'Extraction",
+    "entityTypes": "Types d'Entités",
+    "exportResults": "Exporter les Résultats",
+    "filesProcessed": "Fichiers Traités",
+    "noEntitiesFound": "Aucune entité trouvée",
+    "sourceText": "Texte Source",
+    "status": "Statut",
+    "title": "Résultats de l'Extraction",
+    "totalEntities": "Total des Entités",
+    "viewContext": "Voir le Contexte"
+  },
+  "extractTpl": {
+    "clear": "Tout Effacer",
+    "entities": "Types d'Entités",
+    "entitiesHelper": "Saisissez les types d'entités séparés par des virgules",
+    "entitiesPlaceholder": "personne, organisation, lieu, date, email",
+    "entitiesRequired": "Au moins un type d'entité est requis",
+    "exportDocx": "Exporter en DOCX",
+    "exportPdf": "Exporter en PDF",
+    "exportTxt": "Exporter en TXT",
+    "extractionError": "L'extraction a échoué",
+    "filesRequired": "Au moins un fichier ou du texte est requis",
+    "format": "Format de Sortie",
+    "noEntities": "Veuillez spécifier les types d'entités",
+    "noFilesOrText": "Veuillez télécharger des fichiers ou saisir du texte",
+    "options": "Options d'Extraction",
+    "processing": "Extraction des entités...",
+    "selectFormat": "Sélectionnez le format de sortie",
+    "start": "Extraire les Entités",
+    "text": "Saisie de Texte",
+    "textPlaceholder": "Saisissez ou collez le texte pour extraire les entités...",
+    "title": "Extraction d'Entités",
+    "uploadError": "Échec du téléchargement du fichier",
+    "uploadFiles": "Télécharger des Fichiers",
+    "uploading": "Téléchargement des fichiers..."
+  },
+  "failed": "Échoué",
+  "favorites": {
+    "add-all": "Tout Ajouter aux Favoris",
+    "add-all-sessions": "Ajouter Toutes les Sessions",
+    "add-all-sessions-message": "Ajouter toutes les {{count}} sessions à vos favoris ?",
+    "added": "Ajouté aux favoris",
+    "categories": {
+      "chats": "Discussions",
+      "comparisons": "Comparaisons",
+      "extracts": "Extraits",
+      "other": "Autre",
+      "projects": "Projets",
+      "sessions": "Sessions",
+      "summaries": "Résumés"
+    },
+    "clear-all": "Tout Effacer",
+    "cleared": "Tous les favoris ont été supprimés",
+    "confirm-clear-message": "Êtes-vous sûr de vouloir supprimer tous les {{count}} favoris ? Cette action est irréversible.",
+    "confirm-clear-title": "Effacer Tous les Favoris",
+    "confirm-remove-message": "Êtes-vous sûr de vouloir retirer \"{{title}}\" de vos favoris ?",
+    "confirm-remove-title": "Retirer le Favori",
+    "empty": {
+      "description": "Commencez à ajouter des pages à vos favoris pour y accéder rapidement !",
+      "title": "Aucun Favori"
+    },
+    "error": {
+      "failed-to-load": "Échec du chargement des favoris",
+      "unknown": "Une erreur s'est produite avec les favoris"
+    },
+    "item": "élément",
+    "items": "éléments",
+    "my-favorites": "Mes Favoris",
+    "remove": "Retirer le favori",
+    "removed": "Retiré des favoris"
+  },
+  "file": "Fichier",
+  "filter": "Filtrer",
+  "filter_document_publication_datetime": "Filtrer par date de publication",
+  "form": {
+    "actions": {
+      "addFiles": "Ajouter des fichiers",
+      "browse": "Parcourir",
+      "clear": "Vider",
+      "dropFilesHere": "Déposez les fichiers ici (ou cliquez pour parcourir)",
+      "dropHere": "Déposez les fichiers ici",
+      "or": "ou",
+      "remove": "Supprimer",
+      "replaceFile": "Remplacer le fichier"
+    },
+    "errors": {
+      "country": {
+        "invalid": "Sélectionnez un pays.",
+        "notAllowed": "La valeur sélectionnée n'est pas autorisée.",
+        "required": "Le pays est obligatoire."
+      },
+      "dob": {
+        "dateNotAllowed": "Cette date n'est pas autorisée.",
+        "format": "Format de date invalide : {{text}}",
+        "maxDate": "La date doit être antérieure ou égale au {{max}}.",
+        "minDate": "La date doit être postérieure ou égale au {{min}}.",
+        "parse": "Date invalide : {{text}}",
+        "pattern": "Date invalide : {{text}}",
+        "required": "La date est obligatoire."
+      },
+      "email": {
+        "domain": "Le domaine de l'e-mail doit contenir un point (ex. exemple.com).",
+        "invalid": "Entrez une adresse e-mail valide.",
+        "maxlength": "L'e-mail ne peut pas dépasser {{requiredLength}} caractères.",
+        "required": "L'e-mail est obligatoire.",
+        "tld": "L'extension de domaine doit comporter au moins 2 lettres."
+      },
+      "file": {
+        "accept": "Ce champ accepte uniquement les types suivants : {{requiredTypes}}.",
+        "maxFileSize": "Taille maximale de fichier autorisée : {{requiredLength}}.",
+        "maxFiles": "Nombre maximal de fichiers autorisés : {{requiredLength}} (vous en avez sélectionné {{actualLength}}).",
+        "maxTotalSize": "Taille totale maximale autorisée : {{requiredLength}}.",
+        "required": "Ce champ est obligatoire."
+      },
+      "fixFields": "Veuillez fixer les blocks surlignés.",
+      "fullname": {
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "required": "Le champ est obligatoire."
+      },
+      "input": {
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "required": "Le champ est obligatoire."
+      },
+      "name": {
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "required": "Le champ est obligatoire."
+      },
+      "notify": {
+        "invalid": "Activez les notifications.",
+        "required": "L'option de notification est obligatoire."
+      },
+      "password": {
+        "digit": "Incluez au moins un chiffre.",
+        "maxlength": "Le mot de passe ne peut pas dépasser {{requiredLength}} caractères.",
+        "minlength": "Au moins {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "required": "Le mot de passe est obligatoire.",
+        "special": "Incluez au moins un caractère spécial.",
+        "uppercase": "Incluez au moins une majuscule."
+      },
+      "phone": {
+        "invalid": "Entrez un numéro de téléphone valide (ex. +35212345678).",
+        "phoneDigitsLen": "Le numéro doit comporter entre {{min}} et {{max}} chiffres (actuellement {{actual}}).",
+        "required": "Le numéro de téléphone est obligatoire."
+      },
+      "prompt": {
+        "invalidChars": "Seules les lettres, chiffres, _ - . et espaces sont autorisés (invalide : \"{{char}}\").",
+        "maxlength": "Maximum {{requiredLength}} caractères autorisés.",
+        "minlength": "Minimum {{requiredLength}} caractères (vous en avez saisi {{actualLength}}).",
+        "required": "Le champ est obligatoire."
+      },
+      "role": {
+        "required": "Le rôle est obligatoire."
+      },
+      "tags": {
+        "invalid": "Sélectionnez un tag.",
+        "minOne": "Veuillez en sélectionner au moins un.",
+        "required": "Les tags sont obligatoires."
+      },
+      "textarea": {
+        "invalidChars": "Caractère non pris en charge : {{char}}",
+        "maxlength": "Veuillez rester sous {{requiredLength}} caractères (actuellement {{actualLength}}).",
+        "minlength": "Ajoutez au moins {{requiredLength}} caractères (vous en avez {{actualLength}})."
+      },
+      "threshold": {
+        "required": "Sensibilité requise."
+      },
+      "volume": {
+        "max": "Le maximum est {{max}} (actuel {{actual}}).",
+        "min": "Le minimum est {{min}} (actuel {{actual}}).",
+        "required": "Le volume est obligatoire."
+      }
+    },
+    "files": {
+      "count": "{{count}} Fichiers"
+    },
+    "hints": {
+      "country": "Votre pays de résidence",
+      "dob": "Format : AAAA-MM-JJ",
+      "dropAccepted": "Types acceptés : {{types}}",
+      "email": "Doit être une adresse e-mail valide",
+      "file": "Séléction de fichiers",
+      "input": "Texte libre",
+      "notify": "Recevoir des alertes et notifications",
+      "password": "Au moins 8 caractères, dont un chiffre",
+      "phone": "Inclure l'indicatif du pays",
+      "role": "Rôle de l'utilisateur dans l'application",
+      "tags": "Séparez par des virgules",
+      "textarea": "Maximum {{max}} caractères.",
+      "threshold": "Ajustez entre 0 et 100",
+      "volume": "Ajustez entre 0 et 200"
+    },
+    "labels": {
+      "country": "Pays",
+      "dob": "Date de naissance",
+      "email": "E-mail",
+      "file": "Fichier",
+      "files": "Fichiers",
+      "fullname": "Nom complet",
+      "input": "Texte",
+      "language": "Langue",
+      "name": "Nom",
+      "notify": "Notifications",
+      "password": "Mot de passe",
+      "phone": "Téléphone",
+      "price": "Prix",
+      "role": "Rôle",
+      "tags": "Tags",
+      "textarea": "Zone de texte",
+      "themeSwitcher": "Thème",
+      "threshold": "Sensibilité",
+      "volume": "Volume"
+    },
+    "placeholders": {
+      "country": "Sélectionnez un pays",
+      "dob": "Sélectionnez une date",
+      "email": "Entrez votre e-mail",
+      "file": "Charger un(des) fichier",
+      "fullname": "Entrez le nom complet",
+      "input": "Saisissez un texte",
+      "name": "Nom...",
+      "notify": "Activer les notifications",
+      "password": "Entrez votre mot de passe",
+      "phone": "Entrez votre numéro de téléphone",
+      "price": "Entrez le prix",
+      "role": "Sélectionnez un rôle",
+      "tags": "Ajouter des tags",
+      "textarea": "Écrivez votre texte...",
+      "threshold": "Sensibilité ...",
+      "volume": "Régler le volume"
+    }
+  },
+  "in": "entrée",
+  "input": "Entrée",
+  "jump_to_view": "Aller à la vue",
+  "langchain_documents": "Documents Langchain",
+  "languages": {
+    "en": "Anglais",
+    "fr": "Français",
+    "nl": "Néerlandais"
+  },
+  "llm_response": "Réponse LLM",
+  "loading": "Chargement...",
+  "name": "Nom",
+  "nav": {
+    "admin": "Admin",
+    "components": "GenAI Composants",
+    "dashboard": "GenAI Tableau de bord",
+    "genai-admin": "GenAI Admin",
+    "genai-chat": "GenAI Chat",
+    "genai-compare": "GenAI Comparer",
+    "genai-favorites": "GenAI Favoris",
+    "genai-projects": "GenAI Projets",
+    "genai-sessions": "GenAI Session : {{name}}",
+    "genai-workflows": "GenAI Flux de travail",
+    "reports": "GenAI Rapports",
+    "team": "GenAI Forms"
+  },
+  "navigation_home": "Naviguer vers la page d'accueil",
+  "navigationTitle": "Menu",
+  "new-session": "Nouvelle Session",
+  "new_workflow": "Nouveau Workflow",
+  "out": "sortie",
+  "paginator": {
+    "firstPage": "Première page",
+    "itemsPerPage": "Éléments par page",
+    "lastPage": "Dernière page",
+    "nextPage": "Page suivante",
+    "previousPage": "Page précédente",
+    "rangeLabel": "{{start}} - {{end}} sur {{total}}"
+  },
+  "processing": "En traitement",
+  "projects": {
+    "clearFilters": "Effacer les filtres",
+    "create-first": "Créer votre premier projet",
+    "create-new": "Nouveau Projet",
+    "delete": {
+      "confirm-message": "Êtes-vous sûr de vouloir supprimer le projet \"{{name}}\" ? Cette action est irréversible.",
+      "confirm-title": "Confirmer la suppression",
+      "error": "Échec de la suppression de \"{{title}}\"",
+      "success": "Projet \"{{title}}\" supprimé avec succès"
+    },
+    "delete-success": "Projet \"{{title}}\" supprimé avec succès",
+    "designed-workflows": "Workflows Conçus",
+    "details": {
+      "add-files": "Ajouter des Fichiers",
+      "compare": "Historique Comparaison",
+      "confirm-delete": "Supprimer \"{{title}}\" ?",
+      "confirm-remove-member": "Retirer {{name}} de ce projet ?",
+      "confirm-rename-message": "Êtes-vous sûr de vouloir renommer \"{{oldTitle}}\" en \"{{newTitle}}\" ?",
+      "confirm-rename-title": "Confirmer le renommage",
+      "delete": "Supprimer",
+      "designed-steps": "Étapes Conçues",
+      "download": "Télécharger",
+      "draft": "Brouillon",
+      "edit": "Modifier",
+      "email-placeholder": "utilisateur@entreprise.com",
+      "extract": "Historique Extraction",
+      "file-actions": "Actions de fichier",
+      "invite-email": "Inviter par email",
+      "invite-member": "Inviter un membre",
+      "make-member": "Définir comme membre",
+      "make-owner": "Promouvoir propriétaire",
+      "member-actions": "Actions membre",
+      "no-chat-history": "Aucun historique de chat disponible",
+      "no-compare-history": "Aucun historique de comparaison disponible",
+      "no-extract-history": "Aucun historique d'extraction disponible",
+      "no-files": "Aucun fichier téléchargé",
+      "no-members": "Aucun membre ajouté",
+      "no-sessions": "Aucune session disponible",
+      "no-summarize-history": "Aucun historique de résumé disponible",
+      "no-workflows": "Aucun workflow disponible",
+      "older": "Plus ancien",
+      "open": "Ouvrir",
+      "pastWeek": "La semaine dernière",
+      "publish": "Publier",
+      "published": "Publié",
+      "remove-member": "Retirer le membre",
+      "send-invite": "Envoyer l'invitation",
+      "status": "Statut",
+      "subtitle": "Voir et gérer le projet",
+      "summarize": "Historique Résumé",
+      "tabs": {
+        "chat": "Historique Chat",
+        "compare": "Historique Comparaison",
+        "extract": "Historique Extraction",
+        "files": "Atéfacts",
+        "members": "Membres",
+        "sessions": "Mes Sessions",
+        "summarize": "Historique Résumé",
+        "workflows": "Workflows"
+      },
+      "title": "Détails : {{name}}",
+      "title-updated": "Titre de la session mis à jour avec succès",
+      "today": "Aujourd'hui",
+      "updated": "Mis à jour",
+      "view": "Voir",
+      "workflows-pagination": "Pagination des workflows",
+      "yesterday": "Hier"
+    },
+    "error": {
+      "delete-failed": "Échec de la suppression de {{title}}",
+      "failed-to-create-session": "Échec de la création de la session",
+      "failed-to-load": "Échec du chargement des détails du projet",
+      "failed-to-load-session": "Échec du chargement des détails de la session",
+      "failed-to-load-templates": "Échec du chargement des modèles",
+      "failed-to-update-title": "Échec de la mise à jour du titre de la session",
+      "failed-to-upload-artifacts": "Échec du téléchargement des artéfacts",
+      "no-files-selected": "Aucun fichier sélectionné",
+      "not-found": "Projet introuvable",
+      "session-not-found": "Session introuvable",
+      "workflow-status-polling-failed": "Échec de l'interrogation du statut du workflow"
+    },
+    "files": "Fichiers du Projet",
+    "id": "ID",
+    "members": "Membres",
+    "no-projects": "Aucun projet disponible",
+    "no-projects-description": "Commencez par créer votre premier projet pour organiser vos workflows et fichiers GenAI",
+    "open": "Ouvrir le projet",
+    "orderBy": {
+      "id": "ID",
+      "label": "Trier par",
+      "name": "Nom",
+      "placeholder": "Trier par"
+    },
+    "owners": "Propriétaires",
+    "pagination": "Pagination des projets",
+    "published-workflows": "Workflows Publiés",
+    "search": {
+      "label": "Rechercher",
+      "placeholder": "Rechercher par nom ou ID..."
+    },
+    "subtitle": "Gérez et organisez vos projets GenAI",
+    "success": {
+      "artifacts-uploaded": "Artéfacts téléchargés avec succès"
+    },
+    "total": "Total",
+    "users": "Utilisateurs"
+  },
+  "query_string": "Chaîne de requête",
+  "quick_settings": "Paramètres rapides",
+  "refresh": "Rafraichir",
+  "remove_favorite": "Retirer des favoris",
+  "response": "Réponse",
+  "result": "Résultat",
+  "retrieved_documents": "Documents récupérés",
+  "role": "Rôle",
+  "run-panel": "Panneau d'éxécutions",
+  "running": "En cours",
+  "selection": "Sélection",
+  "source_file": "Fichier source",
+  "summarizeTpl": {
+    "addMore": "Ajouter plus de fichiers",
+    "clear": "Tout effacer",
+    "copied": "Copié !",
+    "copy": "Copier dans le presse-papiers",
+    "exportDocx": "Exporter en DOCX",
+    "exportError": {
+      "docx": "Échec de l'exportation DOCX. Veuillez réessayer.",
+      "pdf": "Échec de l'exportation PDF. Veuillez réessayer.",
+      "txt": "Échec de l'exportation TXT. Veuillez réessayer."
+    },
+    "exportPdf": "Exporter en PDF",
+    "exportSuccess": {
+      "copy": "Résumé copié dans le presse-papiers !",
+      "docx": "Résumé exporté en DOCX avec succès !",
+      "pdf": "Résumé exporté en PDF avec succès !",
+      "txt": "Résumé exporté en TXT avec succès !"
+    },
+    "exportTxt": "Exporter en TXT",
+    "filesRequired": "Au moins un fichier est requis",
+    "keyPoints": "Points clés",
+    "language": "Langue",
+    "length": "Longueur du résumé",
+    "lengths": {
+      "long": "Détaillé",
+      "medium": "Moyen",
+      "short": "Court"
+    },
+    "newSummary": "Nouveau résumé",
+    "options": "Options de résumé",
+    "processedIn": "Traité en",
+    "processing": "Génération du résumé...",
+    "removeFile": "Supprimer le fichier",
+    "results": "Résultats du résumé",
+    "selectLanguage": "Sélectionner la langue",
+    "selectLength": "Sélectionner la longueur",
+    "selectStyle": "Sélectionner le style",
+    "sourceFiles": "Documents source",
+    "start": "Générer le résumé",
+    "statistics": "Statistiques",
+    "style": "Style de résumé",
+    "styles": {
+      "bullets": "Points de liste",
+      "executive": "Résumé exécutif",
+      "paragraph": "Paragraphe"
+    },
+    "summaryText": "Résumé",
+    "title": "Résumé de document",
+    "uploadFiles": "Télécharger des documents",
+    "uploading": "Téléchargement des fichiers...",
+    "wordCount": {
+      "original": "Mots originaux",
+      "reduction": "Réduction",
+      "summary": "Mots du résumé"
+    }
+  },
+  "system_prompt": "Prompt système",
+  "table": {
+    "columns": "Colonnes",
+    "filter": "Filtrer",
+    "filter.contains": "Contient",
+    "hint": {
+      "reorder": "Glissez les en-têtes pour réordonner"
+    },
+    "paginator": {
+      "firstPage": "Première page",
+      "itemsPerPage": "Éléments par page",
+      "lastPage": "Dernière page",
+      "nextPage": "Page suivante",
+      "prevPage": "Page précédente",
+      "range": "{{start}}–{{end}} sur {{length}}",
+      "rangeEmpty": "0 sur {{length}}"
+    },
+    "searchPlaceholder": "Rechercher…"
+  },
+  "threshold": "Threshold",
+  "tip": "Astuce",
+  "toggle": "Plier",
+  "toolbox": "Boite a outils",
+  "untoggle": "Déplier",
+  "user_prompt": "Prompt utilisateur",
+  "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d'un nœud (source), puis sur le port gauche d'un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options."
+}

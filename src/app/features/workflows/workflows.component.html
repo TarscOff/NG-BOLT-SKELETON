@@ -1,0 +1,151 @@
+<!-- SEO -->
+<app-seo [pageTitle]="'nav.genai-workflows' | translate"
+    [description]="'This is the workflow builder of the AI product app.'" [keywords]="'workflows, workflow builder, ai'"
+    (titleChange)="onTitleChange($event)">
+</app-seo>
+
+<mat-sidenav-container class="workflow-shell" [hasBackdrop]="true" (backdropClick)="sidebarCollapsed.set(true)">
+    <mat-sidenav class="workflow-sidebar panel" position="end" mode="over" [opened]="!sidebarCollapsed()"
+        [fixedInViewport]="true">
+        <div class="sidebar-header">
+            <button mat-icon-button (click)="toggleSidebar()" [matTooltip]="'workflow.sidebar.collapse' | translate">
+                <mat-icon>close</mat-icon>
+            </button>
+            <h3>{{ 'workflow.saved_workflows' | translate }}</h3>
+            <span class="spacer"></span>
+            <button mat-icon-button [color]="multiSelectMode() ? 'primary' : undefined"
+                (click)="toggleMultiSelect()" [matTooltip]="'workflow.multi_select' | translate">
+                <mat-icon>{{ multiSelectMode() ? 'checklist' : 'playlist_add_check' }}</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" [matTooltip]="'workflow.new' | translate"
+                (click)="openNewWorkflowDialog()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+
+        @if (workflows().length === 0) {
+        <div class="empty-state">
+            <mat-icon>folder_open</mat-icon>
+            <p>{{ 'workflow.no_workflows' | translate }}</p>
+            <button mat-flat-button color="primary" (click)="openNewWorkflowDialog()">
+                <mat-icon>add</mat-icon>
+                {{ 'workflow.create_first' | translate }}
+            </button>
+        </div>
+        } @else {
+        <app-dynamic-form [form]="filterForm" [config]="filterFieldConfig"></app-dynamic-form>
+        @if (multiSelectMode()) {
+        <div class="bulk-actions">
+            <span class="bulk-count">{{ 'workflow.bulk_selected' | translate:{ count: selectedWorkflowCount() } }}</span>
+            <button mat-flat-button (click)="bulkDuplicate()" [disabled]="selectedWorkflowCount() === 0">
+                <mat-icon>content_copy</mat-icon>
+                {{ 'workflow.duplicate' | translate }}
+            </button>
+            <button mat-flat-button color="warn" (click)="bulkDelete()" [disabled]="selectedWorkflowCount() === 0">
+                <mat-icon>delete</mat-icon>
+                {{ 'workflow.delete' | translate }}
+            </button>
+            <button mat-flat-button (click)="bulkSetKind('standard')" [disabled]="selectedWorkflowCount() === 0">
+                <mat-icon>description</mat-icon>
+                {{ 'workflow.kind.standard' | translate }}
+            </button>
+            <button mat-flat-button (click)="bulkSetKind('reusable')" [disabled]="selectedWorkflowCount() === 0">
+                <mat-icon>layers</mat-icon>
+                {{ 'workflow.kind.reusable' | translate }}
+            </button>
+            <button mat-icon-button (click)="clearWorkflowSelection()" [disabled]="selectedWorkflowCount() === 0"
+                [matTooltip]="'close' | translate">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+        }
+        <div class="workflows-list">
+            @for (wf of filteredWorkflows(); track wf.id) {
+            <div class="workflow-card" [class.active]="selectedWorkflow()?.id === wf.id"
+                [class.needs-republish]="wf.needsRepublish" (click)="selectWorkflow(wf.id)"
+                (keydown)="onWorkflowCardKeydown(wf.id, $event)" role="button" tabindex="0"
+                [attr.aria-label]="wf.name">
+
+                <div class="card-header">
+                    @if (multiSelectMode()) {
+                    <mat-checkbox class="workflow-select" (click)="$event.stopPropagation()"
+                        [checked]="selectedWorkflowIds().has(wf.id)"
+                        (change)="toggleWorkflowSelection(wf.id)">
+                    </mat-checkbox>
+                    }
+                    <div class="workflow-icon" [class.reusable]="wf.kind === 'reusable'"
+                        [class.standard]="wf.kind !== 'reusable'">
+                        <mat-icon>{{ wf.kind === 'reusable' ? 'layers' : 'description' }}</mat-icon>
+                    </div>
+                    <div class="workflow-info">
+                        <h4 class="workflow-name">{{ wf.name }}</h4>
+                        <span class="workflow-date">{{ wf.updatedAt | date:'short' }}</span>
+                    </div>
+                </div>
+
+                <div class="card-badges">
+                    <ng-container *ngIf="wf.needsRepublish">
+                        <span class="badge badge-warn needs-republish"
+                            matTooltip="{{ 'workflow.needs_republish' | translate }}">
+                            <mat-icon>error_outline</mat-icon>
+                            {{ 'workflow.needs_republish' | translate }}
+                        </span>
+                    </ng-container>
+                    <span class="badge" [class.badge-primary]="wf.visibility === 'public'"
+                        [class.badge-muted]="wf.visibility !== 'public'"
+                        [matTooltip]="('workflow.visibility.' + (wf.visibility || 'draft')) | translate">
+                        <mat-icon>{{ wf.visibility === 'public' ? 'public' : 'lock' }}</mat-icon>
+                        <span>{{ ('workflow.visibility.' + (wf.visibility || 'draft')) | translate }}</span>
+                    </span>
+                    <span class="badge" [class.badge-accent]="wf.kind === 'reusable'"
+                        [class.badge-muted]="wf.kind !== 'reusable'"
+                        [matTooltip]="('workflow.kind.' + (wf.kind || 'standard')) | translate">
+                        <mat-icon>{{ wf.kind === 'reusable' ? 'layers' : 'description' }}</mat-icon>
+                        <span>{{ ('workflow.kind.' + (wf.kind || 'standard')) | translate }}</span>
+                    </span>
+                </div>
+
+                <div class="card-actions">
+                    <button mat-icon-button (click)="duplicateWorkflow(wf.id, $event)"
+                        [matTooltip]="'workflow.duplicate' | translate" class="action-btn">
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteWorkflow(wf.id, $event)"
+                        [matTooltip]="'workflow.delete' | translate" class="action-btn">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </mat-sidenav>
+
+    <mat-sidenav-content class="workflow-main">
+        @if (sidebarCollapsed()) {
+        <button mat-mini-fab class="sidebar-toggle" color="primary" (click)="toggleSidebar()"
+            [matTooltip]="'workflow.sidebar.expand' | translate">
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+        }
+
+        @if (selectedWorkflow()) {
+        <app-workflow-canvas-df [workflowId]="selectedWorkflow()?.id" [nodes]="canvasNodes()"
+            [executableNodes]="execTypes()" [edges]="canvasEdges()" [actionsNodes]="actionsNodes"
+            [availableActions]="availableActions()" [disabled]="false"
+            [workflowName]="selectedWorkflow()?.name" (OnCanvasChange)="onChange($any($event))"
+            (selectionChange)="onSelectionChange($event)" (validationChange)="onValidation($event)"
+            (workflowNameChange)="onWorkflowNameChange($event)"></app-workflow-canvas-df>
+        } @else {
+        <div class="workflow-empty-state">
+            <mat-icon>draw</mat-icon>
+            <h2>{{ 'workflow.no_workflow_selected' | translate }}</h2>
+            <p>{{ 'workflow.select_or_create' | translate }}</p>
+            <button mat-flat-button color="primary" (click)="openNewWorkflowDialog()">
+                <mat-icon>add</mat-icon>
+                {{ 'workflow.create_new' | translate }}
+            </button>
+        </div>
+        }
+    </mat-sidenav-content>
+</mat-sidenav-container>

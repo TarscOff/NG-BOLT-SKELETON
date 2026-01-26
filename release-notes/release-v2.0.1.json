@@ -1,0 +1,141 @@
+{
+  "version": "2.0.1",
+  "tag": "v2.0.1",
+  "previousTag": "v2.0.0",
+  "date": "2025-12-04T13:39:49.483Z",
+  "stats": {
+    "features": 0,
+    "fixes": 2,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 2,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "a95eb10",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "db07ab8",
+        "type": "fix",
+        "scope": "ciCd",
+        "subject": "fixing ci-cd",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "1824eff",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.1 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f747602",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.0",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "4af91f5",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1892: fix ci",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "6dd7630",
+        "type": "other",
+        "scope": null,
+        "subject": "Merged PR 1875: fix ci",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "1824eff54fabfde30a88acd00cb5419349433961",
+      "shortHash": "1824eff",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.1 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4af91f581c9e9b63473634bd02c71777842dcd69",
+      "shortHash": "4af91f5",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1892: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "a95eb108e2642df73af06a0d49b97f385751f22c",
+      "shortHash": "a95eb10",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "db07ab8d963a1718abedae4e8e76aa15eaf08338",
+      "shortHash": "db07ab8",
+      "type": "fix",
+      "scope": "ciCd",
+      "subject": "fixing ci-cd",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "6dd7630d4fc5396698c2c1126bea1652375bd9d6",
+      "shortHash": "6dd7630",
+      "type": "other",
+      "scope": null,
+      "subject": "Merged PR 1875: fix ci",
+      "breaking": false,
+      "notes": [],
+      "body": "fix ci"
+    },
+    {
+      "hash": "f747602485548d1448f685c271db6d35757ef3ae",
+      "shortHash": "f747602",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.0",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

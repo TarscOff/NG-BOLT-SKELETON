@@ -1,0 +1,538 @@
+{
+  "version": "1.9.5",
+  "tag": "v1.9.5",
+  "previousTag": "v1.9.4",
+  "date": "2025-12-02T14:47:11.494Z",
+  "stats": {
+    "features": 3,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 18,
+    "tests": 0,
+    "others": 6,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "9162ea3",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cddd33a",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "13064a9",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "e7f8b2b",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.4",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "7dd130b",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.5",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "7451657",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9998fbe",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d479d06",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f1d0d0d",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5074668",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8c20534",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "c3d45fd",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b70a5a3",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "11bb76c",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b405268",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c2b87d",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bf1e11b",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4c816ec",
+        "type": "chore",
+        "scope": "core",
+        "subject": "fixing github config",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fa02b5f",
+        "type": "chore",
+        "scope": "core",
+        "subject": "rebasing on develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "f1c363a",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fcf3b35",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "bab9262",
+        "type": "chore",
+        "scope": "core",
+        "subject": "workflow designer implementation",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "4b98157",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #5 from TarikHaddadi/master",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "84c2cfc",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #4 from TarikHaddadi/develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d85bb75",
+        "type": "other",
+        "scope": null,
+        "subject": "Create main.yml",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "0b81471",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #3 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "533fb13",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #2 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "5d14649",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #1 from TarikHaddadi/feat/796-FormBuilder",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "7dd130b279a274dbd9c74c00c43acd1412659626",
+      "shortHash": "7dd130b",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "745165721b4d0d9134e53bd5de01fb379f39d79d",
+      "shortHash": "7451657",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9998fbeb9460f9ad92d08442b8bd92e2087649ef",
+      "shortHash": "9998fbe",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d479d0600e690fdc5fec3778e3bda08c549410d4",
+      "shortHash": "d479d06",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f1d0d0d6ccacfe83f9411d2d9a285990ef160461",
+      "shortHash": "f1d0d0d",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5074668c0647738da610290d529144bf86e458f6",
+      "shortHash": "5074668",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "8c20534fd47aeb2eed2ca422aa0ed1b2aa7ca455",
+      "shortHash": "8c20534",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c3d45fd0edbe9fd30bafb07ec1023c4a34bac81c",
+      "shortHash": "c3d45fd",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b70a5a32d627dce53377c486d5bca922f88d9b41",
+      "shortHash": "b70a5a3",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "11bb76c685e988d7f3ebc2b9f28d8e17c5d38c62",
+      "shortHash": "11bb76c",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b405268e8ed92923e0c64ea37f15db9dfb137ee4",
+      "shortHash": "b405268",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4c2b87d07611894b0b6ba2455ae39cdb5830ef3d",
+      "shortHash": "4c2b87d",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bf1e11b86fdb41228d8ed091c9910bb79fbcf197",
+      "shortHash": "bf1e11b",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4c816ece47482affc539ad2ffc0b7aad7f38a7c2",
+      "shortHash": "4c816ec",
+      "type": "chore",
+      "scope": "core",
+      "subject": "fixing github config",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fa02b5ff9dc64c003484140f7952b0571951234e",
+      "shortHash": "fa02b5f",
+      "type": "chore",
+      "scope": "core",
+      "subject": "rebasing on develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4b9815749d7dd89ee9c30b922322ef695f2f0fef",
+      "shortHash": "4b98157",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #5 from TarikHaddadi/master",
+      "breaking": false,
+      "notes": [],
+      "body": "merge"
+    },
+    {
+      "hash": "84c2cfc1a0113adc565c24e9ee3fb2b2e5bca75d",
+      "shortHash": "84c2cfc",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #4 from TarikHaddadi/develop",
+      "breaking": false,
+      "notes": [],
+      "body": "Develop"
+    },
+    {
+      "hash": "d85bb75fc6f1850b8f207fbb706464de64a9d8cb",
+      "shortHash": "d85bb75",
+      "type": "other",
+      "scope": null,
+      "subject": "Create main.yml",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0b81471c1addf7ceb80b66411b8174c27e5402c3",
+      "shortHash": "0b81471",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #3 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "f1c363aec3a814d3f8d2751a547f329575e438e3",
+      "shortHash": "f1c363a",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fcf3b35705119c529b90c47609480bdce38d749e",
+      "shortHash": "fcf3b35",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bab92621dc27a13f3c59f173144bf69a980ee980",
+      "shortHash": "bab9262",
+      "type": "chore",
+      "scope": "core",
+      "subject": "workflow designer implementation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9162ea3f2d71285f4c58014b0027dc9badf48294",
+      "shortHash": "9162ea3",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "cddd33a98a84c932e2673c8220416476925937f5",
+      "shortHash": "cddd33a",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "533fb1388dc213f2b7e92943fc3aff48affdf8d4",
+      "shortHash": "533fb13",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #2 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    },
+    {
+      "hash": "13064a9f7d91c2ecd598668bb8314c592b7c145b",
+      "shortHash": "13064a9",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "e7f8b2b6c6acb3a5d1ee2d6986f6b36e8eb26e2b",
+      "shortHash": "e7f8b2b",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "5d146494ae79770cc423c8876131a46302b54efc",
+      "shortHash": "5d14649",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #1 from TarikHaddadi/feat/796-FormBuilder",
+      "breaking": false,
+      "notes": [],
+      "body": "Feat/796 form builder"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "version": "1.9.4",
+  "tag": "v1.9.4",
+  "previousTag": "v1.9.2",
+  "date": "2025-11-03T16:41:36.850Z",
+  "stats": {
+    "features": 2,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 1,
+    "chores": 1,
+    "tests": 0,
+    "others": 0,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "c3b251a",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates + refactoring code",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "de351f3",
+        "type": "feat",
+        "scope": "templating",
+        "subject": "creating workflows dynanic templates",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [
+      {
+        "hash": "779f7f2",
+        "type": "docs",
+        "scope": "release",
+        "subject": "add JSON notes for v1.9.2",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "chores": [
+      {
+        "hash": "cf8ddaa",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v1.9.4",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "cf8ddaaef9227c217ec5179a255104d504d5d174",
+      "shortHash": "cf8ddaa",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v1.9.4",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c3b251aad093c62efcb75401c06da27bf35e2d19",
+      "shortHash": "c3b251a",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates + refactoring code",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "de351f34bfe79113b6ff687ef632bdb1419f9af9",
+      "shortHash": "de351f3",
+      "type": "feat",
+      "scope": "templating",
+      "subject": "creating workflows dynanic templates",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "779f7f2d543a17baacd093500e8619f5415c1a53",
+      "shortHash": "779f7f2",
+      "type": "docs",
+      "scope": "release",
+      "subject": "add JSON notes for v1.9.2",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
