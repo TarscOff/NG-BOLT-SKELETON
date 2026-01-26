@@ -1,0 +1,27 @@
+<div class="run-view">
+  <div class="run-view-header">
+    <div class="run-view-title">
+      <mat-icon>visibility</mat-icon>
+      <span>{{ 'workflow.runPanel.view' | translate }}</span>
+      <span class="divider">•</span>
+      <span class="name">{{ workflowName }}</span>
+    </div>
+    <button mat-icon-button (click)="close()" [matTooltip]="'close' | translate">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="run-view-content accent">
+    <app-workflow-canvas-df
+      class="run-view-canvas"
+      [workflowId]="run.id"
+      [nodes]="nodes"
+      [edges]="edges"
+      [actionsNodes]="actionsNodes"
+      [availableActions]="availableActions"
+      [executableNodes]="executableNodes"
+      [disabled]="true"
+      [workflowName]="workflowName">
+    </app-workflow-canvas-df>
+  </div>
+</div>

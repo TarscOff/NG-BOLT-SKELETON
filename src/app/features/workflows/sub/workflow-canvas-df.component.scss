@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 100px);
+  height: 100%;
 }
 
 ::ng-deep html.dark .pan-zoom {
@@ -16,19 +17,16 @@
 }
 
 .pxs-wf-palette {
-  padding-right: 12px;
-  flex: 1;
-  top: 160px;
-  left: 12px;
-  border-radius: 15px;
-  z-index: 9;
-  padding: 8px;
+  padding: 0;
+  width: 280px;
+  border-left: 1px solid color-mix(in srgb, var(--mat-neutral) 25%, transparent);
+  display: flex;
+  flex-direction: column;
 }
 
 .palette-toggle {
-  position: absolute;
-  top: 114px;
-  left: 20px;
+  margin-bottom:20px;
+  right: auto;
   z-index: 1000;
   background-color: var(--mat-primary);
   color: #fff;
@@ -37,9 +35,7 @@
 }
 
 .run-panel-btn {
-  position: absolute;
-  top: 114px;
-  left: 190px;
+  margin-bottom:20px;
   z-index: 1000;
   background-color: var(--mat-primary);
   color: #fff;
@@ -47,28 +43,60 @@
   border-radius: var(--mdc-filled-button-container-shape);
 }
 
-/* Overlay palette panel */
-.pxs-wf-palette.overlay {
-  position: absolute;
-  transition: transform .18s ease, opacity .18s ease;
-}
-
 .pxs-wf-palette-items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 8px;
+  overflow: auto;
+  flex: 1 1 auto;
 }
 
-.pxs-wf-palette.overlay.hidden {
-  transform: translateX(-16px) translateY(-8px) scale(.98);
-  opacity: 0;
-  pointer-events: none; // important so it doesn’t "block" the canvas when hidden
+.palette-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.palette-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mat-primary) 60%, #000);
+  margin-top: 8px;
+}
+
+.palette-section:first-child .palette-section-title {
+  margin-top: 0;
+}
+
+.canvas-pane_actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 0;
+}
+
+.graph-invalid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--mat-error);
+  color: var(--mat-error);
+  background: color-mix(in srgb, var(--mat-error) 12%, transparent);
+  font-size: 12px;
+  line-height: 1;
+  margin-bottom:20px;
 }
 
 .form {
-  position: relative;
-  top: 3px;
-  left: 3px;
   min-width: 350px;
   border-radius: 15px;
   z-index: 9;
@@ -83,11 +111,33 @@
 .pxs-wf-canvas {
   position: absolute;
   bottom: 0;
-  width: 100%;
+  width: 99%;
   height: 90%;
   display: block;
-  border-radius: 15px;
-  border: 2px solid #d1d1d1;
+  border: 2px solid color-mix(in srgb, var(--mat-neutral) 60%, #fff);
+  --df-connection-selectable-area-stroke-width: 0.8rem;
+
+  ::ng-deep path.selectable-area {
+    pointer-events: stroke;
+  }
+
+  &.wf-connecting {
+    --df-connection-selectable-area-stroke-width: 1rem;
+  }
+}
+
+.pxs-wf-canvas.wf-connecting {
+  /* keep connections hoverable while highlighting ports */
+  ::ng-deep path.selectable-area {
+    pointer-events: stroke;
+  }
+
+  ::ng-deep df-input,
+  ::ng-deep df-output {
+    pointer-events: auto !important;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--mat-primary) 45%, transparent));
+    transform: scale(1.06);
+  }
 }
 
 .pxs-wf-canvas-wrap>p {
@@ -98,32 +148,31 @@
   pointer-events: none;
   color: var(--md-sys-color-on-surface);
   font-size: 12px;
-}
-
-.pxs-wf-canvas-wrap {
-  position: absolute;
-  inset: 0;
-  flex: 5;
-  bottom: 0;
+  width: 84%;
 }
 
 .workflow-zone {
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 16px;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 120px);
+  background: transparent;
+}
+
+.canvas-pane {
   position: relative;
 }
 
 .pxs-wf-menu {
   position: absolute;
   z-index: 1000;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--mat-sys-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--mat-neutral) 55%, transparent);
   border-radius: 8px;
   padding: 6px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--mat-neutral) 28%, transparent);
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
@@ -132,7 +181,76 @@
 .pxs-wf-pill {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
+  min-height: 45px;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.pxs-wf-pill.preview-shadow {
+  background: var(--mat-primary);
+  border: 1px dashed color-mix(in srgb, var(--mat-primary) 35%, transparent);
+  opacity: 0.9;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pxs-wf-pill.placeholder {
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.pxs-wf-pill.cdk-drag-dragging {
+  opacity: 1;
+}
+
+.cdk-drag-placeholder {
+  opacity: 1 !important;
+}
+
+.pill-label {
+  flex: 1;
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.palette-header {
+  padding: 10px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
+  background: inherit;
+  border-radius: 14px 14px 0 0;
+}
+
+.palette-search:focus {
+  border-color: color-mix(in srgb, var(--mat-primary) 45%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-primary) 18%, transparent);
+}
+
+.palette-empty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--mat-neutral) 60%, #000);
+  background: color-mix(in srgb, var(--mat-neutral) 10%, transparent);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .quick-add {
@@ -141,7 +259,7 @@
   padding: 6px;
   border-radius: 8px;
   background: var(--md-sys-color-surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--mat-neutral) 32%, transparent);
   min-width: 220px;
   max-height: 320px;
   overflow: auto;

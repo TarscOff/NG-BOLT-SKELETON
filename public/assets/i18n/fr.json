@@ -11,6 +11,331 @@
   "SAVE": "Enregistrer",
   "TEAM_MEMBERS": "Membres de l'équipe",
   "add_favorite": "Ajouter aux favoris",
+  "workflow": {
+    "saved_workflows": "Workflows enregistrés",
+    "filter": "Filtrer les workflows",
+    "sidebar": {
+      "collapse": "Réduire les workflows",
+      "expand": "Déployer les workflows"
+    },
+    "new": "Nouveau",
+    "save": "Enregistrer",
+    "draft": "Enregistrer comme brouillon",
+    "publish": "Publier",
+    "run": "Exécuter",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "multi_select": "Sélection multiple",
+    "bulk_selected": "{{count}} sélectionnés",
+    "bulk_delete_confirmation": "Supprimer {{count}} workflows ?",
+    "unsaved_changes_title": "Modifications non enregistrées",
+    "unsaved_changes_message": "Vous avez des modifications non enregistrées. Continuer sans enregistrer ?",
+    "delete_confirmation": "Êtes-vous sûr de vouloir supprimer '{{name}}' ?",
+    "no_workflows": "Aucun workflow pour le moment",
+    "create_first": "Créer votre premier workflow",
+    "no_workflow_selected": "Aucun workflow sélectionné",
+    "select_or_create": "Sélectionnez un workflow dans la liste ou créez-en un nouveau pour commencer",
+    "create_new": "Créer un nouveau workflow",
+    "clear_history": "Effacer l'historique",
+    "executions": "Exécutions",
+    "no_history": "Aucune exécution pour le moment",
+    "input": "Entrée",
+    "result": "Résultat",
+    "edge": {
+      "insert": "Insérer un nœud",
+      "delete": "Supprimer le lien"
+    },
+    "view": "Voir",
+    "exit_view": "Quitter la vue",
+    "read_only": "Vue en lecture seule",
+    "version_mismatch": "Version différente du workflow actuel",
+    "version": "Version",
+    "name": "Nom",
+    "node": {
+      "pin": "Épingler les données",
+      "unpin": "Désépingler",
+      "disable": "Désactiver",
+      "enable": "Activer",
+      "replace": "Remplacer",
+      "play_from_here": "Exécuter depuis ici",
+      "pinned": "Épinglé",
+      "disabled": "Désactivé"
+    },
+    "labels": {
+      "already_dropped": "Nœuds existants",
+      "quickAdd": "Connexions"
+    },
+    "runPanel": {
+      "artifacts": "Artéfacts",
+      "auto": "Auto",
+      "cancel_pipe": "Annuler la pipeline",
+      "cancel_stage": "Annuler",
+      "details": "Détails",
+      "empty": "Pas de workflow disponible.",
+      "error": "Erreur",
+      "go_chat": "Aller au chat",
+      "logs": "Logs d'exécution",
+      "payloads": "Payloads des nœuds",
+      "edge_data": "Payloads des liens",
+      "runs": "Exécutions",
+      "node_payloads": "Flux de données",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "connected": "Connecté",
+      "disconnected": "Non connecté",
+      "no_inputs": "Aucune entrée",
+      "no_outputs": "Aucune sortie",
+      "no_payload": "Pas de données",
+      "view": "Voir l'exécution",
+      "fullscreen": "Plein écran",
+      "now_stages": "Pas de file.",
+      "options": "Options",
+      "params": "Paramètres",
+      "preview": "Visualiser",
+      "queued": "En file d'attente",
+      "results": "Résultats",
+      "run": "Lancer le workflow",
+      "running": "En cours d'exécution",
+      "skipped": "Sauté",
+      "submit": "Soumettre",
+      "success": "Réussite",
+      "title": "Panneau d'éxécutions"
+    },
+    "errors": {
+      "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
+      "exactlyOneInput": "Le workflow doit comporter exactement un nœud d'entrée.",
+      "exactlyOneResult": "Le workflow doit comporter exactement un nœud de résultat.",
+      "invalid_fields": "Il reste des champs invalides",
+      "noCompatibleActions": "Aucun nœud disponible",
+      "noDirectInputToResult": "Vous ne pouvez pas relier Entrée directement à Résultat.",
+      "nodeMissingInput": "Le nœud \"{{id}}\" n'a pas de connexion entrante.",
+      "nodeMissingOutput": "Le nœud \"{{id}}\" n'a pas de connexion sortante.",
+      "saveFailed": "Échec de l'enregistrement du workflow.",
+      "invalid_graph": "Le workflow est invalide. Corrigez les liens ou les champs.",
+      "missingPinnedData": "Données amont manquantes. Épinglez ou connectez les entrées avant d'exécuter.",
+      "nodeNotFound": "Nœud introuvable."
+    },
+    "validation": {
+      "missing_inputs": "Entrées manquantes",
+      "missing_outputs": "Sorties manquantes",
+      "invalid_fields": "Champs invalides"
+    },
+    "ports": {
+      "in": "Entrée",
+      "out": "Sortie"
+    },
+    "dialog": {
+      "node_name": "Nom du nœud",
+      "params": "Paramètres",
+      "ports": "Ports",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "add_input": "Ajouter une entrée",
+      "add_output": "Ajouter une sortie",
+      "port_name": "Nom",
+      "port_name_placeholder": "Nom du port",
+      "port_name_help": "Donnez un libellé clair et unique à ce port.",
+      "port_type": "Type",
+      "port_type_placeholder": "Sélectionner un type",
+      "port_type_help": "Utilisé pour valider la compatibilité des connexions.",
+      "required": "Obligatoire",
+      "port_required_help": "Les ports obligatoires doivent être connectés avant d’exécuter.",
+      "port_type_options": {
+        "query_string": "Chaîne de requête",
+        "embeddings": "Embeddings",
+        "json": "JSON",
+        "collection": "Collection",
+        "string": "Texte"
+      }
+    },
+    "palette": {
+      "search": "Rechercher des nœuds"
+    },
+    "toolbox": {
+      "available_nodes": "Nœuds disponibles"
+    },
+    "visibility": {
+      "draft": "Brouillon",
+      "public": "Public"
+    },
+    "kind": {
+      "standard": "Standard",
+      "reusable": "Réutilisable"
+    },
+    "needs_republish": "Doit être republié",
+    "toast": {
+      "draft_saved": "Brouillon enregistré (non publié)",
+      "published": "Workflow publié",
+      "republish_required": "Modifications détectées — republiation requise"
+    },
+    "new_dialog": {
+      "title": "Créer un workflow",
+      "name": {
+        "label": "Nom",
+        "placeholder": "Nom du workflow",
+        "required": "Le nom est requis",
+        "helper": "Choisissez un nom descriptif pour votre workflow"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Que fait ce workflow ?",
+        "helper": "Description optionnelle pour aider les autres à comprendre l'objectif"
+      },
+      "visibility": {
+        "label": "Visibilité publique",
+        "helper": "Lorsqu'activé, ce workflow est visible par tous les utilisateurs. Sinon, c'est un brouillon privé.",
+        "options": {
+          "draft": "Brouillon",
+          "public": "Public"
+        }
+      },
+      "kind": {
+        "label": "Modèle réutilisable",
+        "helper": "Lorsqu'activé, ce workflow peut être réutilisé comme modèle. Sinon, c'est un workflow standard.",
+        "options": {
+          "standard": "Standard",
+          "reusable": "Réutilisable"
+        }
+      },
+      "cancel": "Annuler",
+      "create": "Créer"
+    },
+    "forms": {
+      "vector_store": {
+        "options": {
+          "azure_cosmos_db": "Azure Cosmos DB (vecteurs)",
+          "azure_ai_search": "Azure AI Search",
+          "pinecone": "Pinecone",
+          "qdrant": "Qdrant",
+          "pgvector": "pgvector"
+        }
+      },
+      "embed": {
+        "text": {
+          "label": "Texte à vectoriser",
+          "placeholder": "Collez le texte à vectoriser...",
+          "helper": "Supporte le texte brut ; les fichiers sont définis sur le nœud d'entrée."
+        },
+        "embedding_model": {
+          "label": "Modèle d'embeddings",
+          "helper": "Choisissez le modèle utilisé pour générer le vecteur.",
+          "options": {
+            "openai_small": "text-embedding-3-small (OpenAI)",
+            "openai_large": "text-embedding-3-large (OpenAI)",
+            "local": "all-MiniLM-L6-v2 (local)"
+          }
+        },
+        "normalize_embeddings": {
+          "label": "Normaliser les embeddings (L2)",
+          "helper": "Recommandé pour la similarité cosinus."
+        },
+        "errors": {
+          "text_required": "Le texte est requis",
+          "model_required": "Le modèle est requis"
+        }
+      },
+      "retrieve": {
+        "query": {
+          "label": "Requête",
+          "placeholder": "Que recherchez-vous ?"
+        },
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Où exécuter la recherche de similarité."
+        },
+        "top_k": {
+          "label": "Top K résultats",
+          "helper": "Nombre de correspondances à retourner."
+        },
+        "score_threshold": {
+          "label": "Seuil de score",
+          "helper": "Ignorer les résultats sous ce seuil de similarité."
+        },
+        "include_metadata": {
+          "label": "Inclure les métadonnées",
+          "helper": "Joindre les métadonnées stockées au contenu."
+        },
+        "errors": {
+          "query_required": "La requête est obligatoire"
+        }
+      },
+      "convert_and_chunk": {
+        "text_splitter": {
+          "label": "Découpe du texte",
+          "helper": "Comment découper le document avant le chunking.",
+          "options": {
+            "recursive": "Récursif (recommandé)",
+            "markdown": "Compatible Markdown",
+            "token": "Basé tokens"
+          }
+        },
+        "chunk_size": {
+          "label": "Taille des chunks (car.)",
+          "helper": "Longueur de chaque chunk en caractères."
+        },
+        "chunk_overlap": {
+          "label": "Chevauchement des chunks",
+          "helper": "Nombre de caractères de recouvrement entre chunks."
+        },
+        "clean_whitespace": {
+          "label": "Normaliser les espaces",
+          "helper": "Réduire les espaces doublons et nettoyer les lignes."
+        },
+        "add_source_metadata": {
+          "label": "Conserver les métadonnées source",
+          "helper": "Garder le nom de fichier/page sur chaque chunk."
+        }
+      },
+      "embed_langchain_documents": {
+        "embedding_model": {
+          "label": "Modèle d'embeddings"
+        },
+        "batch_size": {
+          "label": "Taille de lot",
+          "helper": "Nombre de chunks à vectoriser par lot."
+        }
+      },
+      "store_embedded_langchain_documents": {
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Destination de stockage des embeddings."
+        },
+        "collection_name": {
+          "label": "Nom de collection / index",
+          "placeholder": "documents"
+        },
+        "namespace": {
+          "label": "Namespace",
+          "placeholder": "default",
+          "helper": "Namespace logique dans le vector store."
+        },
+        "upsert": {
+          "label": "Upsert sur les ids existants",
+          "helper": "Mettre à jour si l'id existe, sinon insérer."
+        },
+        "errors": {
+          "collection_required": "Le nom de collection est requis"
+        }
+      }
+    }
+  },
+  "status": {
+    "queued": "En file d'attente",
+    "running": "En cours",
+    "success": "Succès",
+    "error": "Erreur",
+    "skipped": "Ignoré"
+  },
+  "chat": "Chat",
+  "compare": "Comparer",
+  "summarize": "Résumer",
+  "extract": "Extraire",
+  "jira": "Jira",
+  "embed": "Vectoriser",
+  "retrieve": "Récupérer",
+  "convert_and_chunk": "Convertir et Segmenter",
+  "embed_langchain_documents": "Vectoriser Documents",
+  "store_embedded_langchain_documents": "Stocker Vecteurs",
   "ai": {
     "chat": "Scope du chat",
     "compare": "Scope de la comparaison",
@@ -38,7 +363,6 @@
   "apply": "Appliquer",
   "back": "Retour",
   "cancel": "Annuler",
-  "chat": "chat",
   "chatPage": {
     "error": {
       "title": "Échec du chargement"
@@ -92,7 +416,6 @@
     "home": "Accueil",
     "signIn": "Se connecter"
   },
-  "compare": "Comparaison",
   "compareTpl": {
     "added": "Ajouté",
     "clear": "Tout effacer",
@@ -167,7 +490,6 @@
       "txt": "Fichier texte exporté avec succès !"
     }
   },
-  "extract": "Extraire",
   "extractResult": {
     "completed": "Terminé",
     "error": "Erreur",
@@ -575,7 +897,6 @@
   "running": "En cours",
   "selection": "Sélection",
   "source_file": "Fichier source",
-  "summarize": "Résumer",
   "summarizeTpl": {
     "addMore": "Ajouter plus de fichiers",
     "clear": "Tout effacer",
@@ -657,45 +978,5 @@
   "toolbox": "Boite a outils",
   "untoggle": "Déplier",
   "user_prompt": "Prompt utilisateur",
-  "workflow": {
-    "errors": {
-      "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
-      "exactlyOneInput": "Le workflow doit comporter exactement un nœud d'entrée.",
-      "exactlyOneResult": "Le workflow doit comporter exactement un nœud de résultat.",
-      "invalid_fields": "Il reste des champs invalides",
-      "noCompatibleActions": "Pas de noeur disponible",
-      "noDirectInputToResult": "Vous ne pouvez pas joindre ces deux éléments.",
-      "nodeMissingInput": "Le nœud \"{{id}}\" n'a pas de connexion entrante.",
-      "nodeMissingOutput": "Le nœud \"{{id}}\" n'a pas de connexion sortante.",
-      "saveFailed": "Échec de l'enregistrement du workflow."
-    },
-    "labels": {
-      "already_dropped": "Noeuds existants",
-      "quickAdd": "Connections"
-    },
-    "runPanel": {
-      "artifacts": "Artéfacts",
-      "auto": "Auto",
-      "cancel_pipe": "Annuler la pipeline",
-      "cancel_stage": "Annuler",
-      "details": "Détails",
-      "empty": "Pas de workflow disponible.",
-      "error": "Erreur",
-      "go_chat": "Aller au chat",
-      "logs": "Logs",
-      "now_stages": "Pas de file.",
-      "options": "Options",
-      "params": "Paramètres",
-      "preview": "Visualiser",
-      "queued": "En file d'attente",
-      "results": "Résultats",
-      "run": "Lancer le workflow",
-      "running": "En cours d'exécution",
-      "skipped": "Sauté",
-      "submit": "Soumettre",
-      "success": "Réussite",
-      "title": "Panneau d'éxécutions"
-    }
-  },
   "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d'un nœud (source), puis sur le port gauche d'un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options."
 }

@@ -40,6 +40,7 @@
     "@angular/router": "^19.2.0",
     "@cadai/pxs-ng-core": "^1.13.0",
     "@ng-draw-flow/core": "^0.17.0",
+    "@ngrx/component-store": "^19.2.1",
     "@ngrx/effects": "^19.2.1",
     "@ngrx/store": "^19.2.1",
     "@ngrx/store-devtools": "^19.2.1",

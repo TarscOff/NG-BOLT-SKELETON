@@ -11,6 +11,331 @@
   "SAVE": "Save",
   "TEAM_MEMBERS": "Team members",
   "add_favorite": "Add to Favorite",
+  "workflow": {
+    "saved_workflows": "Saved workflows",
+    "filter": "Filter workflows",
+    "sidebar": {
+      "collapse": "Collapse saved workflows",
+      "expand": "Expand saved workflows"
+    },
+    "new": "New",
+    "save": "Save",
+    "draft": "Save as Draft",
+    "publish": "Publish",
+    "run": "Run",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "multi_select": "Multi-select",
+    "bulk_selected": "{{count}} selected",
+    "bulk_delete_confirmation": "Delete {{count}} workflows?",
+    "unsaved_changes_title": "Unsaved changes",
+    "unsaved_changes_message": "You have unsaved changes. would you like saving?",
+    "delete_confirmation": "Are you sure you want to delete '{{name}}'?",
+    "no_workflows": "No workflows yet",
+    "create_first": "Create your first workflow",
+    "no_workflow_selected": "No workflow selected",
+    "select_or_create": "Select a workflow from the list or create a new one to get started",
+    "create_new": "Create new workflow",
+    "clear_history": "Clear history",
+    "executions": "Executions",
+    "no_history": "No executions yet",
+    "input": "Input",
+    "result": "Result",
+    "edge": {
+      "insert": "Insert node",
+      "delete": "Delete link"
+    },
+    "view": "View",
+    "exit_view": "Exit view",
+    "read_only": "Read-only snapshot",
+    "version_mismatch": "Version differs from current workflow",
+    "version": "Version",
+    "name": "Name",
+    "node": {
+      "pin": "Pin data",
+      "unpin": "Unpin data",
+      "disable": "Disable",
+      "enable": "Enable",
+      "replace": "Replace",
+      "play_from_here": "Run from here",
+      "pinned": "Pinned",
+      "disabled": "Disabled"
+    },
+    "labels": {
+      "already_dropped": "Existing nodes",
+      "quickAdd": "Connections"
+    },
+    "runPanel": {
+      "artifacts": "Artifacts",
+      "auto": "Auto",
+      "cancel_pipe": "Cancel pipeline",
+      "cancel_stage": "Cancel stage",
+      "details": "Details",
+      "empty": "No workflow available.",
+      "error": "Error",
+      "go_chat": "Go to chat",
+      "logs": "Run logs",
+      "runs": "Executions",
+      "now_stages": "No stages to show.",
+      "options": "View options",
+      "params": "Params",
+      "preview": "Preview",
+      "queued": "Queued",
+      "results": "Results",
+      "run": "Run workflow",
+      "payloads": "Node payloads",
+      "edge_data": "Edge payloads",
+      "node_payloads": "Node data flow",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "connected": "Connected",
+      "disconnected": "Not connected",
+      "no_inputs": "No inputs",
+      "no_outputs": "No outputs",
+      "no_payload": "No data yet",
+      "view": "View run",
+      "fullscreen": "Fullscreen",
+      "running": "Running",
+      "skipped": "Skipped",
+      "submit": "Submit",
+      "success": "Success",
+      "title": "Runs panel"
+    },
+    "errors": {
+      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
+      "exactlyOneInput": "The workflow must have exactly one Input node.",
+      "exactlyOneResult": "The workflow must have exactly one Result node.",
+      "invalid_fields": "Node has invalid fields",
+      "noDirectInputToResult": "You cannot connect Input directly to Result.",
+      "noCompatibleActions": "No node available",
+      "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
+      "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
+      "saveFailed": "Failed to save the workflow.",
+      "invalid_graph": "Workflow is invalid. Fix missing links or fields.",
+      "missingPinnedData": "Upstream data missing. Pin data or connect inputs before running from here.",
+      "nodeNotFound": "Node not found."
+    },
+    "validation": {
+      "missing_inputs": "Missing inputs",
+      "missing_outputs": "Missing outputs",
+      "invalid_fields": "Invalid fields"
+    },
+    "ports": {
+      "in": "In",
+      "out": "Out"
+    },
+    "dialog": {
+      "node_name": "Node name",
+      "params": "Params",
+      "ports": "Ports",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "add_input": "Add input",
+      "add_output": "Add output",
+      "port_name": "Name",
+      "port_name_placeholder": "Port name",
+      "port_name_help": "Give this port a clear, unique label.",
+      "port_type": "Type",
+      "port_type_placeholder": "Select a type",
+      "port_type_help": "Used to validate compatibility between connections.",
+      "required": "Required",
+      "port_required_help": "Required ports must be connected before running.",
+      "port_type_options": {
+        "query_string": "Query string",
+        "embeddings": "Embeddings",
+        "json": "JSON",
+        "collection": "Collection",
+        "string": "String"
+      }
+    },
+    "palette": {
+      "search": "Search nodes"
+    },
+    "toolbox": {
+      "available_nodes": "Available nodes"
+    },
+    "visibility": {
+      "draft": "Draft",
+      "public": "Public"
+    },
+    "kind": {
+      "standard": "Standard",
+      "reusable": "Reusable"
+    },
+    "needs_republish": "Needs republish",
+    "toast": {
+      "draft_saved": "Draft saved (not published)",
+      "published": "Workflow published",
+      "republish_required": "Changes detected — republish required"
+    },
+    "new_dialog": {
+      "title": "Create workflow",
+      "name": {
+        "label": "Name",
+        "placeholder": "Workflow name",
+        "required": "Name is required",
+        "helper": "Choose a descriptive name for your workflow"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "What does this workflow do?",
+        "helper": "Optional description to help others understand the purpose"
+      },
+      "visibility": {
+        "label": "Public Visibility",
+        "helper": "When enabled, this workflow is visible to all users. When disabled, it's a private draft.",
+        "options": {
+          "draft": "Draft",
+          "public": "Public"
+        }
+      },
+      "kind": {
+        "label": "Reusable Template",
+        "helper": "When enabled, this workflow can be reused as a template. When disabled, it's a standard workflow.",
+        "options": {
+          "standard": "Standard",
+          "reusable": "Reusable"
+        }
+      },
+      "cancel": "Cancel",
+      "create": "Create"
+    },
+    "forms": {
+      "vector_store": {
+        "options": {
+          "azure_cosmos_db": "Azure Cosmos DB (vector)",
+          "azure_ai_search": "Azure AI Search",
+          "pinecone": "Pinecone",
+          "qdrant": "Qdrant",
+          "pgvector": "pgvector"
+        }
+      },
+      "embed": {
+        "text": {
+          "label": "Text to embed",
+          "placeholder": "Paste the text to embed...",
+          "helper": "Supports plain text; files are defined on the input node."
+        },
+        "embedding_model": {
+          "label": "Embedding model",
+          "helper": "Choose the model used to generate the vector.",
+          "options": {
+            "openai_small": "text-embedding-3-small (OpenAI)",
+            "openai_large": "text-embedding-3-large (OpenAI)",
+            "local": "all-MiniLM-L6-v2 (local)"
+          }
+        },
+        "normalize_embeddings": {
+          "label": "Normalize embeddings (L2)",
+          "helper": "Recommended for cosine similarity search."
+        },
+        "errors": {
+          "text_required": "Text is required",
+          "model_required": "Model is required"
+        }
+      },
+      "retrieve": {
+        "query": {
+          "label": "Query",
+          "placeholder": "What are you looking for?"
+        },
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Where to run the similarity search."
+        },
+        "top_k": {
+          "label": "Top K results",
+          "helper": "How many matches to return."
+        },
+        "score_threshold": {
+          "label": "Score threshold",
+          "helper": "Discard results below this similarity score."
+        },
+        "include_metadata": {
+          "label": "Include metadata in results",
+          "helper": "Attach stored metadata alongside the content."
+        },
+        "errors": {
+          "query_required": "Query is required"
+        }
+      },
+      "convert_and_chunk": {
+        "text_splitter": {
+          "label": "Text splitter",
+          "helper": "How to split the document before chunking.",
+          "options": {
+            "recursive": "Recursive (recommended)",
+            "markdown": "Markdown-aware",
+            "token": "Token-based"
+          }
+        },
+        "chunk_size": {
+          "label": "Chunk size (chars)",
+          "helper": "Length of each chunk in characters."
+        },
+        "chunk_overlap": {
+          "label": "Chunk overlap",
+          "helper": "Characters to overlap between chunks."
+        },
+        "clean_whitespace": {
+          "label": "Normalize whitespace",
+          "helper": "Collapse duplicate spaces and trim lines."
+        },
+        "add_source_metadata": {
+          "label": "Keep source metadata",
+          "helper": "Preserve filename/page info on each chunk."
+        }
+      },
+      "embed_langchain_documents": {
+        "embedding_model": {
+          "label": "Embedding model"
+        },
+        "batch_size": {
+          "label": "Batch size",
+          "helper": "Number of chunks to embed per batch."
+        }
+      },
+      "store_embedded_langchain_documents": {
+        "vector_store": {
+          "label": "Vector store",
+          "helper": "Destination for storing embeddings."
+        },
+        "collection_name": {
+          "label": "Collection / index name",
+          "placeholder": "documents"
+        },
+        "namespace": {
+          "label": "Namespace",
+          "placeholder": "default",
+          "helper": "Logical namespace within the vector store."
+        },
+        "upsert": {
+          "label": "Upsert existing ids",
+          "helper": "Update if an id exists; insert otherwise."
+        },
+        "errors": {
+          "collection_required": "Collection name is required"
+        }
+      }
+    }
+  },
+  "status": {
+    "queued": "Queued",
+    "running": "Running",
+    "success": "Success",
+    "error": "Error",
+    "skipped": "Skipped"
+  },
+  "chat": "Chat",
+  "compare": "Compare",
+  "summarize": "Summarize",
+  "extract": "Extract",
+  "jira": "Jira",
+  "embed": "Embed",
+  "retrieve": "Retrieve",
+  "convert_and_chunk": "Convert and Chunk",
+  "embed_langchain_documents": "Embed Documents",
+  "store_embedded_langchain_documents": "Store Embeddings",
   "ai": {
     "chat": "Chat Scope",
     "compare": "Compare Scope",
@@ -38,7 +363,6 @@
   "apply": "Apply",
   "back": "Back",
   "cancel": "Cancel",
-  "chat": "chat",
   "chatPage": {
     "error": {
       "title": "Failed to Load"
@@ -92,7 +416,6 @@
     "home": "Home",
     "signIn": "Sign in"
   },
-  "compare": "Compare",
   "compareTpl": {
     "added": "Added",
     "clear": "Clear All",
@@ -167,7 +490,6 @@
       "txt": "Text file exported successfully!"
     }
   },
-  "extract": "Extract",
   "extractResult": {
     "error": "Extraction Error",
     "failed": "Extraction Failed",
@@ -574,7 +896,6 @@
   "running": "Running",
   "selection": "Selection",
   "source_file": "Source file",
-  "summarize": "Summarize",
   "summarizeTpl": {
     "addMore": "Add More Files",
     "clear": "Clear All",
@@ -656,45 +977,5 @@
   "toolbox": "Toolbox",
   "untoggle": "Unfold",
   "user_prompt": "User prompt",
-  "workflow": {
-    "errors": {
-      "cycleDetected": "There is a cycle in the workflow. Please remove it.",
-      "exactlyOneInput": "The workflow must have exactly one Input node.",
-      "exactlyOneResult": "The workflow must have exactly one Result node.",
-      "invalid_fields": "Node has invalid fields",
-      "noCompatibleActions": "No node available",
-      "noDirectInputToResult": "You cannot connect Input directly to Result.",
-      "nodeMissingInput": "Node \"{{id}}\" is missing an incoming connection.",
-      "nodeMissingOutput": "Node \"{{id}}\" is missing an outgoing connection.",
-      "saveFailed": "Failed to save the workflow."
-    },
-    "labels": {
-      "already_dropped": "Existing nodes",
-      "quickAdd": "Connections"
-    },
-    "runPanel": {
-      "artifacts": "Artifacts",
-      "auto": "Auto",
-      "cancel_pipe": "Cancel pipeline",
-      "cancel_stage": "Cancel stage",
-      "details": "Details",
-      "empty": "No workflow available.",
-      "error": "Error",
-      "go_chat": "Go to chat",
-      "logs": "Logs",
-      "now_stages": "No stages to show.",
-      "options": "View options",
-      "params": "Params",
-      "preview": "Preview",
-      "queued": "Queued",
-      "results": "Results",
-      "run": "Run workflow",
-      "running": "Running",
-      "skipped": "Skipped",
-      "submit": "Submit",
-      "success": "Success",
-      "title": "Runs panel"
-    }
-  },
   "workflow_help": "Drag from the palette. Click a node's right port (source) then another node's left port (target) to connect. Right-click nodes for options."
 }

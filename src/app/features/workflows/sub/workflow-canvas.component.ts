@@ -6,7 +6,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
+  effect,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -35,7 +35,10 @@ import {
   provideNgDrawFlowConfigs,
 } from '@ng-draw-flow/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-
+import {
+  RunNodePayload,
+  WorkflowPorts,
+} from '../templates/utils/workflow.interface';
 import {
   ActionDefinitionLite,
   Binary,
@@ -60,7 +63,7 @@ import {
   RunNodeDTO,
   WorkflowNodeDataBaseParams
 } from '../templates/utils/workflow.interface';
-import { FieldConfigService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
+import { FieldConfigService, ToastService } from '@cadai/pxs-ng-core/services';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { WfNodeComponent } from './action-node/action-node.component';
@@ -68,13 +71,15 @@ import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { WfCanvasBus } from '../templates/utils/wf-canvas-bus';
 import { MatIconModule } from '@angular/material/icon';
 import { WfRunPanelNodeComponent } from './run-panel/run-panel-node.component';
-import { FieldConfig, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
-import { map, Subscription } from 'rxjs';
+import { FieldConfig, WorkflowPort } from '@cadai/pxs-ng-core/interfaces';
+import { Subscription, combineLatest, debounceTime, distinctUntilChanged } from 'rxjs';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { ActionFormSpec } from '../templates/utils/action-forms';
 import { WfDetailsNodeComponent } from './details-node/detail-node.component';
 import { WfPreviewNodeComponent } from './preview-node/preview-node.compoennt';
+import { WorkflowValidationState, WorkflowsStore } from '../data/workflows.store';
 
 @Component({
   selector: 'app-workflow-canvas-df',
@@ -91,7 +96,8 @@ import { WfPreviewNodeComponent } from './preview-node/preview-node.compoennt';
     MatTooltipModule,
     MatIconModule,
     OverlayModule,
-    MatMenuModule
+    MatMenuModule,
+    MatSidenavModule
   ],
   providers: [
     dfPanZoomOptionsProvider({
@@ -105,7 +111,13 @@ import { WfPreviewNodeComponent } from './preview-node/preview-node.compoennt';
         compare: WfNodeComponent,
         summarize: WfNodeComponent,
         extract: WfNodeComponent,
+        embed: WfNodeComponent,
+        retrieve: WfNodeComponent,
+        convert_and_chunk: WfNodeComponent,
+        embed_langchain_documents: WfNodeComponent,
+        store_embedded_langchain_documents: WfNodeComponent,
         jira: WfNodeComponent,
+        composite: WfNodeComponent,
         'run-panel': WfRunPanelNodeComponent,
         details: WfDetailsNodeComponent,
         preview: WfPreviewNodeComponent,
@@ -116,6 +128,7 @@ import { WfPreviewNodeComponent } from './preview-node/preview-node.compoennt';
         curvature: 10,
       }
     }),
+    WfCanvasBus,
   ],
   templateUrl: './workflow-canvas-df.component.html',
   styleUrls: ['./workflow-canvas-df.component.scss'],
@@ -132,10 +145,41 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   /** Track node ids deleted locally to ignore any brief upstream echoes */
   private recentlyDeleted = new Map<string, number>();
   private readonly deletionWindowMs = 800;
+  private lastWorkflowId: string | null | undefined = undefined;
+  private workflowChangeCounter = signal(0);
+  private acceptExternalOnce = false;
+  private refreshAfterRenderScheduled = false;
+
+  @Input() set workflowId(value: string | null | undefined) {
+    if (value !== this.lastWorkflowId) {
+      this.acceptExternalOnce = true;
+      queueMicrotask(() => (this.acceptExternalOnce = false));
+      this.suppressExternal = false;
+
+      // Workflow switched - force clear and reload nodes
+      this.lastWorkflowId = value;
+      this.lastIncomingSig = '';
+      this.lastTopoSig = '';
+      this.execNodes.set([]);
+      this.uiNodes.set([]);
+      this._edges.set([]);
+      this.selectedNodes.set(new Set());
+      this.selectedEdges.set(new Set());
+      this.selectedNodeId.set(null);
+      this.edgeActionsOpen.set(false);
+      this.edgeActionTarget = null;
+      this.quickAddOpen = false;
+      this.recentlyDeleted.clear();
+      this.formInvalidByNode.clear();
+      this.workflowChangeCounter.update(c => c + 1);
+      this.refreshValidationAndConnectivityAfterRender();
+    }
+  }
 
   @Input({ required: true })
   set nodes(value: WorkflowNode[] | null | undefined) {
-    if (this.suppressExternal) return;
+
+    if (this.suppressExternal && !this.acceptExternalOnce) return;
 
     const now = Date.now();
     // prune old tombstones
@@ -145,12 +189,24 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     const allIncoming = (value ?? []);
     // Drop any nodes that were just deleted locally (avoid re-creation)
-    const incoming = allIncoming
+    let incoming = allIncoming
+      .map(n => this.normalizeCompositeNode(n))
       .filter(n => this.isExecutableNode(n))
-      .filter(n => !this.recentlyDeleted.has(n.id));
+      .filter(n => !this.recentlyDeleted.has(n.id))
+      .filter(n => n.type !== 'input' && n.type !== 'result') // Filter out legacy input/result nodes
+      .map(n => ({ ...n, ports: this.ensurePorts(n.type, n.ports) }));
 
-    // ignore accidental clears
-    if (incoming.length === 0 && this.execNodes().length > 0) return;
+    // enrichit les nodes avec les flags de connectivité dès le chargement initial
+    if (incoming.length && this.execNodes().length === 0) {
+      incoming = this.withUiConnectivity(incoming, this._edges());
+    }
+
+    // Force la diffusion de la connectivité pour chaque node même si la topologie n'a pas changé (ex: chargement d'un workflow existant)
+    // Cela garantit que les events de validation sont toujours émis et reçus par les nodes
+    queueMicrotask(() => {
+      const allNodes = this.withUiConnectivity(this.allNodes(), this._edges());
+      this.emitConnectivity(allNodes, this._edges());
+    });
 
     // if parent is sending exactly what we already have (topology-wise), ignore
     const sigNew = this.makeTopoSig(incoming, this._edges());
@@ -168,7 +224,10 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         return existing ? { ...v, x: existing.x, y: existing.y } : v;
       });
       this.execNodes.set(mergedExec);
-      this.publishGraphValidity();
+      this.lastTopoSig = this.makeTopoSig(mergedExec, this._edges());
+      this.applyEdges(this.pendingEdgesRaw);
+      // Force la diffusion de la connectivité pour chaque node dès le chargement
+      this.emitConnectivity(mergedExec, this._edges());
       return;
     }
 
@@ -176,31 +235,39 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const mergedExec = current.map(n => {
       const inc = incomingById.get(n.id);
       if (!inc) return n;
-      return { ...inc, x: n.x, y: n.y };
+      return { ...inc, x: n.x, y: n.y, ports: this.ensurePorts(inc.type, inc.ports) };
     });
 
     const justChangedLocally = Date.now() - this.lastLocalChangeAt < 300;
     if (!justChangedLocally) {
       for (const [id, inc] of incomingById) {
-        if (!currentById.has(id)) mergedExec.push({ ...inc });
+        if (!currentById.has(id)) mergedExec.push({ ...inc, ports: this.ensurePorts(inc.type, inc.ports) });
       }
     }
 
     this.execNodes.set(mergedExec);
-    this.publishGraphValidity();
+    this.schedulePublishGraphValidity();
+    this.applyEdges(this.pendingEdgesRaw);
   }
 
   @Input({ required: true })
   set edges(value: WorkflowEdge[] | null | undefined) {
-    if (this.suppressExternal) return;
-    const incoming = value ?? [];
+    if (this.suppressExternal && !this.acceptExternalOnce) return;
+    const incomingRaw = value ?? [];
+    const incoming = this.sanitizeGraph(this.allNodes(), incomingRaw).edges;
+    this.pendingEdgesRaw = value ?? [];
+    this.applyEdges(this.pendingEdgesRaw, { skipIfSame: true });
 
-    if (incoming.length === 0 && this._edges().length > 0) return;
     const cur = this._edges();
     if (incoming.length === cur.length && incoming.every((e, i) => e.id === cur[i].id)) return;
 
     this._edges.set(incoming);
 
+    queueMicrotask(() => {
+      const nodesWithUi = this.withUiConnectivity(this.allNodes(), this._edges());
+      this.emitConnectivity(nodesWithUi, this._edges());
+      this.publishGraphValidity();
+    });
     // recompute UI flags using *all* nodes:
     const nodesWithUi = this.withUiConnectivity(this.allNodes(), incoming);
     const nextExec = nodesWithUi.filter(n => this.isExecutableNode(n));
@@ -209,7 +276,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     this.uiNodes.set(nextUi);
 
     this.emitConnectivity(nodesWithUi, incoming);
-    this.publishGraphValidity();
+    this.lastTopoSig = this.makeTopoSig(nextExec, incoming);
+    this.schedulePublishGraphValidity()
   }
 
   @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
@@ -220,19 +288,66 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   @Input() set disabled(value: boolean) {
     this.disabledSig.set(!!value);
+    this.applyReadOnlyState();
   }
   @Input() set availableActions(value: ActionDefinitionLite[]) {
     this.availableActionsSig.set(value ?? []);
     this.rebuildCompatibilityIndex();
   }
+  @Input() set workflowName(value: string | null | undefined) {
+    const next = value ?? '';
+    this.pendingWorkflowName = next;
+    if (!this.form) return;
+
+    const control = this.form.get('workflowName');
+    if (control) {
+      this.suppressNameEmit = true;
+      if (control.value !== next) {
+        this.form.patchValue({ workflowName: next }, { emitEvent: false });
+      }
+      queueMicrotask(() => (this.suppressNameEmit = false));
+      return;
+    }
+
+    // Control not ready yet, will be applied in ngAfterViewInit
+    setTimeout(() => {
+      const c = this.form.get('workflowName');
+      if (!c) return;
+      this.suppressNameEmit = true;
+      if (c.value !== this.pendingWorkflowName) {
+        this.form.patchValue({ workflowName: this.pendingWorkflowName }, { emitEvent: false });
+      }
+      queueMicrotask(() => (this.suppressNameEmit = false));
+    }, 0);
+  }
 
   @Output() OnCanvasChange = new EventEmitter<{ nodes: WorkflowNode[]; edges: WorkflowEdge[] }>();
+  @Output() selectionChange = new EventEmitter<{ nodeIds: string[]; edgeIds: string[] }>();
+  @Output() validationChange = new EventEmitter<WorkflowValidationState>();
+  @Output() workflowNameChange = new EventEmitter<string>();
 
   disabledSig = signal<boolean>(false);
   availableActionsSig = signal<ActionDefinitionLite[]>([]);
   executableNodesSig = signal<Set<PaletteType>>(new Set());
+  graphValidSig = signal<boolean>(true);
   isPaletteDragging = signal<boolean>(false);
   showPalette = signal(false);
+  paletteFilter = signal<string>('');
+  filteredActions = computed<ActionDefinitionLite[]>(() => {
+    const q = this.paletteFilter().trim().toLowerCase();
+    const all = this.availableActionsSig();
+    if (!q) return all;
+    return all.filter(a => (a.type ?? '').toString().toLowerCase().includes(q));
+  });
+  filteredReusableActions = computed<ActionDefinitionLite[]>(() =>
+    this.filteredActions().filter(a => this.isCompositeAction(a))
+  );
+  filteredNodeActions = computed<ActionDefinitionLite[]>(() =>
+    this.filteredActions().filter(a => !this.isCompositeAction(a))
+  );
+
+  paletteForm!: FormGroup;
+  paletteFieldConfig: FieldConfig[] = [];
 
   private execNodes = signal<WorkflowNode[]>([]);
   private uiNodes = signal<WorkflowNode[]>([]);
@@ -240,11 +355,21 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   private _edges = signal<WorkflowEdge[]>([]);
   private zoom = signal<number>(1);
+  private selectedEdges = signal<Set<string>>(new Set());
+  private selectedNodes = signal<Set<string>>(new Set());
+  private multiSelectMode = signal<boolean>(false);
+  lastPointer = signal<{ x: number; y: number } | null>(null);
+  edgeActionsOpen = signal<boolean>(false);
+  edgeActionsHover = signal<boolean>(false);
+  private edgeActionTarget: { edgeId: string; source: string; sourcePort: string; target: string; targetPort: string } | null = null;
+  private edgeHoverCloseTimer: number | null = null;
+  private tagConnectionsRaf: number | null = null;
+  private pendingEdgesRaw: WorkflowEdge[] = [];
 
   public form!: FormGroup;
   public fieldConfig: FieldConfig[] = [];
-  private toolbar = inject(ToolbarActionsService);
-  private destroyRef = inject(DestroyRef);
+  private pendingWorkflowName: string | null | undefined = null;
+  private suppressNameEmit = false;
 
   selectedNodeId = signal<string | null>(null);
 
@@ -263,10 +388,14 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   @HostListener('document:keydown.escape')
   onEsc(): void {
     this.setSelectedNode(null);
+    this.clearEdgeSelection();
   }
 
   @HostListener('document:keydown', ['$event'])
   onDocKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Shift' || e.metaKey || e.ctrlKey) {
+      this.multiSelectMode.set(true);
+    }
     if (e.key !== 'Delete' && e.key !== 'Backspace') return;
     if (this.isEditing(e)) return;
     const sel = this.selectedNodeId();
@@ -274,6 +403,89 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     e.preventDefault();
     e.stopPropagation();
     this.onDeleteNode(sel);
+  }
+
+  @HostListener('document:keyup', ['$event'])
+  onDocKeyup(e: KeyboardEvent): void {
+    if (e.key === 'Shift' || !e.metaKey) {
+      this.multiSelectMode.set(false);
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onPointerMove(e: MouseEvent): void {
+    this.lastPointer.set({ x: e.clientX, y: e.clientY });
+  }
+
+
+  // Coalesce validation so workflow selection doesn't briefly show stale/incorrect state
+  // when nodes/edges @Inputs arrive in separate setters.
+  private validationScheduled = false;
+  private schedulePublishGraphValidity(): void {
+    if (this.validationScheduled) return;
+    this.validationScheduled = true;
+    queueMicrotask(() => {
+      this.validationScheduled = false;
+      this.publishGraphValidity();
+    });
+  }
+
+  private sanitizeEdges(nodes: WorkflowNode[], edges: WorkflowEdge[]): WorkflowEdge[] {
+    const byId = new Map(nodes.map(n => [n.id, n]));
+    const hasInPort = (n: WorkflowNode, pid: string) => (n.ports?.inputs ?? []).some(p => p.id === pid);
+    const hasOutPort = (n: WorkflowNode, pid: string) => (n.ports?.outputs ?? []).some(p => p.id === pid);
+
+    return edges.filter(e => {
+      const s = byId.get(e.source);
+      const t = byId.get(e.target);
+      if (!s || !t) return false;
+      if ((t.ports?.inputs?.length ?? 0) === 0) return false;        // target has no inputs => drop
+      if (!hasOutPort(s, e.sourcePort)) return false;                 // invalid port ids
+      if (!hasInPort(t, e.targetPort)) return false;
+      return true;
+    });
+  }
+
+  private refreshValidationAndConnectivityAfterRender(): void {
+    if (this.refreshAfterRenderScheduled) return;
+    this.refreshAfterRenderScheduled = true;
+
+    // 1 RAF is usually enough; 2 RAFs is extra-safe with dynamic component creation.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.refreshAfterRenderScheduled = false;
+
+        const edges = this._edges();
+        const withUi = this.withUiConnectivity(this.allNodes(), edges);
+
+        // Make every node receive its missing ports immediately
+        this.emitConnectivity(withUi, edges);
+
+        // Make header badge + any node-level validity reflect current state
+        this.publishGraphValidity();
+      });
+    });
+  }
+
+  /** Apply edges deterministically (sanitize + connectivity + validation) */
+  private applyEdges(raw: WorkflowEdge[], opts?: { skipIfSame?: boolean }): void {
+    const nodes = this.allNodes();
+    const incoming = this.sanitizeEdges(nodes, raw ?? []);
+
+    const cur = this._edges();
+    if (opts?.skipIfSame && incoming.length === cur.length && incoming.every((e, i) => e.id === cur[i]?.id)) {
+      return;
+    }
+
+    this._edges.set(incoming);
+
+    const nodesWithUi = this.withUiConnectivity(nodes, incoming);
+    this.execNodes.set(nodesWithUi.filter(n => this.isExecutableNode(n)));
+    this.uiNodes.set(nodesWithUi.filter(n => !this.isExecutableNode(n)));
+
+    this.emitConnectivity(nodesWithUi, incoming);
+    this.lastTopoSig = this.makeTopoSig(this.execNodes(), incoming);
+    this.publishGraphValidity();
   }
 
   private isEditing(e: KeyboardEvent): boolean {
@@ -312,6 +524,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   dfModel = computed<DfDataModel>(() => {
+    // Include workflowChangeCounter to force recomputation on workflow switch
+    this.workflowChangeCounter();
     const nodes = this.allNodes() ?? [];
     const edges = this._edges() ?? [];
     const outDeg = new Map<string, number>(), inDeg = new Map<string, number>();
@@ -323,7 +537,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     });
 
     const nodesArr: DfDataInitialNode[] = nodes.map((n) => {
-      const ports = n.ports ?? this.defaultPortsFor(n.type);
+      const renderType = this.resolveRenderType(n);
+      const ports = this.ensurePorts(n.type, n.ports);
 
       const needsIn = (ports.inputs?.length ?? 0) > 0 && n.type !== 'input';
       const needsOut = (ports.outputs?.length ?? 0) > 0 && n.type !== 'result';
@@ -338,8 +553,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       return {
         id: n.id,
         data: {
-          type: n.type,
           ...dataForDf,
+          type: renderType,
           ui: paramsUi,
           ports,
           __missingIn: needsIn && !hasIn,
@@ -352,21 +567,43 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     });
 
     const idSet = new Set(nodes.map(n => n.id));
+    const nodeMap = new Map(nodes.map(n => [n.id, n]));
     const conns: DfDataConnection[] = edges
       .filter(e => idSet.has(e.source) && idSet.has(e.target))
-      .map(e => ({
-        source: {
-          nodeId: e.source,
-          connectorType: DfConnectionPoint.Output,
-          connectorId: e.sourcePort,
-        },
-        target: {
-          nodeId: e.target,
-          connectorType: DfConnectionPoint.Input,
-          connectorId: e.targetPort,
-        },
-        label: { content: e.label },
-      }));
+      .filter(e => {
+        const s = nodeMap.get(e.source);
+        const t = nodeMap.get(e.target);
+        if (!s || !t) return false;
+
+        const sp = this.ensurePorts(s.type, s.ports);
+        const tp = this.ensurePorts(t.type, t.ports);
+
+        if ((tp.inputs?.length ?? 0) === 0) return false;
+
+        return (sp.outputs ?? []).some(p => p.id === e.sourcePort)
+          && (tp.inputs ?? []).some(p => p.id === e.targetPort);
+      })
+      .map(e => {
+        const sourceNode = nodeMap.get(e.source);
+        const targetNode = nodeMap.get(e.target);
+        const isDisabled = sourceNode?.data?.params?.['__disabled'] || targetNode?.data?.params?.['__disabled'];
+
+        return {
+          id: e.id,
+          source: {
+            nodeId: e.source,
+            connectorType: DfConnectionPoint.Output,
+            connectorId: e.sourcePort,
+          },
+          target: {
+            nodeId: e.target,
+            connectorType: DfConnectionPoint.Input,
+            connectorId: e.targetPort,
+          },
+          label: { content: e.label },
+          style: isDisabled ? { opacity: 0.3, strokeDasharray: '5,5' } : undefined,
+        };
+      });
 
     return { nodes: nodesArr, connections: conns };
   });
@@ -375,16 +612,26 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   private formInvalidByNode = new Map<string, { invalid: boolean; fields?: string[] }>();
 
   quickAddOpen = false;
-  quickAddCtx: { sourceNodeId: string; sourcePortId: string; sourcePortType?: string; anchorRect?: DOMRect } | null = null;
+  quickAddCtx:
+    | {
+      sourceNodeId: string;
+      sourcePortId: string;
+      sourcePortType?: string;
+      anchorRect?: DOMRect;
+      replaceMode?: boolean;
+    }
+    | null = null;
+
   quickAddItems: { type: string; icon?: string; label: string }[] = [];
+  qaClient: { x: number; y: number } | null = null;
+  existingTargets: { id: string; label: string; icon: string; type: PaletteType }[] = [];
 
   private idSeq = 0;
   private genId(prefix = 'n'): string { return `${prefix}_${Date.now().toString(36)}_${++this.idSeq}`; }
 
   private compatibleIndex = new Map<string, { type: string; icon?: string; label: string }[]>();
-  qaClient: { x: number; y: number } | null = null;
-
-  existingTargets: { id: string; label: string; icon: string; type: PaletteType }[] = [];
+  private workflowsStore = inject(WorkflowsStore);
+  private simStates = new Map<string, Record<string, Status>>();
 
   constructor(
     private bus: WfCanvasBus,
@@ -425,6 +672,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.bus.runRequested$.subscribe(() => this.startPipelineFromCurrent())
     );
     this.subs.add(
+      this.bus.runFromNode$.subscribe(({ nodeId }) => this.runStartingFrom(nodeId))
+    );
+    this.subs.add(
       this.bus.toggleRunPanel$.subscribe(({ anchorNodeId }) => this.toggleRunPanel(anchorNodeId))
     );
     this.subs.add(
@@ -441,19 +691,35 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       })
     );
     this.subs.add(
-      this.bus.openQuickAdd$.subscribe(({ nodeId, portId, portType, anchorEl }) => {
+      this.bus.nodePortsChanged$.subscribe(({ nodeId, inputs, outputs }) =>
+        this.updateNodePorts(nodeId, inputs, outputs)
+      )
+    );
+    this.subs.add(
+      this.bus.nodeLabelChanged$.subscribe(({ nodeId, label }) =>
+        this.updateNodeLabel(nodeId, label)
+      )
+    );
+    this.subs.add(
+      this.bus.openQuickAdd$.subscribe(({ nodeId, portId, portType, anchorEl, replaceMode }) => {
         const r = anchorEl.getBoundingClientRect();
+
         this.qaClient = { x: r.right + 8, y: r.top + r.height / 2 };
 
         this.quickAddCtx = {
           sourceNodeId: nodeId,
           sourcePortId: portId,
           sourcePortType: portType,
-          anchorRect: anchorEl.getBoundingClientRect(),
+          anchorRect: r,
+          replaceMode: !!replaceMode,
         };
-        this.quickAddItems = this.compatibleFor(portType);
+
+        this.quickAddItems = this.compatibleFor(portType, { mode: 'connect' });
         this.buildExistingTargets(nodeId, portType);
         this.quickAddOpen = true;
+
+        const mode = replaceMode ? 'replace' : 'connect';
+        this.quickAddItems = this.compatibleFor(portType, { mode });
       })
     );
     this.subs.add(
@@ -475,43 +741,55 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.bus.onNodeDelete$.subscribe(({ nodeId }) => this.onDeleteNode(nodeId))
     );
 
-    // Menu naviagtion declarations
-    const saveWorkflow: ToolbarAction = {
-      id: 'save_workflow',
-      icon: 'save',
-      tooltip: 'save_workflow',
-      click: () => this.submit(),
-      variant: 'flat',
-      label: 'SAVE',
-      class: 'primary',
-      disabled$: this.bus.graphValid$.pipe(map((c) => !c))
-    };
-    const draftWorkflow: ToolbarAction = {
-      id: 'draft_workflow',
-      icon: 'edit_document',
-      tooltip: 'draft',
-      click: () => this.submit(),
-      variant: 'flat',
-      label: 'Draft',
-      class: 'accent'
-    };
-    const publishWorkflow: ToolbarAction = {
-      id: 'publish_workflow',
-      icon: 'publish',
-      tooltip: 'publish_workflow',
-      click: () => this.submit(),
-      variant: 'flat',
-      label: 'Publish',
-      class: 'success',
-      disabled$: this.bus.graphValid$.pipe(map((c) => !c))
-    };
-    this.toolbar.scope(this.destroyRef, [saveWorkflow, draftWorkflow, publishWorkflow]);
+    this.subs.add(
+      combineLatest([
+        this.workflowsStore.executionHistory$,
+        this.workflowsStore.selectedWorkflowId$
+      ]).subscribe(([history, wfId]) => {
+        const filtered = wfId ? history.filter(r => r.workflowId === wfId) : [];
+        const runs = filtered.map(r => ({
+          id: r.id,
+          startedAt: new Date(r.startedAt).getTime(),
+          workflow: r.workflowSnapshot ?? this.buildWorkflowDTOFromSnapshot(r.snapshotNodes, r.snapshotEdges, r.workflowName),
+          state: r.nodeStatuses ?? {},
+          logs: r.logs ?? [],
+          nodeData: this.toRunNodePayloadMap(r.nodeData),
+          edgeData: r.edgeData ?? {},
+          status: r.status,
+          finishedAt: r.finishedAt ? new Date(r.finishedAt).getTime() : undefined,
+        }));
+        this.runs.set(runs);
+        this.bus.runs$.next(runs);
+      })
+    );
+
+    this.subs.add(
+      combineLatest([
+        this.workflowsStore.viewingExecution$,
+        this.workflowsStore.currentExecution$
+      ]).subscribe(([viewing, current]) => {
+        const run = viewing ?? current;
+        const state = run?.nodeStatuses ?? {};
+        this.currentRunId = run?.id ?? null;
+        this.runState.set(state);
+        this.bus.runState$.next(state);
+      })
+    );
+
+    effect(() => {
+      this.execNodes();
+      this._edges();
+      queueMicrotask(() => {
+        this.publishGraphValidity();
+        this.scheduleTagConnections();
+      });
+    });
   }
 
 
   ngAfterViewInit() {
     const el = this.flowElementRef.nativeElement;
-    
+
     // Check if the selected Node is the scene to remove selected outline 
     this.subs.add(this.renderer.listen(el, 'click', (ev: MouseEvent) => {
       const target = ev.target as HTMLElement | null;
@@ -522,6 +800,16 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         this.setSelectedNode(null);
       }
     }));
+
+    // Apply pending workflow name if it was set before form control was ready
+    if (this.pendingWorkflowName !== null && this.form.get('workflowName')) {
+      if (this.form.get('workflowName')?.value !== this.pendingWorkflowName) {
+        this.form.patchValue({ workflowName: this.pendingWorkflowName }, { emitEvent: false });
+      }
+    }
+
+    this.scheduleTagConnections();
+    this.refreshValidationAndConnectivityAfterRender();
   }
 
   ngOnInit(): void {
@@ -543,11 +831,119 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       }),
     ];
 
+    // Apply pending workflow name if form is ready
+    if (this.pendingWorkflowName !== null) {
+      setTimeout(() => {
+        if (this.form.get('workflowName')) {
+          this.suppressNameEmit = true;
+          if (this.form.get('workflowName')?.value !== this.pendingWorkflowName) {
+            this.form.patchValue({ workflowName: this.pendingWorkflowName }, { emitEvent: false });
+          }
+          queueMicrotask(() => (this.suppressNameEmit = false));
+        }
+      }, 100);
+    }
+
+    this.subs.add(
+      this.form.valueChanges
+        .pipe(
+          debounceTime(150),
+          distinctUntilChanged((a, b) => (a?.['workflowName'] ?? '') === (b?.['workflowName'] ?? ''))
+        )
+        .subscribe((v) => {
+          if (this.suppressNameEmit) return;
+          const name = (v?.['workflowName'] ?? '') as string;
+          if (!name.trim()) return;
+          this.workflowNameChange.emit(name);
+        })
+    );
+
+    this.paletteForm = this.fb.group({});
+    this.paletteFieldConfig = [
+      this.fields.getTextField({
+        name: 'search',
+        label: this.translate.instant('workflow.palette.search'),
+        placeholder: this.translate.instant('workflow.palette.search'),
+        layoutClass: 'primary',
+        required: false,
+        helperText: this.translate.instant('workflow.palette.search'),
+      }),
+    ];
+    this.subs.add(
+      this.paletteForm.valueChanges.subscribe((values) => {
+        this.paletteFilter.set(values.search || '');
+      })
+    );
+
+    this.applyReadOnlyState();
     queueMicrotask(() => this.publishGraphValidity());
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+  }
+
+  private toRunNodePayloadMap(v: unknown): Record<string, RunNodePayload> {
+    if (!v || typeof v !== 'object') return {};
+    return v as Record<string, RunNodePayload>;
+  }
+
+  private findInPath<T extends Element = Element>(
+    ev: Event,
+    predicate: (el: Element) => boolean
+  ): T | null {
+    const path = (ev.composedPath?.() ?? []) as Element[];
+    return (path.find(el => el instanceof Element && predicate(el)) as T) ?? null;
+  }
+
+  private scheduleTagConnections(): void {
+    if (!this.flowElementRef?.nativeElement) return;
+    if (this.tagConnectionsRaf) {
+      cancelAnimationFrame(this.tagConnectionsRaf);
+    }
+    this.tagConnectionsRaf = requestAnimationFrame(() => {
+      this.tagConnectionsRaf = null;
+      this.tagConnectionElements();
+    });
+  }
+
+  private tagConnectionElements(): void {
+    const host = this.flowElementRef?.nativeElement as HTMLElement | undefined;
+    if (!host) return;
+    const conns = Array.from(host.querySelectorAll('df-connection')) as HTMLElement[];
+    for (const el of conns) {
+      const conn = this.extractConnectionFromElement(el);
+      if (!conn) continue;
+      const id = this.makeEdgeId(conn.source.nodeId, conn.source.connectorId, conn.target.nodeId, conn.target.connectorId);
+      el.dataset['edgeId'] = id;
+      const path = el.querySelector('path.selectable-area') as SVGPathElement | null;
+      if (path) path.dataset['edgeId'] = id;
+    }
+  }
+
+  private extractConnectionFromElement(el: HTMLElement): DfDataConnection | null {
+    const direct = (el as unknown as { connection?: DfDataConnection }).connection;
+    if (direct?.source && direct?.target) return direct;
+    const ctx = (el as unknown as { __ngContext__?: unknown[] }).__ngContext__;
+    if (!Array.isArray(ctx)) return null;
+    for (const item of ctx) {
+      if (!item || typeof item !== 'object') continue;
+      const conn = (item as { connection?: DfDataConnection }).connection;
+      if (conn?.source && conn?.target) return conn;
+    }
+    return null;
+  }
+
+  private resolveEdgeIdFromEvent(ev: PointerEvent): string | null {
+    const tagged = this.findInPath<HTMLElement>(ev, el => el instanceof HTMLElement && el.hasAttribute('data-edge-id'));
+    const attr = tagged?.getAttribute('data-edge-id');
+    if (attr) return attr;
+
+    const connEl = this.findInPath<HTMLElement>(ev, el => el.tagName?.toLowerCase() === 'df-connection');
+    if (!connEl) return null;
+    const conn = this.extractConnectionFromElement(connEl);
+    if (!conn) return null;
+    return this.makeEdgeId(conn.source.nodeId, conn.source.connectorId, conn.target.nodeId, conn.target.connectorId);
   }
 
   private buildExistingTargets(sourceNodeId: string, sourcePortType?: string): void {
@@ -556,7 +952,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     this.existingTargets = this.execNodes()
       .filter(n => n.id !== sourceNodeId)
       .filter(n => (n.ports?.inputs?.length ?? 0) > 0)
-      .filter(n => n.type !== 'result')
+      // All nodes are runnable now
       .filter(n => {
         const ins = n.ports?.inputs ?? [];
         return ins.length === 0 || ins.some(ip => t(ip.type) === t(sourcePortType) || t(ip.type) === 'any' || t(sourcePortType) === 'any');
@@ -616,7 +1012,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     let anchor: WorkflowNode | undefined;
 
     if (anchorNodeId) {
-      anchor = all.find(n => n.id === anchorNodeId) || all.find(n => n.type === 'result');
+      anchor = all.find(n => n.id === anchorNodeId);
       const rp: WorkflowNode = {
         id: RUN_PANEL_ID,
         type: 'run-panel',
@@ -731,45 +1127,61 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   private publishGraphValidity(): void {
     const nodes = this.execNodes();
     const edges = this._edges();
-    const err = this.validateGraph(nodes, edges);
-    this.bus.graphValid$.next(!err);
+    const validation = this.computeValidation(nodes, edges);
+    this.graphValidSig.set(!!validation.valid);
+    this.bus.graphValid$.next(validation.valid);
+    this.validationChange.emit(validation);
   }
 
-  private validateGraph(
+  private computeValidation(
     nodesArg: WorkflowNode[] | null | undefined,
     edgesArg: WorkflowEdge[] | null | undefined
-  ): string | null {
-    const nodes = (nodesArg ?? []).filter(n => this.isExecutableNode(n));
-    const edges = (edgesArg ?? []).filter(e =>
-      nodes.some(n => n.id === e.source) && nodes.some(n => n.id === e.target)
-    );
+  ): WorkflowValidationState {
 
-    const inputs = nodes.filter(n => n.type === 'input');
-    const results = nodes.filter(n => n.type === 'result');
-    if (inputs.length !== 1) return this.translate.instant('workflow.errors.exactlyOneInput');
-    if (results.length !== 1) return this.translate.instant('workflow.errors.exactlyOneResult');
+    const isDisabledNode = (n: WorkflowNode) => !!n.data?.params?.['__disabled'];
+
+    const nodes = (nodesArg ?? [])
+      .filter(n => this.isExecutableNode(n))
+      .filter(n => !isDisabledNode(n));
+
+    const nodeIdSet = new Set(nodes.map(n => n.id));
+
+    const edges = (edgesArg ?? [])
+      .filter(e => nodeIdSet.has(e.source) && nodeIdSet.has(e.target));
+
+    const nodeValidity: Record<string, boolean> = {};
+    let valid = true;
+
+    // An empty canvas should not block the UI with a validation error.
+    // Treat it as valid so the "invalid graph" badge only appears when there are nodes.
+    if (nodes.length === 0) {
+      return { valid: true, nodeValidity };
+    }
 
     const outMap = new Map<string, WorkflowEdge[]>(), inMap = new Map<string, WorkflowEdge[]>();
     for (const n of nodes) { outMap.set(n.id, []); inMap.set(n.id, []); }
     for (const e of edges) { outMap.get(e.source)!.push(e); inMap.get(e.target)!.push(e); }
-
-    for (const n of nodes) {
-      const ports = n.ports ?? this.defaultPortsFor(n.type);
-      const hasIn = (inMap.get(n.id)?.length ?? 0) > 0;
-      const hasOut = (outMap.get(n.id)?.length ?? 0) > 0;
-      const needsIn = (ports.inputs?.length ?? 0) > 0 && n.type !== 'input';
-      const needsOut = (ports.outputs?.length ?? 0) > 0 && n.type !== 'result';
-      if (needsIn && !hasIn) return this.translate.instant('workflow.errors.nodeMissingInput', { id: n.data?.label ?? n.id });
-      if (needsOut && !hasOut) return this.translate.instant('workflow.errors.nodeMissingOutput', { id: n.data?.label ?? n.id });
+    const inByPort = new Map<string, number>();
+    const outByPort = new Map<string, number>();
+    for (const e of edges) {
+      const inKey = `${e.target}::${e.targetPort}`;
+      const outKey = `${e.source}::${e.sourcePort}`;
+      inByPort.set(inKey, (inByPort.get(inKey) ?? 0) + 1);
+      outByPort.set(outKey, (outByPort.get(outKey) ?? 0) + 1);
     }
 
     for (const n of nodes) {
-      const fv = this.formInvalidByNode.get(n.id);
-      if (fv?.invalid) {
-        return this.translate.instant('workflow.errors.invalid_fields', {
-          id: n.data?.label ?? n.id,
-        });
-      }
+      const ports = this.ensurePorts(n.type, n.ports);
+      const requiredInputs = (ports.inputs ?? []).filter(p => p.required === true);
+      const requiredOutputs = (ports.outputs ?? []).filter(p => p.required === true);
+      const allRequiredInputsMet = requiredInputs.every(p => (inByPort.get(`${n.id}::${p.id}`) ?? 0) > 0);
+      const allRequiredOutputsMet = requiredOutputs.every(p => (outByPort.get(`${n.id}::${p.id}`) ?? 0) > 0);
+      const good =
+        allRequiredInputsMet &&
+        allRequiredOutputsMet &&
+        !this.formInvalidByNode.get(n.id)?.invalid;
+      nodeValidity[n.id] = good;
+      valid = valid && good;
     }
 
     const indeg = new Map<string, number>();
@@ -786,9 +1198,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         if ((indeg.get(t) ?? 0) === 0) q.push(t);
       }
     }
-    if (visited !== nodes.length) return this.translate.instant('workflow.errors.cycleDetected');
+    if (visited !== nodes.length) valid = false;
 
-    return null;
+    return { valid, nodeValidity };
   }
 
   private normalize(nodes: WorkflowNode[], edges: WorkflowEdge[]) {
@@ -803,7 +1215,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         params: n.data?.params ?? {},
         ui: undefined,
       },
-      ports: n.ports ?? this.defaultPortsFor(n.type),
+      ports: this.ensurePorts(n.type, n.ports),
     }));
 
     const cleanEdges = edges.map(e => ({
@@ -819,24 +1231,21 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private withUiConnectivity(nodes: WorkflowNode[], edges: WorkflowEdge[]) {
-    const outMap = new Map<string, number>(), inMap = new Map<string, number>();
-    nodes.forEach(n => { outMap.set(n.id, 0); inMap.set(n.id, 0); });
-    edges.forEach(e => {
-      outMap.set(e.source, (outMap.get(e.source) ?? 0) + 1);
-      inMap.set(e.target, (inMap.get(e.target) ?? 0) + 1);
-    });
-
     return nodes.map(n => {
-      const ports = n.ports ?? this.defaultPortsFor(n.type);
-      const needsIn = (ports.inputs?.length ?? 0) > 0 && n.type !== 'input';
-      const needsOut = (ports.outputs?.length ?? 0) > 0 && n.type !== 'result';
-      const hasIn = (inMap.get(n.id) ?? 0) > 0;
-      const hasOut = (outMap.get(n.id) ?? 0) > 0;
+      const ports = this.ensurePorts(n.type, n.ports);
+      const requiredInputs = (ports.inputs ?? []).filter(p => p.required === true);
+      const requiredOutputs = (ports.outputs ?? []).filter(p => p.required === true);
+      const missingInputs = requiredInputs
+        .filter(p => !edges.some(e => e.target === n.id && e.targetPort === p.id))
+        .map(p => p.id);
+      const missingOutputs = requiredOutputs
+        .filter(p => !edges.some(e => e.source === n.id && e.sourcePort === p.id))
+        .map(p => p.id);
 
       const nextParams = {
         ...(n.data?.params ?? {}),
-        __missingIn: needsIn && !hasIn,
-        __missingOut: needsOut && !hasOut,
+        __missingIn: missingInputs.length > 0,
+        __missingOut: missingOutputs.length > 0,
       };
 
       return { ...n, data: { ...n.data, params: nextParams } } as WorkflowNode;
@@ -852,16 +1261,42 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const action = ev.item?.data as ActionDefinitionLite | undefined;
     if (!action) return;
 
+    const host = this.flowElementRef?.nativeElement;
+    const scene = host?.querySelector('df-scene') as HTMLElement | null;
+    const hostRect = host?.getBoundingClientRect();
+    const sceneRect = scene?.getBoundingClientRect() ?? hostRect;
+    const point = (ev as unknown as { dropPoint?: { x: number; y: number } }).dropPoint
+      ?? this.lastPointer()
+      ?? { x: sceneRect?.left ?? 0, y: sceneRect?.top ?? 0 };
+    const actionPorts = action.params?.['ports'] as WorkflowNode['ports'] | undefined;
+    const { x: nodeOffsetX, y: nodeOffsetY } = this.estimateNodeOffset(action.type, actionPorts);
+    const zoom = this.zoom() || 1;
+    const x = sceneRect ? (point.x - sceneRect.left) / zoom - nodeOffsetX : 0;
+    const y = sceneRect ? (point.y - sceneRect.top) / zoom - nodeOffsetY : 0;
     const id = crypto?.randomUUID() ?? this.genId('n');
+    const isComposite = this.isCompositeAction(action);
+    const nodeType = isComposite ? 'composite' : action.type;
+    const aiType = action.type;
+    const actionParams = { ...(action.params ?? {}) } as Record<string, unknown>;
+    delete actionParams['ports'];
+    delete actionParams['label'];
+    delete actionParams['class'];
+    delete actionParams['workflowId'];
     const node: WorkflowNode = {
       id,
-      type: action.type,
+      type: nodeType,
+      x: Math.round(x),
+      y: Math.round(y),
       data: {
-        label: this.humanLabelFor(action.type),
-        aiType: action.type as InspectorActionType,
-        params: { ...action.params, ui: { expanded: true } },
+        label: (action.params?.['label'] as string | undefined) ?? this.humanLabelFor(action.type),
+        aiType: aiType as InspectorActionType,
+        params: {
+          ...actionParams,
+          ui: { expanded: true },
+          __workflowId: isComposite ? (action.params?.['workflowId'] as string | undefined) : undefined,
+        },
       },
-      ports: this.defaultPortsFor(action.type),
+      ports: this.ensurePorts(nodeType, actionPorts),
     };
 
     if (action.type === 'run-panel') {
@@ -875,13 +1310,20 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const withUi = this.withUiConnectivity([...execNext, ...this.uiNodes()], this._edges());
     this.execNodes.set(execNext);
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: execNext, edges: this._edges() });
-    queueMicrotask(() => (this.suppressExternal = false));
+    this.emitGraphChange(execNext, this._edges());
 
     this.emitConnectivity(withUi, this._edges());
 
     this.publishGraphValidity();
+    this.schedulePostDropValidation();
+  }
+
+  private schedulePostDropValidation(): void {
+    setTimeout(() => {
+      const withUi = this.withUiConnectivity([...this.execNodes(), ...this.uiNodes()], this._edges());
+      this.emitConnectivity(withUi, this._edges());
+      this.publishGraphValidity();
+    }, 0);
   }
 
   onModelChange = (m: DfDataModel): void => {
@@ -913,7 +1355,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       const rawData = raw.data ?? {};
       const pos = (raw as DfDataNode).position ?? { x: prev?.x ?? 0, y: prev?.y ?? 0 };
       const type = (rawData.type as PaletteType) ?? prev?.type;
-      const ports = (rawData as Record<string, unknown>)?.['ports'] as WorkflowNode['ports'] ?? prev?.ports ?? this.defaultPortsFor(type);
+      const ports = this.ensurePorts(type, (rawData as Record<string, unknown>)?.['ports'] as WorkflowNode['ports'] ?? prev?.ports);
       const prevParams = (prev?.data?.params ?? {}) as Record<string, unknown>;
       const rawParams = (rawData as Record<string, unknown>)?.['params'] as Record<string, unknown> ?? {};
 
@@ -969,49 +1411,49 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   onNodeMoved(_evt: unknown): unknown {
-    const event = _evt;
+    const event = _evt as { nodeId?: string; id?: string };
+    const id = event?.nodeId ?? event?.id;
+    if (id) this.bus.nodeMoved$.next({ nodeId: id, at: Date.now() });
     return event;
   }
 
-  onConnectionSelected(_evt: unknown): unknown {
-    const event = _evt;
-    return event;
-  }
+  onConnectionSelected(evt: unknown): unknown {
+    const event = evt as {
+      target?: {
+        id?: string;
+        source?: { nodeId: string; connectorId: string };
+        target?: { nodeId: string; connectorId: string };
+      };
+    };
+    const t = event?.target?.target;
+    const s = event?.target?.source;
 
-  private tryRemoveDfConnection(
-    s: { nodeId: string; connectorId: string, connectorType: DfConnectionPoint },
-    t: { nodeId: string; connectorId: string, connectorType: DfConnectionPoint }
-  ): void {
-    const api = this.flow;
-    try { api?.removeConnection({ source: s, target: t, }); return; } catch (e) { console.log('tryRemoveDfConnection error', e) }
+    const derivedId =
+      s && t ? this.makeEdgeId(s.nodeId, s.connectorId, t.nodeId, t.connectorId) : null;
 
-    queueMicrotask(() => this._edges.set([...this._edges()]));
+    const rawId =
+      (event?.target && 'id' in event.target ? (event.target as { id?: string }).id : null) ??
+      (event?.target?.target && 'id' in event.target.target ? (event.target.target as { id?: string }).id : null) ??
+      null;
+
+    const id = derivedId ?? rawId;
+    if (!id) return evt;
+
+    const next = new Set(this.selectedEdges());
+    if (this.multiSelectMode()) {
+      if (next.has(id)) next.delete(id); else next.add(id);
+    } else {
+      next.clear(); next.add(id);
+    }
+    this.selectedEdges.set(next);
+    this.emitSelection();
+
+    return evt;
   }
 
   onConnectionCreated(evt: DfEvent<DfDataConnection>): void {
     const t = evt?.target?.target, s = evt?.target?.source;
     if (!s || !t) return;
-
-    const all = this.allNodes();
-    const srcNode = all.find(n => n.id === s.nodeId);
-    const tgtNode = all.find(n => n.id === t.nodeId);
-
-    const isInputResultPair =
-      !!srcNode && !!tgtNode &&
-      (
-        (srcNode.type === 'input' && tgtNode.type === 'result') ||
-        (srcNode.type === 'result' && tgtNode.type === 'input')
-      );
-
-    if (isInputResultPair) {
-      this.toast.showError(
-        this.translate.instant('workflow.errors.noDirectInputToResult') ||
-        'You cannot connect Input directly to Result.',
-      );
-      this.tryRemoveDfConnection(s, t);
-      this.publishGraphValidity();
-      return;
-    }
 
     const id = this.makeEdgeId(s.nodeId, s.connectorId, t.nodeId, t.connectorId);
     if (this._edges().some(e => e.id === id)) return;
@@ -1033,10 +1475,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     this.emitConnectivity(withUi, after);
     this.publishGraphValidity();
+    this.schedulePublishGraphValidity();
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: this.execNodes(), edges: after });
-    queueMicrotask(() => (this.suppressExternal = false));
+    this.emitGraphChange(this.execNodes(), after);
   }
 
   onConnectionDeleted(evt: DfEvent<DfDataConnection>): void {
@@ -1052,10 +1493,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     this.emitConnectivity(withUi, after);
     this.publishGraphValidity();
+    this.schedulePublishGraphValidity();
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: this.execNodes(), edges: after });
-    queueMicrotask(() => (this.suppressExternal = false));
+    this.emitGraphChange(this.execNodes(), after);
   }
 
   setSelectedNode(id: string | null): void {
@@ -1065,17 +1505,42 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       return;
     }
 
-    const prev = this.selectedNodeId();
-    if (prev) {
-      const prevEl = host.querySelector(`[data-node-id="${prev}"]`) as HTMLElement | null;
-      prevEl?.classList.remove('is-selected');
+    const prevSet = new Set(this.selectedNodes());
+    let nextSet = new Set(prevSet);
+
+    if (id === null) {
+      nextSet.clear();
+      this.selectedNodeId.set(null);
+    } else if (this.multiSelectMode()) {
+      if (nextSet.has(id)) {
+        nextSet.delete(id);
+      } else {
+        nextSet.add(id);
+      }
+      this.selectedNodeId.set(id);
+    } else {
+      nextSet = new Set([id]);
+      this.selectedNodeId.set(id);
     }
 
-    this.selectedNodeId.set(id);
-    if (id) {
-      const el = host.querySelector(`[data-node-id="${id}"]`) as HTMLElement | null;
-      el?.classList.add('is-selected');
+    // update DOM classes
+    prevSet.forEach(pid => {
+      if (!nextSet.has(pid)) {
+        host.querySelector(`[data-node-id="${pid}"]`)?.classList.remove('is-selected');
+      }
+    });
+    nextSet.forEach(nid => {
+      host.querySelector(`[data-node-id="${nid}"]`)?.classList.add('is-selected');
+    });
+
+    this.selectedNodes.set(nextSet);
+
+    if (!this.multiSelectMode()) {
+      this.selectedEdges.set(new Set());
+      this.edgeActionsOpen.set(false);
     }
+
+    this.emitSelection(Array.from(nextSet));
   }
 
   onDeleteNode = (id: string): void => {
@@ -1103,7 +1568,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     // Exec node branch
     const exec = this.execNodes();
     const node = exec.find(n => n.id === id);
-    if (!node || this.isTerminal(id)) return;
+    if (!node) return;
 
     // Collect edges that touch this node
     const toRemove = this._edges().filter(e => e.source === id || e.target === id);
@@ -1141,17 +1606,15 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     this.publishGraphValidity();
 
     if (this.selectedNodeId() === id) this.setSelectedNode(null);
+    const nextSel = new Set(this.selectedNodes());
+    if (nextSel.delete(id)) {
+      this.selectedNodes.set(nextSel);
+      this.emitSelection(Array.from(nextSel));
+    }
+    this.clearEdgeSelection();
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: nextExec, edges: nextEdges });
-    queueMicrotask(() => (this.suppressExternal = false));
+    this.emitGraphChange(nextExec, nextEdges);
   };
-
-  isTerminal(id: string | null): boolean {
-    if (!id) return false;
-    const n = this.execNodes().find(x => x.id === id);
-    return !!n && (n.type === 'input' || n.type === 'result');
-  }
 
   submit(): void {
     if (this.form.invalid) {
@@ -1162,9 +1625,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     const nodes = this.execNodes();
     const edges = this._edges();
-    const graphErr = this.validateGraph(nodes, edges);
-    if (graphErr) {
-      this.toast.showError(graphErr);
+    const validation = this.computeValidation(nodes, edges);
+    if (!validation.valid) {
+      this.toast.showError(this.translate.instant('workflow.errors.invalid_graph'));
       return;
     }
 
@@ -1174,20 +1637,20 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private emitConnectivity(nodes: WorkflowNode[], edges: WorkflowEdge[]): void {
-    const out = new Map<string, number>(), inn = new Map<string, number>();
-    nodes.forEach(n => { out.set(n.id, 0); inn.set(n.id, 0); });
-    edges.forEach(e => {
-      out.set(e.source, (out.get(e.source) ?? 0) + 1);
-      inn.set(e.target, (inn.get(e.target) ?? 0) + 1);
-    });
-
     for (const n of nodes) {
-      const ports = n.ports ?? this.defaultPortsFor(n.type);
-      const needsIn = (ports.inputs?.length ?? 0) > 0 && n.type !== 'input';
-      const needsOut = (ports.outputs?.length ?? 0) > 0 && n.type !== 'result';
-      const missingIn = needsIn && ((inn.get(n.id) ?? 0) === 0);
-      const missingOut = needsOut && ((out.get(n.id) ?? 0) === 0);
+      const ports = this.ensurePorts(n.type, n.ports);
+      const requiredInputs = (ports.inputs ?? []).filter(p => p.required === true);
+      const requiredOutputs = (ports.outputs ?? []).filter(p => p.required === true);
+      const missingInputs = requiredInputs
+        .filter(p => !edges.some(e => e.target === n.id && e.targetPort === p.id))
+        .map(p => p.id);
+      const missingOutputs = requiredOutputs
+        .filter(p => !edges.some(e => e.source === n.id && e.sourcePort === p.id))
+        .map(p => p.id);
+      const missingIn = missingInputs.length > 0;
+      const missingOut = missingOutputs.length > 0;
       this.bus.nodeConnectivity$.next({ nodeId: n.id, missingIn, missingOut });
+      this.bus.nodePortStatus$.next({ nodeId: n.id, missingInputs, missingOutputs });
     }
   }
 
@@ -1199,22 +1662,181 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     return idx >= 0
   }
 
-  private updateRunState(runId: string, mut: (s: Record<string, Status>) => void): void {
-    const runs = this.runs();
-    const idx = runs.findIndex(r => r.id === runId);
-    if (idx < 0) return;
-    const cur = { ...runs[idx].state };
-    mut(cur);
-    const next = runs.slice();
-    next[idx] = { ...runs[idx], state: cur };
-    this.runs.set(next);
-    this.emitRuns();
+  private emitSelection(nodeIdsOverride?: string[]): void {
+    const nodeIds = nodeIdsOverride ?? Array.from(this.selectedNodes());
+    const edgeIds = Array.from(this.selectedEdges());
+    this.selectionChange.emit({ nodeIds, edgeIds });
+  }
 
-    // keep old single-run bindings in sync for the latest run only
-    if (this.currentRunId === runId) {
-      this.runState.set(cur);
-      this.bus.runState$.next(cur);
+  private clearEdgeSelection(): void {
+    if (this.selectedEdges().size === 0) return;
+    this.selectedEdges.set(new Set());
+    this.emitSelection();
+    this.edgeActionsOpen.set(false);
+    this.edgeActionTarget = null;
+  }
+
+  deleteSelectedEdge(): void {
+    if (!this.edgeActionTarget) return;
+    const id = this.edgeActionTarget.edgeId;
+    const after = this._edges().filter(e => e.id !== id);
+    this._edges.set(after);
+    this.edgeActionsOpen.set(false);
+    this.edgeActionTarget = null;
+    this.clearEdgeSelection();
+
+    const combined = [...this.execNodes(), ...this.uiNodes()];
+    const withUi = this.withUiConnectivity(combined, after);
+    this.emitConnectivity(withUi, after);
+    this.publishGraphValidity();
+
+    this.emitGraphChange(this.execNodes(), after);
+  }
+
+  insertNodeOnEdge(): void {
+    if (!this.edgeActionTarget) return;
+    const edge = this._edges().find(e => e.id === this.edgeActionTarget?.edgeId);
+    if (!edge) return;
+
+    const sourceNode = this.allNodes().find(n => n.id === edge.source);
+    const srcPortType = sourceNode?.ports?.outputs?.find(p => p.id === edge.sourcePort)?.type;
+
+    // remove edge and open quick-add from its source
+    const after = this._edges().filter(e => e.id !== edge.id);
+    this._edges.set(after);
+    this.edgeActionsOpen.set(false);
+    this.edgeActionTarget = null;
+    this.clearEdgeSelection();
+
+    const combined = [...this.execNodes(), ...this.uiNodes()];
+    const withUi = this.withUiConnectivity(combined, after);
+    this.emitConnectivity(withUi, after);
+    this.publishGraphValidity();
+    this.emitGraphChange(this.execNodes(), after);
+
+    if (!sourceNode) return;
+    this.quickAddCtx = {
+      sourceNodeId: edge.source,
+      sourcePortId: edge.sourcePort,
+      sourcePortType: srcPortType,
+      anchorRect: undefined,
+    };
+    this.quickAddItems = this.compatibleFor(srcPortType);
+    this.buildExistingTargets(edge.source, srcPortType);
+    this.quickAddOpen = true;
+  }
+
+  runStartingFrom(nodeId: string): void {
+    const node = this.execNodes().find(n => n.id === nodeId);
+    if (!node) {
+      this.toast.showError(this.translate.instant('workflow.errors.nodeNotFound'));
+      return;
     }
+
+    // simple check: node must have inputs satisfied or pinned data exists (stored in fileCache as placeholder for now)
+    const incoming = this._edges().filter(e => e.target === nodeId);
+    const ports = this.ensurePorts(node.type, node.ports);
+    const needsIn = (ports.inputs?.length ?? 0) > 0 && node.type !== 'input';
+    const hasIn = incoming.length > 0;
+    const hasPinned = !!this.fileCache.get(nodeId);
+    if (needsIn && !hasIn && !hasPinned) {
+      this.toast.showError(this.translate.instant('workflow.errors.missingPinnedData'));
+      return;
+    }
+
+    const { nodes, edges } = this.subgraphFrom(nodeId);
+    this.startRunWithGraph(nodes, edges, nodeId);
+  }
+
+  private updateRunState(runId: string, mut: (s: Record<string, Status>) => void): void {
+    const prev = { ...(this.simStates.get(runId) ?? {}) };
+    const cur = { ...prev };
+    mut(cur);
+    this.simStates.set(runId, cur);
+
+    const changed = Object.keys(cur).filter(id => prev[id] !== cur[id]);
+    for (const nodeId of changed) {
+      const status = cur[nodeId];
+      this.workflowsStore.updateNodeStatus({ executionId: runId, nodeId, status });
+      this.workflowsStore.appendLog({
+        executionId: runId,
+        message: `${nodeId}: ${status}`
+      });
+      if (status === 'success') {
+        this.recordNodeData(runId, nodeId);
+      }
+    }
+  }
+
+  private recordNodeData(runId: string, nodeId: string): void {
+    const run = this.runs().find(r => r.id === runId);
+    if (!run) return;
+
+    const node = run.workflow.nodes.find(n => n.id === nodeId) as (WorkflowNode | undefined);
+    const now = new Date().toISOString();
+    const ports = node?.ports ?? { inputs: [], outputs: [] };
+    const params = node?.data?.params ?? {};
+    const incoming = run.workflow.edges.filter(e => e.target === nodeId);
+    const outgoing = run.workflow.edges.filter(e => e.source === nodeId);
+
+    const inputs = (ports.inputs ?? []).map(p => {
+      const edges = incoming.filter(e => e.targetPort === p.id);
+      return {
+        id: p.id,
+        label: p.label,
+        type: p.type ?? 'json',
+        required: p.required === true,
+        connected: edges.length > 0,
+        sources: edges.map(e => ({
+          edgeId: e.id,
+          from: e.source,
+          sourcePort: e.sourcePort,
+        })),
+        value: edges.length ? { from: edges.map(e => e.source) } : null,
+      };
+    });
+
+    const outputs = (ports.outputs ?? []).map(p => {
+      const edges = outgoing.filter(e => e.sourcePort === p.id);
+      return {
+        id: p.id,
+        label: p.label,
+        type: p.type ?? 'json',
+        required: p.required === true,
+        connected: edges.length > 0,
+        targets: edges.map(e => ({
+          edgeId: e.id,
+          to: e.target,
+          targetPort: e.targetPort,
+        })),
+        value: { params },
+      };
+    });
+
+    const payload = {
+      nodeId,
+      at: now,
+      params,
+      inputs,
+      outputs,
+    };
+
+    const edgeData: Record<string, unknown> = {};
+    for (const e of outgoing) {
+      edgeData[e.id] = {
+        from: e.source,
+        to: e.target,
+        sourcePort: e.sourcePort,
+        targetPort: e.targetPort,
+        payload: { params, fromNode: e.source, toNode: e.target },
+      };
+    }
+
+    this.workflowsStore.mergeExecutionData({
+      executionId: runId,
+      nodeData: { [nodeId]: payload },
+      edgeData,
+    });
   }
 
   private simulateRun(runId: string, wf: PipelineWorkflowDTO): void {
@@ -1245,7 +1867,12 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     const step = (): void => {
       if (!sim.running || sim.pipelineCancelled) return;
-      if (sim.ready.length === 0) { sim.running = false; return; }
+      if (sim.ready.length === 0) {
+        sim.running = false;
+        this.workflowsStore.completeExecution({ executionId: runId, status: 'success' });
+        this.workflowsStore.appendLog({ executionId: runId, message: 'Run completed' });
+        return;
+      }
 
       const id = sim.ready.shift()!;
 
@@ -1325,31 +1952,61 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     });
 
     sim.running = false;
+    this.workflowsStore.completeExecution({ executionId: rid, status: 'skipped' });
   }
 
   private startPipelineFromCurrent(): void {
     const filtered = this.filterForRuntime(this.execNodes(), this._edges());
-    const { cleanNodes } = this.normalize(filtered.nodes, filtered.edges);
+    this.startRunWithGraph(filtered.nodes, filtered.edges);
+  }
 
-    const dto = this.buildWorkflowDTO(filtered.nodes, filtered.edges);
+  private startRunWithGraph(nodes: WorkflowNode[], edges: WorkflowEdge[], fromNodeId?: string): void {
+    const dto = this.buildWorkflowDTO(nodes, edges);
     const runId = crypto?.randomUUID?.() ?? `run_${Date.now()}`;
     this.currentRunId = runId;
 
     const initial: Record<string, Status> = {};
-    for (const n of cleanNodes) initial[n.id] = 'queued';
+    for (const n of dto.nodes) initial[n.id] = 'queued';
 
-    const run: RunEntry = { id: runId, startedAt: Date.now(), workflow: dto, state: initial };
-    this.runs.set([run, ...this.runs()]);
-    this.emitRuns();
-
+    this.simStates.set(runId, { ...initial });
     this.pipelineDto.set(dto);
     this.bus.pipeline$.next(dto);
-    this.runState.set(initial);
-    this.bus.runState$.next(initial);
+    this.workflowsStore.startExecutionWithPayload({ runId, workflow: dto, nodeStatuses: initial, fromNodeId });
+    this.workflowsStore.appendLog({ executionId: runId, message: 'Run started' });
 
     this.sims.set(runId, this.newSim());
     this.simulateRun(runId, dto);
-    queueMicrotask(() => this.bus.formsReset$.next({ includeInputs: true }));
+  }
+
+  private subgraphFrom(startId: string): { nodes: WorkflowNode[]; edges: WorkflowEdge[] } {
+    const nodes = this.execNodes();
+    const edges = this._edges();
+    const byId = new Map(nodes.map(n => [n.id, n]));
+    const out = new Map<string, WorkflowEdge[]>();
+    for (const e of edges) {
+      if (!out.has(e.source)) out.set(e.source, []);
+      out.get(e.source)!.push(e);
+    }
+    const visited = new Set<string>();
+    const queue: string[] = [startId];
+    const keepEdges: WorkflowEdge[] = [];
+
+    while (queue.length) {
+      const id = queue.shift()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const outs = out.get(id) ?? [];
+      for (const e of outs) {
+        keepEdges.push(e);
+        if (!visited.has(e.target)) queue.push(e.target);
+      }
+    }
+
+    const keepNodes = [...visited]
+      .map(id => byId.get(id))
+      .filter((n): n is WorkflowNode => !!n);
+
+    return { nodes: keepNodes, edges: keepEdges };
   }
 
   private emitRuns(): void {
@@ -1368,8 +2025,55 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   private emitExecOnly(nodes: WorkflowNode[], edges: WorkflowEdge[]): void {
     const { nodes: outNodes, edges: outEdges } = this.filterForRuntime(nodes, edges);
+    this.emitGraphChange(outNodes, outEdges);
+  }
+
+  onEdgeActionsEnter(): void {
+    this.edgeActionsHover.set(true);
+    if (this.edgeHoverCloseTimer) {
+      window.clearTimeout(this.edgeHoverCloseTimer);
+      this.edgeHoverCloseTimer = null;
+    }
+  }
+
+  onEdgeActionsLeave(): void {
+    this.edgeActionsHover.set(false);
+  }
+
+  private sanitizeGraph(nodesArg: WorkflowNode[] | null | undefined, edgesArg: WorkflowEdge[] | null | undefined) {
+    const nodes = (nodesArg ?? []).map(n => {
+      const handlePorts = this.portsFromHandles(n);
+      return { ...n, ports: this.ensurePorts(n.type, handlePorts ?? n.ports) };
+    });
+    const byId = new Map(nodes.map(n => [n.id, n] as const));
+
+    const edges = (edgesArg ?? []).filter(e => {
+      const src = byId.get(e.source);
+      const tgt = byId.get(e.target);
+      if (!src || !tgt) return false;
+
+      const srcPorts = this.ensurePorts(src.type, src.ports);
+      const tgtPorts = this.ensurePorts(tgt.type, tgt.ports);
+
+      if ((tgtPorts.inputs?.length ?? 0) === 0) return false;
+
+      const srcOk = (srcPorts.outputs ?? []).some(p => p.id === e.sourcePort);
+      const tgtOk = (tgtPorts.inputs ?? []).some(p => p.id === e.targetPort);
+      return srcOk && tgtOk;
+    });
+
+    const uniq = new Map<string, WorkflowEdge>();
+    for (const e of edges) uniq.set(e.id, e);
+
+    return { nodes, edges: [...uniq.values()] };
+  }
+
+  private emitGraphChange(nodes: WorkflowNode[], edges: WorkflowEdge[]): void {
+    const sanitizedEdges = this.sanitizeEdges([...nodes, ...this.uiNodes()], edges);
+
+    this.lastTopoSig = this.makeTopoSig(nodes, sanitizedEdges);
     this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: outNodes, edges: outEdges });
+    this.OnCanvasChange.emit({ nodes, edges: sanitizedEdges });
     queueMicrotask(() => (this.suppressExternal = false));
   }
 
@@ -1393,6 +2097,60 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.uiNodes.set(nextUi);
       this.refreshConnectivityAndValidity();
     }
+  }
+
+  private updateNodePorts(nodeId: string, inputs: WorkflowNode['ports']['inputs'], outputs: WorkflowNode['ports']['outputs']): void {
+    const exec = this.execNodes();
+    const iExec = exec.findIndex(n => n.id === nodeId);
+    if (iExec < 0) return;
+
+    const minEdit = this.minEditCountsFor(exec[iExec].type);
+    const nextPorts = this.ensurePorts(
+      exec[iExec].type,
+      { inputs, outputs },
+      { padToMinimum: true, minInputs: minEdit.inputs, minOutputs: minEdit.outputs }
+    );
+    const nextExec = exec.slice();
+    nextExec[iExec] = { ...nextExec[iExec], ports: nextPorts };
+    this.execNodes.set(nextExec);
+
+    const validIn = new Set(nextPorts.inputs.map(p => p.id));
+    const validOut = new Set(nextPorts.outputs.map(p => p.id));
+    const nextEdges = this._edges().filter(e => {
+      if (e.source === nodeId && !validOut.has(e.sourcePort)) return false;
+      if (e.target === nodeId && !validIn.has(e.targetPort)) return false;
+      return true;
+    });
+    this._edges.set(nextEdges);
+
+    const withUi = this.withUiConnectivity([...nextExec, ...this.uiNodes()], nextEdges);
+    this.emitConnectivity(withUi, nextEdges);
+    this.publishGraphValidity();
+    this.emitGraphChange(nextExec, nextEdges);
+  }
+
+  private updateNodeLabel(nodeId: string, label: string): void {
+    const nextLabel = label.trim();
+    this.updateNodeById(
+      nodeId,
+      (n) => ({
+        ...n,
+        data: {
+          ...(n.data ?? {}),
+          label: nextLabel,
+        }
+      }),
+      { emitToParentIfExec: true }
+    );
+  }
+
+  private estimateNodeOffset(type: PaletteType, portsOverride?: WorkflowNode['ports']): { x: number; y: number } {
+    const ports = this.ensurePorts(type, portsOverride);
+    const portCount = Math.max(1, ports.inputs.length, ports.outputs.length);
+    const baseSize = 70;
+    const extra = Math.max(0, portCount - 2) * 18;
+    const height = Math.max(baseSize, baseSize + extra);
+    return { x: baseSize / 2, y: height / 2 };
   }
 
   private refreshConnectivityAndValidity(): void {
@@ -1457,22 +2215,165 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     return JSON.stringify({ ns, es });
   }
 
-  private defaultPortsFor(type: string): WorkflowNode['ports'] {
-    const inputRandomKey = 'input-' + crypto?.randomUUID?.();
-    const resultRandomKey = 'result-' + crypto?.randomUUID?.();
-    const nodeInRandomKey = 'node-in-' + crypto?.randomUUID?.();
-    const nodeOutRandomKey = 'node-out-' + crypto?.randomUUID?.();
-    if (type === 'input') return { inputs: [], outputs: [{ id: inputRandomKey, label: 'out', type: 'json' }] };
-    if (type === 'result') return { inputs: [{ id: resultRandomKey, label: 'in', type: 'json' }], outputs: [] };
-    if (type === 'run-panel') return { inputs: [], outputs: [] };
-    if (type === 'details') return { inputs: [], outputs: [] };
+  private portCountsFor(type: string): { inputs: number; outputs: number } {
+    const t = (type ?? '').toString().toLowerCase();
+    if (t === 'composite') return { inputs: 1, outputs: 1 };
+    if (t === 'run-panel' || t === 'details' || t === 'preview') return { inputs: 0, outputs: 0 };
+    if (t === 'input') return { inputs: 0, outputs: 1 };
+    if (t === 'result') return { inputs: 1, outputs: 0 };
+    const triggers = new Set(['compare', 'extract', 'summarize']);
+    if (triggers.has(t)) return { inputs: 0, outputs: 1 };
+    return { inputs: 1, outputs: 1 };
+  }
+
+  private minEditCountsFor(type: string): { inputs: number; outputs: number } {
+    const defaults = this.portCountsFor(type);
     return {
-      inputs: [{ id: nodeInRandomKey, label: 'in', type: 'json' }],
-      outputs: [{ id: nodeOutRandomKey, label: 'out', type: 'json' }],
+      inputs: defaults.inputs > 0 ? 1 : 0,
+      outputs: defaults.outputs > 0 ? 1 : 0,
     };
   }
 
+  private defaultPortsFor(type: string): WorkflowNode['ports'] {
+    const { inputs: inputCount, outputs: outputCount } = this.portCountsFor(type);
+    const inputs = Array.from({ length: inputCount }, (_, i) => ({
+      id: `in-${i + 1}`,
+      label: `in ${i + 1}`,
+      type: 'json',
+      required: false,
+    }));
+    const outputs = Array.from({ length: outputCount }, (_, i) => ({
+      id: `out-${i + 1}`,
+      label: `out ${i + 1}`,
+      type: 'json',
+      required: false,
+    }));
+    return { inputs, outputs };
+  }
+
+  private portsFromHandles(node: WorkflowNode): WorkflowNode['ports'] | null {
+    const raw = node as unknown as { input_handles?: unknown; output_handles?: unknown; data?: { params?: Record<string, unknown> } };
+    const params = (raw.data && typeof raw.data === 'object' ? raw.data.params : undefined) as Record<string, unknown> | undefined;
+    const inputsRaw = Array.isArray(raw.input_handles)
+      ? raw.input_handles
+      : Array.isArray(params?.['input_handles'])
+        ? params?.['input_handles']
+        : Array.isArray(params?.['inputHandles'])
+          ? params?.['inputHandles']
+          : null;
+    const outputsRaw = Array.isArray(raw.output_handles)
+      ? raw.output_handles
+      : Array.isArray(params?.['output_handles'])
+        ? params?.['output_handles']
+        : Array.isArray(params?.['outputHandles'])
+          ? params?.['outputHandles']
+          : null;
+    if (!inputsRaw && !outputsRaw) return null;
+
+    const pickString = (obj: Record<string, unknown>, keys: string[]): string | undefined => {
+      for (const k of keys) {
+        const val = obj[k];
+        if (typeof val === 'string') return val;
+      }
+      return undefined;
+    };
+
+    const toPort = (handle: unknown, idx: number, prefix: 'in' | 'out'): WorkflowPorts['inputs'][number] => {
+      const rec = (handle && typeof handle === 'object') ? (handle as Record<string, unknown>) : {};
+      const dataRef = pickString(rec, ['data_reference', 'dataReference']);
+      const artifact = pickString(rec, ['artifact_type', 'artifactType']);
+      const id = (typeof rec['id'] === 'string' ? (rec['id'] as string) : `${prefix}-${idx + 1}`);
+      const label = (dataRef ?? (typeof rec['label'] === 'string' ? (rec['label'] as string) : undefined) ?? `${prefix} ${idx + 1}`);
+      const type = (typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined) ?? artifact ?? 'json';
+      const required = (typeof rec['required'] === 'boolean' ? (rec['required'] as boolean) : undefined);
+
+      const port = { id, label, type, required } as WorkflowPorts['inputs'][number] & {
+        data_reference?: string;
+        artifact_type?: string;
+      };
+      if (dataRef) port.data_reference = dataRef;
+      if (artifact) port.artifact_type = artifact;
+      return port as WorkflowPorts['inputs'][number];
+    };
+
+    return {
+      inputs: (inputsRaw ?? []).map((h, i) => toPort(h, i, 'in')),
+      outputs: (outputsRaw ?? []).map((h, i) => toPort(h, i, 'out')),
+    };
+  }
+
+  private ensurePorts(
+    type: string,
+    ports?: WorkflowNode['ports'],
+    opts?: { padToMinimum?: boolean; minInputs?: number; minOutputs?: number }
+  ): WorkflowNode['ports'] {
+    const base = ports ?? this.defaultPortsFor(type);
+    const defaults = this.portCountsFor(type);
+    const minInputs = opts?.minInputs ?? defaults.inputs;
+    const minOutputs = opts?.minOutputs ?? defaults.outputs;
+
+    const pickString = (obj: WorkflowPort, keys: string[]): string | undefined => {
+      const rec = obj as unknown as Record<string, unknown>;
+      for (const k of keys) {
+        const val = rec[k];
+        if (typeof val === 'string') return val;
+      }
+      return undefined;
+    };
+
+    const norm = (p: WorkflowPorts['inputs'][number], idx: number, prefix: 'in' | 'out') => {
+      const dataRef = pickString(p, ['data_reference', 'dataReference']);
+      const artifact = pickString(p, ['artifact_type', 'artifactType']);
+      const port = {
+        id: p.id ?? `${prefix}-${idx + 1}`,
+        label: dataRef ?? p.label ?? `${prefix} ${idx + 1}`,
+        type: p.type ?? artifact ?? 'json',
+        required: p.required, // let backend decide; leave undefined if not provided
+      } as WorkflowPorts['inputs'][number] & { data_reference?: string; artifact_type?: string };
+      if (dataRef) port.data_reference = dataRef;
+      if (artifact) port.artifact_type = artifact;
+      return port as WorkflowPorts['inputs'][number];
+    };
+
+    const inputs = (base.inputs ?? []).map((p, i) => norm(p, i, 'in'));
+    const outputs = (base.outputs ?? []).map((p, i) => norm(p, i, 'out'));
+    const padToMinimum = opts?.padToMinimum ?? (ports == null);
+
+    const ensureUnique = (prefix: string, existing: Set<string>): string => {
+      let i = existing.size + 1;
+      let id = `${prefix}-${i}`;
+      while (existing.has(id)) {
+        i += 1;
+        id = `${prefix}-${i}`;
+      }
+      return id;
+    };
+
+    if (padToMinimum) {
+      const existingIn = new Set(inputs.map(p => p.id));
+      while (inputs.length < minInputs) {
+        const id = ensureUnique('in', existingIn);
+        existingIn.add(id);
+        inputs.push({ id, label: `in ${inputs.length + 1}`, type: 'json', required: true });
+      }
+
+      const existingOut = new Set(outputs.map(p => p.id));
+      while (outputs.length < minOutputs) {
+        const id = ensureUnique('out', existingOut);
+        existingOut.add(id);
+        outputs.push({ id, label: `out ${outputs.length + 1}`, type: 'json', required: false });
+      }
+    }
+
+    return { inputs, outputs };
+  }
+
   private isExecutableNode(n: WorkflowNode): boolean {
+    const aiType = (n.data?.aiType ?? '').toString();
+    if ((n.type ?? '').toString().toLowerCase() === 'composite' || aiType.startsWith('wf:')) {
+      return true;
+    }
+    if (this.executableNodesSig().size === 0) return true;
     const groupedSets = new Set<PaletteType>([
       ...EXEC_TYPES,
       ...this.executableNodesSig()
@@ -1503,6 +2404,80 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     return Array.isArray(v) && v.length > 0 && this.isFile(v[0]);
   }
 
+  private isCompositeAction(a: ActionDefinitionLite): boolean {
+    const type = (a.type ?? '').toString();
+    return type.startsWith('wf:') || !!a.params?.['workflowId'];
+  }
+
+  private normalizeCompositeNode(node: WorkflowNode): WorkflowNode {
+    const rawType = (node.type ?? '').toString();
+    if (!rawType.startsWith('wf:')) return node;
+    const workflowId = rawType.slice(3);
+    const params = { ...(node.data?.params ?? {}) } as Record<string, unknown>;
+    if (!params['__workflowId']) params['__workflowId'] = workflowId;
+    return {
+      ...node,
+      type: 'composite' as PaletteType,
+      data: {
+        ...(node.data ?? {}),
+        aiType: (node.data?.aiType ?? rawType) as InspectorActionType,
+        params,
+      },
+    };
+  }
+
+  private resolveRenderType(node: WorkflowNode): string {
+    const rawType = (node.type ?? '').toString();
+    const aiType = (node.data?.aiType ?? '').toString();
+    const candidate = rawType || aiType;
+    if (!candidate) return 'composite';
+    if (candidate.startsWith('wf:')) return 'composite';
+    const known = new Set([
+      'input',
+      'result',
+      'chat',
+      'compare',
+      'summarize',
+      'extract',
+      'embed',
+      'retrieve',
+      'convert_and_chunk',
+      'embed_langchain_documents',
+      'store_embedded_langchain_documents',
+      'jira',
+      'composite',
+      'run-panel',
+      'details',
+      'preview',
+    ]);
+    if (known.has(candidate)) return candidate;
+    return 'composite';
+  }
+
+  private applyReadOnlyState(): void {
+    const disabled = this.disabledSig();
+    if (disabled) {
+      this.showPalette.set(false);
+      this.paletteFilter.set('');
+    }
+
+    if (this.form) {
+      if (disabled) {
+        this.form.disable({ emitEvent: false });
+      } else {
+        this.form.enable({ emitEvent: false });
+      }
+    }
+
+    if (this.paletteForm) {
+      if (disabled) {
+        this.paletteForm.disable({ emitEvent: false });
+      } else {
+        this.paletteForm.enable({ emitEvent: false });
+      }
+    }
+  }
+
   private rebuildCompatibilityIndex(): void {
     const actions = this.availableActionsSig() ?? [];
     this.compatibleIndex.clear();
@@ -1512,7 +2487,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.compatibleIndex.get(k)!.push({
         type: a.type,
         icon: a.params?.['icon'] as string | undefined,
-        label: a.type
+        label: (a.params?.['label'] as string | undefined) ?? a.type
       });
     };
 
@@ -1521,105 +2496,149 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     }
   }
 
-  private compatibleFor(outType?: string): {
-    type: string;
-    icon?: string | undefined;
-    label: string;
-  }[] {
+  private compatibleFor(
+    outType?: string,
+    opts?: { mode?: 'connect' | 'replace' }
+  ): { type: string; icon?: string; label: string }[] {
     const t = outType ?? 'any';
     const base = [
       ...(this.compatibleIndex.get(t) ?? []),
       ...(t !== 'any' ? (this.compatibleIndex.get('any') ?? []) : []),
     ];
 
-    const hasResult = base.some(i => i.type === 'result');
-    if (!hasResult) {
-      base.push({ type: 'result', icon: 'forward', label: 'result' });
+    // In "connect" mode we only show actions that can be a TARGET (must have inputs)
+    if ((opts?.mode ?? 'connect') === 'connect') {
+      return base.filter(a => this.portCountsFor(a.type).inputs > 0);
     }
+
+    // In "replace" mode, you may allow anything (including 0-input nodes)
     return base;
   }
+  pickQuickAction(a: { type: string; icon?: string }): void {
+    console.log('pickQuickAction', a);
 
-  pickQuickAction(a: { type: string, icon?: string }): void {
-    if (!this.quickAddCtx) return;
-    const { sourceNodeId, sourcePortId } = this.quickAddCtx;
-    this.bus.quickAddPick$.next({ sourceNodeId, sourcePortId, actionType: a.type, icon: a.icon || '' });
+    const ctx = this.quickAddCtx;
+    if (!ctx) return;
+
+    const { sourceNodeId, sourcePortId, replaceMode } = ctx;
+
+    this.bus.quickAddPick$.next({
+      sourceNodeId,
+      sourcePortId,
+      actionType: a.type,
+      icon: a.icon ?? '',
+      replaceMode: !!replaceMode,
+    });
+
     this.quickAddOpen = false;
+    // optional cleanup to avoid stale ctx
+    this.quickAddCtx = null;
   }
 
   private handleQuickAddPick({
     sourceNodeId,
     sourcePortId,
     actionType,
-    icon
-  }: { sourceNodeId: string; sourcePortId: string; actionType: string, icon: string }): void {
-
+    icon,
+    replaceMode,
+  }: {
+    sourceNodeId: string;
+    sourcePortId: string;
+    actionType: string;
+    icon: string;
+    replaceMode?: boolean;
+  }): void {
     const sourceNode = this.allNodes().find(n => n.id === sourceNodeId);
+    const def = this.availableActionsSig().find(a => a.type === actionType);
+    const actionLabel = (def?.params?.['label'] as string | undefined) ?? this.humanLabelFor(actionType as PaletteType);
+    const actionPorts = (def?.params?.['ports'] as WorkflowNode['ports'] | undefined);
+    const actionParams = { ...(def?.params ?? {}) } as Record<string, unknown>;
+    delete actionParams['ports'];
+    delete actionParams['label'];
+    delete actionParams['class'];
+    delete actionParams['workflowId'];
+    const isComposite = actionType.startsWith('wf:') || !!def?.params?.['workflowId'];
+    const nodeType = isComposite ? 'composite' : (actionType as PaletteType);
 
-    if (actionType === 'result' && sourceNode?.type === 'input') {
-      this.toast.showError(
-        this.translate.instant('workflow.errors.noDirectInputToResult') ||
-        'You cannot connect Input directly to Result.',
-      );
-      this.quickAddOpen = false;
-      return;
-    }
 
-    if (actionType === 'result') {
-      let target = this.execNodes().find(n => n.type === 'result');
-      if (!target) {
-        const id = crypto?.randomUUID?.() ?? this.genId('n');
-        const ports = this.defaultPortsFor('result');
-        target = {
-          id,
-          type: 'result',
-          x: (sourceNode?.x ?? 0) + 470,
-          y: (sourceNode?.y ?? 0) + 150,
-          data: { label: this.humanLabelFor('result' as PaletteType), params: { ui: { expanded: true } } },
-          ports,
-        };
-        this.execNodes.set([...this.execNodes(), target]);
-      }
+    // ✅ 1) REPLACE mode: replace the source node with the new type
+    if (replaceMode && sourceNode) {
+      const ports = this.ensurePorts(nodeType, actionPorts);
 
-      const targetIn = (target.ports?.inputs ?? [])[0]?.id ?? 'in';
-      const edgeId = this.makeEdgeId(sourceNodeId, sourcePortId, target.id, targetIn);
-      if (!this._edges().some(e => e.id === edgeId)) {
-        const edge: WorkflowEdge = {
-          id: edgeId,
-          source: sourceNodeId,
-          sourcePort: sourcePortId,
-          target: target.id,
-          targetPort: targetIn,
-          label: '',
-        };
-        this._edges.set([...this._edges(), edge]);
-      }
+      const updatedNode: WorkflowNode = {
+        ...sourceNode,
+        type: nodeType as PaletteType,
+        data: {
+          ...(sourceNode.data ?? {}),
+          label: actionLabel,
+          aiType: actionType as InspectorActionType,
+          params: {
+            ...actionParams,
+            ui: { expanded: true },
+            icon: icon || (def?.params?.['icon'] as string | undefined),
+            __workflowId: isComposite ? (def?.params?.['workflowId'] as string | undefined) : undefined,
+          },
+        },
+        ports,
+      };
 
-      const withUi = this.withUiConnectivity([...this.execNodes(), ...this.uiNodes()], this._edges());
-      this.emitConnectivity(withUi, this._edges());
+      const execNext = this.execNodes().map(n => (n.id === sourceNodeId ? updatedNode : n));
+      this.execNodes.set(execNext);
+
+      // Update existing edges ports to match the new primary ports
+      const primaryIn = ports.inputs?.[0]?.id ?? null;
+      const primaryOut = ports.outputs?.[0]?.id ?? null;
+
+      const nextEdges = this._edges()
+        .map(e => {
+          if (e.source === sourceNodeId && primaryOut) return { ...e, sourcePort: primaryOut };
+          if (e.target === sourceNodeId && primaryIn) return { ...e, targetPort: primaryIn };
+          return e;
+        })
+        .filter(e => {
+          if (e.source === sourceNodeId && !primaryOut) return false;
+          if (e.target === sourceNodeId && !primaryIn) return false;
+          return true;
+        });
+
+      this._edges.set(nextEdges);
+
+      const withUi = this.withUiConnectivity([...execNext, ...this.uiNodes()], nextEdges);
+      this.emitConnectivity(withUi, nextEdges);
       this.publishGraphValidity();
+      this.emitGraphChange(execNext, nextEdges);
 
-      this.suppressExternal = true;
-      this.OnCanvasChange.emit({ nodes: this.execNodes(), edges: this._edges() });
-      queueMicrotask(() => (this.suppressExternal = false));
       this.quickAddOpen = false;
       return;
     }
 
-    // Default path: spawn picked action node and link it
+    // ✅ 2) Normal mode: spawn picked action node and link it
     const id = crypto?.randomUUID?.() ?? this.genId('n');
-    const ports = this.defaultPortsFor(actionType);
+    const ports = this.ensurePorts(nodeType, actionPorts);
+
+    if (!replaceMode && (ports.inputs?.length ?? 0) === 0) {
+      this.quickAddOpen = false;
+      return;
+    }
+
     const node: WorkflowNode = {
       id,
-      type: actionType as PaletteType,
+      type: nodeType as PaletteType,
       x: (sourceNode?.x ?? 0) + 650,
-      y: 0,
+      y: (sourceNode?.y ?? 0), // ✅ FIX: don't force y=0
       data: {
-        label: this.humanLabelFor(actionType as PaletteType),
+        label: actionLabel,
         aiType: actionType as InspectorActionType,
-        params: { ui: { expanded: true }, icon: icon },
+        params: {
+          ...actionParams,
+          ui: { expanded: true },
+          icon: icon || (def?.params?.['icon'] as string | undefined),
+          __workflowId: isComposite ? (def?.params?.['workflowId'] as string | undefined) : undefined,
+        },
       },
       ports,
     };
+
     const execNext = [...this.execNodes(), node];
     this.execNodes.set(execNext);
 
@@ -1632,19 +2651,20 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       targetPort: targetIn,
       label: '',
     };
-    this._edges.set([...this._edges(), edge]);
 
-    const withUi = this.withUiConnectivity([...execNext, ...this.uiNodes()], this._edges());
-    this.emitConnectivity(withUi, this._edges());
+    const nextEdges = [...this._edges(), edge];
+    this._edges.set(nextEdges);
+
+    const withUi = this.withUiConnectivity([...execNext, ...this.uiNodes()], nextEdges);
+    this.emitConnectivity(withUi, nextEdges);
     this.publishGraphValidity();
+    this.emitGraphChange(execNext, nextEdges);
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: execNext, edges: this._edges() });
-    queueMicrotask(() => (this.suppressExternal = false));
     this.quickAddOpen = false;
   }
 
   linkToExisting(targetId: string): void {
+    console.log("here", targetId)
     if (!this.quickAddCtx) return;
     const { sourceNodeId, sourcePortId } = this.quickAddCtx;
 
@@ -1693,9 +2713,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     this.emitConnectivity(withUi, after);
     this.publishGraphValidity();
 
-    this.suppressExternal = true;
-    this.OnCanvasChange.emit({ nodes: this.execNodes(), edges: after });
-    queueMicrotask(() => (this.suppressExternal = false));
+    this.emitGraphChange(this.execNodes(), after);
 
     this.quickAddOpen = false;
   }
@@ -1724,7 +2742,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private buildWorkflowDTO(fromNodes: WorkflowNode[], fromEdges: WorkflowEdge[]): PipelineWorkflowDTO {
-    const { cleanNodes, cleanEdges } = this.normalize(fromNodes, fromEdges);
+    const sanitizedEdges = this.sanitizeEdges(fromNodes, fromEdges);
+    const { cleanNodes, cleanEdges } = this.normalize(fromNodes, sanitizedEdges);
 
     const nodesSansReserved = cleanNodes.map(n => ({
       ...n,
@@ -1747,6 +2766,26 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         createdAt: new Date().toISOString(),
         version: '1',
         filesByNode,
+      }
+    };
+    return { ...dto, nodes: nodesSansReserved, edges: cleanEdges };
+  }
+
+  private buildWorkflowDTOFromSnapshot(
+    fromNodes: WorkflowNode[],
+    fromEdges: WorkflowEdge[],
+    name?: string
+  ): PipelineWorkflowDTO {
+    const sanitizedEdges = this.sanitizeEdges(fromNodes, fromEdges);
+    const { cleanNodes, cleanEdges } = this.normalize(fromNodes, sanitizedEdges);
+    const dto: PipelineWorkflowDTO = {
+      name: name ?? 'Workflow',
+      nodes: cleanNodes,
+      edges: cleanEdges,
+      meta: {
+        createdAt: new Date().toISOString(),
+        version: '1',
+        filesByNode: {},
       }
     };
     return dto;
