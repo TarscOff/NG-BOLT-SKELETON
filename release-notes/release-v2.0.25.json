@@ -1,0 +1,105 @@
+{
+  "version": "2.0.25",
+  "tag": "v2.0.25",
+  "previousTag": "v2.0.24",
+  "date": "2026-01-26T11:51:18.268Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "a4e3683",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflows",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "ee9a78a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.25 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "0924293",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.24",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "b476ae2",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #62 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "ee9a78a5dfc7130104489627d5ccd84b7db4d2f1",
+      "shortHash": "ee9a78a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.25 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b476ae2686c88440d63701491f84ab1d20261654",
+      "shortHash": "b476ae2",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #62 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(workflows): workflows"
+    },
+    {
+      "hash": "a4e3683cbd6efc70d9dd377fe516b3396c2188f1",
+      "shortHash": "a4e3683",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflows",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "0924293c4c6fcce172d58bd1b0255cfa589a9592",
+      "shortHash": "0924293",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.24",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
