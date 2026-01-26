@@ -21,22 +21,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
 import { WfCanvasBus } from '../../templates/utils/wf-canvas-bus';
-import { ActionFormSpec, makeFallback } from '../../templates/utils/action-forms';
+import { ActionFormSpec } from '../../templates/utils/action-forms';
 import { debounceTime, distinctUntilChanged, Subscription } from 'rxjs';
-import { DynamicFormComponent, FieldHostComponent } from '@cadai/pxs-ng-core/shared';
+import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import type { ReplaceBinary, ReservedKeys, StripReservedShallow } from '../../templates/utils/workflow.interface';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import type { ReplaceBinary, ReservedKeys, StripReservedShallow, ActionDefinitionLite } from '../../templates/utils/workflow.interface';
 import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { CommonModule } from '@angular/common';
-import { Inject } from '@angular/core';
 import { PortTypeOption, WorkflowsStore } from '../../data/workflows.store';
 import { buildValidators } from '@cadai/pxs-ng-core/utils';
+import { NodeDetailsDialogComponent, NodeDetailsDialogData } from './node-details-dialog/node-details-dialog.component';
 
 @Component({
   selector: 'app-wf-node',
@@ -112,6 +112,7 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   private workflowsStore = inject(WorkflowsStore);
   public isDark: Signal<boolean> = toSignal(this.store.select(AppSelectors.ThemeSelectors.selectIsDark), { initialValue: false });
   private portTypeOptionsSig: Signal<PortTypeOption[]> = toSignal(this.workflowsStore.portTypes$, { initialValue: [] });
+  private catalogSig = toSignal(this.workflowsStore.catalog$, { initialValue: [] as ActionDefinitionLite[] });
 
   ngOnInit(): void {
 
@@ -206,10 +207,6 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
         this.statusSig.set(s ?? null);
         this.markForCheck();
       })
-    );
-
-    this.subs.add(
-      this.bus.formsReset$.subscribe(({ includeInputs }) => this.resetFormsAfterRun(!!includeInputs))
     );
 
     this.actionsNodes = this.model?.['actionsNodes'];
@@ -424,10 +421,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   }
 
   private currentForm(): FormGroup {
-    return this.visualType() === 'input' ? this.formInputs : this.form;
+    return this.form;
   }
   private currentConfig(): FieldConfig[] {
-    return this.visualType() === 'input' ? this.configInputs : this.config;
+    return this.config;
   }
 
   hasInvalidParams(): boolean {
@@ -626,7 +623,8 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       status: this.statusSig(),
       pinned: this.isPinned(),
       disabled: this.isDisabled(),
-      ports: { inputs: this.inPorts(), outputs: this.outPorts() },
+      // compute effective ports merging model, extensions and library defaults
+      ports: this.computeDialogPorts(),
       form: this.currentForm(),
       config: this.currentConfig(),
       portTypeOptions: this.portTypeOptionsSig(),
@@ -666,14 +664,9 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return `${ins.map(norm).join('|')}__${outs.map(norm).join('|')}`;
   }
 
-  visualType(): PaletteType | undefined {
-    return this.safeModel.type;
-  }
-
   displayLabel(): string {
     if (this.safeModel.label) return this.safeModel.label;
     const t = (this.safeModel.type ?? '').toLowerCase();
-    if (t === 'input' || t === 'result') return "";
     return t;
   }
 
@@ -688,6 +681,120 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
   outPorts(): WorkflowPorts['outputs'] {
     return this.activePorts().outputs ?? [];
+  }
+
+  private computeDialogPorts(): WorkflowPorts {
+    const original = (this.model as Record<string, unknown> | null) ?? null;
+    const base: WorkflowPorts = this.safeModel.ports ?? { inputs: [], outputs: [] };
+
+    type PortMapValue = { required?: boolean; readonly?: boolean } | boolean;
+
+    const asRecord = (v: unknown) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+      return v as Record<string, unknown>;
+    };
+
+    const asWorkflowPorts = (v: unknown) => {
+      const r = asRecord(v);
+      if (!r) return undefined;
+      const ins = r['inputs'];
+      const outs = r['outputs'];
+      if (Array.isArray(ins) && Array.isArray(outs)) {
+        return { inputs: ins as WorkflowPorts['inputs'], outputs: outs as WorkflowPorts['outputs'] };
+      }
+      return undefined;
+    };
+
+    const collectCandidates = (): (WorkflowPorts | Record<string, unknown>)[] => {
+      const out: (WorkflowPorts | Record<string, unknown>)[] = [];
+      const data = asRecord(original?.['data']);
+
+      const maybePush = (v: unknown): void => {
+        const wp = asWorkflowPorts(v);
+        if (wp) { out.push(wp); return; }
+        const rec = asRecord(v);
+        if (rec) { out.push(rec); return; }
+        return;
+      };
+
+      maybePush(asRecord(data?.['config'])?.['ports']);
+      maybePush(data?.['portsConfig']);
+      maybePush(data?.['ports']);
+      maybePush(asRecord(original?.['config'])?.['ports']);
+      maybePush(original?.['ports']);
+      maybePush(asRecord(original?.['extensions'])?.['ports']);
+      // actionsNodes entries may not expose `ports` in their spec type; skip pushing here
+
+      // catalog defaults (ports or ports_map)
+      try {
+        const cat = this.catalogSig();
+        const t = (this.safeModel.type ?? '').toString();
+        if (Array.isArray(cat) && t) {
+          const def = cat.find(a => ((a.type ?? '').toString() === t));
+          if (def && def.params) {
+            maybePush(def.params['ports']);
+            maybePush(def.params['ports_map']);
+          }
+        }
+      } catch {
+        // ignore catalog failures
+      }
+
+      return out;
+    };
+
+    const findFlag = (portId: string, flag: 'required' | 'readonly'): boolean | undefined => {
+      const candidates = collectCandidates();
+      for (const c of candidates) {
+        // array-style ports
+        if (Array.isArray(c)) {
+          const hit = (c as WorkflowPorts['inputs']).find(p => p.id === portId);
+          if (hit) {
+            const val = flag === 'required'
+              ? hit.required
+              : ('readonly' in hit ? (hit as { readonly?: boolean }).readonly : undefined);
+            if (typeof val === 'boolean') return val;
+          }
+        } else {
+          // map-style: portId -> metadata or boolean
+          if (Object.prototype.hasOwnProperty.call(c, portId)) {
+            const v = (c as Record<string, unknown>)[portId] as PortMapValue | undefined;
+            if (typeof v === 'boolean' && flag === 'required') return v;
+            if (v && typeof v === 'object') {
+              const meta = v as { required?: unknown; readonly?: unknown };
+              const maybe = flag === 'required' ? meta.required : meta.readonly;
+              if (typeof maybe === 'boolean') return maybe;
+            }
+          }
+        }
+      }
+      return undefined;
+    };
+
+    const mapPort = (p: WorkflowPorts['inputs'][number]) => {
+      const explicitRequired = findFlag(p.id, 'required');
+      const required = explicitRequired === undefined ? (p.required === true) : explicitRequired;
+
+      // readonly can be provided by extensions map or catalog map
+      const ext = asRecord(original?.['extensions']);
+      const extPorts = asRecord(ext?.['ports']);
+      const extReadonly = extPorts && Object.prototype.hasOwnProperty.call(extPorts, p.id)
+        ? (() => {
+            const v = extPorts[p.id] as Record<string, unknown> | undefined;
+            return v && typeof v['readonly'] === 'boolean' ? v['readonly'] as boolean : undefined;
+          })()
+        : undefined;
+
+      const explicitReadonly = extReadonly ?? findFlag(p.id, 'readonly');
+      const readonly = explicitReadonly === true;
+
+      return { ...p, required, readonly } as WorkflowPorts['inputs'][number];
+    };
+
+    return {
+      inputs: (base.inputs ?? []).map(mapPort),
+      outputs: (base.outputs ?? []).map(mapPort),
+    };
   }
 
   hasMissingIn(): boolean {
@@ -723,82 +830,6 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   }
 
   private tryBuildFromModel(): void {
-    const vt = this.visualType();
-    if (vt === 'result') {
-      this.config = [];
-      this.wireFormToCanvas(null);
-      this.lastModelRef = this.model;
-      this.lastModelKey = '';
-      return;
-    } else if (vt === 'input') {
-      this.disabledSig.set(!!this.safeModel.params?.['__disabled']);
-      this.pinnedSig.set(!!this.safeModel.params?.['__pinned']);
-      this.configInputs = [
-        this.fields.getFileField({
-          name: 'files',
-          label: 'form.labels.files',
-          multiple: true,
-          accept: '.pdf,.docx,image/*',
-          required: false,
-          fileVariant: 'dropzone',
-          validators: undefined,
-          errorMessages: { required: "files are mandatory" }
-        }),
-        /*  this.fields.getDropdownField({
-           name: 'workflows',
-           label: 'Based on workflow',
-           placeholder: 'form.placeholders.role',
-           options: [
-             { label: 'WF1', value: 'WF1' },
-             { label: 'WF2', value: 'WF2' },
-           ],
-           multiple: false,
-           required: false,
-           color: "primary",
-           layoutClass: "primary",
-           validators: undefined
-         }),
-         this.fields.getToggleField({
-           name: 'file_mandatory',
-           label: 'Files mandatory',
-           helperText: undefined,
-           required: false,
-           validators: undefined,
-           color: "primary",
-           layoutClass: "primary",
-         }), */
-      ];
-
-      this.ensureFormControls(this.formInputs, this.configInputs);
-      this.formInputs.reset({}, { emitEvent: false });
-      this.formInputs.updateValueAndValidity({ emitEvent: false });
-      queueMicrotask(() => {
-        const payload = this.stripReserved(this.formInputs.getRawValue());
-        this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
-      });
-
-      if (!this.inputValueChangesHooked) {
-        this.inputValueChangesHooked = true;
-        this.subs.add(
-          this.formInputs.valueChanges
-            .pipe(
-              debounceTime(150),
-              distinctUntilChanged((a, b) => this.valuesEqual(a, b))
-            )
-            .subscribe(params => {
-              if (!params || typeof params !== 'object') return;
-              const payload = this.stripReserved(params);
-              this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
-            })
-        );
-      }
-      this.wireFormToCanvas(this.formInputs);
-
-      this.lastModelRef = this.model;
-      this.lastModelKey = '';
-      return;
-    }
-
     const key = this.resolveActionKey();
     this.lastModelRef = this.model;
     this.lastModelKey = key;
@@ -807,14 +838,9 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     this.pinnedSig.set(!!this.safeModel.params?.['__pinned']);
 
     const spec = this.actionsNodes?.[key];
-    if (!spec) {
-      this.config = makeFallback(this.fields);
-    } else {
+    if (spec) {
       const built = spec.make(this.fields);
       this.config = (built ?? []).filter(Boolean) as FieldConfig[];
-      if (!this.config.length) {
-        this.config = makeFallback(this.fields);
-      }
     }
 
     this.ensureFormControls(this.form, this.config);
@@ -856,25 +882,6 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       );
     }
     this.wireFormToCanvas(this.form);
-
-    this.markForCheck();
-  }
-
-  private resetFormsAfterRun(includeInputs: boolean) {
-    const vt = this.visualType();
-
-    if (vt === 'result') return;
-
-    const targetForm = vt === 'input' ? this.formInputs : this.form;
-
-    if (vt === 'input' && !includeInputs) return;
-    targetForm.reset({}, { emitEvent: false });
-    targetForm.markAsPristine();
-    targetForm.markAsUntouched();
-    targetForm.updateValueAndValidity({ emitEvent: false });
-    this.wireFormToCanvas(targetForm);
-
-    this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: {} });
 
     this.markForCheck();
   }
@@ -1017,351 +1024,5 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     const prev = this.safeModel.params ?? {};
     const merged = { ...prev, ...params } as WorkflowNodeDataBaseParams;
     this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: merged });
-  }
-}
-
-export interface NodeDetailsDialogData {
-  nodeId: string;
-  label: string;
-  icon: string | null;
-  status: Status | null;
-  pinned: boolean;
-  disabled: boolean;
-  ports: WorkflowPorts;
-  form: FormGroup;
-  config: FieldConfig[];
-  portTypeOptions: { value: string; label: string }[];
-}
-
-@Component({
-  selector: 'app-node-details-dialog',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatIconModule, MatTabsModule, MatCheckboxModule, DynamicFormComponent, FieldHostComponent, TranslateModule],
-  template: `
-    <h2 mat-dialog-title class="dialog-title">
-      <mat-icon *ngIf="data.icon">{{ data.icon }}</mat-icon>
-      <app-dynamic-form class="title-form" [form]="labelForm" [config]="labelConfig"></app-dynamic-form>
-    </h2>
-    <div mat-dialog-content class="dialog-content">
-      <div class="badges">
-        <span class="badge status" *ngIf="data.status">{{ ('status.' + data.status) | translate }}</span>
-        <span class="badge" *ngIf="data.pinned">{{ 'workflow.node.pinned' | translate }}</span>
-        <span class="badge" *ngIf="data.disabled">{{ 'workflow.node.disabled' | translate }}</span>
-      </div>
-
-      <mat-tab-group>
-        <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.params' | translate }}</ng-template>
-          <app-dynamic-form [form]="data.form" [config]="data.config"></app-dynamic-form>
-        </mat-tab>
-        <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.ports' | translate }}</ng-template>
-          <div class="ports-editor">
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.inputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of inputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
-                    }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeInput(i)" [disabled]="inputs.length <= 1">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <button mat-flat-button color="primary" (click)="addInput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_input' | translate }}
-              </button>
-            </div>
-
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.outputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of outputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
-                    }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeOutput(i)" [disabled]="outputs.length <= 1">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <button mat-flat-button color="primary" (click)="addOutput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_output' | translate }}
-              </button>
-            </div>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
-    <div mat-dialog-actions align="end">
-      <button mat-flat-button mat-dialog-close>
-        <mat-icon>close</mat-icon>
-        {{ 'close' | translate }}
-      </button>
-    </div>
-  `,
-  styles: [`
-    .dialog-title { display:flex; align-items:center; gap:8px; padding: 15px;}
-    .title-form { flex: 1; }
-    .dialog-content { padding: 8px 16px 16px; box-sizing: border-box; }
-    .badges { display:flex; gap:6px; margin-bottom:8px; }
-    .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, #fff); }
-    .ports { display:flex; gap:12px; margin: 0 0 12px; }
-    .ports-label { font-weight: 600; margin-bottom:4px; }
-    .port-chip { padding:4px 8px; border-radius:8px; background: color-mix(in srgb, var(--mat-neutral) 18%, transparent); }
-    .ports-editor { display:flex; flex-direction:column; gap:16px; padding:8px 2px 2px; }
-    .ports-section { display:flex; flex-direction:column; gap:8px; }
-    .ports-title { font-weight:600; font-size:12px; text-transform: uppercase; opacity:0.7; }
-    .port-row { display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; }
-    .port-form { flex: 1; display:grid; grid-template-columns: minmax(140px, 1fr) minmax(160px, 1fr) auto; gap:8px; align-items:center; }
-    .port-form app-field-host { min-width: 0; }
-    .port-field-placeholder { min-height: 48px; }
-    :host ::ng-deep .mat-mdc-tab-body-content { padding: 12px 4px 4px; box-sizing: border-box; }
-    :host ::ng-deep .mat-mdc-dialog-container .mat-mdc-dialog-surface { height: 100%; display: flex; flex-direction: column; }
-    :host ::ng-deep .mat-mdc-dialog-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    :host ::ng-deep .mat-mdc-dialog-actions { margin-top: auto; }
-    :host ::ng-deep .mat-mdc-tab-group { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    :host ::ng-deep .mat-mdc-tab-body-wrapper { flex: 1; min-height: 0; }
-    :host ::ng-deep .mat-mdc-tab-body { flex: 1; min-height: 0; }
-    :host ::ng-deep .mat-mdc-tab-body-content { height: 100%; overflow: auto; }
-  `]
-})
-export class NodeDetailsDialogComponent implements OnDestroy {
-  private fb = inject(FormBuilder);
-  private fields = inject(FieldConfigService);
-  private translate = inject(TranslateService);
-  private subs = new Subscription();
-  private portSubs = new Map<string, Subscription>();
-  labelForm!: FormGroup;
-  labelControl!: FormControl<string>;
-  labelConfig: FieldConfig[] = [];
-
-  inputs: { id: string; form: FormGroup; config: FieldConfig[] }[] = [];
-  outputs: { id: string; form: FormGroup; config: FieldConfig[] }[] = [];
-  private emitTimer: number | null = null;
-  private get portTypeOptions(): { value: string; label: string }[] {
-    return (this.data.portTypeOptions ?? []).length
-      ? this.data.portTypeOptions
-      : [
-        { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
-        { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
-        { value: 'json', label: 'workflow.dialog.port_type_options.json' },
-        { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
-        { value: 'string', label: 'workflow.dialog.port_type_options.string' },
-      ];
-  }
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: NodeDetailsDialogData,
-    public dialogRef: MatDialogRef<NodeDetailsDialogComponent>,
-    private bus: WfCanvasBus,
-  ) {
-    this.inputs = (data.ports?.inputs ?? []).map(p =>
-      this.buildPortForm({ ...p, required: p.required ?? false })
-    );
-
-    this.outputs = (data.ports?.outputs ?? []).map(p =>
-      this.buildPortForm({ ...p, required: p.required ?? false })
-    );
-    this.markDirtyTree(data.form);
-
-    const labelValue = (data.label ?? '').toString();
-    const labelText = this.translate.instant('workflow.dialog.node_name');
-    this.labelConfig = [
-      this.fields.getTextField({
-        name: 'label',
-        label: labelText,
-        placeholder: labelText,
-        required: true,
-        validators: [Validators.required, Validators.minLength(2), Validators.maxLength(60)],
-        errorMessages: {
-          required: this.translate.instant('form.errors.input.required'),
-          minlength: this.translate.instant('form.errors.input.minlength'),
-          maxlength: this.translate.instant('form.errors.input.maxlength'),
-        },
-        layoutClass: 'primary',
-        color: 'primary',
-        defaultValue: labelValue,
-      })
-    ];
-    this.labelControl = this.fb.control(labelValue, {
-      nonNullable: true,
-      validators: [Validators.required, Validators.minLength(2), Validators.maxLength(60)],
-    });
-    this.labelForm = this.fb.group({ label: this.labelControl });
-
-    this.subs.add(
-      this.labelControl.valueChanges
-        .pipe(debounceTime(150), distinctUntilChanged())
-        .subscribe(value => {
-          const next = (value ?? '').toString();
-          this.bus.nodeLabelChanged$.next({ nodeId: this.data.nodeId, label: next });
-        })
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subs.unsubscribe();
-    this.portSubs.forEach(sub => sub.unsubscribe());
-    this.portSubs.clear();
-  }
-
-  private nextId(prefix: 'in' | 'out'): string {
-    const existing = new Set([...this.inputs, ...this.outputs].map(p => p.id));
-    let i = existing.size + 1;
-    let id = `${prefix}-${i}`;
-    while (existing.has(id)) {
-      i += 1;
-      id = `${prefix}-${i}`;
-    }
-    return id;
-  }
-
-  addInput(): void {
-    const port = { id: this.nextId('in'), label: `in ${this.inputs.length + 1}`, type: 'json', required: false };
-    this.inputs = [...this.inputs, this.buildPortForm(port)];
-    this.queueEmit();
-  }
-
-  addOutput(): void {
-    const port = { id: this.nextId('out'), label: `out ${this.outputs.length + 1}`, type: 'json', required: false };
-    this.outputs = [...this.outputs, this.buildPortForm(port)];
-    this.queueEmit();
-  }
-
-  removeInput(i: number): void {
-    const next = this.inputs.slice();
-    const removed = next[i];
-    next.splice(i, 1);
-    this.inputs = next;
-    if (removed) {
-      this.portSubs.get(removed.id)?.unsubscribe();
-      this.portSubs.delete(removed.id);
-    }
-    this.queueEmit();
-  }
-
-  removeOutput(i: number): void {
-    const next = this.outputs.slice();
-    const removed = next[i];
-    next.splice(i, 1);
-    this.outputs = next;
-    if (removed) {
-      this.portSubs.get(removed.id)?.unsubscribe();
-      this.portSubs.delete(removed.id);
-    }
-    this.queueEmit();
-  }
-
-  queueEmit(): void {
-    if (this.emitTimer) {
-      window.clearTimeout(this.emitTimer);
-    }
-    this.emitTimer = window.setTimeout(() => {
-      this.bus.nodePortsChanged$.next({
-        nodeId: this.data.nodeId,
-        inputs: this.inputs.map(p => this.portFromForm(p)),
-        outputs: this.outputs.map(p => this.portFromForm(p)),
-      });
-      this.emitTimer = null;
-    }, 150);
-  }
-
-  private buildPortForm(port: WorkflowPorts['inputs'][number]): { id: string; form: FormGroup; config: FieldConfig[] } {
-    const labelMin = 2;
-    const labelMax = 40;
-    const form = this.fb.group({
-      label: [port.label ?? '', [Validators.required, Validators.minLength(labelMin), Validators.maxLength(labelMax)]],
-      type: [port.type ?? 'json', Validators.required],
-      required: [port.required === true],
-    });
-
-    const config: FieldConfig[] = [
-      this.fields.getTextField({
-        name: 'label',
-        label: 'workflow.dialog.port_name',
-        placeholder: 'workflow.dialog.port_name_placeholder',
-        helperText: 'workflow.dialog.port_name_help',
-        defaultValue: port.label ?? '',
-        required: true,
-        minLength: labelMin,
-        maxLength: labelMax,
-        validators: [Validators.required, Validators.minLength(labelMin), Validators.maxLength(labelMax)],
-        errorMessages: {
-          required: 'form.errors.input.required',
-          minlength: 'form.errors.input.minlength',
-          maxlength: 'form.errors.input.maxlength',
-        },
-        layoutClass: 'primary',
-        color: 'primary',
-      }),
-      this.fields.getDropdownField({
-        name: 'type',
-        label: 'workflow.dialog.port_type',
-        placeholder: 'workflow.dialog.port_type_placeholder',
-        helperText: 'workflow.dialog.port_type_help',
-        options: this.portTypeOptions.map(o => ({ label: o.label, value: o.value })),
-        multiple: false,
-        required: true,
-        validators: [Validators.required],
-        errorMessages: { required: 'form.errors.input.required' },
-        layoutClass: 'primary',
-        color: 'primary',
-        defaultValue: port.type ?? 'json',
-      }),
-      this.fields.getToggleField({
-        name: 'required',
-        label: 'workflow.dialog.required',
-        helperText: 'workflow.dialog.port_required_help',
-        required: false,
-        layoutClass: 'primary',
-        color: 'primary',
-        defaultValue: port.required === true,
-      }),
-    ];
-
-    const sub = form.valueChanges.pipe(debounceTime(150)).subscribe(() => this.queueEmit());
-    this.subs.add(sub);
-    this.portSubs.set(port.id, sub);
-
-    return { id: port.id, form, config };
-  }
-
-  private portFromForm(p: { id: string; form: FormGroup }): WorkflowPorts['inputs'][number] {
-    const raw = p.form.getRawValue() as { label?: string; type?: string; required?: boolean };
-    return {
-      id: p.id,
-      label: (raw.label ?? '').toString().trim() || p.id,
-      type: raw.type ?? 'json',
-      required: raw.required === true,
-    };
-  }
-
-  private markDirtyTree(control: AbstractControl | null): void {
-    if (!control) return;
-
-    const anyControl = control as AbstractControl & { controls?: Record<string, AbstractControl> | AbstractControl[] };
-    const childControls = anyControl.controls;
-
-    if (Array.isArray(childControls)) {
-      childControls.forEach(child => this.markDirtyTree(child));
-    } else if (childControls && typeof childControls === 'object') {
-      Object.values(childControls).forEach(child => this.markDirtyTree(child));
-    }
-
-    control.markAsTouched({ onlySelf: true });
-    control.markAsDirty({ onlySelf: true });
-    control.updateValueAndValidity({ emitEvent: false });
   }
 }

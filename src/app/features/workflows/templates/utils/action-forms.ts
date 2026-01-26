@@ -9,12 +9,12 @@ export interface ActionFormSpec {
 }
 
 /** Fallback for unknown action types */
-export function makeFallback(F: FieldConfigService): FieldConfig[] {
+export function makeFallback(/*F: FieldConfigService*/): FieldConfig[] {
   return [
-    F.getTextAreaField({
+/*     F.getTextAreaField({
       name: 'text',
       label: 'text',
       rows: 8,
-    }),
+    }), */
   ];
 }

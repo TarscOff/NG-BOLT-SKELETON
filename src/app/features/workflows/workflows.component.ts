@@ -15,7 +15,6 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { WorkflowCanvasDfComponent } from './sub/workflow-canvas.component';
 import { ActionDefinitionLite, PaletteType, WorkflowEdge, WorkflowNode, WorkflowPorts } from './templates/utils/workflow.interface';
-import { Validators } from '@angular/forms';
 import { ActionFormSpec } from './templates/utils/action-forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
@@ -123,9 +122,10 @@ export class WorkflowsComponent implements OnInit {
     });
 
     actionsNodes: Record<string, ActionFormSpec> = {
-        'chat': {
-            make: (F) => [
-                F.getTextAreaField({
+
+        chat: {
+            make: () => [
+                /* F.getTextAreaField({
                     name: 'system_prompt',
                     label: 'system_prompt',
                     placeholder: 'System prompt…',
@@ -157,68 +157,72 @@ export class WorkflowsComponent implements OnInit {
                     errorMessages: { required: "Temperature is required" },
                     defaultValue: 0.3,
                     helperText: "Saisissez la temperature",
-                }),
+                }), */
             ],
             defaults: {
                 temperature: 0.3
             },
-        },
 
-        compare: {
-            make: (F) => [
-                F.getRangeField({
-                    name: 'threshold',
-                    label: 'form.labels.threshold',
-                    min: 0,
-                    max: 100,
-                    color: "primary",
-                    layoutClass: "primary",
-                    helperText: "form.hints.threshold",
-                    validators: [Validators.required],
-                    required: true,
-                    errorMessages: { required: "form.errors.threshold" },
-                    placeholder: "form.placeholders.threshold",
-                }),
+        },
+        // Trigger nodes: appear in toolbox as sources (only outputs)
+        trigger_chat: {
+            make: () => [
+
             ],
             defaults: {
-                threshold: 20,
+            },
+        },
+
+        trigger_file_upload: {
+            make: () => [
+
+            ],
+            defaults: {
+            },
+        },
+
+        trigger_webhook: {
+            make: () => [
+
+            ],
+            defaults: {
             },
         },
 
         embed: {
-            make: (F) => [
-                F.getTextAreaField({
-                    name: 'text',
-                    label: 'workflow.forms.embed.text.label',
-                    placeholder: 'workflow.forms.embed.text.placeholder',
-                    required: true,
-                    rows: 6,
-                    validators: [Validators.required, Validators.maxLength(4000)],
-                    errorMessages: { required: 'workflow.forms.embed.errors.text_required' },
-                    maxLength: 4000,
-                    helperText: 'workflow.forms.embed.text.helper',
-                }),
-                F.getDropdownField({
-                    name: 'embedding_model',
-                    label: 'workflow.forms.embed.embedding_model.label',
-                    options: [
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
-                        { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    errorMessages: { required: 'workflow.forms.embed.errors.model_required' },
-                    defaultValue: 'text-embedding-3-small',
-                    helperText: 'workflow.forms.embed.embedding_model.helper',
-                }),
-                F.getToggleField({
-                    name: 'normalize_embeddings',
-                    label: 'workflow.forms.embed.normalize_embeddings.label',
-                    helperText: 'workflow.forms.embed.normalize_embeddings.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
+            make: () => [
+                /*              F.getTextAreaField({
+                                 name: 'text',
+                                 label: 'workflow.forms.embed.text.label',
+                                 placeholder: 'workflow.forms.embed.text.placeholder',
+                                 required: true,
+                                 rows: 6,
+                                 validators: [Validators.required, Validators.maxLength(4000)],
+                                 errorMessages: { required: 'workflow.forms.embed.errors.text_required' },
+                                 maxLength: 4000,
+                                 helperText: 'workflow.forms.embed.text.helper',
+                             }),
+                             F.getDropdownField({
+                                 name: 'embedding_model',
+                                 label: 'workflow.forms.embed.embedding_model.label',
+                                 options: [
+                                     { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
+                                     { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
+                                     { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
+                                 ],
+                                 required: true,
+                                 validators: [Validators.required],
+                                 errorMessages: { required: 'workflow.forms.embed.errors.model_required' },
+                                 defaultValue: 'text-embedding-3-small',
+                                 helperText: 'workflow.forms.embed.embedding_model.helper',
+                             }),
+                             F.getToggleField({
+                                 name: 'normalize_embeddings',
+                                 label: 'workflow.forms.embed.normalize_embeddings.label',
+                                 helperText: 'workflow.forms.embed.normalize_embeddings.helper',
+                                 required: false,
+                                 defaultValue: true,
+                             }), */
             ],
             defaults: {
                 embedding_model: 'text-embedding-3-small',
@@ -227,61 +231,61 @@ export class WorkflowsComponent implements OnInit {
         },
 
         retrieve: {
-            make: (F) => [
-                F.getTextAreaField({
-                    name: 'query',
-                    label: 'workflow.forms.retrieve.query.label',
-                    placeholder: 'workflow.forms.retrieve.query.placeholder',
-                    rows: 4,
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(2000)],
-                    errorMessages: { required: 'workflow.forms.retrieve.errors.query_required' },
-                    maxLength: 2000,
-                }),
-                F.getDropdownField({
-                    name: 'vector_store',
-                    label: 'workflow.forms.retrieve.vector_store.label',
-                    options: [
-                        { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
-                        { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
-                        { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
-                        { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
-                        { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    defaultValue: 'azure_cosmos_db',
-                    helperText: 'workflow.forms.retrieve.vector_store.helper',
-                }),
-                F.getRangeField({
-                    name: 'top_k',
-                    label: 'workflow.forms.retrieve.top_k.label',
-                    min: 1,
-                    max: 20,
-                    step: 1,
-                    defaultValue: 5,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.retrieve.top_k.helper',
-                }),
-                F.getRangeField({
-                    name: 'score_threshold',
-                    label: 'workflow.forms.retrieve.score_threshold.label',
-                    min: 0,
-                    max: 1,
-                    step: 0.05,
-                    defaultValue: 0.2,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.retrieve.score_threshold.helper',
-                }),
-                F.getToggleField({
-                    name: 'include_metadata',
-                    label: 'workflow.forms.retrieve.include_metadata.label',
-                    helperText: 'workflow.forms.retrieve.include_metadata.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
+            make: () => [
+                /*             F.getTextAreaField({
+                                name: 'query',
+                                label: 'workflow.forms.retrieve.query.label',
+                                placeholder: 'workflow.forms.retrieve.query.placeholder',
+                                rows: 4,
+                                required: true,
+                                validators: [Validators.required, Validators.maxLength(2000)],
+                                errorMessages: { required: 'workflow.forms.retrieve.errors.query_required' },
+                                maxLength: 2000,
+                            }),
+                            F.getDropdownField({
+                                name: 'vector_store',
+                                label: 'workflow.forms.retrieve.vector_store.label',
+                                options: [
+                                    { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
+                                    { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
+                                    { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
+                                    { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
+                                    { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
+                                ],
+                                required: true,
+                                validators: [Validators.required],
+                                defaultValue: 'azure_cosmos_db',
+                                helperText: 'workflow.forms.retrieve.vector_store.helper',
+                            }),
+                            F.getRangeField({
+                                name: 'top_k',
+                                label: 'workflow.forms.retrieve.top_k.label',
+                                min: 1,
+                                max: 20,
+                                step: 1,
+                                defaultValue: 5,
+                                required: true,
+                                validators: [Validators.required],
+                                helperText: 'workflow.forms.retrieve.top_k.helper',
+                            }),
+                            F.getRangeField({
+                                name: 'score_threshold',
+                                label: 'workflow.forms.retrieve.score_threshold.label',
+                                min: 0,
+                                max: 1,
+                                step: 0.05,
+                                defaultValue: 0.2,
+                                required: true,
+                                validators: [Validators.required],
+                                helperText: 'workflow.forms.retrieve.score_threshold.helper',
+                            }),
+                            F.getToggleField({
+                                name: 'include_metadata',
+                                label: 'workflow.forms.retrieve.include_metadata.label',
+                                helperText: 'workflow.forms.retrieve.include_metadata.helper',
+                                required: false,
+                                defaultValue: true,
+                            }), */
             ],
             defaults: {
                 vector_store: 'azure_cosmos_db',
@@ -292,56 +296,56 @@ export class WorkflowsComponent implements OnInit {
         },
 
         convert_and_chunk: {
-            make: (F) => [
-                F.getDropdownField({
-                    name: 'text_splitter',
-                    label: 'workflow.forms.convert_and_chunk.text_splitter.label',
-                    options: [
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.recursive', value: 'recursive_character' },
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.markdown', value: 'markdown' },
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.token', value: 'token' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    defaultValue: 'recursive_character',
-                    helperText: 'workflow.forms.convert_and_chunk.text_splitter.helper',
-                }),
-                F.getRangeField({
-                    name: 'chunk_size',
-                    label: 'workflow.forms.convert_and_chunk.chunk_size.label',
-                    min: 200,
-                    max: 4000,
-                    step: 100,
-                    defaultValue: 1000,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.convert_and_chunk.chunk_size.helper',
-                }),
-                F.getRangeField({
-                    name: 'chunk_overlap',
-                    label: 'workflow.forms.convert_and_chunk.chunk_overlap.label',
-                    min: 0,
-                    max: 800,
-                    step: 50,
-                    defaultValue: 200,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.convert_and_chunk.chunk_overlap.helper',
-                }),
-                F.getToggleField({
-                    name: 'clean_whitespace',
-                    label: 'workflow.forms.convert_and_chunk.clean_whitespace.label',
-                    helperText: 'workflow.forms.convert_and_chunk.clean_whitespace.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
-                F.getToggleField({
-                    name: 'add_source_metadata',
-                    label: 'workflow.forms.convert_and_chunk.add_source_metadata.label',
-                    helperText: 'workflow.forms.convert_and_chunk.add_source_metadata.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
+            make: () => [
+                /*                 F.getDropdownField({
+                                    name: 'text_splitter',
+                                    label: 'workflow.forms.convert_and_chunk.text_splitter.label',
+                                    options: [
+                                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.recursive', value: 'recursive_character' },
+                                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.markdown', value: 'markdown' },
+                                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.token', value: 'token' },
+                                    ],
+                                    required: true,
+                                    validators: [Validators.required],
+                                    defaultValue: 'recursive_character',
+                                    helperText: 'workflow.forms.convert_and_chunk.text_splitter.helper',
+                                }),
+                                F.getRangeField({
+                                    name: 'chunk_size',
+                                    label: 'workflow.forms.convert_and_chunk.chunk_size.label',
+                                    min: 200,
+                                    max: 4000,
+                                    step: 100,
+                                    defaultValue: 1000,
+                                    required: true,
+                                    validators: [Validators.required],
+                                    helperText: 'workflow.forms.convert_and_chunk.chunk_size.helper',
+                                }),
+                                F.getRangeField({
+                                    name: 'chunk_overlap',
+                                    label: 'workflow.forms.convert_and_chunk.chunk_overlap.label',
+                                    min: 0,
+                                    max: 800,
+                                    step: 50,
+                                    defaultValue: 200,
+                                    required: true,
+                                    validators: [Validators.required],
+                                    helperText: 'workflow.forms.convert_and_chunk.chunk_overlap.helper',
+                                }),
+                                F.getToggleField({
+                                    name: 'clean_whitespace',
+                                    label: 'workflow.forms.convert_and_chunk.clean_whitespace.label',
+                                    helperText: 'workflow.forms.convert_and_chunk.clean_whitespace.helper',
+                                    required: false,
+                                    defaultValue: true,
+                                }),
+                                F.getToggleField({
+                                    name: 'add_source_metadata',
+                                    label: 'workflow.forms.convert_and_chunk.add_source_metadata.label',
+                                    helperText: 'workflow.forms.convert_and_chunk.add_source_metadata.helper',
+                                    required: false,
+                                    defaultValue: true,
+                                }), */
             ],
             defaults: {
                 text_splitter: 'recursive_character',
@@ -353,37 +357,37 @@ export class WorkflowsComponent implements OnInit {
         },
 
         embed_langchain_documents: {
-            make: (F) => [
-                F.getDropdownField({
-                    name: 'embedding_model',
-                    label: 'workflow.forms.embed_langchain_documents.embedding_model.label',
-                    options: [
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
-                        { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    defaultValue: 'text-embedding-3-small',
-                }),
-                F.getRangeField({
-                    name: 'batch_size',
-                    label: 'workflow.forms.embed_langchain_documents.batch_size.label',
-                    min: 1,
-                    max: 128,
-                    step: 1,
-                    defaultValue: 32,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.embed_langchain_documents.batch_size.helper',
-                }),
-                F.getToggleField({
-                    name: 'normalize_embeddings',
-                    label: 'workflow.forms.embed.normalize_embeddings.label',
-                    helperText: 'workflow.forms.embed.normalize_embeddings.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
+            make: () => [
+                /*                 F.getDropdownField({
+                                    name: 'embedding_model',
+                                    label: 'workflow.forms.embed_langchain_documents.embedding_model.label',
+                                    options: [
+                                        { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
+                                        { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
+                                        { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
+                                    ],
+                                    required: true,
+                                    validators: [Validators.required],
+                                    defaultValue: 'text-embedding-3-small',
+                                }),
+                                F.getRangeField({
+                                    name: 'batch_size',
+                                    label: 'workflow.forms.embed_langchain_documents.batch_size.label',
+                                    min: 1,
+                                    max: 128,
+                                    step: 1,
+                                    defaultValue: 32,
+                                    required: true,
+                                    validators: [Validators.required],
+                                    helperText: 'workflow.forms.embed_langchain_documents.batch_size.helper',
+                                }),
+                                F.getToggleField({
+                                    name: 'normalize_embeddings',
+                                    label: 'workflow.forms.embed.normalize_embeddings.label',
+                                    helperText: 'workflow.forms.embed.normalize_embeddings.helper',
+                                    required: false,
+                                    defaultValue: true,
+                                }), */
             ],
             defaults: {
                 embedding_model: 'text-embedding-3-small',
@@ -393,205 +397,51 @@ export class WorkflowsComponent implements OnInit {
         },
 
         store_embedded_langchain_documents: {
-            make: (F) => [
-                F.getDropdownField({
-                    name: 'vector_store',
-                    label: 'workflow.forms.store_embedded_langchain_documents.vector_store.label',
-                    options: [
-                        { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
-                        { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
-                        { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
-                        { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
-                        { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    defaultValue: 'azure_cosmos_db',
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.vector_store.helper',
-                }),
-                F.getTextField({
-                    name: 'collection_name',
-                    label: 'workflow.forms.store_embedded_langchain_documents.collection_name.label',
-                    placeholder: 'workflow.forms.store_embedded_langchain_documents.collection_name.placeholder',
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(128)],
-                    errorMessages: { required: 'workflow.forms.store_embedded_langchain_documents.errors.collection_required' },
-                }),
-                F.getTextField({
-                    name: 'namespace',
-                    label: 'workflow.forms.store_embedded_langchain_documents.namespace.label',
-                    placeholder: 'workflow.forms.store_embedded_langchain_documents.namespace.placeholder',
-                    required: false,
-                    validators: [Validators.maxLength(128)],
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.namespace.helper',
-                }),
-                F.getToggleField({
-                    name: 'upsert',
-                    label: 'workflow.forms.store_embedded_langchain_documents.upsert.label',
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.upsert.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
+            make: () => [
+                /*                 F.getDropdownField({
+                                    name: 'vector_store',
+                                    label: 'workflow.forms.store_embedded_langchain_documents.vector_store.label',
+                                    options: [
+                                        { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
+                                        { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
+                                        { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
+                                        { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
+                                        { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
+                                    ],
+                                    required: true,
+                                    validators: [Validators.required],
+                                    defaultValue: 'azure_cosmos_db',
+                                    helperText: 'workflow.forms.store_embedded_langchain_documents.vector_store.helper',
+                                }),
+                                F.getTextField({
+                                    name: 'collection_name',
+                                    label: 'workflow.forms.store_embedded_langchain_documents.collection_name.label',
+                                    placeholder: 'workflow.forms.store_embedded_langchain_documents.collection_name.placeholder',
+                                    required: true,
+                                    validators: [Validators.required, Validators.maxLength(128)],
+                                    errorMessages: { required: 'workflow.forms.store_embedded_langchain_documents.errors.collection_required' },
+                                }),
+                                F.getTextField({
+                                    name: 'namespace',
+                                    label: 'workflow.forms.store_embedded_langchain_documents.namespace.label',
+                                    placeholder: 'workflow.forms.store_embedded_langchain_documents.namespace.placeholder',
+                                    required: false,
+                                    validators: [Validators.maxLength(128)],
+                                    helperText: 'workflow.forms.store_embedded_langchain_documents.namespace.helper',
+                                }),
+                                F.getToggleField({
+                                    name: 'upsert',
+                                    label: 'workflow.forms.store_embedded_langchain_documents.upsert.label',
+                                    helperText: 'workflow.forms.store_embedded_langchain_documents.upsert.helper',
+                                    required: false,
+                                    defaultValue: true,
+                                }), */
             ],
             defaults: {
                 vector_store: 'azure_cosmos_db',
                 collection_name: 'documents',
                 namespace: 'default',
                 upsert: true,
-            },
-        },
-
-        summarize: {
-            make: (F) => [
-                F.getDropdownField({
-                    name: 'summary_length',
-                    label: 'Summary length',
-                    options: [
-                        { label: 'Key bullets', value: 'bullets' },
-                        { label: 'Short (1–2 paragraphs)', value: 'short' },
-                        { label: 'Detailed (4–6 paragraphs)', value: 'detailed' },
-                    ],
-                    validators: [Validators.required],
-                    errorMessages: { required: "Length is required" },
-                    required: true,
-                    helperText: "Select a sumamry length",
-                    defaultValue: "short"
-                }),
-            ],
-            defaults: {
-                summary_length: "short",
-            },
-        },
-
-        extract: {
-            make: (F) => [
-                F.getTextAreaField({
-                    name: 'text',
-                    label: 'Text',
-                    placeholder: 'Paste the text to analyze…',
-                    required: false,
-                    rows: 6,
-                }),
-                F.getTextField({
-                    name: 'entities',
-                    label: 'Entities (comma separated)',
-                    helperText: 'Entities (comma separated)',
-                    placeholder: 'person, location, organization',
-                    required: true,
-                    validators: [Validators.required],
-                    errorMessages: { required: "Entities is required" },
-                }),
-                F.getDropdownField({
-                    name: 'format',
-                    label: 'Return format',
-                    options: [
-                        { label: 'JSON', value: 'json' },
-                        { label: 'CSV', value: 'csv' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: "Select the return format",
-                    errorMessages: { required: "Return format is required" },
-                    defaultValue: "json"
-                }),
-            ],
-            defaults: {
-                format: "json",
-            },
-        },
-
-        jira: {
-            make: (F) => [
-                F.getTextField({
-                    name: 'site',
-                    label: 'Jira site (cloud)',
-                    placeholder: 'your-domain.atlassian.net',
-                    validators: [Validators.required],
-                    required: true,
-                    errorMessages: { required: 'Enter your Jira site' },
-                    helperText: 'Cloud domain without protocol.',
-                }),
-                F.getTextField({
-                    name: 'email',
-                    label: 'Account email',
-                    placeholder: 'you@example.com',
-                    required: true,
-                    validators: [Validators.required, Validators.email],
-                    errorMessages: { required: 'Email required', email: 'Invalid email' },
-                }),
-                F.getPasswordField({
-                    name: 'apiToken',
-                    label: 'API token',
-                    placeholder: '************************',
-                    required: true,
-                    validators: [Validators.required],
-                    errorMessages: { required: 'API token required' },
-                    helperText: 'Create a token in https://id.atlassian.com/manage-profile/security/api-tokens',
-                }),
-
-                F.getTextField({
-                    name: 'projectKey',
-                    label: 'Project key',
-                    placeholder: 'ABC',
-                    required: true,
-                    validators: [Validators.required],
-                    errorMessages: { required: 'Project key required' },
-                }),
-                F.getDropdownField({
-                    name: 'issueType',
-                    label: 'Issue type',
-                    options: [
-                        { label: 'Task', value: 'Task' },
-                        { label: 'Bug', value: 'Bug' },
-                        { label: 'Story', value: 'Story' },
-                        { label: 'Epic', value: 'Epic' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    errorMessages: { required: 'Choose an issue type' },
-                    defaultValue: "Task"
-                }),
-                F.getTextField({
-                    name: 'summary',
-                    label: 'Summary',
-                    placeholder: 'Short title…',
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(255)],
-                    errorMessages: { required: 'Summary required', maxLength: 'Max 255 chars' },
-                }),
-                F.getTextAreaField({
-                    name: 'description',
-                    label: 'Description',
-                    placeholder: 'Describe the issue…',
-                    rows: 6,
-                    required: false
-                }),
-                F.getTextField({
-                    name: 'assignee',
-                    label: 'Assignee (accountId or email)',
-                    placeholder: 'user@example.com',
-                    helperText: "Use email",
-                    required: true,
-                    validators: [Validators.required, Validators.email],
-                    errorMessages: { required: 'Email required', email: 'Invalid email' },
-                }),
-                F.getDropdownField({
-                    name: 'priority',
-                    label: 'Priority',
-                    options: [
-                        { label: 'Highest', value: 'Highest' },
-                        { label: 'High', value: 'High' },
-                        { label: 'Medium', value: 'Medium' },
-                        { label: 'Low', value: 'Low' },
-                        { label: 'Lowest', value: 'Lowest' },
-                    ],
-                    helperText: "Choose the priority that you want",
-                    defaultValue: "Medium"
-                }),
-            ],
-            defaults: {
-                issueType: 'Task',
-                priority: 'Medium',
             },
         },
     };
@@ -609,6 +459,10 @@ export class WorkflowsComponent implements OnInit {
                         { id: 'embeddings', data_reference: 'embeddings', artifact_type: 'list[float]' },
                     ],
                 },
+                ports_map: {
+                    query_string: { required: false, readonly: false },
+                    embeddings: { required: false, readonly: false },
+                },
             },
         },
         {
@@ -624,6 +478,12 @@ export class WorkflowsComponent implements OnInit {
                     outputs: [
                         { id: 'context', data_reference: 'context', artifact_type: 'json' },
                     ],
+                },
+                ports_map: {
+                    embeddings: { required: false, readonly: false },
+                    collection: { required: false, readonly: false },
+                    filter_document_publication_datetime: { required: false, readonly: false },
+                    context: { required: false, readonly: false },
                 },
             },
         },
@@ -643,6 +503,14 @@ export class WorkflowsComponent implements OnInit {
                         { id: 'chat_history_out', data_reference: 'chat_history', artifact_type: 'json' },
                     ],
                 },
+                ports_map: {
+                    user_prompt: { required: false, readonly: false },
+                    system_prompt: { required: false, readonly: false },
+                    chat_history: { required: false, readonly: false },
+                    context: { required: false, readonly: false },
+                    llm_response: { required: false, readonly: false },
+                    chat_history_out: { required: false, readonly: false },
+                },
             },
         },
         {
@@ -657,6 +525,10 @@ export class WorkflowsComponent implements OnInit {
                         { id: 'langchain_documents', data_reference: 'langchain_documents', artifact_type: 'file' },
                     ],
                 },
+                ports_map: {
+                    source_file: { required: false, readonly: false },
+                    langchain_documents: { required: false, readonly: false },
+                },
             },
         },
         {
@@ -670,6 +542,10 @@ export class WorkflowsComponent implements OnInit {
                     outputs: [
                         { id: 'embedded_langchain_documents', data_reference: 'embedded_langchain_documents', artifact_type: 'json' },
                     ],
+                },
+                ports_map: {
+                    langchain_documents: { required: false, readonly: false },
+                    embedded_langchain_documents: { required: false, readonly: false },
                 },
             },
         },
@@ -686,7 +562,62 @@ export class WorkflowsComponent implements OnInit {
                         { id: 'collection_out', data_reference: 'collection', artifact_type: 'collection' },
                     ],
                 },
+                ports_map: {
+                    collection: { required: false, readonly: false },
+                    embedded_langchain_documents: { required: false, readonly: false },
+                    collection_out: { required: false, readonly: false },
+                },
             },
+        },
+        {
+            type: 'trigger_chat',
+            params: {
+                icon: 'forum',
+                ports: {
+                    inputs: [],
+                    outputs: [
+                        { id: 'message', data_reference: 'message', artifact_type: 'string' }
+                    ]
+                }
+                ,
+                ports_map: {
+                    message: { required: false, readonly: false }
+                }
+            }
+        },
+        {
+            type: 'trigger_file_upload',
+            params: {
+                icon: 'file_upload',
+                ports: {
+                    inputs: [],
+                    outputs: [
+                        { id: 'file', data_reference: 'file', artifact_type: 'file' }
+                    ]
+                }
+                ,
+                ports_map: {
+                    file: { required: false, readonly: false }
+                }
+            }
+        },
+        {
+            type: 'trigger_webhook',
+            params: {
+                icon: 'cloud',
+                ports: {
+                    inputs: [],
+                    outputs: [
+                        { id: 'payload_text', data_reference: 'payload_text', artifact_type: 'string' },
+                        { id: 'payload_file', data_reference: 'payload_file', artifact_type: 'file' }
+                    ]
+                }
+                ,
+                ports_map: {
+                    payload_text: { required: false, readonly: false },
+                    payload_file: { required: false, readonly: false }
+                }
+            }
         },
     ];
 
@@ -1092,13 +1023,13 @@ export class WorkflowsComponent implements OnInit {
         if (this.selectedWorkflow()?.id === id) return;
 
         const choice = await this.confirmUnsavedChoice();
- 
+
         if (!choice) return;
 
         if (choice) {
             this.store.saveSelected();
         }
-        
+
         // discard or saved -> proceed
         this.store.selectWorkflow({ id });
         this.store.revalidateSelected();

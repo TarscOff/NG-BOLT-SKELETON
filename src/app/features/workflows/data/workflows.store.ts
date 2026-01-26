@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
-import { ActionDefinitionLite, PipelineWorkflowDTO, Status, WorkflowEdge, WorkflowNode, WorkflowPort } from '../templates/utils/workflow.interface';
+import { ActionDefinitionLite, PipelineWorkflowDTO, PortsMap, Status, WorkflowEdge, WorkflowNode, WorkflowPort } from '../templates/utils/workflow.interface';
 import {
     WorkflowPorts,
 } from '../templates/utils/workflow.interface';
@@ -521,7 +521,39 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
 
     readonly setCatalog = this.updater((state, payload: { catalog: ActionDefinitionLite[] }) => ({
         ...state,
-        catalog: payload.catalog,
+        catalog: (payload.catalog ?? []).map(a => {
+            const copy = { ...a, params: { ...(a.params ?? {}) } } as ActionDefinitionLite & { params: PortsMap };
+            try {
+                // If the catalog provides a ports array, build a ports_map for quick lookup
+                const ports = copy.params['ports'] as WorkflowPorts | undefined;
+                if (Array.isArray(ports)) {
+                    const map: PortsMap = {};
+                    for (const p of ports) {
+                        if (p && typeof p === 'object' && 'id' in p) {
+                            map[p.id] = p;
+                        }
+                    }
+                    copy.params['ports_map'] = map;
+                }
+
+                // If a ports_map already exists, ensure values are normalized to objects
+                const existingMap = copy.params['ports_map'] as PortsMap | undefined;
+                if (existingMap && typeof existingMap === 'object' && !Array.isArray(existingMap)) {
+                    const normalized: PortsMap = {};
+                    for (const [k, v] of Object.entries(existingMap)) {
+                        if (typeof v === 'boolean') {
+                            normalized[k] = { required: v, readonly: false };
+                        } else if (v && typeof v === 'object') {
+                            normalized[k] = v;
+                        }
+                    }
+                    copy.params['ports_map'] = normalized;
+                }
+            } catch {
+                // ignore
+            }
+            return copy;
+        }),
         catalogLoaded: true,
     }));
 
