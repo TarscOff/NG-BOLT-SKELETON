@@ -3,9 +3,9 @@
 @use './fonts.scss' as *;
 
 :root {
-  --mat-primary: #5c2d91;
-  --mat-primary-variant: #66d3b3;
-  --mat-accent: #4492c7;
+  --mat-primary: #5b2d90;
+  --mat-primary-variant: #5b2d90;
+  --mat-accent: #0cadd5;
   --mat-warn: #ec9a00ff;
   --mat-neutral: #c1c1c3;
   --mat-success: #62d3b1;
@@ -46,9 +46,9 @@
 }
 
 html.dark {
- --mat-primary: #4492c7;
-  --mat-primary-variant: #8534c2;
-  --mat-accent: #66d3b3;
+ --mat-primary: #0cadd5;
+  --mat-primary-variant: #0cadd5;
+  --mat-accent: #5b2d90;
   --mat-warn: #ef7000;
   --mat-neutral: #f1ebeb;
   --mat-success: #1aa21e;

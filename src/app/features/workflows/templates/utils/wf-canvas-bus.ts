@@ -23,7 +23,6 @@ export class WfCanvasBus {
   nodeLabelChanged$ = new Subject<{ nodeId: string; label: string }>();
   nodeMoved$ = new Subject<{ nodeId: string; at: number }>();
   runs$ = new BehaviorSubject<RunEntry[]>([]);
-  formsReset$ = new Subject<{ includeInputs?: boolean }>();
   openQuickAdd$ = new Subject<{
     nodeId: string;
     portId: string;

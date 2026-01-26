@@ -20,6 +20,23 @@
 
 ## 🧭 Quick Start for Developers
 
+
+### GitLab proxy config
+```bash
+$env:https_proxy="proxy.tango.lu:80"   
+$env:http_proxy="proxy.tango.lu:80"   
+
+or
+
+$env:HTTPS_PROXY="proxy.tango.lu:80"   
+$env:HTTP_PROXY="proxy.tango.lu:80"   
+
+or
+
+git config https.proxy proxy.tango.lu:80
+```
+
+
 ### Initial Setup
 
 1. **Configure npm registry access:**

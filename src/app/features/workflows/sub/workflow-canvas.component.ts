@@ -71,7 +71,7 @@ import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { WfCanvasBus } from '../templates/utils/wf-canvas-bus';
 import { MatIconModule } from '@angular/material/icon';
 import { WfRunPanelNodeComponent } from './run-panel/run-panel-node.component';
-import { FieldConfig, WorkflowPort } from '@cadai/pxs-ng-core/interfaces';
+import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { Subscription, combineLatest, debounceTime, distinctUntilChanged } from 'rxjs';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { MatMenuModule } from '@angular/material/menu';
@@ -2111,7 +2111,16 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       { padToMinimum: true, minInputs: minEdit.inputs, minOutputs: minEdit.outputs }
     );
     const nextExec = exec.slice();
-    nextExec[iExec] = { ...nextExec[iExec], ports: nextPorts };
+    // persist ports both at top-level and into node.data.params.ports immutably
+    const existing = nextExec[iExec];
+    const nextData = {
+      ...(existing.data ?? {}),
+      params: {
+        ...((existing.data && existing.data.params) ?? {}),
+        ports: nextPorts,
+      }
+    } as typeof existing.data;
+    nextExec[iExec] = { ...existing, ports: nextPorts, data: nextData };
     this.execNodes.set(nextExec);
 
     const validIn = new Set(nextPorts.inputs.map(p => p.id));
@@ -2312,8 +2321,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const minInputs = opts?.minInputs ?? defaults.inputs;
     const minOutputs = opts?.minOutputs ?? defaults.outputs;
 
-    const pickString = (obj: WorkflowPort, keys: string[]): string | undefined => {
-      const rec = obj as unknown as Record<string, unknown>;
+    const pickString = (obj: unknown, keys: string[]): string | undefined => {
+      if (!obj || typeof obj !== 'object') return undefined;
+      const rec = obj as Record<string, unknown>;
       for (const k of keys) {
         const val = rec[k];
         if (typeof val === 'string') return val;
