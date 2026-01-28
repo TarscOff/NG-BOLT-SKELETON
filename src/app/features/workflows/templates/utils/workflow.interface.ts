@@ -1,4 +1,4 @@
-import { DfDataInitialNode } from "@ng-draw-flow/core";
+import { DfConnectionPoint, DfDataInitialNode } from "@ng-draw-flow/core";
 
 export interface ActionDefinition {
   type: string;
@@ -89,12 +89,6 @@ export interface StageNode {
   label: string;
   type: string;
 }
-
-
-/** ===== Helpers & constants ===== */
-export const EXEC_TYPES = new Set<PaletteType>([
-  'input', 'result',
-]);
 
 // ---- Types ----
 export type Primitive = string | number | boolean | null;
@@ -211,4 +205,12 @@ export interface RunNodePayload {
   inputs?: RunPortInfo[];
   outputs?: RunPortInfo[];
   params?: unknown;
+}
+
+export interface DrawFlowApi {
+  removeConnection?(params: {
+    source: { nodeId: string; connectorType: DfConnectionPoint; connectorId: string };
+    target: { nodeId: string; connectorType: DfConnectionPoint; connectorId: string };
+  }): void;
+  removeNode?(nodeId: string): void;
 }

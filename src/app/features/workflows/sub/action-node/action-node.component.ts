@@ -63,21 +63,35 @@ import { NodeDetailsDialogComponent, NodeDetailsDialogData } from './node-detail
     '(keydown.backspace.stop)': '0',
   },
 })
+/**
+ * Component representing a workflow action node in the canvas.
+ * Handles node rendering, form management, validation, user interactions,
+ * and integration with the workflow canvas bus for real-time updates.
+ */
 export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnInit, DoCheck {
-  private bus = inject(WfCanvasBus);
-  private fb = inject(FormBuilder);
-  private fields = inject(FieldConfigService);
-  private dialog = inject(MatDialog);
-  graphValidSig = signal<boolean>(false);
-  positions = DfConnectorPosition;
-  statusSig = signal<Status | null>(null);
-  form: FormGroup = this.fb.group({});
-  config: FieldConfig[] = [];
-  formInputs: FormGroup = this.fb.group({});
-  configInputs: FieldConfig[] = [];
-  private subs = new Subscription();
+  // Injected services
+  private readonly bus = inject(WfCanvasBus);
+  private readonly fb = inject(FormBuilder);
+  private readonly fields = inject(FieldConfigService);
+  private readonly dialog = inject(MatDialog);
+  private readonly translate = inject(TranslateService);
+  private readonly store = inject(Store);
+  private readonly workflowsStore = inject(WorkflowsStore);
+
+  // Inputs
+  /** @Input Configuration for action nodes used to build forms */
+  @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
+
+  // ViewChild
+  @ViewChild('labelEditHost') private labelEditHost?: ElementRef<HTMLElement>;
+
+  // Public properties
+  public readonly positions = DfConnectorPosition;
+  public labelEditing = false;
+
+  // Private properties
+  private readonly subs = new Subscription();
   private valueChangesHooked = false;
-  private inputValueChangesHooked = false;
   private labelInlineValueChangesHooked = false;
   private readonly hookedForms = new WeakSet<FormGroup>();
   private lastModelRef: unknown = null;
@@ -88,32 +102,40 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   private pointerDownAt: { x: number; y: number } | null = null;
   private dragDetected = false;
   private suppressClickUntil = 0;
-  labelEditing = false;
-  labelInlineForm: FormGroup = this.fb.group({});
-  labelInlineConfig: FieldConfig[] = [];
   private labelEditBackup = '';
-  @ViewChild('labelEditHost') private labelEditHost?: ElementRef<HTMLElement>;
 
-  private get safeModel() {
+  private formFlags = { invalid: false };
+
+  // Signals
+  private readonly graphValidSig = signal<boolean>(false);
+  private readonly statusSig = signal<Status | null>(null);
+  private readonly missingInSig = signal<boolean>(false);
+  private readonly missingOutSig = signal<boolean>(false);
+  private readonly missingInPortsSig = signal<Set<string>>(new Set());
+  private readonly missingOutPortsSig = signal<Set<string>>(new Set());
+  private readonly disabledSig = signal<boolean>(false);
+  readonly pinnedSig = signal<boolean>(false);
+  private readonly portTypeOptionsSig: Signal<PortTypeOption[]> = toSignal(this.workflowsStore.portTypes$, { initialValue: [] });
+  private readonly catalogSig = toSignal(this.workflowsStore.catalog$, { initialValue: [] as ActionDefinitionLite[] });
+  public readonly isDark: Signal<boolean> = toSignal(this.store.select(AppSelectors.ThemeSelectors.selectIsDark), { initialValue: false });
+
+  // Forms and configs
+  public form: FormGroup = this.fb.group({});
+  public config: FieldConfig[] = [];
+  public formInputs: FormGroup = this.fb.group({});
+  public configInputs: FieldConfig[] = [];
+  public labelInlineForm: FormGroup = this.fb.group({});
+  public labelInlineConfig: FieldConfig[] = [];
+
+  // Getters
+  private get safeModel(): RunNodeDTO {
     return this.coerceModel(this.model);
   }
-  missingInSig = signal<boolean>(false);
-  missingOutSig = signal<boolean>(false);
-  missingInPortsSig = signal<Set<string>>(new Set());
-  missingOutPortsSig = signal<Set<string>>(new Set());
-  private formFlags = { invalid: false };
-  private disabledSig = signal<boolean>(false);
-  pinnedSig = signal<boolean>(false);
 
-  @Input({ required: true }) actionsNodes!: Record<string, ActionFormSpec>;
-
-  translate = inject(TranslateService);
-  store = inject(Store);
-  private workflowsStore = inject(WorkflowsStore);
-  public isDark: Signal<boolean> = toSignal(this.store.select(AppSelectors.ThemeSelectors.selectIsDark), { initialValue: false });
-  private portTypeOptionsSig: Signal<PortTypeOption[]> = toSignal(this.workflowsStore.portTypes$, { initialValue: [] });
-  private catalogSig = toSignal(this.workflowsStore.catalog$, { initialValue: [] as ActionDefinitionLite[] });
-
+  /**
+   * Lifecycle hook: Initializes the component, sets up subscriptions to the canvas bus
+   * for graph validation, node connectivity, port status, and other real-time updates.
+   */
   ngOnInit(): void {
 
     // Always trigger UI update on graph validation, even if value is unchanged
@@ -129,10 +151,12 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       this.bus.nodeConnectivity$.subscribe(({ nodeId, missingIn, missingOut }) => {
         if (nodeId !== this.nodeId) return;
         const changed = (this.missingInSig() !== missingIn) || (this.missingOutSig() !== missingOut);
+        console.debug('[WfNode] nodeConnectivity:', { nodeId, missingIn, missingOut, changed });
         if (changed) {
-          this.missingInSig.set(missingIn);
-          this.missingOutSig.set(missingOut);
+          this.missingInSig.set(!!missingIn);
+          this.missingOutSig.set(!!missingOut);
           this.markForCheck();
+          console.debug('[WfNode] signals updated:', { missingIn: this.missingInSig(), missingOut: this.missingOutSig() });
         }
       })
     );
@@ -140,9 +164,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     this.subs.add(
       this.bus.nodePortStatus$.subscribe(({ nodeId, missingInputs, missingOutputs }) => {
         if (nodeId !== this.nodeId) return;
+        console.debug('[WfNode] nodePortStatus:', { nodeId, missingInputs, missingOutputs });
         this.missingInPortsSig.set(new Set(missingInputs));
         this.missingOutPortsSig.set(new Set(missingOutputs));
         this.markForCheck();
+        console.debug('[WfNode] missing ports updated:', { in: Array.from(this.missingInPortsSig()), out: Array.from(this.missingOutPortsSig()) });
       })
     );
 
@@ -212,6 +238,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     this.actionsNodes = this.model?.['actionsNodes'];
   }
 
+  /**
+   * Lifecycle hook: Performs change detection checks, rebuilds forms when model changes,
+   * and updates flags and ports keys for efficient re-rendering.
+   */
   ngDoCheck(): void {
     const currentRef = this.model;
     const currentKey = this.resolveActionKey();
@@ -243,10 +273,18 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     this.lastModelKey = currentKey;
   }
 
+  /**
+   * Lifecycle hook: Cleans up subscriptions when the component is destroyed.
+   */
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
 
+  /**
+   * Opens the quick add menu for a port.
+   * @param p Port information
+   * @param ev Mouse event
+   */
   openQuickAdd(p: { id: string; type?: string }, ev: MouseEvent) {
     ev.stopPropagation();
     const anchorEl = (ev.currentTarget as HTMLElement) ?? (ev.target as HTMLElement);
@@ -471,6 +509,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return Math.max(1, ins, outs);
   }
 
+  /**
+   * Handles node click events, opens details dialog if not suppressed.
+   * @param ev Mouse event
+   */
   onNodeClick(ev: MouseEvent): void {
     if (Date.now() < this.suppressClickUntil) return;
     const target = ev.target as HTMLElement;
@@ -615,6 +657,9 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       .map(([name]) => this.translate.instant(labelsByName.get(name) ?? name));
   }
 
+  /**
+   * Opens the node details dialog with current node information.
+   */
   openDetailsDialog(): void {
     const dialogData: NodeDetailsDialogData = {
       nodeId: this.nodeId,
@@ -641,10 +686,15 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     });
   }
 
+  /**
+   * Coerces the raw model data into a structured RunNodeDTO.
+   * @param raw Raw model data
+   * @returns Structured node data
+   */
   private coerceModel(raw: unknown): RunNodeDTO {
     const rawObj = isObject(raw) ? raw : {};
     const dataObj = isObject(rawObj['data']) ? (rawObj['data'] as Record<string, unknown>) : rawObj;
-    const type = (dataObj['type'] ?? dataObj['aiType'] ?? rawObj['type'] ?? 'input') as PaletteType;
+    const type = (dataObj['type'] ?? dataObj['aiType'] ?? rawObj['type']) as PaletteType;
     const ports = (dataObj['ports'] as WorkflowPorts | undefined) ?? (rawObj['ports'] as WorkflowPorts | undefined);
     const params = (dataObj['params'] as WorkflowNodeDataBaseParams | undefined)
       ?? (rawObj['params'] as WorkflowNodeDataBaseParams | undefined);
@@ -829,6 +879,10 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return graphInvalid || anyMissing || this.isDisabled();
   }
 
+  /**
+   * Builds the form configuration and controls based on the current model.
+   * Sets up form value change subscriptions and updates node parameters.
+   */
   private tryBuildFromModel(): void {
     const key = this.resolveActionKey();
     this.lastModelRef = this.model;
@@ -900,28 +954,44 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return k;
   }
 
+  /**
+   * Schedules the node for execution.
+   */
   runSchedule(): void {
     if (this.isDisabled()) return;
     this.bus.runRequested$.next({ nodeId: this.nodeId });
   }
 
+  /**
+   * Runs the workflow from this node onwards.
+   */
   runFromHere(): void {
     if (this.isDisabled()) return;
     this.bus.runFromNode$.next({ nodeId: this.nodeId });
   }
 
+  /**
+   * Toggles the pinned state of the node.
+   */
   togglePin(): void {
     const next = !this.isPinned();
     this.pinnedSig.set(next);
     this.patchParams({ __pinned: next });
   }
 
+  /**
+   * Toggles the disabled state of the node.
+   */
   toggleDisable(): void {
     const next = !this.isDisabled();
     this.disabledSig.set(next);
     this.patchParams({ __disabled: next });
   }
 
+  /**
+   * Replaces the current node with a new one via quick add menu.
+   * @param ev Mouse event
+   */
   replaceNode(ev: MouseEvent): void {
     ev.stopPropagation();
     const out = this.outPorts()?.[0] ?? this.inPorts()?.[0];
@@ -1003,12 +1073,19 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return Object.fromEntries(entries) as StripReservedShallow<T>;
   }
 
+  /**
+   * Closes the panel by deleting the node.
+   */
   closePanel() {
     this.bus.onNodeDelete$.next({
       nodeId: this.nodeId
     });
   }
 
+  /**
+   * Deletes the node.
+   * @param ev Mouse event
+   */
   deleteNode(ev: MouseEvent): void {
     ev.stopPropagation();
     this.bus.onNodeDelete$.next({ nodeId: this.nodeId });

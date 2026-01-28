@@ -154,7 +154,7 @@ export class WfDetailsNodeComponent extends DrawFlowBaseNode implements OnInit, 
 
   private coerceModel(raw: unknown): RunNodeDTO {
     const data = (raw ?? {}) as RunNodeDTO;
-    const type = (data.type ?? data.aiType ?? 'input') as PaletteType;
+    const type = (data.type ?? data.aiType) as PaletteType;
     const ports = data.ports;
     return { type, ports, params: this.stripReserved(data.params), aiType: data.aiType, label: data.label, position: data?.['position'], preferredTab: data.preferredTab, };
   }

@@ -39,10 +39,7 @@ export class PipelineProgressComponent extends DrawFlowBaseNode {
   private _wf = signal<PipelineWorkflowDTO | null>(null);
   private _run = signal<Record<string, Status>>({});
 
-  private readonly EXCLUDED = new Set(['result']);
   private canvasBus = inject(WfCanvasBus);
-
-  private isActionable = (t: string) => !this.EXCLUDED.has(t);
 
   stages = computed<StageNode[][]>(() => {
     const wf = this._wf();
@@ -100,15 +97,12 @@ export class PipelineProgressComponent extends DrawFlowBaseNode {
   statusOf = (id: string): Status => {
     const wf = this._wf();
     if (!wf) return 'queued';
-    const t = wf.nodes.find(n => n.id === id)?.type ?? 'action';
-    if (!this.isActionable(t)) return 'skipped';
     return this._run()[id] ?? 'queued';
   };
 
   canCancelPipeline = (): boolean => {
     const wf = this._wf(); if (!wf) return false;
     return wf.nodes
-      .filter(n => this.isActionable(n.type))
       .some(n => ['queued', 'running'].includes(this.statusOf(n.id)));
   };
 
@@ -120,7 +114,6 @@ export class PipelineProgressComponent extends DrawFlowBaseNode {
     const wf = this._wf(); if (!wf) return;
     const next = { ...this._run() };
     for (const n of wf.nodes) {
-      if (!this.isActionable(n.type)) continue;
       if (['queued', 'running'].includes(next[n.id] ?? 'queued')) {
         next[n.id] = 'skipped';
       }

@@ -10,7 +10,11 @@
   "LANG_HINT": "Used Language",
   "SAVE": "Save",
   "TEAM_MEMBERS": "Team members",
-  "add_favorite": "Add to Favorite",
+  "trigger_chat": "Chat trigger",
+  "add_favorite": "Ajouter aux favoris",
+  "trigger_file_upload": "File upload trigger",
+  "trigger_webhook": "Webhook trigger",
+  "webhook": "Webhook trigger",
   "workflow": {
     "saved_workflows": "Saved workflows",
     "filter": "Filter workflows",
@@ -24,6 +28,7 @@
     "publish": "Publish",
     "run": "Run",
     "delete": "Delete",
+    "edit": "Edit",
     "duplicate": "Duplicate",
     "multi_select": "Multi-select",
     "bulk_selected": "{{count}} selected",
@@ -184,6 +189,8 @@
       "visibility": {
         "label": "Public Visibility",
         "helper": "When enabled, this workflow is visible to all users. When disabled, it's a private draft.",
+        "disabled_helper": "Cannot publish workflow with validation errors. Please fix the workflow graph first.",
+        "cannot_publish_error": "Cannot publish workflow with validation errors.",
         "options": {
           "draft": "Draft",
           "public": "Public"
@@ -199,6 +206,10 @@
       },
       "cancel": "Cancel",
       "create": "Create"
+    },
+    "edit_dialog": {
+      "title": "Edit workflow",
+      "update": "Update"
     },
     "forms": {
       "vector_store": {

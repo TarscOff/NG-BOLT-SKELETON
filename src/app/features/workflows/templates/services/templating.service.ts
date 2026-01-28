@@ -22,11 +22,12 @@ export class TemplatingService {
   chatService = inject(ChatService);
   projectService = inject(ProjectsService);
   private readonly componentRegistry = new Map<TemplateType, Type<unknown> | undefined>([
-    ['add file', undefined], // TODO: add files template component when available
+    ['add file', undefined],
     ['chat', ChatComponent],
     ['compare', CompareComponent],
     ['summarize', SummarizeComponent],
     ['extract', ExtractComponent],
+    
   ]);
 
   /**
