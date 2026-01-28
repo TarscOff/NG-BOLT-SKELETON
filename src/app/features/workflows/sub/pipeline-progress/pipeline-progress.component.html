@@ -5,12 +5,11 @@
         <div class="stage">
             <div class="nodes">
                 @for (n of col; track n.id) {
-                <div class="node" [class.is-input]="n.type === 'input'" [class.is-result]="n.type === 'result'"
+                <div class="node"
                     [class.queued]="statusOf(n.id) === 'queued'" [class.running]="statusOf(n.id) === 'running'"
                     [class.success]="statusOf(n.id) === 'success'" [class.error]="statusOf(n.id) === 'error'"
                     [class.skipped]="statusOf(n.id) === 'skipped'" [matTooltip]="statusOf(n.id) | translate">
 
-                    @if (n.type !== 'result') {
                     <div class="emblem">
                         <span class="dot"></span>
                         @if (statusOf(n.id) === 'queued') { <mat-icon class="icon">hourglass_empty</mat-icon> }
@@ -23,7 +22,6 @@
 
                     @if (statusOf(n.id) === 'running') {
                     <div class="run-shimmer"></div>
-                    }
 
                     <div class="stage-actions">
                         <button mat-icon-button color="neutral" class="neutral"
@@ -54,7 +52,6 @@
                     </div>
 
                     } @else {
-                    @if (n.type === 'result') {
                     <button mat-icon-button [matTooltip]="'workflow.runPanel.options' | translate" class="primary"
                         [matMenuTriggerFor]="menu">
                         <mat-icon>more_horiz</mat-icon>
@@ -70,7 +67,6 @@
                             {{ 'workflow.runPanel.cancel_pipe' | translate }}
                         </button>
                     </mat-menu>
-                    }
                     }
                 </div>
                 }

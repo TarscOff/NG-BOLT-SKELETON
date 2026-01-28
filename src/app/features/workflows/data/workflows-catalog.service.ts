@@ -4,20 +4,20 @@ import { Observable, catchError, map, of } from 'rxjs';
 import { ActionDefinitionLite, WorkflowPorts, WorkflowPort } from '../templates/utils/workflow.interface';
 import { CoreOptions } from '@cadai/pxs-ng-core/interfaces';
 import { CORE_OPTIONS } from '@cadai/pxs-ng-core/tokens';
+import { normalizeCatalogAction } from '../templates/utils/workflow-graph.utils';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowsCatalogService {
   private fallback: ActionDefinitionLite[] = [
-    { type: 'chat', params: { icon: 'chat' } },
-    { type: 'compare', params: { icon: 'compare' } },
-    { type: 'summarize', params: { icon: 'article_shortcut' } },
-    { type: 'extract', params: { icon: 'tag' } },
-    { type: 'jira', params: { icon: 'confirmation_number', class: 'warn' } },
-    { type: 'embed', params: { icon: 'scatter_plot' } },
-    { type: 'retrieve', params: { icon: 'travel_explore' } },
-    { type: 'convert_and_chunk', params: { icon: 'description' } },
-    { type: 'embed_langchain_documents', params: { icon: 'hive' } },
-    { type: 'store_embedded_langchain_documents', params: { icon: 'inventory_2' } },
+    { type: 'chat', params: { icon: 'chat', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'embed', params: { icon: 'scatter_plot', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'retrieve', params: { icon: 'travel_explore', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'convert_and_chunk', params: { icon: 'description', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'embed_langchain_documents', params: { icon: 'hive', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'store_embedded_langchain_documents', params: { icon: 'inventory_2', ports: { inputs: [{ id: 'in', data_reference: 'in', artifact_type: 'json' }], outputs: [{ id: 'out', data_reference: 'out', artifact_type: 'json' }] }, ports_map: { in: { required: true, readonly: false }, out: { required: false, readonly: false } } } },
+    { type: 'trigger_chat', params: { class: "accent", icon: 'forum', ports: { inputs: [], outputs: [{ id: 'message', data_reference: 'message', artifact_type: 'string' }] }, ports_map: { message: { required: false, readonly: false } } } },
+    { type: 'trigger_file_upload', params: { class: "accent", icon: 'file_upload', ports: { inputs: [], outputs: [{ id: 'file', data_reference: 'file', artifact_type: 'file' }] }, ports_map: { file: { required: false, readonly: false } } } },
+    { type: 'trigger_webhook', params: { class: "accent", icon: 'cloud', ports: { inputs: [], outputs: [{ id: 'payload_text', data_reference: 'payload_text', artifact_type: 'string' }, { id: 'payload_file', data_reference: 'payload_file', artifact_type: 'file' }] }, ports_map: { payload_text: { required: false, readonly: false }, payload_file: { required: false, readonly: false } } } },
   ];
 
   constructor(
@@ -86,7 +86,7 @@ export class WorkflowsCatalogService {
           const node = normalizeNode(raw);
           mergedByType.set(node.type, node);
         }
-        return Array.from(mergedByType.values());
+        return Array.from(mergedByType.values()).map(normalizeCatalogAction);
       }),
       catchError(() => of(this.fallback)),
     );

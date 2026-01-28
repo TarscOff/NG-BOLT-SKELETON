@@ -25,7 +25,7 @@
 }
 
 .palette-toggle {
-  margin-bottom:20px;
+  margin-bottom: 20px;
   right: auto;
   z-index: 1000;
   background-color: var(--mat-primary);
@@ -35,7 +35,7 @@
 }
 
 .run-panel-btn {
-  margin-bottom:20px;
+  margin-bottom: 20px;
   z-index: 1000;
   background-color: var(--mat-primary);
   color: #fff;
@@ -93,7 +93,7 @@
   background: color-mix(in srgb, var(--mat-error) 12%, transparent);
   font-size: 12px;
   line-height: 1;
-  margin-bottom:20px;
+  margin-bottom: 20px;
 }
 
 .form {
@@ -127,6 +127,7 @@
 }
 
 .pxs-wf-canvas.wf-connecting {
+
   /* keep connections hoverable while highlighting ports */
   ::ng-deep path.selectable-area {
     pointer-events: stroke;
@@ -183,7 +184,7 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 45px;
-  
+
   mat-icon {
     font-size: 18px;
     width: 18px;
@@ -192,13 +193,35 @@
 }
 
 .pxs-wf-pill.preview-shadow {
-  background: var(--mat-primary);
-  border: 1px dashed color-mix(in srgb, var(--mat-primary) 35%, transparent);
+  background: #fff;
+  border: 2px dashed color-mix(in srgb, var(--mat-primary) 35%, transparent);
   opacity: 0.9;
-  color: #fff;
+  color: var(--mat-primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  width: 70px !important;
+  height: 70px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  mat-icon {
+    font-size: 40px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pill-label {
+    font-size: 10px;
+    text-align: center;
+  }
 }
 
 .pxs-wf-pill.placeholder {

@@ -11,6 +11,9 @@
   "SAVE": "Enregistrer",
   "TEAM_MEMBERS": "Membres de l'équipe",
   "add_favorite": "Ajouter aux favoris",
+  "trigger_chat": "Déclencheur Chat",
+  "trigger_file_upload": "Déclencheur Upload de fichier",
+  "trigger_webhook": "Déclencheur Webhook",
   "workflow": {
     "saved_workflows": "Workflows enregistrés",
     "filter": "Filtrer les workflows",
@@ -24,6 +27,7 @@
     "publish": "Publier",
     "run": "Exécuter",
     "delete": "Supprimer",
+    "edit": "Modifier",
     "duplicate": "Dupliquer",
     "multi_select": "Sélection multiple",
     "bulk_selected": "{{count}} sélectionnés",
@@ -184,6 +188,8 @@
       "visibility": {
         "label": "Visibilité publique",
         "helper": "Lorsqu'activé, ce workflow est visible par tous les utilisateurs. Sinon, c'est un brouillon privé.",
+        "disabled_helper": "Impossible de publier un workflow avec des erreurs de validation. Veuillez corriger le graphe du workflow d'abord.",
+        "cannot_publish_error": "Impossible de publier un workflow avec des erreurs de validation.",
         "options": {
           "draft": "Brouillon",
           "public": "Public"
@@ -199,6 +205,10 @@
       },
       "cancel": "Annuler",
       "create": "Créer"
+    },
+    "edit_dialog": {
+      "title": "Modifier le workflow",
+      "update": "Mettre à jour"
     },
     "forms": {
       "vector_store": {

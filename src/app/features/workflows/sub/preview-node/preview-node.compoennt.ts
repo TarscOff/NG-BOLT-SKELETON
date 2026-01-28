@@ -254,7 +254,7 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
     }
     return CHAT_CONFIG;
   });
- 
+
   /**
    * Computed signal for comparison result
    */
@@ -342,7 +342,7 @@ export class WfPreviewNodeComponent extends DrawFlowBaseNode implements OnInit, 
 
   private coerceModel(raw: unknown): RunNodeDTO {
     const data = (raw ?? {}) as RunNodeDTO;
-    const type = (data.type ?? data.aiType ?? 'input') as PaletteType;
+    const type = (data.type ?? data.aiType) as PaletteType;
     const ports = data.ports;
     return {
       type,
