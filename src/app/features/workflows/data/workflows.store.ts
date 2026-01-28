@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { tap } from 'rxjs/operators';
-import { ActionDefinitionLite, PipelineWorkflowDTO, PortsMap, Status, WorkflowEdge, WorkflowNode, WorkflowPort } from '../templates/utils/workflow.interface';
+import { ActionDefinitionLite, PipelineWorkflowDTO, PortsMap, Status, WorkflowEdge, WorkflowNode } from '../templates/utils/workflow.interface';
 import {
     WorkflowPorts,
 } from '../templates/utils/workflow.interface';
+import {
+    ensurePorts as sharedEnsurePorts,
+    computeValidation as sharedComputeValidation,
+    sanitizeGraph as sharedSanitizeGraph,
+} from '../templates/utils/workflow-graph.utils';
+
 export interface WorkflowDraft {
     id: string;
     name: string;
@@ -100,7 +106,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
     readonly validityById$ = this.select(this.workflows$, (list) =>
         list.reduce<Record<string, boolean>>((acc, wf) => {
             const cleaned = sanitizeGraph(wf.nodes, wf.edges);
-            acc[wf.id] = computeValidationFromGraph(cleaned.nodes, cleaned.edges).valid;
+            acc[wf.id] = sharedComputeValidation(cleaned.nodes, cleaned.edges).valid;
             return acc;
         }, {})
     );
@@ -181,7 +187,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             ...state,
             workflows: upsertById(state.workflows, wf),
             selectedWorkflowId: payload.workflow.id,
-            validation: computeValidationFromGraph(wf.nodes, wf.edges),
+            validation: sharedComputeValidation(wf.nodes, wf.edges),
             dirtyById,
             savedSigById,
             dirty: getDirtyFor(dirtyById, payload.workflow.id),
@@ -227,7 +233,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             workflows: upsertById(state.workflows, updated),
             dirtyById,
             dirty: getDirtyFor(dirtyById, state.selectedWorkflowId),
-            validation: computeValidationFromGraph(updated.nodes, updated.edges),
+            validation: sharedComputeValidation(updated.nodes, updated.edges),
         };
     });
 
@@ -283,7 +289,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             dirtyById,
             savedSigById: nextSavedSigById,
             dirty: getDirtyFor(dirtyById, state.selectedWorkflowId),
-            validation: computeValidationFromGraph(updated.nodes, updated.edges),
+            validation: sharedComputeValidation(updated.nodes, updated.edges),
         };
     });
 
@@ -312,7 +318,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             dirtyById,
             savedSigById,
             dirty: getDirtyFor(dirtyById, workflow.id),
-            validation: computeValidationFromGraph(workflow.nodes, workflow.edges),
+            validation: sharedComputeValidation(workflow.nodes, workflow.edges),
         };
     });
 
@@ -340,7 +346,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             dirtyById,
             savedSigById,
             dirty: getDirtyFor(dirtyById, workflow.id),
-            validation: computeValidationFromGraph(workflow.nodes, workflow.edges),
+            validation: sharedComputeValidation(workflow.nodes, workflow.edges),
         };
     });
 
@@ -350,7 +356,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const isDirty = wf ? workflowSig(wf) !== savedSig : false;
         const dirtyById = wf ? { ...state.dirtyById, [wf.id]: isDirty } : state.dirtyById;
         const cleaned = wf ? sanitizeGraph(wf.nodes, wf.edges) : { nodes: [], edges: [] };
-        const validation = wf ? computeValidationFromGraph(cleaned.nodes, cleaned.edges) : { valid: false, nodeValidity: {} };
+        const validation = wf ? sharedComputeValidation(cleaned.nodes, cleaned.edges) : { valid: false, nodeValidity: {} };
 
         return {
             ...state,
@@ -369,7 +375,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const cleaned = sanitizeGraph(wf.nodes, wf.edges);
         return {
             ...state,
-            validation: computeValidationFromGraph(cleaned.nodes, cleaned.edges),
+            validation: sharedComputeValidation(cleaned.nodes, cleaned.edges),
         };
     });
 
@@ -378,6 +384,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const selectedWorkflowId = state.selectedWorkflowId === payload.id ? workflows.at(-1)?.id ?? null : state.selectedWorkflowId;
         const dirtyById = removeDirty(state.dirtyById, payload.id);
         const savedSigById = removeDirty(state.savedSigById, payload.id);
+
         return {
             ...state,
             workflows,
@@ -406,6 +413,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const sig = workflowSig(duplicate);
         const dirtyById = { ...state.dirtyById, [duplicate.id]: false };
         const savedSigById = { ...state.savedSigById, [duplicate.id]: sig };
+
         return {
             ...state,
             workflows: [...state.workflows, duplicate],
@@ -420,6 +428,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const sig = workflowSig(payload.workflow);
         const dirtyById = { ...state.dirtyById, [payload.workflow.id]: false };
         const savedSigById = { ...state.savedSigById, [payload.workflow.id]: sig };
+
         return {
             ...state,
             workflows: upsertById(state.workflows, payload.workflow),
@@ -465,6 +474,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             nodeData: {},
             edgeData: {},
         };
+
         return {
             ...state,
             executionHistory: [run, ...state.executionHistory].slice(0, 20),
@@ -741,199 +751,17 @@ function clone<T>(v: T): T {
     return JSON.parse(JSON.stringify(v)) as T;
 }
 
-
-// --- Validation helpers (kept in the store so selection instantly reflects real graph status) ---
-// Mirrors the canvas validation rules (minus form field validation), so the UI can show graph
-// status immediately when a workflow is selected.
-function portCountsFor(type: string): { inputs: number; outputs: number } {
-    const t = (type ?? '').toString().toLowerCase();
-    if (t === 'composite') return { inputs: 1, outputs: 1 };
-    if (t === 'run-panel' || t === 'details' || t === 'preview') return { inputs: 0, outputs: 0 };
-    if (t === 'input') return { inputs: 0, outputs: 1 };
-    if (t === 'result') return { inputs: 1, outputs: 0 };
-    const triggers = new Set(['compare', 'extract', 'summarize']);
-    if (triggers.has(t)) return { inputs: 0, outputs: 1 };
-    return { inputs: 1, outputs: 1 };
+// delegate ensurePorts
+export function ensurePorts(type: string, ports?: WorkflowNode['ports'], opts?: { padToMinimum?: boolean; minInputs?: number; minOutputs?: number; portsMap?: PortsMap }): WorkflowNode['ports'] {
+    return sharedEnsurePorts(type, ports, opts);
 }
 
-function defaultPortsFor(type: string): WorkflowNode['ports'] {
-    const { inputs: inputCount, outputs: outputCount } = portCountsFor(type);
-    const inputs = Array.from({ length: inputCount }, (_, i) => ({
-        id: `in-${i + 1}`,
-        label: `in ${i + 1}`,
-        type: 'json',
-        required: false,
-    }));
-    const outputs = Array.from({ length: outputCount }, (_, i) => ({
-        id: `out-${i + 1}`,
-        label: `out ${i + 1}`,
-        type: 'json',
-        required: false,
-    }));
-    return { inputs, outputs };
+// delegate graph validation
+export function computeValidation(nodesArg: WorkflowNode[] | null | undefined, edgesArg: WorkflowEdge[] | null | undefined): WorkflowValidationState {
+    return sharedComputeValidation(nodesArg, edgesArg);
 }
 
-function ensurePorts(type: string, ports?: WorkflowNode['ports']): WorkflowNode['ports'] {
-    const base = ports ?? defaultPortsFor(type);
-
-    const pickString = (obj: WorkflowPort, keys: string[]): string | undefined => {
-        const rec = obj as unknown as Record<string, unknown>;
-        for (const k of keys) {
-            const val = rec[k];
-            if (typeof val === 'string') return val;
-        }
-        return undefined;
-    };
-
-    const norm = (p: WorkflowPorts['inputs'][number], idx: number, prefix: 'in' | 'out') => {
-        const dataRef = pickString(p, ['data_reference', 'dataReference']);
-        const artifact = pickString(p, ['artifact_type', 'artifactType']);
-        const port = {
-            id: p.id ?? `${prefix}-${idx + 1}`,
-            label: dataRef ?? p.label ?? `${prefix} ${idx + 1}`,
-            type: p.type ?? artifact ?? 'json',
-            required: p.required, // leave undefined unless backend sets it
-        } as WorkflowPort & { data_reference?: string; artifact_type?: string };
-        if (dataRef) port.data_reference = dataRef;
-        if (artifact) port.artifact_type = artifact;
-        return port as WorkflowPort;
-    };
-    const inputs = (base.inputs ?? []).map((p, i) => norm(p, i, 'in'));
-    const outputs = (base.outputs ?? []).map((p, i) => norm(p, i, 'out'));
-    return { inputs, outputs };
-}
-
-function portsFromHandles(node: WorkflowNode): WorkflowNode['ports'] | null {
-    const raw = node as unknown as { input_handles?: unknown; output_handles?: unknown; data?: { params?: Record<string, unknown> } };
-    const params = (raw.data && typeof raw.data === 'object' ? raw.data.params : undefined) as Record<string, unknown> | undefined;
-    const inputsRaw = Array.isArray(raw.input_handles)
-        ? raw.input_handles
-        : Array.isArray(params?.['input_handles'])
-            ? params?.['input_handles']
-            : Array.isArray(params?.['inputHandles'])
-                ? params?.['inputHandles']
-                : null;
-    const outputsRaw = Array.isArray(raw.output_handles)
-        ? raw.output_handles
-        : Array.isArray(params?.['output_handles'])
-            ? params?.['output_handles']
-            : Array.isArray(params?.['outputHandles'])
-                ? params?.['outputHandles']
-                : null;
-    if (!inputsRaw && !outputsRaw) return null;
-
-    const pickString = (obj: Record<string, unknown>, keys: string[]): string | undefined => {
-        for (const k of keys) {
-            const val = obj[k];
-            if (typeof val === 'string') return val;
-        }
-        return undefined;
-    };
-
-    const toPort = (handle: unknown, idx: number, prefix: 'in' | 'out'): WorkflowPort => {
-        const rec = (handle && typeof handle === 'object') ? (handle as Record<string, unknown>) : {};
-        const dataRef = pickString(rec, ['data_reference', 'dataReference']);
-        const artifact = pickString(rec, ['artifact_type', 'artifactType']);
-        const id = (typeof rec['id'] === 'string' ? (rec['id'] as string) : `${prefix}-${idx + 1}`);
-        const label = (dataRef ?? (typeof rec['label'] === 'string' ? (rec['label'] as string) : undefined) ?? `${prefix} ${idx + 1}`);
-        const type = (typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined) ?? artifact ?? 'json';
-        const required = (typeof rec['required'] === 'boolean' ? (rec['required'] as boolean) : undefined);
-        const port = { id, label, type, required } as WorkflowPort & { data_reference?: string; artifact_type?: string };
-        if (dataRef) port.data_reference = dataRef;
-        if (artifact) port.artifact_type = artifact;
-        return port as WorkflowPort;
-    };
-
-    return {
-        inputs: (inputsRaw ?? []).map((h, i) => toPort(h, i, 'in')),
-        outputs: (outputsRaw ?? []).map((h, i) => toPort(h, i, 'out')),
-    };
-}
-
-function computeValidationFromGraph(
-    nodesArg: WorkflowNode[] | null | undefined,
-    edgesArg: WorkflowEdge[] | null | undefined
-): WorkflowValidationState {
-    const nodes = (nodesArg ?? []).filter(n => n.type !== 'input' && n.type !== 'result');
-    const nodeIds = new Set(nodes.map(n => n.id));
-    const edges = (edgesArg ?? []).filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
-
-    const nodeValidity: Record<string, boolean> = {};
-    let valid = true;
-    // Empty canvas should not show invalid badge; treat as valid until nodes exist.
-    if (nodes.length === 0) return { valid: true, nodeValidity };
-
-    const outMap = new Map<string, WorkflowEdge[]>();
-    const inMap = new Map<string, WorkflowEdge[]>();
-    for (const n of nodes) { outMap.set(n.id, []); inMap.set(n.id, []); }
-    for (const e of edges) { outMap.get(e.source)!.push(e); inMap.get(e.target)!.push(e); }
-
-    const inByPort = new Map<string, number>();
-    const outByPort = new Map<string, number>();
-    for (const e of edges) {
-        inByPort.set(`${e.target}::${e.targetPort}`, (inByPort.get(`${e.target}::${e.targetPort}`) ?? 0) + 1);
-        outByPort.set(`${e.source}::${e.sourcePort}`, (outByPort.get(`${e.source}::${e.sourcePort}`) ?? 0) + 1);
-    }
-
-    for (const n of nodes) {
-        const ports = ensurePorts(n.type, n.ports);
-        const requiredInputs = (ports.inputs ?? []).filter(p => p.required === true);
-        const requiredOutputs = (ports.outputs ?? []).filter(p => p.required === true);
-        const allRequiredInputsMet = requiredInputs.every(p => (inByPort.get(`${n.id}::${p.id}`) ?? 0) > 0);
-        const allRequiredOutputsMet = requiredOutputs.every(p => (outByPort.get(`${n.id}::${p.id}`) ?? 0) > 0);
-        const good = allRequiredInputsMet && allRequiredOutputsMet;
-        nodeValidity[n.id] = good;
-        valid = valid && good;
-    }
-
-    // cycle check
-    const indeg = new Map<string, number>();
-    nodes.forEach(n => indeg.set(n.id, 0));
-    edges.forEach(e => indeg.set(e.target, (indeg.get(e.target) ?? 0) + 1));
-    const q: string[] = [];
-    indeg.forEach((d, id) => { if (d === 0) q.push(id); });
-    let visited = 0;
-    while (q.length) {
-        const id = q.shift()!;
-        visited++;
-        for (const e of outMap.get(id) ?? []) {
-            const t = e.target;
-            indeg.set(t, (indeg.get(t) ?? 0) - 1);
-            if ((indeg.get(t) ?? 0) === 0) q.push(t);
-        }
-    }
-    if (visited !== nodes.length) valid = false;
-
-    return { valid, nodeValidity };
-}
-
-
-function sanitizeGraph(nodesArg: WorkflowNode[] | null | undefined, edgesArg: WorkflowEdge[] | null | undefined) {
-    const nodes = (nodesArg ?? []).map(n => {
-        const handlePorts = portsFromHandles(n);
-        return { ...n, ports: ensurePorts(n.type, handlePorts ?? n.ports) };
-    });
-    const byId = new Map(nodes.map(n => [n.id, n] as const));
-
-    const edges = (edgesArg ?? []).filter(e => {
-        const src = byId.get(e.source);
-        const tgt = byId.get(e.target);
-        if (!src || !tgt) return false;
-
-        const srcPorts = ensurePorts(src.type, src.ports);
-        const tgtPorts = ensurePorts(tgt.type, tgt.ports);
-
-        // <— YOUR RULE: don’t keep edges to nodes without inputs
-        if ((tgtPorts.inputs?.length ?? 0) === 0) return false;
-
-        const srcOk = (srcPorts.outputs ?? []).some(p => p.id === e.sourcePort);
-        const tgtOk = (tgtPorts.inputs ?? []).some(p => p.id === e.targetPort);
-        return srcOk && tgtOk;
-    });
-
-    // de-dupe
-    const uniq = new Map<string, WorkflowEdge>();
-    for (const e of edges) uniq.set(e.id, e);
-
-    return { nodes, edges: [...uniq.values()] };
+// delegate graph sanitisation
+export function sanitizeGraph(nodesArg: WorkflowNode[] | null | undefined, edgesArg: WorkflowEdge[] | null | undefined) {
+    return sharedSanitizeGraph(nodesArg, edgesArg);
 }

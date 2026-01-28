@@ -23,9 +23,10 @@ import { WorkflowsStore, WorkflowDraft, WorkflowExecutionLog, WorkflowValidation
 import { WorkflowsCatalogService } from './data/workflows-catalog.service';
 import { NewWorkflowDialogComponent, NewWorkflowDialogData } from './sub/new-workflow-dialog.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
-
+import {
+    ensurePorts,
+} from './data/workflows.store';
 type UnsavedChoice = 'save' | 'discard' | 'cancel';
-
 
 @Component({
     selector: 'app-workflows',
@@ -93,21 +94,32 @@ export class WorkflowsComponent implements OnInit {
     readonly validityById: Signal<Record<string, boolean>> = toSignal(this.store.validityById$, { initialValue: {} }) as Signal<Record<string, boolean>>;
     readonly canDraftById: Signal<Record<string, boolean>> = toSignal(this.store.canDraftById$, { initialValue: {} }) as Signal<Record<string, boolean>>;
     readonly canPublishById: Signal<Record<string, boolean>> = toSignal(this.store.canPublishById$, { initialValue: {} }) as Signal<Record<string, boolean>>;
+    readonly canPublish: Signal<boolean> = toSignal(this.store.canPublish$, { initialValue: false }) as Signal<boolean>;
 
     nodes = computed<WorkflowNode[]>(() => {
-        const allNodes = this.selectedWorkflow()?.nodes ?? this.defaultNodes;
-        return allNodes
-            .filter(n => n.type !== 'input' && n.type !== 'result')
-            .map(n => ({ ...n, ports: this.ensurePorts(n.type, this.portsFromHandles(n) ?? n.ports) }));
+        const all = this.selectedWorkflow()?.nodes ?? this.defaultNodes;
+        return all.map(n => {
+            const params = (n.data?.params ?? {}) as Record<string, unknown>;
+            // pick candidate ports from existing node, from handles, or from params
+            const portsCandidate =
+                this.portsFromHandles(n) ??
+                n.ports ??
+                (params['ports'] as WorkflowPorts | undefined);
+            // if the node has a ports_map on its params, pass it into ensurePorts
+            const portsMap =
+                params['ports_map'] as Record<string, { required?: boolean; readonly?: boolean }> | undefined;
+            const normalizedPorts = ensurePorts(n.type, portsCandidate, { portsMap });
+            return { ...n, ports: normalizedPorts };
+        });
     });
+
     edges = computed<WorkflowEdge[]>(() => this.selectedWorkflow()?.edges ?? []);
     availableActions = computed<ActionDefinitionLite[]>(() => {
         const c = this.catalog();
         const base = c.length ? c : this.fallbackCatalog;
-        const filtered = this.filterCatalog(base);
         const currentId = this.selectedWorkflow()?.id ?? null;
         const composites = this.buildCompositeActions(this.workflows(), currentId);
-        return [...composites, ...filtered];
+        return [...composites, ...base];
     });
     execTypes = computed<Set<PaletteType>>(() => {
         const types = this.availableActions().map(a => a.type as PaletteType);
@@ -115,7 +127,7 @@ export class WorkflowsComponent implements OnInit {
     });
     canvasNodes = computed<WorkflowNode[]>(() => {
         const allNodes = this.nodes();
-        return allNodes.filter(n => n.type !== 'input' && n.type !== 'result');
+        return allNodes;
     });
     canvasEdges = computed<WorkflowEdge[]>(() => {
         return this.edges();
@@ -699,10 +711,10 @@ export class WorkflowsComponent implements OnInit {
                 w.visibility === 'public' &&
                 w.id !== currentId
             ).map(w => ({
-                type: `wf:${w.id}`,
+                type: `composite`,
                 params: {
                     icon: 'account_tree',
-                    class: 'accent',
+                    class: 'warn',
                     label: w.name,
                     workflowId: w.id,
                     ports: this.buildCompositePorts(w),
@@ -711,7 +723,19 @@ export class WorkflowsComponent implements OnInit {
     }
 
     private buildCompositePorts(wf: WorkflowDraft): WorkflowPorts {
-        const nodes = (wf.nodes ?? []).map(n => ({ ...n, ports: this.ensurePorts(n.type, this.portsFromHandles(n) ?? n.ports) }));
+        const nodes = (wf.nodes ?? []).map(n => {
+            const params = (n.data?.params ?? {}) as Record<string, unknown>;
+            const portsCandidate =
+                this.portsFromHandles(n) ??
+                n.ports ??
+                (params['ports'] as WorkflowPorts | undefined);
+            const portsMap =
+                params['ports_map'] as Record<string, { required?: boolean; readonly?: boolean }> | undefined;
+            return {
+                ...n,
+                ports: ensurePorts(n.type, portsCandidate, { portsMap }),
+            };
+        });
         const edges = wf.edges ?? [];
         const indeg = new Map<string, number>();
         const outdeg = new Map<string, number>();
@@ -781,54 +805,6 @@ export class WorkflowsComponent implements OnInit {
         };
     }
 
-    private ensurePorts(type: string, ports?: WorkflowNode['ports']): WorkflowNode['ports'] {
-        const defaults = this.defaultPortsFor(type);
-        const base = ports ?? defaults;
-        const known = this.knownPortsFor(type);
-
-        const pickString = (obj: WorkflowPorts['inputs'][number], keys: string[]): string | undefined => {
-            const rec = obj as unknown as Record<string, unknown>;
-            for (const k of keys) {
-                const val = rec[k];
-                if (typeof val === 'string') return val;
-            }
-            return undefined;
-        };
-
-        const isGenericLabel = (label: string | undefined, prefix: 'in' | 'out') =>
-            !label || new RegExp(`^${prefix}\\s+\\d+$`, 'i').test(label);
-
-        const norm = (p: WorkflowPorts['inputs'][number], idx: number, prefix: 'in' | 'out', knownList?: WorkflowPorts['inputs']) => {
-            const dataRef = pickString(p, ['data_reference', 'dataReference']);
-            const artifact = pickString(p, ['artifact_type', 'artifactType']);
-            const knownPort = knownList?.[idx];
-            const knownRef = knownPort ? pickString(knownPort, ['data_reference', 'dataReference']) : undefined;
-            const knownArtifact = knownPort ? pickString(knownPort, ['artifact_type', 'artifactType']) : undefined;
-            const label = dataRef
-                ?? (isGenericLabel(p.label, prefix) ? (knownRef ?? knownPort?.label) : p.label)
-                ?? `${prefix} ${idx + 1}`;
-            const port = {
-                id: p.id ?? `${prefix}-${idx + 1}`,
-                label,
-                type: p.type ?? artifact ?? knownPort?.type ?? knownArtifact ?? 'json',
-                required: p.required,
-            } as WorkflowPorts['inputs'][number] & { data_reference?: string; artifact_type?: string };
-            if (dataRef) port.data_reference = dataRef;
-            if (artifact) port.artifact_type = artifact;
-            return port as WorkflowPorts['inputs'][number];
-        };
-
-        return {
-            inputs: (base.inputs ?? []).map((p, i) => norm(p, i, 'in', known?.inputs)),
-            outputs: (base.outputs ?? []).map((p, i) => norm(p, i, 'out', known?.outputs)),
-        };
-    }
-
-    private knownPortsFor(type: string): WorkflowNode['ports'] | undefined {
-        const t = (type ?? '').toString().toLowerCase();
-        const def = this.fallbackCatalog.find(a => (a.type ?? '').toString().toLowerCase() === t);
-        return def?.params?.['ports'] as WorkflowNode['ports'] | undefined;
-    }
 
     private portsFromHandles(node: WorkflowNode): WorkflowNode['ports'] | null {
         const raw = node as unknown as { input_handles?: unknown; output_handles?: unknown; data?: { params?: Record<string, unknown> } };
@@ -881,32 +857,6 @@ export class WorkflowsComponent implements OnInit {
         };
     }
 
-    private defaultPortsFor(type: string): WorkflowNode['ports'] {
-        const t = (type ?? '').toString().toLowerCase();
-        const triggers = new Set(['compare', 'extract', 'summarize']);
-        const counts = t === 'input' ? { inputs: 0, outputs: 1 }
-            : t === 'result' ? { inputs: 1, outputs: 0 }
-                : triggers.has(t) ? { inputs: 0, outputs: 1 }
-                    : { inputs: 1, outputs: 1 };
-        const inputs = Array.from({ length: counts.inputs }, (_, i) => ({
-            id: `in-${i + 1}`,
-            label: `in ${i + 1}`,
-            type: 'json',
-            required: false,
-        }));
-        const outputs = Array.from({ length: counts.outputs }, (_, i) => ({
-            id: `out-${i + 1}`,
-            label: `out ${i + 1}`,
-            type: 'json',
-            required: false,
-        }));
-        return { inputs, outputs };
-    }
-
-    private filterCatalog(list: ActionDefinitionLite[]): ActionDefinitionLite[] {
-        const blocked = new Set(['compare', 'summarize', 'extract', 'jira']);
-        return (list ?? []).filter((a) => !blocked.has((a.type ?? '').toString().toLowerCase()));
-    }
 
     onValidation(v: WorkflowValidationState): void {
         this.store.setValidation(v);
@@ -1064,6 +1014,59 @@ export class WorkflowsComponent implements OnInit {
         this.store.duplicateWorkflow({ id });
     }
 
+    async editWorkflow(id: string, event: Event): Promise<void> {
+        event.stopPropagation();
+        const workflow = this.workflows().find(w => w.id === id);
+        if (!workflow) return;
+
+        const ok = await this.confirmDiscardChanges();
+        if (!ok) return;
+
+        const isSelected = this.selectedWorkflow()?.id === workflow.id;
+        const hasValidationErrors = isSelected ? !this.validation().valid : !this.validityById()[workflow.id];
+
+        const dialogRef = this.dialog.open(NewWorkflowDialogComponent, {
+            data: {
+                name: workflow.name,
+                description: workflow.description,
+                visibility: workflow.visibility,
+                kind: workflow.kind,
+                isEdit: true,
+                workflowId: workflow.id,
+                hasValidationErrors
+            } satisfies NewWorkflowDialogData,
+            width: '480px',
+            autoFocus: true,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) return;
+            
+            if (result.visibility === 'public' && workflow.visibility !== 'public') {
+                // Publishing: update full workflow to set needsRepublish: false
+                const updated: WorkflowDraft = {
+                    ...workflow,
+                    name: result.name ?? workflow.name,
+                    description: result.description ?? workflow.description,
+                    visibility: result.visibility,
+                    kind: result.kind ?? workflow.kind,
+                    needsRepublish: false,
+                    updatedAt: new Date().toISOString(),
+                };
+                this.store.updateWorkflow({ workflow: updated });
+            } else {
+                // Just updating meta
+                this.store.updateWorkflowMeta({
+                    id: workflow.id,
+                    name: result.name ?? workflow.name,
+                    description: result.description ?? workflow.description,
+                    visibility: result.visibility ?? workflow.visibility,
+                    kind: result.kind ?? workflow.kind,
+                });
+            }
+        });
+    }
+
     async bulkDelete(): Promise<void> {
         const ids = this.selectedWorkflowIdList();
         if (!ids.length) return;
@@ -1135,6 +1138,12 @@ export class WorkflowsComponent implements OnInit {
     publishWorkflow(): void {
         const selected = this.selectedWorkflow();
         if (!selected) return;
+
+        const canPublish = this.canPublishById()[selected.id] ?? false;
+        if (!canPublish) {
+            this.toast.show(this.translate.instant('workflow.new_dialog.visibility.cannot_publish_error'));
+            return;
+        }
 
         const updated: WorkflowDraft = {
             ...selected,

@@ -106,6 +106,10 @@
                 </div>
 
                 <div class="card-actions">
+                    <button mat-icon-button (click)="editWorkflow(wf.id, $event)"
+                        [matTooltip]="'workflow.edit' | translate" class="action-btn">
+                        <mat-icon>edit</mat-icon>
+                    </button>
                     <button mat-icon-button (click)="duplicateWorkflow(wf.id, $event)"
                         [matTooltip]="'workflow.duplicate' | translate" class="action-btn">
                         <mat-icon>content_copy</mat-icon>

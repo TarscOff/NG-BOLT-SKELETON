@@ -1,39 +1,47 @@
-# Workflow Templates System - Complete Guide
+# Workflow System - Current Implementation
 
->_Last updated: 2025-12-23_
+>_Last updated: 2026-01-28_
+
+This document describes the current workflow system implementation in the Angular application, including basic workflow management, visual canvas editing, and template components.
+
+## What's Actually Implemented
+
+### ✅ Workflow Canvas System
+- Visual drag-and-drop workflow editor using @ng-draw-flow/core
+- Node-based workflow creation with connections
+- Basic workflow execution and simulation
+- Workflow validation and error checking
+
+### ✅ Template Components
+- **Chat Component**: AI-powered conversational interface
+- **Compare Component**: Document comparison with diff visualization
+- **Summarize Component**: Multi-document summarization
+- **Extract Component**: Basic data extraction (structure exists, advanced features partial)
+
+### ✅ Template Services
+- HTTP services for each template type (Chat, Compare, Summarize, Extract)
+- Mock data implementations for development
+- Basic API integration patterns
+
+### ✅ Export System
+- Document export service with PDF/DOCX/TXT support
+- Export adapters for comparison and summary results
+- Screenshot-based PDF generation
+
+### ✅ Basic Workflow Management
+- Create, edit, save workflows
+- Workflow catalog integration
+- Execution history tracking
+- Search and filtering
 
 ## 📚 Table of Contents
 
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Available Templates](#available-templates)
-4. [Template Modes](#template-modes)
-5. [Component APIs](#component-apis)
-6. [Services](#services)
-7. [Adding New Templates](#adding-new-templates)
-8. [Best Practices](#best-practices)
-9. [Export System](#export-system)
-10. [Examples](#examples)
-
----
-
-## Overview
-
-The Workflow Templates System provides reusable, configurable components for common document processing workflows. Each template supports two operating modes:
-
-- **Upload Mode**: Interactive mode where users upload files and trigger processing
-- **Preloaded Mode**: Display mode for showing pre-computed results
-
-### Key Features
-
-✅ **Modular Architecture** - Each template is self-contained  
-✅ **Dual Mode Support** - Upload (interactive) and Preloaded (display)  
-✅ **Type-Safe** - Full TypeScript interfaces and type checking  
-✅ **Configurable** - Extensive configuration options per template  
-✅ **Export Support** - Built-in PDF/DOCX/TXT export capabilities  
-✅ **Signal-Based** - Modern Angular signals for reactive state  
-✅ **Service Layer** - Dedicated services with mock data support  
-✅ **Extensible** - Easy to add new templates following patterns  
+1. [Architecture](#architecture)
+2. [Template Components](#template-components)
+3. [Template Services](#template-services)
+4. [Export System](#export-system)
+5. [Workflow Canvas](#workflow-canvas)
+6. [Current Limitations](#current-limitations)
 
 ---
 
@@ -41,594 +49,179 @@ The Workflow Templates System provides reusable, configurable components for com
 
 ```
 workflows/
-├── templates/                      # Template system
-│   ├── components/
-│   │   ├── chat/                  # Chat template
-│   │   │   ├── chat.component.ts
-│   │   │   ├── chatInput/
-│   │   │   └── chatMessage/
-│   │   ├── compare/               # Document comparison
-│   │   │   ├── compare.component.ts
-│   │   │   └── comparison-result/
-│   │   ├── extract/               # Data extraction
-│   │   │   ├── extract.component.ts
-│   │   │   └── extract-result/
-│   │   ├── summarize/             # Document summarization
-│   │   │   ├── summarize.component.ts
-│   │   │   └── summarize-result/
-│   │   ├── export-overlay/        # Shared export overlay
-│   │   └── loader/                # Dynamic template loader
-│   ├── services/
-│   │   ├── chat.service.ts
-│   │   ├── compare.service.ts
-│   │   ├── extract.service.ts
-│   │   ├── summarize.service.ts
-│   │   ├── document-export.service.ts
-│   │   └── templating.service.ts
-│   └── utils/
-│       ├── constants.ts           # Template constants (CHAT_CONFIG, COMPARE_CONFIG, etc.)
-│       ├── fileIcon.ts            # File type icon mapping
-│       ├── document-export.interface.ts
-│       ├── comparison-export.adapter.ts
-│       ├── summary-export.adapter.ts
-│       ├── template-config.interface.ts
-│       └── tplsInterfaces/
-│           ├── chatTpl.interface.ts
-│           ├── compareTpl.interface.ts
-│           ├── extractTpl.interface.ts
-│           └── summarizeTpl.interface.ts
+├── data/                          # Workflow state management
+│   ├── workflows.store.ts         # NgRx Component Store
+│   ├── workflows-catalog.service.ts # Action catalog loading
+│   └── workflows.component.ts     # Main workflow component
+├── sub/                           # Workflow canvas components
+│   ├── workflow-canvas.component.ts
+│   ├── action-node/
+│   ├── details-node/
+│   ├── run-panel/
+│   └── new-workflow-dialog.component.ts
+└── templates/                     # Template system
+    ├── components/
+    │   ├── chat/                  # Chat template
+    │   ├── compare/               # Document comparison
+    │   ├── extract/               # Data extraction
+    │   ├── summarize/            # Document summarization
+    │   ├── export-overlay/       # Shared export overlay
+    │   └── loader/               # Dynamic template loader
+    ├── services/
+    │   ├── chat.service.ts
+    │   ├── compare.service.ts
+    │   ├── extract.service.ts
+    │   ├── summarize.service.ts
+    │   ├── document-export.service.ts
+    │   └── templating.service.ts
+    └── utils/
+        ├── constants.ts          # Template constants
+        ├── template-config.interface.ts
+        ├── comparison-export.adapter.ts
+        ├── summary-export.adapter.ts
+        └── tplsInterfaces/       # Template interfaces
+
 ```
+### Current Implementation Notes
 
-### Service Pattern
-
-Each template follows a consistent service pattern:
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class TemplateService {
-  private endpoints: Partial<TemplateEndpoints> = {};
-  
-  configure(options: { endpoints?: Partial<TemplateEndpoints> }): void {
-    // Configure service behavior
-  }
-  
-  // API methods with endpoint override support
-  methodName(request: RequestType, endpoints?: Partial<TemplateEndpoints>): Observable<ResponseType> {
-    const endpoint = endpoints?.specificEndpoint || this.endpoints.specificEndpoint;
-    return endpoint 
-      ? this.httpRequest(request, endpoint)
-      : this.mockMethodName(request);
-  }
-  
-  // Mock implementation
-  private mockMethodName(request: RequestType): Observable<ResponseType> {
-    // Return mock data with delay
-  }
-}
+- **Workflow Canvas**: Basic drag-and-drop editor with node connections
+- **Template Components**: Four template types (Chat, Compare, Summarize, Extract)
+- **Services**: HTTP services with mock data fallbacks
+- **Export**: PDF/DOCX/TXT export for results
+- **State Management**: NgRx Component Store for workflows
 ```
 
 ---
 
-## Available Templates
+## Template Components
+
+The system includes four template components that can be used independently or within workflows:
 
 ### 1. 💬 Chat Template
 
-**Purpose**: AI-powered conversational interface  
-**Use Cases**: Customer support bots, AI assistants, Q&A systems, document chat
+**Purpose**: AI-powered conversational interface with file attachments
 
-#### Features
+**Features**:
 - Real-time message sending and receiving
-- Message editing and deletion
-- Markdown support with code highlighting
-- Code block rendering
-- File attachments
-- Typing indicators
-- Read receipts
+- File attachments support
 - Message history
-- User avatars
-- Auto-scroll functionality
+- Markdown rendering
 
-#### Configuration
-
-```typescript
-export interface ChatConfig {
-  placeholder?: string;
-  maxLength?: number;
-  enableAttachments?: boolean;
-  allowMarkdown?: boolean;
-  showTimestamps?: boolean;
-  allowEdit?: boolean;
-  allowDelete?: boolean;
-  autoScroll?: boolean;
-}
-```
-
-#### Endpoints
-
-```typescript
-export interface ChatEndpoints {
-  sendEndpoint?: string;
-  uploadEndpoint?: string;
-  deleteEndpoint?: string;
-  editEndpoint?: string;
-}
-```
-
-#### Import Path
+**Import**:
 ```typescript
 import { ChatComponent } from '@features/workflows/templates/components/chat/chat.component';
 import { ChatService } from '@features/workflows/templates/services/chat.service';
-import { ChatConfig, ChatMessage, ChatSender } from '@features/workflows/templates/utils/tplsInterfaces/chatTpl.interface';
 ```
-
----
 
 ### 2. 🔄 Compare Template
 
-**Purpose**: Document comparison with diff visualization  
-**Use Cases**: Contract comparison, version control, legal document review, change tracking
+**Purpose**: Document comparison with diff visualization
 
-#### Features
+**Features**:
 - Side-by-side file upload
-- Multiple file format support (.pdf, .docx, .txt, .json, .md)
-- Difference highlighting (additions, deletions, modifications)
-- Similarity scoring
-- Change categorization
-- Section-by-section comparison
-- Export comparison results (PDF/DOCX/TXT)
+- Difference highlighting
+- Export comparison results
 - Visual diff viewer
 
-#### Configuration
-
-```typescript
-export interface CompareConfig {
-  allowedFileTypes?: string[];
-  maxFileSize?: number;
-  autoCompare?: boolean;
-  showSimilarity?: boolean;
-  highlightDifferences?: boolean;
-}
-```
-
-#### Endpoints
-
-```typescript
-export interface CompareEndpoints {
-  uploadEndpoint?: string;
-  startEndpoint?: string;
-  statusEndpoint?: string;
-  cancelEndpoint?: string;
-}
-```
-
-#### Import Path
+**Import**:
 ```typescript
 import { CompareComponent } from '@features/workflows/templates/components/compare/compare.component';
 import { CompareService } from '@features/workflows/templates/services/compare.service';
-import { CompareConfig, ComparisonResult, CompareFile } from '@features/workflows/templates/utils/tplsInterfaces/compareTpl.interface';
 ```
 
----
+### 3. 📝 Summarize Template
 
-### 3. 📤 Extract Template
+**Purpose**: Multi-document summarization
 
-**Purpose**: Structured data extraction from documents  
-**Use Cases**: Form data extraction, invoice processing, receipt parsing, entity extraction
-
-#### Features
-- Multiple file upload support
-- Configurable extraction schema
-- Field-level extraction with confidence scores
-- Table extraction support
-- Entity recognition (names, dates, amounts, etc.)
-- JSON output format
-- Validation and error handling
-- Export extracted data
-- Visual field mapping
-
-#### Configuration
-
-```typescript
-export interface ExtractConfig {
-  allowedFileTypes?: string[];
-  maxFileSize?: number;
-  maxFiles?: number;
-  showProgress?: boolean;
-  extractionSchema?: ExtractField[];
-  outputFormat?: 'json' | 'csv' | 'xlsx';
-  enableTableExtraction?: boolean;
-  enableEntityRecognition?: boolean;
-}
-```
-
-#### Endpoints
-
-```typescript
-export interface ExtractEndpoints {
-  uploadEndpoint?: string;
-  startEndpoint?: string;
-  statusEndpoint?: string;
-  cancelEndpoint?: string;
-  exportEndpoint?: string;
-}
-```
-
-#### Data Structures
-
-```typescript
-export interface ExtractField {
-  name: string;
-  type: 'text' | 'number' | 'date' | 'boolean' | 'table' | 'entity';
-  required?: boolean;
-  description?: string;
-}
-
-export interface ExtractedData {
-  [fieldName: string]: {
-    value: any;
-    confidence: number;
-    location?: {
-      page: number;
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    };
-  };
-}
-
-export interface ExtractResult {
-  id: string;
-  files: ExtractFile[];
-  extractedData: ExtractedData;
-  tables?: TableData[];
-  entities?: Entity[];
-  status: 'processing' | 'completed' | 'error';
-  error?: string;
-  createdAt: Date;
-  completedAt?: Date;
-}
-```
-
-#### Import Path
-```typescript
-import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
-import { ExtractService } from '@features/workflows/templates/services/extract.service';
-import { ExtractConfig, ExtractResult, ExtractField } from '@features/workflows/templates/utils/tplsInterfaces/extractTpl.interface';
-```
-
-**Note**: Extract template is currently in development. Basic structure exists but advanced features (CSV/XLSX export, table extraction, entity recognition) may not be fully implemented yet.
-
----
-
-### 4. 📝 Summarize Template
-
-**Purpose**: Multi-document summarization with customization  
-**Use Cases**: Document summarization, content extraction, report generation, meeting notes
-
-#### Features
+**Features**:
 - Multiple file upload (up to 5 files)
-- Customizable summary length (short, medium, long)
-- Multiple output styles (bullets, paragraph, executive)
-- Multi-language support
-- Key points extraction
-- Word count statistics
+- Customizable summary length and style
 - Progress tracking
 - Export to PDF/DOCX/TXT
 
-#### Configuration
-
-```typescript
-export interface SummarizeConfig {
-  allowedFileTypes?: string[];
-  maxFileSize?: number;
-  maxFiles?: number;
-  showProgress?: boolean;
-  defaultLength?: SummaryLength; // 'short' | 'medium' | 'long'
-  defaultStyle?: SummaryStyle;   // 'bullets' | 'paragraph' | 'executive'
-  defaultLanguage?: string;
-  availableLanguages?: { label: string; value: string }[];
-}
-```
-
-#### Endpoints
-
-```typescript
-export interface SummarizeEndpoints {
-  uploadEndpoint?: string;
-  startEndpoint?: string;
-  statusEndpoint?: string;
-  cancelEndpoint?: string;
-  exportEndpoint?: string;
-}
-```
-
-#### Import Path
+**Import**:
 ```typescript
 import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
 import { SummarizeService } from '@features/workflows/templates/services/summarize.service';
-import { SummarizeConfig, SummaryResult, SummarizeFile } from '@features/workflows/templates/utils/tplsInterfaces/summarizeTpl.interface';
+```
+
+### 4. 📤 Extract Template
+
+**Purpose**: Basic data extraction from documents
+
+**Status**: Structure exists, advanced features are partial
+
+**Features**:
+- File upload support
+- Basic extraction interface
+- Result display
+
+**Import**:
+```typescript
+import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
+import { ExtractService } from '@features/workflows/templates/services/extract.service';
 ```
 
 ---
 
-## Template Modes
+## Template Services
 
-### Upload Mode (Interactive)
-
-**When to Use:**
-- Users need to upload files
-- Real-time processing required
-- Interactive workflows
-- Event handling needed
-
-**Characteristics:**
-- File upload interface
-- Progress indicators
-- Event emitters
-- Error handling
-- User configuration
-
-**Example:**
-```typescript
-@Component({
-  template: `
-    <app-extract-tpl
-      [mode]="{ mode: 'upload' }"
-      [config]="config"
-      [endpoints]="endpoints"
-      (fileUploaded)="onFileUploaded($event)"
-      (extractCompleted)="onCompleted($event)"
-      (extractError)="onError($event)"
-    />
-  `
-})
-export class InteractiveExtractComponent {
-  config: ExtractConfig = {
-    allowedFileTypes: ['.pdf', '.jpg', '.png'],
-    maxFileSize: 10 * 1024 * 1024,
-    maxFiles: 3,
-    showProgress: true,
-    extractionSchema: [
-      { name: 'invoice_number', type: 'text', required: true },
-      { name: 'date', type: 'date', required: true },
-      { name: 'total_amount', type: 'number', required: true }
-    ],
-    enableTableExtraction: true
-  };
-  
-  endpoints = {
-    uploadEndpoint: '/api/upload',
-    startEndpoint: '/api/extract/start',
-    statusEndpoint: '/api/extract/status'
-  };
-}
-```
-
----
-
-### Preloaded Mode (Display)
-
-**When to Use:**
-- Displaying saved results
-- Workflow node visualization
-- Read-only viewing
-- Backend pre-computed data
-- Report embedding
-
-**Characteristics:**
-- No file upload
-- Result display only
-- Export functionality
-- No event emitters
-- Optimized for viewing
-
-**Example:**
-```typescript
-@Component({
-  template: `
-    <app-extract-tpl
-      [mode]="{ mode: 'preloaded', result: extractResult }"
-    />
-  `
-})
-export class PreloadedExtractComponent {
-  extractResult: ExtractResult = {
-    id: 'extract-123',
-    files: [...],
-    extractedData: {
-      invoice_number: { value: 'INV-2024-001', confidence: 0.98 },
-      date: { value: '2024-01-15', confidence: 0.95 },
-      total_amount: { value: 1250.00, confidence: 0.99 }
-    },
-    status: 'completed',
-    createdAt: new Date(),
-    completedAt: new Date()
-  };
-}
-```
-
----
-
-## Component APIs
-
-### Chat Component
-
-#### Inputs
-```typescript
-@Input() messages: ChatMessage[] = [];
-@Input() config: Partial<ChatConfig> = {};
-@Input() endpoints: Partial<ChatEndpoints> = {};
-@Input() currentUser!: ChatSender;
-@Input() disabled = false;
-@Input() useMockData = true;
-```
-
-#### Outputs
-```typescript
-@Output() messageSent = new EventEmitter<string>();
-@Output() messageDeleted = new EventEmitter<string>();
-@Output() messageEdited = new EventEmitter<{ id: string; content: string }>();
-@Output() attachmentUploaded = new EventEmitter<{ url: string; filename: string }>();
-@Output() chatCleared = new EventEmitter<void>();
-@Output() errorEmitter = new EventEmitter<Error>();
-```
-
----
-
-### Compare Component
-
-#### Inputs
-```typescript
-@Input() mode!: CompareMode;
-@Input() config: Partial<CompareConfig> = {};
-@Input() endpoints: Partial<CompareEndpoints> = {};
-@Input() disabled = false;
-```
-
-#### Outputs (Upload Mode)
-```typescript
-@Output() fileUploaded = new EventEmitter<{ slot: 1 | 2; file: CompareFile }>();
-@Output() compareStarted = new EventEmitter<void>();
-@Output() compareCompleted = new EventEmitter<ComparisonResult>();
-@Output() compareError = new EventEmitter<Error>();
-```
-
----
-
-### Extract Component
-
-#### Inputs
-```typescript
-@Input() mode!: ExtractMode;
-@Input() config: Partial<ExtractConfig> = {};
-@Input() endpoints: Partial<ExtractEndpoints> = {};
-@Input() disabled = false;
-```
-
-#### Outputs (Upload Mode)
-```typescript
-@Output() fileUploaded = new EventEmitter<ExtractFile>();
-@Output() extractStarted = new EventEmitter<void>();
-@Output() extractCompleted = new EventEmitter<ExtractResult>();
-@Output() extractError = new EventEmitter<Error>();
-```
-
----
-
-### Summarize Component
-
-#### Inputs
-```typescript
-@Input() mode!: SummarizeMode;
-@Input() config: Partial<SummarizeConfig> = {};
-@Input() endpoints: Partial<SummarizeEndpoints> = {};
-@Input() disabled = false;
-```
-
-#### Outputs (Upload Mode)
-```typescript
-@Output() fileUploaded = new EventEmitter<SummarizeFile>();
-@Output() summarizeStarted = new EventEmitter<void>();
-@Output() summarizeCompleted = new EventEmitter<SummaryResult>();
-@Output() summarizeError = new EventEmitter<Error>();
-```
-
----
-
-## Services
+Each template has a corresponding service that handles API communication:
 
 ### Chat Service
-
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  configure(options: { endpoints?: Partial<ChatEndpoints> }): void
-  
-  sendMessage(request: SendMessageRequest, endpoints?: Partial<ChatEndpoints>): Observable<SendMessageResponse>
-  
-  deleteMessage(messageId: string, endpoints?: Partial<ChatEndpoints>): Observable<DeleteMessageResponse>
-  
-  editMessage(messageId: string, content: string, endpoints?: Partial<ChatEndpoints>): Observable<Partial<ChatMessage>>
-  
-  uploadAttachment(file: File, endpoints?: Partial<ChatEndpoints>): Observable<UploadAttachmentResponse>
+  sendMessage(request: SendMessageRequest): Observable<SendMessageResponse>
+  uploadAttachment(file: File): Observable<UploadAttachmentResponse>
+  // Mock implementations available for development
 }
 ```
 
----
-
 ### Compare Service
-
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class CompareService {
-  configure(config: { endpoints?: Partial<CompareEndpoints> }): void
-  
-  uploadFile(request: CompareUploadRequest, endpoints?: Partial<CompareEndpoints>): Observable<CompareUploadResponse>
-  
-  startComparison(request: CompareStartRequest, endpoints?: Partial<CompareEndpoints>): Observable<CompareStatusResponse>
-  
-  getComparison(comparisonId: string, endpoints?: Partial<CompareEndpoints>): Observable<ComparisonResult>
-  
-  cancelComparison(comparisonId: string, endpoints?: Partial<CompareEndpoints>): Observable<{ success: boolean }>
+  uploadFile(request: CompareUploadRequest): Observable<CompareUploadResponse>
+  startComparison(request: CompareStartRequest): Observable<CompareStatusResponse>
+  getComparison(comparisonId: string): Observable<ComparisonResult>
 }
 ```
-
----
-
-### Extract Service
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class ExtractService {
-  configure(config: { endpoints?: Partial<ExtractEndpoints> }): void
-  
-  uploadFile(request: ExtractUploadRequest, endpoints?: Partial<ExtractEndpoints>): Observable<ExtractUploadResponse>
-  
-  startExtraction(request: ExtractStartRequest, endpoints?: Partial<ExtractEndpoints>): Observable<ExtractStatusResponse>
-  
-  getExtraction(extractId: string, endpoints?: Partial<ExtractEndpoints>): Observable<ExtractResult>
-  
-  cancelExtraction(extractId: string, endpoints?: Partial<ExtractEndpoints>): Observable<{ success: boolean }>
-}
-```
-
-**Configuration Example:**
-```typescript
-constructor(private extractService: ExtractService) {
-  this.extractService.configure({
-    endpoints: {
-      uploadEndpoint: '/api/extract/upload',
-      startEndpoint: '/api/extract/start',
-      statusEndpoint: '/api/extract/status',
-      cancelEndpoint: '/api/extract/cancel'
-    }
-  });
-}
-```
-
----
 
 ### Summarize Service
-
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class SummarizeService {
-  configure(config: { endpoints?: Partial<SummarizeEndpoints> }): void
-  
-  uploadFile(request: SummarizeUploadRequest, endpoints?: Partial<SummarizeEndpoints>): Observable<SummarizeUploadResponse>
-  
-  startSummarization(request: SummarizeStartRequest, endpoints?: Partial<SummarizeEndpoints>): Observable<SummarizeStatusResponse>
-  
-  getSummary(summaryId: string, endpoints?: Partial<SummarizeEndpoints>): Observable<SummaryResult>
-  
-  cancelSummary(summaryId: string, endpoints?: Partial<SummarizeEndpoints>): Observable<{ success: boolean }>
-  
-  exportSummary(summaryId: string, format: 'pdf' | 'docx' | 'html' | 'txt', endpoints?: Partial<SummarizeEndpoints>): Observable<Blob>
+  uploadFile(request: SummarizeUploadRequest): Observable<SummarizeUploadResponse>
+  startSummarization(request: SummarizeStartRequest): Observable<SummarizeStatusResponse>
+  getSummary(summaryId: string): Observable<SummaryResult>
+}
+```
+
+### Extract Service
+```typescript
+@Injectable({ providedIn: 'root' })
+export class ExtractService {
+  uploadFile(request: ExtractUploadRequest): Observable<ExtractUploadResponse>
+  startExtraction(request: ExtractStartRequest): Observable<ExtractStatusResponse>
+  getExtraction(extractId: string): Observable<ExtractResult>
+}
+```
+
+### Templating Service
+```typescript
+@Injectable({ providedIn: 'root' })
+export class TemplatingService {
+  getComponent(type: TemplateType): Type<unknown> | undefined
+  fetchTemplateConfig(): Observable<TemplatePageResponse>
 }
 ```
 
 ---
+
+## Export System
+
+The system includes a document export service for exporting template results:
 
 ### Document Export Service
 
@@ -646,7 +239,7 @@ export class DocumentExportService {
 
 **Supported Formats:**
 - **PDF**: High-quality PDF generation with screenshots
-- **DOCX**: Microsoft Word format with formatting
+- **DOCX**: Microsoft Word format with formatting  
 - **TXT**: Plain text export
 
 **Available Export Adapters:**
@@ -655,350 +248,82 @@ export class DocumentExportService {
 
 ---
 
-### Templating Service
+## Workflow Canvas
 
-```typescript
-@Injectable({ providedIn: 'root' })
-export class TemplatingService {
-  getComponent(type: TemplateType): Type<TemplateComponentInstance> | undefined
-  
-  fetchTemplateConfig(pageId = 'default'): Observable<TemplatePageResponse>
-  
-  getMockComparisonResult(): ComparisonResult
-  getMockSummaryResult(): SummaryResult
-  getMockExtractResult(): ExtractResult
-  getMockChatMessages(): ChatMessage[]
-}
-```
+The workflow canvas provides a visual drag-and-drop interface for creating workflows:
 
-**Template Types:**
-```typescript
-export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract';
+- **Node-based editor** using @ng-draw-flow/core
+- **Action catalog** integration for available workflow actions
+- **Workflow execution** with progress tracking
+- **Validation** and error checking
+- **Execution history** and logging
 
-export type TemplateComponentInstance = 
-  | ChatComponent 
-  | CompareComponent 
-  | SummarizeComponent 
-  | ExtractComponent;
-```
+See [README-CANVAS.md](README-CANVAS.md) for detailed canvas documentation.
 
 ---
 
-## Adding New Templates
+## Current Limitations
 
-### Step-by-Step Guide
+### Partial Implementations
 
-#### 1. Create Interface Definitions
+- **Extract Template**: Basic structure exists, advanced features incomplete
+- **API Integration**: Services have mock fallbacks, live endpoints may need configuration
+- **Export Adapters**: Only comparison and summary adapters implemented
 
-Create `utils/tplsInterfaces/newTemplate.interface.ts`:
+### Development Notes
 
-```typescript
-// Mode definition
-export type NewTemplateMode =
-  | { mode: 'upload' }
-  | { mode: 'preloaded'; result: NewTemplateResult };
-
-// Configuration
-export interface NewTemplateConfig {
-  allowedFileTypes?: string[];
-  maxFileSize?: number;
-  customOption?: string;
-}
-
-// Endpoints
-export interface NewTemplateEndpoints {
-  uploadEndpoint?: string;
-  processEndpoint?: string;
-  statusEndpoint?: string;
-  cancelEndpoint?: string;
-}
-
-// File interface
-export interface NewTemplateFile {
-  key: string;
-  name: string;
-  size: number;
-  type: string;
-  url: string;
-  uploadDate: Date;
-}
-
-// Result interface
-export interface NewTemplateResult {
-  id: string;
-  files: NewTemplateFile[];
-  output: any;
-  status: 'processing' | 'completed' | 'error';
-  createdAt: Date;
-  completedAt?: Date;
-}
-```
-
-#### 2. Create Service
-
-Create `services/newTemplate.service.ts` following the pattern in existing services:
-- Implement endpoint configuration
-- Provide API methods with endpoint override support
-- Include mock data implementations
-- Follow the service pattern from Chat/Compare/Summarize services
-
-#### 3. Create Component
-
-Create `components/newTemplate/newTemplate.component.ts` with:
-- Signal-based state management
-- Upload and preloaded modes
-- Error handling
-- Progress tracking
-- Event emitters for upload mode
-
-#### 4. Create Result Component
-
-Create `components/newTemplate/newTemplate-result/` for displaying results.
-
-#### 5. Add Constants
-
-Update `utils/constants.ts`:
-
-```typescript
-export const NEW_TEMPLATE_CONFIG: NewTemplateConfig = {
-  allowedFileTypes: ['.pdf', '.docx', '.txt'],
-  maxFileSize: 10 * 1024 * 1024,
-  // ... other defaults
-};
-```
-
-#### 6. Create Export Adapter (Optional)
-
-Create `utils/newTemplate-export.adapter.ts`:
-
-```typescript
-export class NewTemplateExportAdapter implements ExportAdapter<NewTemplateResult> {
-  constructor(private result: NewTemplateResult) {}
-  
-  getTitle(): string {
-    return `Result - ${this.result.id}`;
-  }
-  
-  getContent(): string {
-    // Format result for export
-  }
-  
-  getMetadata(): Record<string, string> {
-    // Return metadata
-  }
-  
-  getData(): NewTemplateResult {
-    return this.result;
-  }
-}
-```
-
-#### 7. Register in Templating Service
-
-Update `services/templating.service.ts`:
-
-```typescript
-getComponent(type: TemplateType): Type<TemplateComponentInstance> | undefined {
-  const components: Record<TemplateType, Type<TemplateComponentInstance>> = {
-    chat: ChatComponent,
-    compare: CompareComponent,
-    summarize: SummarizeComponent,
-    extract: ExtractComponent,
-    newTemplate: NewTemplateComponent, // Add here
-  };
-  return components[type];
-}
-```
-
-#### 8. Update Type Definitions
-
-Update `utils/template-config.interface.ts`:
-
-```typescript
-export type TemplateType = 'chat' | 'compare' | 'summarize' | 'extract' | 'newTemplate';
-
-export type TemplateComponentInstance = 
-  | ChatComponent 
-  | CompareComponent 
-  | SummarizeComponent 
-  | ExtractComponent
-  | NewTemplateComponent; // Add here
-```
+- Services include mock data implementations for development
+- Template components are functional but may lack advanced features
+- Workflow execution uses simulation rather than full backend integration
+- Export system supports basic PDF/DOCX/TXT generation
 
 ---
 
-## Best Practices
+## Usage Examples
 
-### 1. Use Signals for State Management
-
-```typescript
-private _isProcessing = signal<boolean>(false);
-private _progress = signal<number>(0);
-
-isProcessing$ = computed(() => this._isProcessing());
-progress$ = computed(() => this._progress());
-```
-
-### 2. Endpoint Override Support
-
-```typescript
-uploadFile(request, endpoints?) {
-  const endpoint = endpoints?.uploadEndpoint || this.endpoints.uploadEndpoint;
-  return endpoint ? this.http.post(endpoint, data) : this.mockUpload(request);
-}
-```
-
-### 3. Progress Tracking
-
-```typescript
-private pollResult(resultId: string): void {
-  const interval = setInterval(() => {
-    this.service.getResult(resultId).subscribe({
-      next: (result) => {
-        this._progress.update(p => Math.min(p + 10, 90));
-        if (result.status === 'completed') {
-          clearInterval(interval);
-          this.handleComplete(result);
-        }
-      }
-    });
-  }, 2000);
-}
-```
-
-### 4. File Validation
-
-```typescript
-private validateFile(file: File): boolean {
-  const config = this._config();
-  
-  if (config.maxFileSize && file.size > config.maxFileSize) {
-    this.errorEmitter.emit(new Error(`File too large: ${file.name}`));
-    return false;
-  }
-  
-  const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-  if (config.allowedFileTypes && !config.allowedFileTypes.includes(ext)) {
-    this.errorEmitter.emit(new Error(`Invalid file type: ${ext}`));
-    return false;
-  }
-  
-  return true;
-}
-```
-
-### 5. Cleanup
-
-```typescript
-private destroy$ = new Subject<void>();
-
-ngOnDestroy(): void {
-  this.destroy$.next();
-  this.destroy$.complete();
-}
-
-// Use in subscriptions
-.pipe(takeUntil(this.destroy$))
-```
-
----
-
-## Export System
-
-### Document Export Service
-
-Supports multiple export formats with adapters:
-
-```typescript
-async exportResult(result: any, format: ExportFormat): Promise<void> {
-  const adapter = new ResultExportAdapter(result);
-  
-  await this.exportService.export(adapter, {
-    format,
-    filename: `result-${result.id}.${format}`,
-    includeScreenshot: format === 'pdf',
-    screenshotElement: this.resultContainer,
-    metadata: {
-      'Template': 'Summarize',
-      'Status': result.status
-    }
-  });
-}
-```
-
-### Available Export Adapters
-
-- **ComparisonExportAdapter** (`comparison-export.adapter.ts`) - For document comparison results
-- **SummaryExportAdapter** (`summary-export.adapter.ts`) - For summarization results
-
-**Note**: Extract export adapter is planned but not yet fully implemented.
-
----
-
-## Examples
-
-### Complete Template Usage
+### Using a Template Component
 
 ```typescript
 @Component({
-  selector: 'app-document-processing',
   template: `
-    <div class="template-container">
-      <!-- Summarize Template Example -->
-      <app-summarize-tpl
-        [mode]="{ mode: 'upload' }"
-        [config]="summarizeConfig"
-        [endpoints]="summarizeEndpoints"
-        (fileUploaded)="onFileUploaded($event)"
-        (summarizeCompleted)="onSummaryComplete($event)"
-        (summarizeError)="onError($event)"
-      />
-    </div>
+    <app-chat-tpl
+      [messages]="messages"
+      [currentUser]="currentUser"
+      (messageSent)="onMessageSent($event)"
+    />
   `
 })
-export class DocumentProcessingComponent {
-  summarizeConfig: SummarizeConfig = {
-    allowedFileTypes: ['.pdf', '.docx', '.txt'],
-    maxFileSize: 10 * 1024 * 1024,
-    maxFiles: 5,
-    showProgress: true,
-    defaultLength: 'medium',
-    defaultStyle: 'bullets'
-  };
+export class ChatExampleComponent {
+  messages: ChatMessage[] = [];
+  currentUser: ChatSender = { id: 'user1', name: 'User' };
 
-  summarizeEndpoints: Partial<SummarizeEndpoints> = {
-    uploadEndpoint: '/api/summarize/upload',
-    startEndpoint: '/api/summarize/start',
-    statusEndpoint: '/api/summarize/status'
-  };
-
-  onSummaryComplete(result: SummaryResult): void {
-    console.log('Summary completed:', result);
+  onMessageSent(content: string): void {
+    // Handle message
   }
 }
 ```
 
----
+### Using Template Service
 
-## Contributing
+```typescript
+constructor(private chatService: ChatService) {}
 
-To add new templates:
+sendMessage(content: string): void {
+  this.chatService.sendMessage({ content })
+    .subscribe(response => {
+      // Handle response
+    });
+}
+```
 
-1. Follow the step-by-step guide above
-2. Create interfaces in `utils/tplsInterfaces/`
-3. Create service in `services/`
-4. Create component in `components/`
-5. Add constants in `utils/constants.ts`
-6. Create export adapter (optional) in `utils/`
-7. Register in templating service
-8. Update type definitions in `template-config.interface.ts`
-9. Update documentation
-10. Add unit tests
-11. Submit PR
+### Exporting Results
 
----
-
-## 🧑‍💻 Author
-
-**Angular Product Skeleton**  
-Built by **Tarik Haddadi** using Angular 19 and modern best practices (2025).
+```typescript
+exportResult(result: any): void {
+  const adapter = new ComparisonExportAdapter(result);
+  this.exportService.export(adapter, {
+    format: 'pdf',
+    filename: `result-${result.id}.pdf`
+  });
+}
+```
