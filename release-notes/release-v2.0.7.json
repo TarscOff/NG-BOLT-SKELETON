@@ -1,0 +1,105 @@
+{
+  "version": "2.0.7",
+  "tag": "v2.0.7",
+  "previousTag": "v2.0.6",
+  "date": "2026-01-28T10:10:34.469Z",
+  "stats": {
+    "features": 0,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "19edb13",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "cdae696",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.7 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1c3ee8a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.6",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "d713dac",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "cdae696102946febebc7145b917986d8969fb13d",
+      "shortHash": "cdae696",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.7 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d713dac906521c7a28577d02d12806b2fd0af033",
+      "shortHash": "d713dac",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(workflows): updating docs\n\nSee merge request genai/frontend/frontend-generic!4"
+    },
+    {
+      "hash": "19edb1360fdf743579b1f23760f83234f04505d8",
+      "shortHash": "19edb13",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1c3ee8a6a1cb60970cbcb2f8ef9fcc8a7fdcfcc4",
+      "shortHash": "1c3ee8a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.6",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
