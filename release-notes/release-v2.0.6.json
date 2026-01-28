@@ -1,0 +1,123 @@
+{
+  "version": "2.0.6",
+  "tag": "v2.0.6",
+  "previousTag": "v2.0.5",
+  "date": "2026-01-28T09:59:29.637Z",
+  "stats": {
+    "features": 0,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 2,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "2ab3df9",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "2a7bff8",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.6 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "755aabc",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.5",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "c4573cc",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "10c43e4",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'main' into 'fix/coreUpdate'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "2a7bff81520401ec90fbc38791bdcbbd83309b35",
+      "shortHash": "2a7bff8",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.6 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c4573ccc194665f911557e3f73fc7d29f99dc726",
+      "shortHash": "c4573cc",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/coreupdate\n\nSee merge request genai/frontend/frontend-generic!3"
+    },
+    {
+      "hash": "10c43e440f8f7426711dffe53100e433430ecbfa",
+      "shortHash": "10c43e4",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'main' into 'fix/coreUpdate'",
+      "breaking": false,
+      "notes": [],
+      "body": "# Conflicts:\n#   README.md"
+    },
+    {
+      "hash": "2ab3df9ebd0793b15feafc3d4de992f33dbd5b69",
+      "shortHash": "2ab3df9",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "755aabc1e8f4d7aa350de71b090bba6828f2ebbf",
+      "shortHash": "755aabc",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
