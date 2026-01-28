@@ -1083,8 +1083,8 @@ This project uses Angular strict mode with:
 - [✅ App Layout](./README-LAYOUT.md) - Header, sidebar, navigation
 - [✅ Form Builder](./README-FormBuilder.md) - Dynamic forms with validation
 - [✅ Smart Tables](./README-SMARTABLES.md) - Advanced data tables
-- [✅ Workflow Builder](./README-WORKFLOWBUILDER.md) - Visual flow designer
 - [✅ Workflow Templating](./README-TEMPLATING.md) - Templating form AI features
+- [✅ Workflow Canvas](./README-CANVAS.md) - Visual flow designer
 - [✅ Charts](./README-CHARTS.md) - Data visualization
 
 ### Development Guides
