@@ -375,6 +375,49 @@
     color: #fff;
 }
 
+.status-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 999px;
+    z-index: 80;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    animation: statusPulse 2s ease-in-out infinite;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: inherit;
+    }
+
+    &.running {
+        animation: statusSpin 2s linear infinite;
+    }
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes statusSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 :host ::ng-deep .wf-tooltip {
     white-space: pre-line;
 }
@@ -398,28 +441,33 @@
 }
 
 .badge.running {
-    background: color-mix(in srgb, var(--mat-primary) 15%, #fff);
-    color: color-mix(in srgb, var(--mat-primary) 82%, #000);
+    background: var(--mat-primary);
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--mat-primary) 70%, #fff);
 }
 
 .badge.queued {
-    background: color-mix(in srgb, var(--mat-warn) 22%, #fff);
-    color: color-mix(in srgb, var(--mat-warn) 75%, #000);
+    background: var(--mat-warn);
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--mat-warn) 70%, #fff);
 }
 
 .badge.success {
-    background: color-mix(in srgb, var(--mat-success) 18%, #fff);
-    color: color-mix(in srgb, var(--mat-success) 72%, #000);
+    background: var(--mat-success, #4caf50);
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--mat-success) 70%, #fff);
 }
 
 .badge.error {
-    background: color-mix(in srgb, var(--mat-error) 18%, #fff);
-    color: color-mix(in srgb, var(--mat-error) 82%, #000);
+    background: var(--mat-error);
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--mat-error) 70%, #fff);
 }
 
 .badge.skipped {
-    background: color-mix(in srgb, var(--mat-neutral) 28%, #fff);
-    color: color-mix(in srgb, var(--mat-neutral) 78%, #000);
+    background: color-mix(in srgb, var(--mat-neutral) 60%, #000);
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--mat-neutral) 50%, #fff);
 }
 
 .badge.pinned {
