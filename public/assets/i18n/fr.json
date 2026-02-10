@@ -117,7 +117,8 @@
       "saveFailed": "Échec de l'enregistrement du workflow.",
       "invalid_graph": "Le workflow est invalide. Corrigez les liens ou les champs.",
       "missingPinnedData": "Données amont manquantes. Épinglez ou connectez les entrées avant d'exécuter.",
-      "nodeNotFound": "Nœud introuvable."
+      "nodeNotFound": "Nœud introuvable.",
+      "incompatible_port_types": "Impossible de connecter {{sourceNode}}.{{sourcePort}} ({{sourceType}}) à {{targetNode}}.{{targetPort}} ({{targetType}}). Les types de ports sont incompatibles."
     },
     "validation": {
       "missing_inputs": "Entrées manquantes",
@@ -167,6 +168,13 @@
       "reusable": "Réutilisable"
     },
     "needs_republish": "Doit être republié",
+    "status": {
+      "queued": "En attente",
+      "running": "En cours",
+      "success": "Réussi",
+      "error": "Erreur",
+      "skipped": "Ignoré"
+    },
     "toast": {
       "draft_saved": "Brouillon enregistré (non publié)",
       "published": "Workflow publié",
@@ -904,6 +912,7 @@
   "retrieved_documents": "Documents récupérés",
   "role": "Rôle",
   "run-panel": "Panneau d'éxécutions",
+  "run-panel_details": "Détails du panneau d'éxécutions",
   "running": "En cours",
   "selection": "Sélection",
   "source_file": "Fichier source",

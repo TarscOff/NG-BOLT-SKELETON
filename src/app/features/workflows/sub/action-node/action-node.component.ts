@@ -1097,6 +1097,55 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     return s;
   }
 
+  /**
+   * Gets the Material icon name based on the current node status.
+   */
+  getStatusIcon(): string {
+    const status = this.statusSig();
+    switch (status) {
+      case 'queued':
+        return 'schedule';
+      case 'running':
+        return 'hourglass_empty';
+      case 'success':
+        return 'check_circle';
+      case 'error':
+        return 'error';
+      case 'skipped':
+        return 'skip_next';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Gets the tooltip text based on the current node status.
+   */
+  getStatusTooltip(): string {
+    const status = this.statusSig();
+    switch (status) {
+      case 'queued':
+        return 'workflow.status.queued';
+      case 'running':
+        return 'workflow.status.running';
+      case 'success':
+        return 'workflow.status.success';
+      case 'error':
+        return 'workflow.status.error';
+      case 'skipped':
+        return 'workflow.status.skipped';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Checks if the node has an active status to display.
+   */
+  hasStatus(): boolean {
+    return this.statusSig() !== null;
+  }
+
   private patchParams(params: Record<string, unknown>): void {
     const prev = this.safeModel.params ?? {};
     const merged = { ...prev, ...params } as WorkflowNodeDataBaseParams;

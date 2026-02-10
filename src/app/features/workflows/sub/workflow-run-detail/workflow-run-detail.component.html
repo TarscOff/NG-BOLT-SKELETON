@@ -1,0 +1,94 @@
+<div class="workflow-run-detail-container">
+    <div class="panel-header">
+        <button mat-icon-button (click)="onBack()" [matTooltip]="'back' | translate">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h3>{{ 'run-panel_details' | translate }}</h3>
+        <span class="spacer"></span>
+    </div>
+    
+    <div class="panel-content">
+        @if (run(); as r) {
+            <div class="run-detail-header">
+                <div class="run-detail-title">
+                    <strong>#{{ runIndex() }} • {{ r.workflow.name }}</strong>
+                    <span>{{ r.startedAt | date:'short' }}</span>
+                </div>
+            </div>
+
+            <div class="run-data">
+                @if (r.logs?.length) {
+                    <details class="run-details" open>
+                        <summary>{{ 'workflow.runPanel.logs' | translate }}</summary>
+                        <pre>{{ r.logs?.join('\n') }}</pre>
+                    </details>
+                }
+
+                <div class="node-payloads">
+                    <div class="node-payloads-title">{{ 'workflow.runPanel.node_payloads' | translate }}</div>
+                    @for (p of nodePayloads(); track p.id) {
+                        <details class="node-payload">
+                            <summary>{{ p.label }}</summary>
+                            @if (p.hasData) {
+                                <div class="payload-section">
+                                    <div class="payload-title">{{ 'workflow.runPanel.inputs' | translate }}</div>
+                                    @if (p.payload?.inputs && p.payload?.inputs?.length) {
+                                        @for (inp of p.payload?.inputs; track inp.id) {
+                                            <div class="payload-row">
+                                                <span class="payload-name">{{ inp.label }}</span>
+                                                <span class="payload-meta">{{ inp.type }}</span>
+                                                <span class="payload-meta" [class.on]="inp.connected">
+                                                    {{ inp.connected ? ('workflow.runPanel.connected' | translate) : ('workflow.runPanel.disconnected' | translate) }}
+                                                </span>
+                                                <span class="payload-meta" *ngIf="inp.required">{{ 'workflow.dialog.required' | translate }}</span>
+                                                <span class="payload-meta" *ngIf="formatSources(inp.sources)">← {{ formatSources(inp.sources) }}</span>
+                                            </div>
+                                        }
+                                    } @else {
+                                        <div class="payload-empty">{{ 'workflow.runPanel.no_inputs' | translate }}</div>
+                                    }
+                                </div>
+
+                                <div class="payload-section">
+                                    <div class="payload-title">{{ 'workflow.runPanel.outputs' | translate }}</div>
+                                    @if (p.payload?.outputs?.length) {
+                                        @for (out of p.payload?.outputs; track out.id) {
+                                            <div class="payload-row">
+                                                <span class="payload-name">{{ out.label }}</span>
+                                                <span class="payload-meta">{{ out.type }}</span>
+                                                <span class="payload-meta" [class.on]="out.connected">
+                                                    {{ out.connected ? ('workflow.runPanel.connected' | translate) : ('workflow.runPanel.disconnected' | translate) }}
+                                                </span>
+                                                <span class="payload-meta" *ngIf="out.required">{{ 'workflow.dialog.required' | translate }}</span>
+                                                <span class="payload-meta" *ngIf="formatTargets(out.targets)">→ {{ formatTargets(out.targets) }}</span>
+                                            </div>
+                                        }
+                                    } @else {
+                                        <div class="payload-empty">{{ 'workflow.runPanel.no_outputs' | translate }}</div>
+                                    }
+                                </div>
+
+                                <details class="run-details payload-raw">
+                                    <summary>{{ 'workflow.runPanel.params' | translate }}</summary>
+                                    <pre>{{ p.payload?.params | json }}</pre>
+                                </details>
+                            } @else {
+                                <div class="payload-empty">{{ 'workflow.runPanel.no_payload' | translate }}</div>
+                            }
+                        </details>
+                    }
+                </div>
+
+                <details class="run-details">
+                    <summary>{{ 'workflow.runPanel.edge_data' | translate }}</summary>
+                    <pre>{{ r.edgeData | json }}</pre>
+                </details>
+            </div>
+        } @else {
+            <div class="empty-state">
+                <mat-icon>pending_actions</mat-icon>
+                <p>{{ 'workflow.runPanel.no_run_selected' | translate }}</p>
+            </div>
+        }
+    </div>
+</div>

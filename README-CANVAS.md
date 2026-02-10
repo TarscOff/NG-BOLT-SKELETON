@@ -44,6 +44,31 @@ workflows/
 - **Output Ports**: Send data to other nodes
 - **Port Types**: `json`, `string`, `file`, `embeddings`, etc.
 - **Required Ports**: Must be connected for workflow to be valid
+- **Type Validation**: Ports validate type compatibility when connecting (n8n-inspired)
+
+### Port Type Compatibility
+
+When creating connections, the canvas validates that output and input port types are compatible:
+
+**Compatible Type Mappings:**
+- `json` ↔ `object`, `array`, `collection`, `embeddings`
+- `string` ↔ `text`, `message`, `prompt`
+- `file` ↔ `binary`, `blob`, `document`
+- `list[T]` ↔ `T[]` (array types with matching base types)
+- `number` ↔ `int`, `integer`, `float`, `double`
+- `any` ↔ any type (universal compatibility)
+
+**Validation Behavior:**
+- Incompatible connections are **rejected** with an error toast
+- Error message shows source/target nodes, ports, and types
+- Connection is not created in the graph
+- User must connect compatible ports
+
+**Example Error:**
+```
+Cannot connect Chat.llm_response (string) to Embed.embeddings (list[float]). 
+Port types are incompatible.
+```
 
 ### Graph Validation
 
@@ -481,6 +506,191 @@ private handleExecutionError(error: HttpErrorResponse): Observable<never> {
 - [ ] Add loading states and retry logic
 - [ ] Implement execution history persistence
 - [ ] Add execution cancellation support
+
+## Developer Notes
+
+### Connection Styling & Execution Visualization (Feb 2026)
+
+**Files touched:**
+- `src/app/features/workflows/sub/workflow-canvas.component.ts`
+- `src/app/features/workflows/sub/workflow-canvas-df.component.scss`
+- `src/app/features/workflows/sub/run-panel/run-view-dialog.component.ts`
+- `src/app/features/workflows/templates/utils/workflow.interface.ts`
+
+**Changes:**
+
+1. **Source-only Connection Styling Logic**
+   - Connections now style based exclusively on SOURCE node execution status
+   - Prevents incorrect styling of unrelated connections (e.g., when A→B→C runs, E→B won't be styled even though B has a status)
+   - Implementation uses edge key mapping (`${source}:${target}`) with source status check
+   - Uses `dfModel().connections` to match DOM order for proper SVG path targeting
+
+2. **Execution Animations**
+   - Integrated smooth flowing animations for connection states:
+     - **Running**: Pulsing glow effect (primary color)
+     - **Success**: Flash and settle effect (success color)
+     - **Error**: Strong pulsing (error color)
+     - **Queued**: Gentle breathing effect (warning color)
+     - **Skipped**: Dimmed appearance (neutral color)
+   - All animations use project color variables (`--mat-primary`, `--mat-success`, `--mat-error`, `--mat-warn`, `--mat-neutral`)
+   - Leverages CSS `color-mix()` for transparent variations instead of hardcoded RGBA values
+
+3. **Historical Run Visualization**
+   - Run view dialog now displays ONLY executed nodes (filters by `run.state` keys)
+   - Shows ONLY ports that were actively used during execution:
+     - Input ports shown if they received data from a connection
+     - Output ports shown if they sent data through a connection
+   - Provides clean "execution trace" view without unused elements
+   - Added `snapshotNodes` and `snapshotEdges` to `RunEntry` interface for historical state preservation
+   - Workflow execution logs capture full node/edge snapshots at execution start
+
+**Technical Details:**
+
+```typescript
+// Connection styling logic (source-only approach)
+private applyConnectionStyles(runStateData: Record<string, Status>, edges: WorkflowEdge[]): void {
+  // Build edge status map - only includes edges where SOURCE has a status
+  const edgeStatusMap = new Map<string, Status>();
+  edges.forEach(edge => {
+    const key = `${edge.source}:${edge.target}`;
+    const sourceStatus = runStateData[edge.source];
+    if (sourceStatus) {
+      edgeStatusMap.set(key, sourceStatus);
+    }
+  });
+  
+  // Apply styles using dfModel connections order
+  const dfConnections = this.dfModel().connections || [];
+  dfConnections.forEach((dfConn, index) => {
+    const key = `${dfConn.source.nodeId}:${dfConn.target.nodeId}`;
+    const sourceStatus = edgeStatusMap.get(key);
+    if (!sourceStatus) return; // Skip if source wasn't executed
+    // ... apply styling based on sourceStatus
+  });
+}
+```
+
+```typescript
+// Run view filtering (execution trace)
+constructor() {
+  // Get executed node IDs from run state
+  const executedNodeIds = new Set(Object.keys(this.run.state || {}));
+  
+  // Filter to executed nodes only
+  const executedNodes = snapshotNodes.filter(node => executedNodeIds.has(node.id));
+  const executedEdges = snapshotEdges.filter(edge => 
+    executedNodeIds.has(edge.source) && executedNodeIds.has(edge.target)
+  );
+  
+  // Track used ports from connections
+  const usedInputPorts = new Map<string, Set<string>>();
+  const usedOutputPorts = new Map<string, Set<string>>();
+  executedEdges.forEach(edge => {
+    // Record which ports were actually used
+  });
+  
+  // Filter ports to show only connected ones
+  this.nodes = executedNodes.map(node => ({
+    ...node,
+    ports: {
+      inputs: node.ports.inputs.filter(port => usedInputPorts.get(node.id)?.has(port.id)),
+      outputs: node.ports.outputs.filter(port => usedOutputPorts.get(node.id)?.has(port.id))
+    }
+  }));
+}
+```
+
+**Impact:**
+- Accurate visual feedback during workflow execution
+- Clear historical run visualization showing exact execution path
+- Consistent styling using project design system
+- Better UX for debugging workflow execution issues
+
+### Port Type Validation (Feb 2026)
+
+**Files touched:**
+- `src/app/features/workflows/sub/workflow-canvas.component.ts`
+- `public/assets/i18n/en.json`
+- `public/assets/i18n/fr.json`
+
+**Changes:**
+
+1. **n8n-Inspired Type Validation**
+   - Validates port type compatibility when creating connections
+   - Rejects incompatible connections with descriptive error messages
+   - Connection is prevented from being created if types don't match
+   - Error toast displays source/target nodes, ports, and types
+
+2. **Type Compatibility Rules**
+   - Exact type matching (e.g., `string` matches `string`)
+   - JSON compatibility with complex types (`json` ↔ `object`, `array`, `collection`)
+   - String compatibility with text types (`string` ↔ `text`, `message`, `prompt`)
+   - File compatibility (`file` ↔ `binary`, `blob`, `document`)
+   - Array/List base type matching (`list[float]` ↔ `float[]`)
+   - Number type compatibility (`number` ↔ `int`, `integer`, `float`, `double`)
+   - Universal `any` type compatibility
+
+**Technical Details:**
+
+```typescript
+// Port type validation in onConnectionCreated
+onConnectionCreated(evt: DfEvent<DfDataConnection>): void {
+  // ... get source and target nodes/ports
+  
+  const isCompatible = this.arePortTypesCompatible(
+    sourcePort.type || sourcePort.artifact_type,
+    targetPort.type || targetPort.artifact_type
+  );
+  
+  if (!isCompatible) {
+    this.toast.showError(
+      this.translate.instant('workflow.errors.incompatible_port_types', {
+        sourceNode, sourcePort, sourceType,
+        targetNode, targetPort, targetType
+      })
+    );
+    return; // Cancel connection creation
+  }
+  
+  // ... proceed with connection creation
+}
+
+// Type compatibility checking
+private arePortTypesCompatible(sourceType?: string, targetType?: string): boolean {
+  // Handle undefined, 'any', exact matches
+  // JSON ↔ complex types
+  // String ↔ text types
+  // File ↔ binary types
+  // Array base type matching
+  // Number type compatibility
+  // Boolean matching
+}
+```
+
+**User Experience:**
+- Immediate feedback when attempting incompatible connections
+- Clear error messages explaining why connection was rejected
+- Prevents invalid workflow configurations at design time
+- Reduces runtime errors from type mismatches
+
+**Impact:**
+- Prevents type-related execution errors
+- Improves workflow design experience
+- Provides clear feedback for debugging
+- Aligns with industry standards (n8n-inspired)
+
+### Port Editing Persistence (Jan 2026)
+
+**Files touched:**
+- `src/app/features/workflows/sub/action-node/node-details-dialog/node-details-dialog.component.ts`
+- `src/app/features/workflows/sub/action-node/action-node.component.ts`
+- `src/app/features/workflows/sub/workflow-canvas.component.ts`
+
+**Summary:**
+- The node details dialog emits `nodePortsChanged` events after port edits (debounced; flushed on close).
+- The canvas listens for `nodePortsChanged` and writes the updated ports into the node model so runtime and persisted representations stay in sync (`data.ports` and `data.params.ports`).
+- Temporary console logging used during debugging was removed to keep the console clean.
+
 
 ## Adding New Node Types
 

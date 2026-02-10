@@ -52,6 +52,41 @@
 	}
 }
 
+.workflow-run-sidebar {
+	border-left: 1px solid color-mix(in srgb, var(--mat-neutral) 25%, transparent);
+	background: var(--md-sys-color-surface, white);
+	padding: 0;
+	width: 420px;
+	max-width: 88vw;
+	transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+	height: calc(100vh - 64px);
+    bottom: 0px !important;
+    top: inherit !important;
+	overflow-y: auto;
+	overflow-x: hidden;
+	&::after {
+		content: none;
+	}
+}
+
+.workflow-run-detail-sidebar {
+	border-left: 1px solid color-mix(in srgb, var(--mat-neutral) 25%, transparent);
+	background: var(--md-sys-color-surface, white);
+	padding: 0;
+	width: 420px;
+	max-width: 88vw;
+	transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+	height: calc(100vh - 64px);
+    bottom: 0px !important;
+    top: inherit !important;
+	overflow-y: auto;
+	overflow-x: hidden;
+	z-index: 101;
+	&::after {
+		content: none;
+	}
+}
+
 .sidebar-header {
 	display: flex;
 	align-items: center;
