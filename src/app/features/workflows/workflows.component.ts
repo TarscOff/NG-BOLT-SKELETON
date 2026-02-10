@@ -14,9 +14,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { WorkflowCanvasDfComponent } from './sub/workflow-canvas.component';
-import { WorkflowRunPanelComponent } from './sub/workflow-run-panel/workflow-run-panel.component';
-import { WorkflowRunDetailComponent } from './sub/workflow-run-detail/workflow-run-detail.component';
+import { RunPanelComponent } from './sub/run-panel/run-panel.component';
 import { ActionDefinitionLite, PaletteType, RunEntry, WorkflowEdge, WorkflowNode, WorkflowPorts } from './templates/utils/workflow.interface';
+import { WfCanvasBus } from './templates/utils/wf-canvas-bus';
 import { ActionFormSpec } from './templates/utils/action-forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
@@ -28,6 +28,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import {
     ensurePorts,
 } from './data/workflows.store';
+import { RunPanelDetailComponent } from './sub/run-panel/run-panel-detail.component';
 type UnsavedChoice = 'save' | 'discard' | 'cancel';
 
 @Component({
@@ -47,8 +48,8 @@ type UnsavedChoice = 'save' | 'discard' | 'cancel';
         MatSidenavModule,
         MatCheckboxModule,
         WorkflowCanvasDfComponent,
-        WorkflowRunPanelComponent,
-        WorkflowRunDetailComponent,
+        RunPanelComponent,
+        RunPanelDetailComponent,
         DynamicFormComponent
     ],
     templateUrl: './workflows.component.html',
@@ -67,6 +68,7 @@ export class WorkflowsComponent implements OnInit {
     private layoutService = inject(LayoutService);
     private toast = inject(ToastService);
     private injector = inject(Injector);
+    private bus = inject(WfCanvasBus);
     private republishSeen = new Map<string, boolean>();
 
     readonly workflows: Signal<WorkflowDraft[]> = toSignal(this.store.workflows$, { initialValue: [] as WorkflowDraft[] }) as Signal<WorkflowDraft[]>;
@@ -643,62 +645,74 @@ export class WorkflowsComponent implements OnInit {
     runPanelOpen = signal<boolean>(false);
     runDetailOpen = signal<boolean>(false);
     selectedRunForDetail = signal<{ run: RunEntry; index: number } | null>(null);
+    runs = signal<RunEntry[]>([]);
     multiSelectMode = signal<boolean>(false);
     selectedWorkflowIds = signal<Set<string>>(new Set());
     selectedWorkflowCount = computed(() => this.selectedWorkflowIds().size);
     selectedWorkflowIdList = computed(() => Array.from(this.selectedWorkflowIds()));
 
     constructor() {
+        // Subscribe to runs to update toolbar
+        this.bus.runs$.subscribe(rs => this.runs.set(rs ?? []));
 
-        const pannelWorkflow: ToolbarAction = {
-            id: 'pannel_workflow',
-            icon: 'visibility',
-            tooltip: 'run-panel',
-            click: () => this.openPanelWorkflowDialog(),
-            variant: "flat",
-            label: 'run-panel',
-            class: "warn"
-        };
+        const updateToolbar = () => {
+            const panelWorkflow: ToolbarAction = {
+                id: 'panel_workflow',
+                icon:  this.runPanelOpen() ? 'visibility_off' : 'visibility',
+                tooltip: 'run-panel',
+                click: () => this.toggleRunPanelSideNav(),
+                variant: "flat",
+                label: this.translate.instant('run-panel', { count: this.runs().length }),
+                class: "warn"
+            };
 
-        const newWorkflow: ToolbarAction = {
-            id: 'new_workflow',
-            icon: 'add',
-            tooltip: 'new_workflow',
-            click: () => this.openNewWorkflowDialog(),
-            variant: "flat",
-            label: 'new_workflow',
-            class: "primary"
-        };
+            const newWorkflow: ToolbarAction = {
+                id: 'new_workflow',
+                icon: 'add',
+                tooltip: 'new_workflow',
+                click: () => this.openNewWorkflowDialog(),
+                variant: "flat",
+                label: 'new_workflow',
+                class: "primary"
+            };
 
-        const saveWorkflow: ToolbarAction = {
-            id: 'save_workflow',
-            icon: 'edit_document',
-            tooltip: 'workflow.draft',
-            click: () => this.saveWorkflow(),
-            variant: 'flat',
-            label: 'workflow.draft',
-            class: 'primary',
-            disabled$: this.store.canDraft$.pipe(map(can => !can))
-        };
+            const saveWorkflow: ToolbarAction = {
+                id: 'save_workflow',
+                icon: 'edit_document',
+                tooltip: 'workflow.draft',
+                click: () => this.saveWorkflow(),
+                variant: 'flat',
+                label: 'workflow.draft',
+                class: 'primary',
+                disabled$: this.store.canDraft$.pipe(map(can => !can))
+            };
 
-        const publishWorkflow: ToolbarAction = {
-            id: 'publish_workflow',
-            icon: 'publish',
-            tooltip: 'workflow.publish',
-            click: () => this.publishWorkflow(),
-            variant: 'flat',
-            label: 'workflow.publish',
-            class: 'success',
-            disabled$: this.store.canPublish$.pipe(map(can => !can))
-        };
+            const publishWorkflow: ToolbarAction = {
+                id: 'publish_workflow',
+                icon: 'publish',
+                tooltip: 'workflow.publish',
+                click: () => this.publishWorkflow(),
+                variant: 'flat',
+                label: 'workflow.publish',
+                class: 'success',
+                disabled$: this.store.canPublish$.pipe(map(can => !can))
+            };
 
-        // Dynamically update toolbar based on workflow selection
-        this.store.selectedWorkflow$.subscribe(workflow => {
+            const workflow = this.selectedWorkflow();
             if (workflow) {
-                this.toolbar.scope(this.destroyRef, [pannelWorkflow, newWorkflow, saveWorkflow, publishWorkflow]);
+                this.toolbar.scope(this.destroyRef, [panelWorkflow, newWorkflow, saveWorkflow, publishWorkflow]);
             } else {
                 this.toolbar.scope(this.destroyRef, [newWorkflow]);
             }
+        };
+
+        // Update toolbar when workflow selection or runs change
+        runInInjectionContext(this.injector, () => {
+            effect(() => {
+                this.selectedWorkflow();
+                this.runs();
+                updateToolbar();
+            });
         });
     }
 
@@ -912,8 +926,12 @@ export class WorkflowsComponent implements OnInit {
         });
     }
 
-    openPanelWorkflowDialog(): void {
-        this.runPanelOpen.set(true);
+    toggleRunPanelSideNav(): void {
+        if (!this.sidebarCollapsed()) {
+            this.sidebarCollapsed.set(true);
+        }
+        
+        this.runPanelOpen.set(!this.runPanelOpen())
     }
 
     closeRunPanel(): void {

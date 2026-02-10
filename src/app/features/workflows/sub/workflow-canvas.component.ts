@@ -71,7 +71,6 @@ import { WfNodeComponent } from './action-node/action-node.component';
 import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { WfCanvasBus } from '../templates/utils/wf-canvas-bus';
 import { MatIconModule } from '@angular/material/icon';
-import { WfRunPanelNodeComponent } from './run-panel/run-panel-node.component';
 import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
 import { Subscription, combineLatest, debounceTime, distinctUntilChanged } from 'rxjs';
 import { OverlayModule } from '@angular/cdk/overlay';
@@ -125,7 +124,6 @@ import {
         store_embedded_langchain_documents: WfNodeComponent,
         jira: WfNodeComponent,
         composite: WfNodeComponent,
-        'run-panel': WfRunPanelNodeComponent,
         details: WfDetailsNodeComponent,
         preview: WfPreviewNodeComponent,
       },

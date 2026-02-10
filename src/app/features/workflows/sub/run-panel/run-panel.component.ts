@@ -14,7 +14,7 @@ import { Store } from '@ngrx/store';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
 
 @Component({
-    selector: 'app-workflow-run-panel',
+    selector: 'app-run-panel',
     standalone: true,
     imports: [
         CommonModule,
@@ -23,10 +23,10 @@ import { AppSelectors } from '@cadai/pxs-ng-core/store';
         MatTooltipModule,
         TranslateModule
     ],
-    templateUrl: './workflow-run-panel.component.html',
-    styleUrls: ['./workflow-run-panel.component.scss']
+    templateUrl: './run-panel.component.html',
+    styleUrls: ['./run-panel.component.scss']
 })
-export class WorkflowRunPanelComponent extends DrawFlowBaseNode implements OnInit, OnDestroy{
+export class RunPanelComponent extends DrawFlowBaseNode implements OnInit, OnDestroy{
     private bus = inject(WfCanvasBus);
     private subs = new Subscription();
 

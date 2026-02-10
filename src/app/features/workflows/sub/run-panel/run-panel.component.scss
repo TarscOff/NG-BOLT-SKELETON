@@ -1,4 +1,4 @@
-.workflow-run-panel-container {
+.run-panel-container {
     --c-muted: #cfd8dc;
     --c-fg: #263238;
     --c-bg: #ffffff;
@@ -20,7 +20,7 @@
     color: var(--c-fg);
 }
 
-:host-context(.dark) .workflow-run-panel-container {
+:host-context(.dark) .run-panel-container {
     --c-bg: #0f1115;
     --c-fg: #e3eaf1;
     --c-muted: #33424e;
@@ -35,7 +35,7 @@
     --c-skip: var(--mat-warn);
 }
 
-.workflow-run-panel-container {
+.run-panel-container {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -155,3 +155,9 @@
 .status-chip.success { background: color-mix(in srgb, var(--c-ok) 20%, transparent); }
 .status-chip.error { background: color-mix(in srgb, var(--c-err) 20%, transparent); }
 .status-chip.skipped { background: color-mix(in srgb, var(--c-skip) 20%, transparent); }
+
+.empty-execution {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

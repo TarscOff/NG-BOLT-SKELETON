@@ -8,23 +8,23 @@
     <!-- Run detail sidenav (stacked on top) -->
     <mat-sidenav class="workflow-run-detail-sidebar panel" position="end" mode="over" [opened]="runDetailOpen()"
         [fixedInViewport]="true">
-        <app-workflow-run-detail
+        <app-run-panel-detail
             [run]="selectedRunForDetail()?.run ?? null"
             [runIndex]="selectedRunForDetail()?.index ?? 0"
             (back)="closeRunDetail()"
             (stageCancel)="onStageCancel(selectedRunForDetail()?.run?.id ?? '', $event)"
             (pipelineCancel)="onPipelineCancel(selectedRunForDetail()?.run?.id ?? '')">
-        </app-workflow-run-detail>
+        </app-run-panel-detail>
     </mat-sidenav>
 
     <!-- Run panel sidenav -->
     <mat-sidenav class="workflow-run-sidebar panel" position="end" mode="over" [opened]="runPanelOpen()"
         [fixedInViewport]="true">
-        <app-workflow-run-panel
+        <app-run-panel
             [workflow]="selectedWorkflow()"
             (closePanel)="closeRunPanel()"
             (runSelected)="openRunDetail($event)">
-        </app-workflow-run-panel>
+        </app-run-panel>
     </mat-sidenav>
 
     <!-- Workflows list sidenav -->

@@ -103,7 +103,8 @@
       "skipped": "Sauté",
       "submit": "Soumettre",
       "success": "Réussite",
-      "title": "Panneau d'éxécutions"
+      "title": "Panneau d'éxécutions",
+      "no_executions": "Aucune exécution pour le moment."
     },
     "errors": {
       "cycleDetected": "Il y a un cycle dans le workflow. Veuillez le supprimer.",
@@ -911,7 +912,7 @@
   "result": "Résultat",
   "retrieved_documents": "Documents récupérés",
   "role": "Rôle",
-  "run-panel": "Panneau d'éxécutions",
+  "run-panel": "Panneau d'éxécutions ({{count}})",
   "run-panel_details": "Détails du panneau d'éxécutions",
   "running": "En cours",
   "selection": "Sélection",

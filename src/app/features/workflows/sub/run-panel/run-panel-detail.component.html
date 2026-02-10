@@ -1,10 +1,18 @@
 <div class="workflow-run-detail-container">
     <div class="panel-header">
-        <button mat-icon-button (click)="onBack()" [matTooltip]="'back' | translate">
-            <mat-icon>arrow_back</mat-icon>
-        </button>
-        <h3>{{ 'run-panel_details' | translate }}</h3>
-        <span class="spacer"></span>
+        <div class="panel-header__title">
+            <button mat-icon-button (click)="onBack()" [matTooltip]="'back' | translate">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h3>{{ 'run-panel_details' | translate }}</h3>
+        </div>
+        @if (run(); as r) {
+            <button mat-flat-button color="primary" (click)="viewRun(r.id)"
+                [disabled]="runViewOpen()">
+                <mat-icon>visibility</mat-icon>
+                {{ 'workflow.runPanel.view' | translate }}
+            </button>
+        }
     </div>
     
     <div class="panel-content">

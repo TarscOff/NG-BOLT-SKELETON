@@ -1,13 +1,14 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, inject, Injector, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { RunEntry, RunNodePayload } from '../../templates/utils/workflow.interface';
 
 @Component({
-    selector: 'app-workflow-run-detail',
+    selector: 'app-run-panel-detail',
     standalone: true,
     imports: [
         CommonModule,
@@ -16,12 +17,17 @@ import { RunEntry, RunNodePayload } from '../../templates/utils/workflow.interfa
         MatTooltipModule,
         TranslateModule
     ],
-    templateUrl: './workflow-run-detail.component.html',
-    styleUrls: ['./workflow-run-detail.component.scss']
+    templateUrl: './run-panel-detail.component.html',
+    styleUrls: ['./run-panel-detail.component.scss']
 })
-export class WorkflowRunDetailComponent {
+export class RunPanelDetailComponent {
+    private dialog = inject(MatDialog);
+    private injector = inject(Injector);
+    private runViewRef?: MatDialogRef<unknown>;
+    
     run = input<RunEntry | null>(null);
     runIndex = input<number>(0);
+    runViewOpen = signal(false);
     
     back = output<void>();
     stageCancel = output<{ index: number; nodeIds: string[] }>();
@@ -49,6 +55,31 @@ export class WorkflowRunDetailComponent {
     
     onPipelineCancel(): void {
         this.pipelineCancel.emit();
+    }
+    
+    async viewRun(id: string): Promise<void> {
+        const run = this.run();
+        if (!run || run.id !== id) return;
+
+        this.runViewRef?.close();
+
+        const { RunViewDialogComponent } = await import('./run-view-dialog.component');
+
+        this.runViewOpen.set(true);
+        this.runViewRef = this.dialog.open(RunViewDialogComponent, {
+            data: { run },
+            injector: this.injector,
+            panelClass: ['wf-run-view-dialog', 'accent'],
+            width: '90vw',
+            height: '90vh',
+            maxWidth: '98vw',
+            maxHeight: '98vh',
+        });
+
+        this.runViewRef.afterClosed().subscribe(() => {
+            this.runViewRef = undefined;
+            this.runViewOpen.set(false);
+        });
     }
     
     formatSources(sources: { from?: string }[] | undefined): string {
