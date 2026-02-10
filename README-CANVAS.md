@@ -509,6 +509,81 @@ private handleExecutionError(error: HttpErrorResponse): Observable<never> {
 
 ## Developer Notes
 
+### Run Panel Refactoring & Toolbar Count Display (Feb 2026)
+
+**Files touched:**
+- `src/app/features/workflows/workflows.component.ts`
+- `src/app/features/workflows/workflows.component.html`
+- `src/app/features/workflows/sub/run-panel/run-panel.component.ts` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel.component.html` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel.component.scss` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel-detail.component.ts` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel-detail.component.html` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel-detail.component.scss` (new)
+- `src/app/features/workflows/sub/run-panel/run-panel-node.component.ts` (removed)
+- `src/app/features/workflows/sub/run-panel/run-panel-node.component.html` (removed)
+- `src/app/features/workflows/sub/run-panel/run-panel-node.component.scss` (removed)
+- `src/app/features/workflows/sub/workflow-canvas-df.component.html`
+- `src/app/features/workflows/sub/workflow-canvas.component.ts`
+- `public/assets/i18n/en.json`
+- `public/assets/i18n/fr.json`
+
+**Changes:**
+
+1. **Run Panel Architecture Refactoring**
+   - Removed canvas-node-based run panel (WfRunPanelNodeComponent extending DrawFlowBaseNode)
+   - Created standalone sidebar-based run panel components (RunPanelComponent, RunPanelDetailComponent)
+   - Run panel now displays in dedicated mat-sidenav instead of workflow canvas node
+   - Better UX with proper panel hierarchy: workflows list → run panel → run detail
+   - Removed run panel button from canvas toolbar
+
+2. **Dynamic Run Count in Toolbar**
+   - Added reactive run count display to "Run panel" toolbar button
+   - Toolbar label now shows "Run panel (N)" where N is dynamic count using translation interpolation
+   - Uses `translate.instant('run-panel', { count: this.runs().length })` for synchronous string generation
+   - Updates reactively via effect() when selectedWorkflow or runs signals change
+   - Translation keys updated with `{{count}}` parameter in en.json and fr.json
+
+3. **Component Structure Changes**
+   - RunPanelComponent: Main panel showing list of runs
+   - RunPanelDetailComponent: Detailed view for individual run inspection
+   - Both components use signal-based architecture with computed values
+   - Proper separation of concerns between list view and detail view
+
+4. **Translation System Integration**
+   - Added translation parameter support: `"run-panel": "Run panel ({{count}})"`
+   - French translation: `"run-panel": "Panneau d'éxécutions ({{count}})"`
+   - Added `workflow.runPanel.no_executions` key for empty state
+   - Enables proper localization across multiple languages
+
+**Technical Implementation:**
+
+```typescript
+// Toolbar update function with reactive run count
+const updateToolbar = () => {
+    const panelWorkflow: ToolbarAction = {
+        label: this.translate.instant('run-panel', { count: this.runs().length })
+        // ... other properties
+    };
+    // Recreate all toolbar actions with fresh state
+    const workflow = this.selectedWorkflow();
+    if (workflow) {
+        this.toolbar.scope(this.destroyRef, [panelWorkflow, newWorkflow, saveWorkflow, publishWorkflow]);
+    } else {
+        this.toolbar.scope(this.destroyRef, [newWorkflow]);
+    }
+};
+
+// Effect wrapper for reactive updates
+runInInjectionContext(this.injector, () => {
+    effect(() => {
+        this.selectedWorkflow();
+        this.runs();
+        updateToolbar();
+    });
+});
+```
+
 ### Connection Styling & Execution Visualization (Feb 2026)
 
 **Files touched:**

@@ -49,55 +49,68 @@ export interface NodeDetailsDialogData {
 
       <mat-tab-group>
         <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.params' | translate }}</ng-template>
-          <app-dynamic-form [form]="data.form" [config]="data.config"></app-dynamic-form>
+          <ng-template mat-tab-label>{{ 'workflow.dialog.inputs' | translate }}</ng-template>
         </mat-tab>
         <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.ports' | translate }}</ng-template>
-          <div class="ports-editor">
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.inputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of inputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
-                    }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeInput(i)" [disabled]="inputs.length <= 1">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <button mat-flat-button color="primary" (click)="addInput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_input' | translate }}
-              </button>
-            </div>
+          <ng-template mat-tab-label>{{ 'workflow.dialog.configurations' | translate }}</ng-template>
+          <mat-tab-group>
+            <mat-tab>
+              <ng-template mat-tab-label>{{ 'workflow.dialog.params' | translate }}</ng-template>
+              <app-dynamic-form [form]="data.form" [config]="data.config"></app-dynamic-form>
+            </mat-tab>
+            <mat-tab>
+              <ng-template mat-tab-label>{{ 'workflow.dialog.ports' | translate }}</ng-template>
+              <div class="ports-editor">
+                <div class="ports-section">
+                  <div class="ports-title">{{ 'workflow.dialog.inputs' | translate }}</div>
+                  <div class="port-row" *ngFor="let p of inputs; let i = index">
+                    <form [formGroup]="p.form" class="port-form">
+                      @for (field of p.config; track field.name) {
+                        @if (p.form.get(field.name); as ctl) {
+                          <app-field-host [field]="field" [control]="ctl"></app-field-host>
+                        } @else {
+                          <div class="port-field-placeholder"></div>
+                        }
+                      }
+                    </form>
+                    <button mat-icon-button color="warn" (click)="removeInput(i)" [disabled]="inputs.length <= 1">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                  <button mat-flat-button color="primary" (click)="addInput()">
+                    <mat-icon>add</mat-icon>
+                    {{ 'workflow.dialog.add_input' | translate }}
+                  </button>
+                </div>
 
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.outputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of outputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
-                    }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeOutput(i)" [disabled]="outputs.length <= 1">
-                  <mat-icon>close</mat-icon>
-                </button>
+                <div class="ports-section">
+                  <div class="ports-title">{{ 'workflow.dialog.outputs' | translate }}</div>
+                  <div class="port-row" *ngFor="let p of outputs; let i = index">
+                    <form [formGroup]="p.form" class="port-form">
+                      @for (field of p.config; track field.name) {
+                        @if (p.form.get(field.name); as ctl) {
+                          <app-field-host [field]="field" [control]="ctl"></app-field-host>
+                        } @else {
+                          <div class="port-field-placeholder"></div>
+                        }
+                      }
+                    </form>
+                    <button mat-icon-button color="warn" (click)="removeOutput(i)" [disabled]="outputs.length <= 1">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                  <button mat-flat-button color="primary" (click)="addOutput()">
+                    <mat-icon>add</mat-icon>
+                    {{ 'workflow.dialog.add_output' | translate }}
+                  </button>
+                </div>
               </div>
-              <button mat-flat-button color="primary" (click)="addOutput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_output' | translate }}
-              </button>
-            </div>
+            </mat-tab>
+          </mat-tab-group>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>{{ 'workflow.dialog.outputs' | translate }}</ng-template>
+          <div class="ports-editor">
           </div>
         </mat-tab>
       </mat-tab-group>
