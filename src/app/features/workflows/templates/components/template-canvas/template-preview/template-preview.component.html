@@ -1,0 +1,225 @@
+<div class="template-preview-container">
+    <!-- Header -->
+    <div class="preview-header">
+        <mat-icon>preview</mat-icon>
+        <h3>{{ 'templates.preview.title' | translate }}</h3>
+        @if (previewMode) {
+            <span class="preview-badge">{{ 'templates.preview.mode' | translate }}</span>
+        }
+    </div>
+
+    @if (!hasUIComponents()) {
+        <!-- Empty State -->
+        <div class="empty-preview">
+            <mat-icon>widgets</mat-icon>
+            <h4>{{ 'templates.preview.no_components' | translate }}</h4>
+            <p>{{ 'templates.preview.add_components_hint' | translate }}</p>
+        </div>
+    } @else {
+        <!-- Preview Content -->
+        <div class="preview-content" [class]="layoutMode()">
+            
+            @switch (layoutMode()) {
+                @case ('single') {
+                    <!-- Single Component Layout -->
+                    <div class="single-layout">
+                        @for (node of uiNodes(); track node.id) {
+                            <div class="component-wrapper">
+                                @switch (node.data.uiType) {
+                                    @case ('chat') {
+                                        <app-chat-tpl
+                                            [config]="node.data.uiConfig || {}"
+                                            [disabled]="previewMode">
+                                        </app-chat-tpl>
+                                    }
+                                    @case ('summarize') {
+                                        <app-summarize-tpl
+                                            [config]="node.data.uiConfig || {}"
+                                            [disabled]="previewMode">
+                                        </app-summarize-tpl>
+                                    }
+                                    @case ('extract') {
+                                        <app-extract-tpl
+                                            [config]="node.data.uiConfig || {}"
+                                            [disabled]="previewMode">
+                                        </app-extract-tpl>
+                                    }
+                                    @case ('compare') {
+                                        <app-compare-tpl
+                                            [config]="node.data.uiConfig || {}"
+                                            [disabled]="previewMode">
+                                        </app-compare-tpl>
+                                    }
+                                    @case ('result-viewer') {
+                                        <div class="result-viewer-placeholder">
+                                            <mat-icon>visibility</mat-icon>
+                                            <span>{{ 'templates.preview.result_viewer' | translate }}</span>
+                                        </div>
+                                    }
+                                    @case ('file-upload') {
+                                        <div class="file-upload-placeholder">
+                                            <mat-icon>upload_file</mat-icon>
+                                            <span>{{ 'templates.preview.file_upload' | translate }}</span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                
+                @case ('split') {
+                    <!-- Split Layout: Chat + Results -->
+                    <div class="split-layout">
+                        <!-- Chat Panel -->
+                        @if (chatNode()) {
+                            <div class="chat-panel">
+                                <app-chat-tpl
+                                    [config]="chatNode()!.data.uiConfig || {}"
+                                    [disabled]="previewMode">
+                                </app-chat-tpl>
+                            </div>
+                        }
+                        
+                        <!-- Results Panel -->
+                        <div class="results-panel">
+                            @if (resultNodes().length === 1) {
+                                <!-- Single result component -->
+                                @for (node of resultNodes(); track node.id) {
+                                    <div class="component-wrapper">
+                                        @switch (node.data.uiType) {
+                                            @case ('summarize') {
+                                                <app-summarize-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-summarize-tpl>
+                                            }
+                                            @case ('extract') {
+                                                <app-extract-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-extract-tpl>
+                                            }
+                                            @case ('compare') {
+                                                <app-compare-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-compare-tpl>
+                                            }
+                                            @case ('result-viewer') {
+                                                <div class="result-viewer-placeholder">
+                                                    <mat-icon>visibility</mat-icon>
+                                                    <span>{{ 'templates.preview.result_viewer' | translate }}</span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            } @else {
+                                <!-- Multiple result components in tabs -->
+                                <mat-tab-group [selectedIndex]="activeTabIndex()" 
+                                               (selectedIndexChange)="setActiveTab($event)">
+                                    @for (node of resultNodes(); track node.id; let i = $index) {
+                                        <mat-tab>
+                                            <ng-template mat-tab-label>
+                                                <mat-icon>{{ getComponentIcon(node.data.uiType) }}</mat-icon>
+                                                <span>{{ node.data.label }}</span>
+                                            </ng-template>
+                                            
+                                            <div class="tab-content">
+                                                @switch (node.data.uiType) {
+                                                    @case ('summarize') {
+                                                        <app-summarize-tpl
+                                                            [config]="node.data.uiConfig || {}"
+                                                            [disabled]="previewMode">
+                                                        </app-summarize-tpl>
+                                                    }
+                                                    @case ('extract') {
+                                                        <app-extract-tpl
+                                                            [config]="node.data.uiConfig || {}"
+                                                            [disabled]="previewMode">
+                                                        </app-extract-tpl>
+                                                    }
+                                                    @case ('compare') {
+                                                        <app-compare-tpl
+                                                            [config]="node.data.uiConfig || {}"
+                                                            [disabled]="previewMode">
+                                                        </app-compare-tpl>
+                                                    }
+                                                    @case ('result-viewer') {
+                                                        <div class="result-viewer-placeholder">
+                                                            <mat-icon>visibility</mat-icon>
+                                                            <span>{{ 'templates.preview.result_viewer' | translate }}</span>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        </mat-tab>
+                                    }
+                                </mat-tab-group>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @case ('tabs') {
+                    <!-- Tabs Layout: All components in tabs -->
+                    <div class="tabs-layout">
+                        <mat-tab-group [selectedIndex]="activeTabIndex()" 
+                                       (selectedIndexChange)="setActiveTab($event)">
+                            @for (node of uiNodes(); track node.id; let i = $index) {
+                                <mat-tab>
+                                    <ng-template mat-tab-label>
+                                        <mat-icon>{{ getComponentIcon(node.data.uiType) }}</mat-icon>
+                                        <span>{{ node.data.label }}</span>
+                                    </ng-template>
+                                    
+                                    <div class="tab-content">
+                                        @switch (node.data.uiType) {
+                                            @case ('chat') {
+                                                <app-chat-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-chat-tpl>
+                                            }
+                                            @case ('summarize') {
+                                                <app-summarize-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-summarize-tpl>
+                                            }
+                                            @case ('extract') {
+                                                <app-extract-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-extract-tpl>
+                                            }
+                                            @case ('compare') {
+                                                <app-compare-tpl
+                                                    [config]="node.data.uiConfig || {}"
+                                                    [disabled]="previewMode">
+                                                </app-compare-tpl>
+                                            }
+                                            @case ('result-viewer') {
+                                                <div class="result-viewer-placeholder">
+                                                    <mat-icon>visibility</mat-icon>
+                                                    <span>{{ 'templates.preview.result_viewer' | translate }}</span>
+                                                </div>
+                                            }
+                                            @case ('file-upload') {
+                                                <div class="file-upload-placeholder">
+                                                    <mat-icon>upload_file</mat-icon>
+                                                    <span>{{ 'templates.preview.file_upload' | translate }}</span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </mat-tab>
+                            }
+                        </mat-tab-group>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>

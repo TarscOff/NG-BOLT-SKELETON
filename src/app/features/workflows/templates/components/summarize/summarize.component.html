@@ -7,39 +7,41 @@
             <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">summarize</mat-icon>
             <span class="summarize-title">{{ 'summarizeTpl.title' | translate }}</span>
         </div>
-        <div class="result-actions">
-            @if (result$()) {
-            <!-- Export Actions -->
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
-                (click)="handleExport({ format: 'pdf', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)"
-                matTooltip="{{ 'summarizeTpl.exportPdf' | translate }}">
-                <mat-icon>picture_as_pdf</mat-icon>
-            </button>
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
-                (click)="handleExport({ format: 'docx', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)"
-                matTooltip="{{ 'summarizeTpl.exportDocx' | translate }}">
-                <mat-icon>description</mat-icon>
-            </button>
-            <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
-                (click)="handleExport({ format: 'txt', result: result$()! })"
-                [disabled]="(exportService.isExporting$ | async)"
-                matTooltip="{{ 'summarizeTpl.exportTxt' | translate }}">
-                <mat-icon>notes</mat-icon>
-            </button>
-            <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
-                (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
-                <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
-            </button>
-            @if (!isPreloadedMode$()) {
-                <button mat-icon-button [matTooltip]="'summarizeTpl.clear' | translate" (click)="clearAll()"
-                    [disabled]="!isUploading$() && !isSummarizing$() &&  !(formFiles.get('files')?.value || formOptions.get('length')?.value || formOptions.get('style')?.value || formOptions.get('language')?.value)"
-                    [color]="(isDark$ | async) ? 'neutral' : 'accent'">
-                    <mat-icon>clear_all</mat-icon>
+        <div class="summarize-header-actions">
+            <div class="result-actions">
+                @if (result$()) {
+                <!-- Export Actions -->
+                <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                    (click)="handleExport({ format: 'pdf', result: result$()! })"
+                    [disabled]="(exportService.isExporting$ | async)"
+                    matTooltip="{{ 'summarizeTpl.exportPdf' | translate }}">
+                    <mat-icon>picture_as_pdf</mat-icon>
                 </button>
-            }
-        }
+                <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                    (click)="handleExport({ format: 'docx', result: result$()! })"
+                    [disabled]="(exportService.isExporting$ | async)"
+                    matTooltip="{{ 'summarizeTpl.exportDocx' | translate }}">
+                    <mat-icon>description</mat-icon>
+                </button>
+                <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+                    (click)="handleExport({ format: 'txt', result: result$()! })"
+                    [disabled]="(exportService.isExporting$ | async)"
+                    matTooltip="{{ 'summarizeTpl.exportTxt' | translate }}">
+                    <mat-icon>notes</mat-icon>
+                </button>
+                <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+                    (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
+                    <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+                </button>
+                }
+                @if (!isPreloadedMode$()) {
+                    <button mat-icon-button [matTooltip]="'summarizeTpl.clear' | translate" (click)="clearAll()"
+                        [disabled]="!isUploading$() && !isSummarizing$() &&  !(formFiles.get('files')?.value || formOptions.get('length')?.value || formOptions.get('style')?.value || formOptions.get('language')?.value)"
+                        [color]="(isDark$ | async) ? 'neutral' : 'accent'">
+                        <mat-icon>clear_all</mat-icon>
+                    </button>
+                }
+            </div>
         </div>
     </div>
 

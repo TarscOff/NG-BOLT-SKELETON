@@ -1,3 +1,19 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.chat-shell {
+  height: 100%;
+  width: 100%;
+  background: transparent;
+}
+
+.chat-sidenav-content {
+  height: 100%;
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -5,12 +21,8 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--mat-sys-level2);
-  height: 100%; // Takes full height of parent
-  max-height: 100%; // Prevents overflow
-}
-
-:host {
   height: 100%;
+  max-height: 100%;
 }
 
 .chat-header {
@@ -19,7 +31,7 @@
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid var(--mat-neutral);
-  flex-shrink: 0; // Prevent header from shrinking
+  flex-shrink: 0;
 
   .chat-header-info {
     display: flex;
@@ -30,7 +42,6 @@
       color: var(--mat-primary);
     }
 
-
     .chat-title {
       font-size: 16px;
       font-weight: 500;
@@ -40,7 +51,183 @@
   .chat-header-actions {
     display: flex;
     gap: 4px;
+    align-items: center;
+
+    .files-count {
+      min-width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--mat-primary) 85%, #000);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 0 6px;
+    }
   }
+}
+
+.artifacts-panel {
+  width: 30%;
+  min-width: 320px;
+  max-width: 560px;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    opacity: 0.18;
+    z-index: -1;
+  }
+
+  .panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--mat-sys-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 15px;
+  }
+}
+
+.artifacts-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.files-filter {
+  min-width: 180px;
+}
+
+.custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.file-group {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background:
+    linear-gradient(var(--md-sys-color-surface, white), var(--md-sys-color-surface, white)) padding-box,
+    linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
+  padding: 0.5rem;
+}
+
+.group-header-static {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mat-primary);
+  padding: 0.25rem 0.25rem 0.5rem;
+
+  .group-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .group-count {
+    margin-left: auto;
+    font-size: 0.95rem;
+    font-weight: 700;
+    opacity: 0.75;
+  }
+}
+
+.group-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--mat-primary) 10%, transparent);
+    cursor: pointer;
+  }
+
+  .item-icon {
+    flex-shrink: 0;
+  }
+
+  .item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .title {
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .muted {
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+}
+
+.empty-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  opacity: 0.8;
 }
 
 .chat-messages {

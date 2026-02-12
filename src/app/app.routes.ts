@@ -30,6 +30,38 @@ export const routes: Routes = [
             .then(m => m.WorkflowsComponent)
       },
       {
+        path: 'genai-workflows/templates',
+        canActivate: [featureGuard('ai.workflows', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin] },
+        loadComponent: () =>
+          import('./features/workflows/templates/pages/templates-list/templates-list.component')
+            .then(m => m.TemplatesListComponent)
+      },
+      {
+        path: 'genai-workflows/templates/builder',
+        canActivate: [featureGuard('ai.workflows', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin] },
+        loadComponent: () =>
+          import('./features/workflows/templates/components/template-canvas/template-canvas-builder.component')
+            .then(m => m.TemplateCanvasBuilderComponent)
+      },
+      {
+        path: 'genai-workflows/templates/builder/:id',
+        canActivate: [featureGuard('ai.workflows', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin] },
+        loadComponent: () =>
+          import('./features/workflows/templates/components/template-canvas/template-canvas-builder.component')
+            .then(m => m.TemplateCanvasBuilderComponent)
+      },
+      {
+        path: 'genai-workflows/composites',
+        canActivate: [featureGuard('ai.workflows', { forbid: '/403' })],
+        data: { roles: [UserRole.ROLE_admin] },
+        loadComponent: () =>
+          import('./features/workflows/templates/pages/composites-list/composites-list.component')
+            .then(m => m.CompositesListComponent)
+      },
+      {
         path: 'team',
         canActivate: [featureGuard('team', { forbid: '/403' })],
         data: { roles: [UserRole.ROLE_admin, UserRole.ROLE_user] },
@@ -59,6 +91,12 @@ export const routes: Routes = [
             path: '',
             loadComponent: () =>
               import('./features/projects/pages/list/projects.component').then(m => m.ProjectsComponent),
+          },
+          {
+            path: 'new',
+            loadComponent: () =>
+              import('./features/projects/pages/new/project-creation-wizard.component')
+                .then(m => m.ProjectCreationWizardComponent),
           },
           {
             path: ':id/sessions/new',

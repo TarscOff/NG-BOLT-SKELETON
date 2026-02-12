@@ -1,645 +1,216 @@
-# WorkflowPlus - 3-Tier Hierarchical Workflow System
+# WorkflowPlus - 3-Tier Workflow System
+
+_Last updated: 2026-02-12_
 
 ## Overview
+WorkflowPlus is implemented as a 3-tier workflow architecture:
 
-WorkflowPlus is a comprehensive workflow management system that enables Super Admins to build complex, reusable workflows through a 3-tier hierarchical architecture. The system combines workflow logic with customizable UI templates to create complete user experiences.
+1. Tier-1: atomic workflow graphs (node editor)
+2. Tier-2: composites derived from published Tier-1 workflows
+3. Tier-3: template and project design that maps composite ports to runtime UI
 
-### Layer Linkage Overview
+This document reflects the current code implementation, storage behavior, and runtime wiring.
 
-The WorkflowPlus system creates a hierarchical abstraction where each tier builds upon the previous one, creating reusable components that can be composed into complex workflows.
+## Routes and Screens
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    TIER 3: FEATURE WORKFLOWS                       │
-│                    (Complete User Applications View)                │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐  │
-│  │   CHAT          │--->│   SUMMARIZE     │--->│    COMPARE      │  │
-│  │                 │    │                 │    │                 │  │
-│  │ • Chat UI       │    │ • Result View   │    │ • Comparison UI │  │
-│  │ • File Upload   │    │                 │    │ • Side-by-Side  │  │
-│  │ • History Panel │    │ • Share Options │    │ • Diff Viewer   │  │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘  │
-│           │                       │                       │         │
-│           ▼                       ▼                       ▼         │
-└─────────────────────────────────────────────────────────────────────┘
-           │                       │                       │
-┌─────────────────────────────────────────────────────────────────────┐
-│                    TIER 2: COMPOSITE WORKFLOWS                      │
-│                    (Business Logic fOR fEATURE)                     │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐  │
-│  │         CHAT    │    │   SUMMARIZE     │    │    COMPARE      │  │
-│  │                 │    │                 │    │                 │  │
-│  │ Chat RAG        |    ┤ Add Files       │    │ Add Files A     │  │
-│  │    +            │    │       +         │    │      +          │  │
-│  │ Add Files       │    │ Extract & Sum   │    │ Add Files B     │  │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘  │
-│           │                       │                       │         │
-│           ▼                       ▼                       ▼         │
-└─────────────────────────────────────────────────────────────────────┘
-           │                       │                       │
-┌─────────────────────────────────────────────────────────────────────┐
-│                    TIER 1: MICRO WORKFLOWS                          │
-│                    (Atomic Operations)                              │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐  │
-│  │   Chat RAG      │    │   Add Files     │    │  Extract & Sum  │  │
-│  │                 │    │                 │    │                 │  │
-│  │ embed→retrieve  │    │ convert_chunk→  │    │ extract_text→   │  │
-│  │   ↓             │    │ embed_docs→     │    │ summarize→      │  │
-│  │ →chat           │    │ store_embedded  │    │ format_output   │  │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘  │
-│           │                       │                       │         │
-│           ▼                       ▼                       ▼         │
-└─────────────────────────────────────────────────────────────────────┘
-           │                       │                       │
-┌─────────────────────────────────────────────────────────────────────┐
-│                    BACKEND WORKERS                                  │
-│                    (Infrastructure Layer)                           │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐  │
-│  │   worker-chat   │    │worker-file      │    │worker-vectordb  │  │
-│  │                 │    │                 │    │                 │  │
-│  │ • vectorize     │    │ • convert_chunk │    │ • store_embedded│  │
-│  │ • embed         │    │ • extract_text  │    │ • retrieve      │  │
-│  │ • chat          │    │ • split_docs    │    │ • similarity    │  │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Route | Purpose | Tier |
+|---|---|---|
+| `/genai-workflows` | Workflow editor (node canvas) | Tier-1 |
+| `/genai-workflows/composites` | Published workflows as composites | Tier-2 |
+| `/genai-workflows/templates` | Template list | Tier-3 contract |
+| `/genai-workflows/templates/builder/:id?` | Template canvas builder (composites + contexts) | Tier-3 contract |
+| `/genai-projects/new` | Fullscreen project creation wizard (metadata + project design) | Tier-3 project design |
+| `/genai-projects/:id` | Project details, configuration canvas, runtime tabs/sessions | Runtime |
 
-## Architecture
+## Tier Responsibilities
 
-### 3-Tier Hierarchy
+### Tier-1: Workflow Editor
 
-```
-Examples Templating Top LEVEL
-Each template is a set of composite workflows linked together to provide a full user experience
-EACH template HAS A STATUS PUBLISHED /UNPUBLISHED STATUS TO BE AVAILABLE FOR END USERS
-Each OF THIS workflow steps are linked with inputs and outputs 
-EACH TEMPLATE HAS A STATUS PUBLISHED /UNPUBLISHED STATUS TO BE AVAILABLE FOR END USERS
-Each composite generate a custom config with inputs and outputs to be used in the top level
+Main implementation:
+- `src/app/features/workflows/sub/workflow-canvas.component.ts`
+- `src/app/features/workflows/data/workflows.store.ts`
 
-┌─────────────────────────────────────────────────────────────────┐
-│ Example Tier 3: Template Workflows  (standalone each one a tab) │
-│  ┌───────────────┐                                              │
-│  │ SALES CHAT    │                                              │
-│  └───────────────┘                                              │
-└─────────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────────┐
-│ Example Tier 3: Template Workflows  (standalone each one a tab) │
-│  ┌───────────────┐    ┌─────────────────┐                       │
-│  │ SALES CHAT    │    │ summarize       │                       │
-│  └───────────────┘    └─────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────────┐
-│ Example Tier 3: Template Workflows (standalone each one a tab)  │
-│  ┌───────────────┐    ┌─────────────────┐                       │
-│  │ SALES CHAT    │    │ COMPARE         │                       │
-│  └───────────────┘    └─────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────────┐
-│ Example Tier 3: Template Workflows (linked in one same page)    │
-│  ┌───────────────┐    ┌─────────────────┐                       │
-│  │ SALES CHAT    │--> │ summarize       │                       │
-│  └───────────────┘<-- └─────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────────┐
-│ Example Tier 3: Template Workflows (linked in one same page)    │
-│  ┌───────────────┐    ┌─────────────────┐                       │
-│  │ SALES CHAT    │--> │ COMPARE         │                       │
-│  └───────────────┘<-- └─────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
+Current behavior:
+- Visual node editor using `@ng-draw-flow/core`
+- Trigger + worker nodes, ports, validation, and connection checks
+- Node coordinates are persisted and restored
+- Auto-center/fit on existing nodes when loading a workflow
+- Dirty tracking is signature-based (`savedSigById` / `dirtyById`)
+- Publish/discard status is based on real graph/meta deltas
 
-```
+### Tier-2: Composite Workflows
 
-```
-Examples COMPOSITE TASKS MID LEVEL
-Each composite is a set of Micro tasks linked together to provide a medium level workflow
-Each OF THIS workflow steps are linked with inputs and outputs 
-EACH composite HAS A STATUS PUBLISHED /UNPUBLISHED STATUS TO BE AVAILABLE FOR END USERS
-Each composite generate a custom config with inputs and outputs to be used in the top level
-┌──────────────────────────────────────────────────────────────────────────┐
-│          Example Tier 2: Composite Workflows (SALES CHAT)                │
-│  ┌───────────────┐--> ┌─────────────────┐                                │
-│  │   Chat Normal │    │  Add Files      │                                │
-│  └───────────────┘<-- └─────────────────┘                                │
-└──────────────────────────────────────────────────────────────────────────┘                                         
-┌──────────────────────────────────────────────────────────────────────────┐
-│          Example Tier 2: Composite Workflows (SOFTWARE CHAT)             │
-│  ┌───────────────┐--->┌─────────────────┐                                │
-│  │   Chat RAG    │    │  Add Files      │                                │
-│  └───────────────┘<---└─────────────────┘                                │
-└──────────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────────┐
-│          Example Tier 2: Composite Workflows (HR CHAT)                   │
-│  ┌───────────────┐--->┌─────────────────┐                                │
-│  │   Chat RAG    │    │  Add Files      │                                │
-│  └───────────────┘<---└─────────────────┘                                │
-└──────────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────────┐
-│          Example Tier 2: Composite Workflows (COMPARE)                   │
-│  ┌───────────────┐--->┌─────────────────┐                                │
-│  │   Add Files   │    │  Add Files      │                                │
-│  └───────────────┘<---└─────────────────┘                                │
-└──────────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────────┐
-│          Example Tier 2: Composite Workflows (summarize)                 │
-│  ┌───────────────┐                                                       │
-│  │   Add Files   │ --> May be connected to other Micro task                                                       │
-│  └───────────────┘                                                       │
-└──────────────────────────────────────────────────────────────────────────┘
-```
+Main implementation:
+- `src/app/features/workflows/templates/services/workflow-sync.service.ts`
+- `src/app/features/workflows/templates/pages/composites-list/composites-list.component.ts`
 
-```
-Examples MICRO TASKS LOW LEVEL
-Each micro task is a set of steps linked together to provide a low level atomic task
-Each OF THIS workflow steps are linked with inputs and outputs 
-EACH micro HAS A STATUS PUBLISHED /UNPUBLISHED STATUS TO BE AVAILABLE FOR END USERS
-Each composite generate a custom config with inputs and outputs to be used in the top level
+Current behavior:
+- Published Tier-1 workflows are automatically exposed as Tier-2 composites
+- No manual sync button/step is required
+- Composite exposed handles are generated with these rules:
+  - Trigger node outputs are exposed as composite **inputs**
+  - Unconnected inputs remain exposed as inputs
+  - Unconnected outputs remain exposed as outputs
 
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                    Example Tier 1: Micro Workflows (Add Files)                 
-│  ┌─────────────────────┐-->┌──────────────────────────────────┐-->┌───────────────────────────────────────────┐  
-│  │  convert_and_chunk  │   │  embed_langchain_documents       │   │  store_embedded_langchain_documents       │
-│  └─────────────────────┘<--└──────────────────────────────────┘<--└───────────────────────────────────────────┘
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────────┐
-│                    Example Tier 1: Micro Workflows (Chat Normal)        |         
-│  ┌─────────┐-->┌─────────┐                                      |  
-│  │  embed  │   │  chat   │                                      |
-│  └─────────┘<--└─────────┘                                      |
-└─────────────────────────────────────────────────────────────────┘
-┌───────────────────────────────────────────────────────────────────┐
-│                    Example Tier 1: Micro Workflows (Chat RAG)             |  
-│  ┌─────────┐   ┌──────────┐   ┌─────────┐                         |  
-│  │  embed  │-->│ retrieve │-->│  chat   │                         |
-│  └─────────┘<--└──────────┘<--└─────────┘                         |
-└───────────────────────────────────────────────────────────────────┘
-```
+### Tier-3A: Template Builder (Contract and Data Scope)
 
-### Tier 1: Micro Workflows (Atomic Tasks)
-- **Purpose**: Individual atomic operations that correspond to backend workers
-- **Examples**: `embed`, `retrieve`, `chat`, `convert_and_chunk`, `embed_langchain_documents`, `store_embedded_langchain_documents`
-- **Characteristics**:
-  - Map 1:1 with backend worker tasks
-  - Have specific input/output handles
-  - Configurable parameters
-  - Custom naming (e.g., "Add Files", "Chat Normal", "Chat RAG", "toto")
-  - PUBLISHED/UNPUBLISHED status - only published are available for end users
+Main implementation:
+- `src/app/features/workflows/templates/components/template-canvas/template-canvas-builder.component.ts`
 
-### Tier 2: Composite Workflows (Medium Level) 
-- **Purpose**: Combine multiple micro workflows into meaningful units
-- **Examples**: "SALES CHAT" (Chat Normal + Add Files), "HR CHAT" (Chat RAG + Add Files), "SOFTWARE CHAT" (Chat RAG + Add Files), "COMPARE" (Add Files + Add Files)
-- **Characteristics**:
-  - Built from Tier 1 workflows with linking inputs/outputs
-  - Expose simplified input/output interface through custom config
-  - Custom naming (e.g., "SALES CHAT", "SOFTWARE CHAT", "HR CHAT", "toto")
-  - PUBLISHED/UNPUBLISHED status - only published are available for end users
-  - Generate custom config with inputs and outputs for top level use
+Current behavior:
+- Canvas starts with Session Context and Project Context nodes
+- Admin drops composites and links composite ports to context storage flow
+- Saves:
+  - `compositeWorkflows` and `edges`
+  - `contextNodes`
+  - `dataFlowConfig` (inputs/outputs/intermediates + scope)
+- Template UI nodes are still supported for backward compatibility in saved templates, but the active project UI design is handled in Tier-3B
 
-### Tier 3: Template Workflows (Top Level)
-- **Purpose**: Complete user-facing applications with UI components
-- **Examples**: "Sales Assistant", "Document Analyzer Pro"
-- **Template Patterns**:
-  - **Standalone Templates**: Each composite workflow appears as a separate tab/application
-    - Single composite per template (e.g., SALES CHAT as standalone tab)
-    - Multiple unconnected composites as separate tabs (e.g., SALES CHAT + summarize as separate tabs)
-  - **Linked Templates**: Multiple composite workflows connected and working together on the same page
-    - Connected composites with data flow (e.g., SALES CHAT → summarize with bidirectional connection)
-    - Complex workflows (e.g., SALES CHAT → COMPARE with integrated UI)
-- **Characteristics**:
-  - Combine multiple Tier 2 workflows with workflow steps linked via inputs/outputs
-  - Include comprehensive UI template configuration for full user experience
-  - Define user permissions and access control
-  - Custom naming (e.g., "Sales Knowledge Assistant", "HR Portal", "toto")
-  - PUBLISHED/UNPUBLISHED status - only published are available for end users
+### Tier-3B: Project Design Canvas (Runtime UI Design)
 
-## Core Interfaces
+Main implementation:
+- `src/app/features/projects/components/project-template-canvas/project-template-canvas.component.ts`
+- `src/app/features/projects/components/project-template-canvas/project-ui-node.component.ts`
 
-### Status Management
-```typescript
-enum WorkflowStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  UNPUBLISHED = 'unpublished',
-  ARCHIVED = 'archived'
-}
+Current behavior:
+- Assign published templates to the project
+- Drop runtime UI nodes and connect template ports to UI ports
+- View mode selection:
+  - `single` -> `standalone-single`
+  - `tabs` -> `standalone-tabs`
+- Current default UI palette:
+  - `chat`
+  - `compare` (label: Two Files)
+  - `summarize` (label: One File Upload)
+  - `result-view`
+  - `markdown`
+- Disabled template cascade:
+  - linked UI node is disabled when it has exactly one linked template and that template is disabled
+  - shared UI nodes (linked to multiple templates) stay active
+
+## Data Scope and Port Ownership
+
+Scope model:
+- `session`: ephemeral data for one session
+- `project`: persistent project-level data
+- `both`: hybrid/shared behavior
+
+Primary types:
+- `DataPortScopeConfig` and `TemplateDataFlowConfig` in  
+  `src/app/features/workflows/templates/interfaces/template-workflow.interface.ts`
+- `PortDataScopeConfig` / `DataScope` in  
+  `src/app/shared/types/workflow.types.ts`
+
+How scope flows today:
+1. Template builder produces `dataFlowConfig`
+2. Project assignment stores merged `portDataScopes`
+3. Runtime admin data-map resolves binding source/scope from assignment scopes
+
+## Runtime Execution (Sessions)
+
+Main implementation:
+- `src/app/features/projects/components/template-execution-panel/template-execution-panel.component.ts`
+
+Runtime source of truth:
+- If `assignment.configuration.uiTemplate` exists, runtime uses it
+- Otherwise runtime falls back to `template.uiTemplate`
+
+Layout behavior:
+- Supports `standalone-single` and `standalone-tabs` as primary runtime modes
+- Legacy modes/components are still handled for compatibility
+
+Binding-driven behavior:
+- Chat:
+  - history area shown when `history` or `chat_history` is bound
+  - input area shown when `user_query` or `query` is bound
+  - attachment area shown when `uploaded_files` / `files` / `file_upload` is bound
+- Compare:
+  - requires `left_file` and `right_file`
+- Summarize:
+  - requires `source_file`
+- Result/Markdown:
+  - rendered through reusable runtime result renderer
+
+Trigger constraints inheritance:
+- Runtime resolves trigger constraints through Tier-3 workflow path back to Tier-2 trigger nodes
+- Applies trigger config to runtime components (file and chat constraints), including:
+  - accepted types
+  - max file size
+  - max files
+  - multiple flag
+  - max message length (chat)
+
+Admin debug map:
+- Admins get a Data Map view in runtime tab groups
+- Shows each UI binding, workflow path, resolved scope, and live value preview
+
+## Local Persistence Keys (Dev Mode)
+
+Tier-1:
+- `app_workflows_v1`
+
+Tier-3 store:
+- `template_workflows_v1`
+- `composite_workflows_v1`
+- `micro_workflows_v1`
+- `template_assignments_v1`
+- `template_sessions_v1`
+
+Project assignment/session store:
+- `project_workflow_assignments`
+- `project_workflow_sessions`
+
+Project list/session/artifacts service local caches:
+- `local_projects_v1`
+- `local_project_sessions_v1`
+- `local_project_artifacts_v1`
+
+## Core Files Map
+
+```text
+src/app/features/
+├── workflows/
+│   ├── sub/
+│   │   └── workflow-canvas.component.ts
+│   ├── data/
+│   │   └── workflows.store.ts
+│   └── templates/
+│       ├── services/
+│       │   └── workflow-sync.service.ts
+│       ├── interfaces/
+│       │   └── template-workflow.interface.ts
+│       ├── data/
+│       │   └── template-workflows.store.ts
+│       ├── components/
+│       │   ├── template-canvas/
+│       │   │   └── template-canvas-builder.component.ts
+│       │   ├── chat/
+│       │   ├── compare/
+│       │   ├── summarize/
+│       │   ├── extract/
+│       │   └── result/runtime-result/
+│       └── pages/
+│           ├── composites-list/
+│           └── templates-list/
+└── projects/
+    ├── pages/new/
+    │   └── project-creation-wizard.component.ts
+    ├── pages/details/
+    │   └── details.component.html
+    └── components/
+        ├── project-template-canvas/
+        │   ├── project-template-canvas.component.ts
+        │   └── project-ui-node.component.ts
+        └── template-execution-panel/
+            └── template-execution-panel.component.ts
 ```
 
-### Micro Workflow
-```typescript
-interface MicroWorkflow {
-  id: string;
-  name: string; // Custom name like "Add Files", "Chat Normal", "Chat RAG", "toto"
-  description: string;
-  status: WorkflowStatus; // PUBLISHED/UNPUBLISHED - only published are available for end users
-  worker: WorkerType; // 'worker-file-manipulation', 'worker-llm', etc.
-  task: string; // Backend task identifier
-  inputHandles: WorkflowHandle[];
-  outputHandles: WorkflowHandle[];
-  configuration: MicroWorkflowConfig;
-  metadata: WorkflowMetadata;
-}
-```
+## Backend Handoff Note
 
-### Composite Workflow
-```typescript
-interface CompositeWorkflow {
-  id: string;
-  name: string; // Custom name like "SALES CHAT", "SOFTWARE CHAT", "HR CHAT", "COMPARE", "summarize", "toto"
-  description: string;
-  status: WorkflowStatus; // PUBLISHED/UNPUBLISHED - only published are available for end users
-  nodes: CompositeWorkflowNode[]; // References to Micro Workflows
-  edges: CompositeWorkflowEdge[];
-  exposedInputs: ExposedHandle[]; // Custom config with inputs/outputs for top level
-  exposedOutputs: ExposedHandle[]; // Custom config with inputs/outputs for top level
-  configuration: CompositeWorkflowConfig;
-  metadata: WorkflowMetadata;
-}
-```
+Current mode is local/poc-first with storage-backed state and compatibility fallbacks.  
+When backend APIs are finalized, integration should plug into existing stores/services without changing Tier contracts:
 
-### Template Workflow
-```typescript
-interface TemplateWorkflow {
-  id: string;
-  name: string; // Custom name like "Sales Assistant", "Document Analyzer", "toto"
-  description: string;
-  status: WorkflowStatus; // PUBLISHED/UNPUBLISHED - only published are available for end users
-  presentationPattern: 'standalone-single' | 'standalone-tabs' | 'linked-integrated';
-  compositeWorkflows: TemplateWorkflowNode[]; // References to Composite Workflows
-  edges: TemplateWorkflowEdge[]; // Workflow steps linked with inputs and outputs (for linked patterns)
-  uiTemplate: UITemplateConfig; // UI component configuration for full user experience
-  permissions: WorkflowPermissions;
-  metadata: WorkflowMetadata;
-}
-
-interface UITemplateConfig {
-  layout: 'standalone-single' | 'standalone-tabs' | 'linked-horizontal' | 'linked-vertical' | 'chat-with-files' | 'comparison-view' | 'dashboard' | 'custom';
-  components: UIComponentConfig[];
-  styling: TemplateStyles;
-  tabConfiguration?: TabConfiguration; // For standalone-tabs pattern
-  connectionConfiguration?: ConnectionConfiguration; // For linked patterns
-}
-
-interface TabConfiguration {
-  defaultTab: string;
-  tabOrder: string[];
-  allowTabSwitching: boolean;
-}
-
-interface ConnectionConfiguration {
-  showDataFlow: boolean;
-  animateConnections: boolean;
-  connectionStyle: 'arrows' | 'lines' | 'pipes';
-}
-```
-
-### Workflow Handle System
-```typescript
-interface WorkflowHandle {
-  id: string;
-  artifactType: ArtifactType; // 'string', 'json', 'file', 'collection', etc.
-  dataReference: string;
-  required: boolean;
-  description?: string;
-}
-
-enum ArtifactType {
-  STRING = 'string',
-  JSON = 'json', 
-  FILE = 'file',
-  COLLECTION = 'collection',
-  LIST_FLOAT = 'list[float]',
-  LANGCHAIN_DOCUMENTS = 'langchain_documents',
-  EMBEDDED_LANGCHAIN_DOCUMENTS = 'embedded_langchain_documents',
-  CHAT_HISTORY = 'chat_history',
-  USER_PROMPT = 'user_prompt',
-  LLM_RESPONSE = 'llm_response',
-  EMBEDDINGS = 'embeddings',
-  CONTEXT = 'context'
-}
-```
-
-## Form Configuration System
-
-### Integration with ActionFormSpec
-The system integrates with your existing form system using `FieldConfig`:
-
-```typescript
-// Convert API response to ActionFormSpec
-function convertTemplateStepToActionFormSpec(step: TemplateStepDefinition): ActionFormSpec {
-  return {
-    make: (F) => step.step_config.map(config => {
-      switch (config.type) {
-        case 'textarea':
-          return F.getTextAreaField(config);
-        case 'dropdown':
-          return F.getDropdownField(config);
-        case 'range':
-          return F.getRangeField(config);
-        case 'file':
-          return F.getFileField(config);
-        case 'text':
-          return F.getTextField(config);
-        default:
-          throw new Error(`Unsupported field type: ${config.type}`);
-      }
-    }),
-    defaults: step.step_config.reduce((acc, config) => {
-      if (config.defaultValue !== undefined) {
-        acc[config.name] = config.defaultValue;
-      }
-      return acc;
-    }, {} as Record<string, any>)
-  };
-}
-```
-
-### Example Form Configuration
-```json
-{
-  "step": "chat",
-  "step_id": "chat-rag-template-v1",
-  "step_config": [
-    {
-      "type": "textarea",
-      "name": "system_prompt",
-      "label": "System Prompt",
-      "placeholder": "System prompt…",
-      "rows": 10,
-      "required": true,
-      "validators": ["required", "maxLength:500"],
-      "maxLength": 500,
-      "defaultValue": "You are a helpful AI assistant.",
-      "helperText": "Define the AI's role and behavior"
-    },
-    {
-      "type": "dropdown",
-      "name": "temperature",
-      "label": "Temperature",
-      "options": [
-        { "label": "0 – Deterministic", "value": 0 },
-        { "label": "0.3 – Focused", "value": 0.3 },
-        { "label": "0.7 – Balanced", "value": 0.7 },
-        { "label": "1.0 – Creative", "value": 1 }
-      ],
-      "required": true,
-      "defaultValue": 0.7
-    }
-  ]
-}
-```
-
-## UI Template System
-
-### Template Presentation Patterns
-
-#### Standalone Templates (Tab-based)
-- **Single Composite**: One composite workflow per template, rendered as individual application
-  - Example: "SALES CHAT" standalone - displays only the chat + file upload interface
-- **Multiple Composites as Tabs**: Multiple unconnected composites, each rendered as separate tab
-  - Example: "SALES CHAT" + "summarize" as separate tabs in same application
-  - User can switch between SALES CHAT tab and summarize tab independently
-
-#### Linked Templates (Integrated Page)
-- **Connected Composites**: Multiple composites working together on same page with data flow
-  - Example: "SALES CHAT → summarize" - chat results automatically feed into summarization
-  - Bidirectional connection allows summarized insights to enhance chat context
-- **Complex Workflows**: Advanced integrations with multiple composite interactions
-  - Example: "SALES CHAT → COMPARE" - chat generates content that feeds comparison workflows
-
-### Available UI Components
-- **chat**: Interactive chat interface with message history
-- **file-uploader**: File upload component with drag-and-drop support
-- **result-viewer**: Display workflow results, summaries, and analyses
-- **left-panel**: Collapsible side panel for navigation/files/tools
-- **tab-container**: Container for organizing multiple standalone composites as tabs
-- **workflow-connector**: Visual connector showing data flow between linked composites
-- **custom**: Custom components for specialized needs
-
-### Component Binding System
-```typescript
-interface WorkflowBinding {
-  componentProperty: string; // UI component property
-  workflowOutput: string; // Workflow output path
-  transformation?: DataTransformation; // Optional data transformation
-  connectionType?: 'standalone' | 'linked'; // How the component connects to workflows
-}
-```
-
-### Layout Types
-- **standalone-single**: Single composite workflow as full-page application
-- **standalone-tabs**: Multiple composites as separate tabs
-- **linked-horizontal**: Connected composites arranged horizontally with data flow
-- **linked-vertical**: Connected composites arranged vertically with data flow
-- **chat-with-files**: Specialized chat interface with file upload panel
-- **comparison-view**: Side-by-side comparison layout for COMPARE workflows
-- **dashboard**: Multi-widget dashboard layout for complex integrations
-- **custom**: Fully customizable layout for specialized use cases
-
-## Workflow Builder Components
-
-### Tier 1 Builder: Micro Workflow Designer
-```typescript
-@Component({
-  selector: 'app-micro-workflow-builder',
-  // Allows SuperAdmin to create micro workflows from available workers
-})
-export class MicroWorkflowBuilderComponent {
-  availableWorkers: WorkerDefinition[];
-  selectedWorker?: WorkerDefinition;
-  microNodes: WorkflowNode[];
-}
-```
-
-### Tier 2 Builder: Composite Workflow Designer
-```typescript
-@Component({
-  selector: 'app-composite-workflow-builder',
-  // Allows SuperAdmin to combine micro workflows
-})
-export class CompositeWorkflowBuilderComponent {
-  availableMicroWorkflows: MicroWorkflow[];
-  compositeNodes: WorkflowNode[];
-  exposedInputs: ExposedHandle[];
-  exposedOutputs: ExposedHandle[];
-}
-```
-
-### Tier 3 Builder: Template Workflow Designer
-```typescript
-@Component({
-  selector: 'app-template-workflow-builder',
-  // Allows SuperAdmin to create complete applications
-})
-export class TemplateWorkflowBuilderComponent {
-  availableComposites: CompositeWorkflow[];
-  templateNodes: WorkflowNode[];
-  uiTemplate: UITemplateConfig;
-  availableUIComponents: UIComponentDefinition[];
-}
-```
-
-## API Structure
-
-### Workflow Management APIs
-```typescript
-// Tier 1: Micro Workflows
-GET    /api/v1/workflows/micro?status=published        // Get published micro workflows
-GET    /api/v1/workflows/micro?status=all             // SuperAdmin: Get all micro workflows
-POST   /api/v1/workflows/micro                        // Create micro workflow (draft by default)
-PUT    /api/v1/workflows/micro/{id}                   // Update micro workflow
-DELETE /api/v1/workflows/micro/{id}                  // Delete micro workflow
-
-// Tier 2: Composite Workflows  
-GET    /api/v1/workflows/composite?status=published   // Get published composite workflows
-GET    /api/v1/workflows/composite?status=all         // SuperAdmin: Get all composite workflows
-POST   /api/v1/workflows/composite                    // Create composite workflow (draft by default)
-PUT    /api/v1/workflows/composite/{id}               // Update composite workflow
-DELETE /api/v1/workflows/composite/{id}              // Delete composite workflow
-
-// Tier 3: Template Workflows
-GET    /api/v1/workflows/template?status=published    // Get published template workflows (end users)
-GET    /api/v1/workflows/template?status=all          // SuperAdmin: Get all template workflows
-POST   /api/v1/workflows/template                     // Create template workflow (draft by default)
-PUT    /api/v1/workflows/template/{id}                // Update template workflow
-DELETE /api/v1/workflows/template/{id}               // Delete template workflow
-
-// Status Management (SuperAdmin only)
-POST   /api/v1/workflows/{type}/{id}/publish          // Publish workflow (make available to end users)
-POST   /api/v1/workflows/{type}/{id}/unpublish        // Unpublish workflow
-POST   /api/v1/workflows/{type}/{id}/archive          // Archive workflow
-
-// Hierarchy Management
-GET    /api/v1/workflows/template/{id}/hierarchy       // Get complete workflow hierarchy
-POST   /api/v1/workflows/validate                     // Validate workflow configuration
-GET    /api/v1/workflows/dependencies/{id}            // Get workflow dependencies
-
-// Execution (End Users - Published Templates Only)
-POST   /api/v1/workflows/template/{id}/execute        // Execute published template workflow
-GET    /api/v1/executions/{id}/status                 // Get execution status
-GET    /api/v1/executions/{id}/results                // Get execution results
-POST   /api/v1/executions/{id}/cancel                 // Cancel running execution
-```
-
-
-## Getting Started
-
-### Initial Setup
-1. **Setup Azure Cosmos DB**: Configure containers with hierarchical partition keys
-2. **Install Dependencies**: Add workflow builder components
-3. **Configure Services**: Setup `WorkflowDataService` with Cosmos DB connection
-
-### Building Your First Workflows
-
-#### Step 1: Create Micro Workflows (Tier 1)
-Start with atomic tasks that correspond to your backend workers:
-
-```typescript
-// Create "Add Files" micro workflow
-const addFilesMicro = {
-  name: "Add Files",
-  description: "convert_and_chunk → embed_langchain_documents → store_embedded_langchain_documents",
-  status: "draft", // Start as draft
-  // ... workflow definition
-};
-
-// Create "Chat RAG" micro workflow  
-const chatRagMicro = {
-  name: "Chat RAG",
-  description: "embed → retrieve → chat",
-  status: "draft",
-  // ... workflow definition
-};
-
-// Create "Chat Normal" micro workflow
-const chatNormalMicro = {
-  name: "Chat Normal", 
-  description: "embed → chat",
-  status: "draft",
-  // ... workflow definition
-};
-```
-
-#### Step 2: Test and Publish Micro Workflows
-```typescript
-// Test your micro workflows
-await workflowService.validateWorkflow(addFilesMicro);
-
-// Publish when ready
-await workflowService.publishWorkflow(tenantId, addFilesMicro.id, 'micro');
-await workflowService.publishWorkflow(tenantId, chatRagMicro.id, 'micro');
-```
-
-#### Step 3: Create Composite Workflows (Tier 2)
-Combine published micro workflows into meaningful units:
-
-```typescript
-// Create "HR CHAT" composite
-const hrChatComposite = {
-  name: "HR CHAT",
-  description: "Chat RAG + Add Files for HR domain",
-  status: "draft",
-  nodes: [
-    { microWorkflowId: chatRagMicro.id, /* configuration */ },
-    { microWorkflowId: addFilesMicro.id, /* configuration */ }
-  ],
-  edges: [/* connections between micro workflows */],
-  exposedInputs: [/* simplified interface for top level */],
-  exposedOutputs: [/* simplified interface for top level */]
-};
-
-// Create "SALES CHAT" composite
-const salesChatComposite = {
-  name: "SALES CHAT",
-  description: "Chat Normal + Add Files for sales domain",
-  status: "draft",
-  nodes: [
-    { microWorkflowId: chatNormalMicro.id },
-    { microWorkflowId: addFilesMicro.id }
-  ]
-};
-```
-
-#### Step 4: Create Template Workflows (Tier 3)
-Build complete user applications with UI components:
-
-```typescript
-// Create "Sales Assistant with Summarization" template
-const salesTemplate = {
-  name: "Sales Assistant Pro",
-  description: "Complete sales workflow with chat and summarization",
-  status: "draft",
-  compositeWorkflows: [
-    { compositeWorkflowId: salesChatComposite.id },
-    { compositeWorkflowId: summarizeComposite.id }
-  ],
-  edges: [/* connections between composites */],
-  uiTemplate: {
-    layout: "chat-with-files",
-    components: [
-      { type: "chat", /* bindings to workflow outputs */ },
-      { type: "file-uploader", /* bindings */ },
-      { type: "result-viewer", /* bindings */ }
-    ]
-  }
-};
-```
-
-#### Step 5: Publish and Deploy
-```typescript
-// Publish composite workflows (validates dependencies)
-await workflowService.publishWorkflow(tenantId, hrChatComposite.id, 'composite');
-await workflowService.publishWorkflow(tenantId, salesChatComposite.id, 'composite');
-
-// Publish template workflows (validates all dependencies)
-await workflowService.publishWorkflow(tenantId, salesTemplate.id, 'template');
-
-// Now end users can access published templates
-const publishedTemplates = await workflowService.getPublishedWorkflows(tenantId, 'template');
-```
-
-### Workflow Lifecycle
-1. **Draft**: Create and test workflows
-2. **Validate**: Ensure all dependencies are satisfied
-3. **Publish**: Make available to end users
-4. **Monitor**: Track usage and performance
-5. **Update**: Create new versions while maintaining published versions
-6. **Archive**: Remove old versions when no longer needed
+1. Keep Tier-1 graph schema stable (`nodes`, `edges`, ports, metadata)
+2. Keep Tier-2 exposed-handle generation rules stable
+3. Keep Tier-3 assignment `configuration.uiTemplate` contract stable
+4. Keep `portDataScopes` contract stable for runtime scope/debug mapping
