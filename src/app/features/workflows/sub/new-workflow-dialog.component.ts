@@ -31,19 +31,29 @@ export interface NewWorkflowDialogData {
   ],
   template: `
     <h2 mat-dialog-title>{{ (data.isEdit ? 'workflow.edit_dialog.title' : 'workflow.new_dialog.title') | translate }}</h2>
-    <form [formGroup]="form" (ngSubmit)="submit()" mat-dialog-content class="dialog-body">
-      <app-dynamic-form [form]="form" [config]="config"></app-dynamic-form>
-    </form>
+    <mat-dialog-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <app-dynamic-form [form]="form" [config]="config"></app-dynamic-form>
+      </form>
+    </mat-dialog-content>
 
-    <div mat-dialog-actions align="end">
+    <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>{{ 'workflow.new_dialog.cancel' | translate }}</button>
       <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="submit()">
         {{ (data.isEdit ? 'workflow.edit_dialog.update' : 'workflow.new_dialog.create') | translate }}
       </button>
-    </div>
+    </mat-dialog-actions>
   `,
   styles: [`
-    .dialog-body { display: flex; flex-direction: column; gap: 12px; min-width: 420px; padding: 18px !important; }
+    :host {
+      display: block;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
   `]
 })
 export class NewWorkflowDialogComponent {

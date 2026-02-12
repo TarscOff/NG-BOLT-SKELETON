@@ -11,6 +11,7 @@
   "SAVE": "Save",
   "TEAM_MEMBERS": "Team members",
   "trigger_chat": "Chat trigger",
+  "trigger_manual": "Manual trigger",
   "add_favorite": "Ajouter aux favoris",
   "trigger_file_upload": "File upload trigger",
   "trigger_webhook": "Webhook trigger",
@@ -18,6 +19,7 @@
   "workflow": {
     "saved_workflows": "Saved workflows",
     "filter": "Filter workflows",
+    "template_builder": "Create Template (Tier 3)",
     "sidebar": {
       "collapse": "Collapse saved workflows",
       "expand": "Expand saved workflows"
@@ -150,7 +152,9 @@
         "embeddings": "Embeddings",
         "json": "JSON",
         "collection": "Collection",
-        "string": "String"
+        "string": "String",
+        "file": "File",
+        "boolean": "Boolean"
       }
     },
     "palette": {
@@ -212,6 +216,114 @@
       "update": "Update"
     },
     "forms": {
+      "common": {
+        "llm_endpoint": {
+          "label": "LLM Endpoint",
+          "placeholder": "http://ollama:11434/api",
+          "helper": "The URL of the LLM API endpoint."
+        },
+        "model": {
+          "label": "Model",
+          "placeholder": "e.g., tinyllama",
+          "helper": "The model identifier to use."
+        },
+        "chromadb_url": {
+          "label": "ChromaDB URL",
+          "placeholder": "chromadb:8000",
+          "helper": "The ChromaDB server address."
+        },
+        "errors": {
+          "llm_endpoint_required": "LLM endpoint is required",
+          "model_required": "Model is required",
+          "chromadb_url_required": "ChromaDB URL is required"
+        }
+      },
+      "triggers": {
+        "errors": {
+          "max_chars_required": "Maximum characters is required",
+          "positive_integer": "Value must be a number greater than 0."
+        },
+        "common": {
+          "accepted_types": {
+            "label": "Accepted file types",
+            "placeholder": "application/pdf,text/plain,...",
+            "helper": "Comma-separated MIME types or extensions."
+          },
+          "max_file_size": {
+            "label": "Max file size (bytes)",
+            "placeholder": "10485760",
+            "helper": "Maximum upload size per file in bytes."
+          },
+          "max_files": {
+            "label": "Max files",
+            "placeholder": "5",
+            "helper": "Maximum number of files accepted."
+          }
+        },
+        "chat": {
+          "max_chars": {
+            "label": "Max message characters",
+            "placeholder": "4000",
+            "helper": "Maximum characters accepted in user input."
+          },
+          "placeholder": {
+            "label": "Input placeholder",
+            "placeholder": "Type your message...",
+            "helper": "Text displayed before user starts typing."
+          },
+          "enable_attachments": {
+            "label": "Enable attachments",
+            "helper": "Allow file upload from chat input."
+          }
+        },
+        "file_upload": {
+          "multiple": {
+            "label": "Allow multiple files",
+            "helper": "If disabled, only one file can be uploaded."
+          }
+        },
+        "webhook": {
+          "accept_content_types": {
+            "label": "Accepted content types",
+            "placeholder": "application/json,text/plain,multipart/form-data",
+            "helper": "Comma-separated request content-types."
+          },
+          "max_payload_size": {
+            "label": "Max payload size (bytes)",
+            "placeholder": "1048576",
+            "helper": "Maximum allowed webhook payload size."
+          },
+          "parse_json": {
+            "label": "Parse JSON payload",
+            "helper": "If enabled, JSON payloads are parsed automatically."
+          }
+        },
+        "manual": {
+          "label": {
+            "label": "Trigger label",
+            "placeholder": "Run now",
+            "helper": "Optional button or action label."
+          },
+          "require_confirmation": {
+            "label": "Require confirmation",
+            "helper": "Ask user confirmation before manual trigger execution."
+          }
+        }
+      },
+      "chat": {
+        "system_prompt": {
+          "label": "System prompt",
+          "placeholder": "Instructions for the AI assistant...",
+          "helper": "Define the AI's behavior and persona."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "helper": "Higher values make output more creative but less predictable."
+        },
+        "errors": {
+          "temperature_required": "Temperature is required"
+        }
+      },
       "vector_store": {
         "options": {
           "azure_cosmos_db": "Azure Cosmos DB (vector)",
@@ -424,8 +536,23 @@
   "collection_metadata": "Collection metadata",
   "common": {
     "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "edit": "Edit",
     "home": "Home",
-    "signIn": "Sign in"
+    "loading": "Loading...",
+    "next": "Next",
+    "previous": "Previous",
+    "rename": "Rename",
+    "save": "Save",
+    "search": "Search",
+    "signIn": "Sign in",
+    "update": "Update"
+  },
+  "COMMON": {
+    "LOADING": "Loading..."
   },
   "compareTpl": {
     "added": "Added",
@@ -792,6 +919,34 @@
     "clearFilters": "Clear filters",
     "create-first": "Create your first project",
     "create-new": "New Project",
+    "wizard": {
+      "title": "Create Project",
+      "subtitle": "Define metadata, then design runtime views with Tier-3 templates.",
+      "steps": {
+        "metadata": "Project Metadata",
+        "design": "Project Design"
+      },
+      "form": {
+        "name": "Project Name",
+        "name_placeholder": "Enter project name",
+        "name_required": "Project name is required",
+        "description": "Description",
+        "description_placeholder": "Describe this project",
+        "metadata": "Tags",
+        "metadata_placeholder": "Comma-separated tags",
+        "metadata_hint": "Example: sales, internal, q1"
+      },
+      "preview_title": "Project Preview",
+      "design_help": "Drag templates and UI components, then bind ports for runtime behavior.",
+      "requirements": {
+        "metadata_invalid": "Complete project metadata before creating.",
+        "assign_template": "Assign at least one template to continue."
+      },
+      "assigned_templates": "assigned template(s)",
+      "create": "Create Project",
+      "assign_required": "Assign at least one template before creating the project.",
+      "success": "Project created successfully."
+    },
     "delete": {
       "confirm-message": "Are you sure you want to delete the project \"{{name}}\"? This action cannot be undone.",
       "confirm-title": "Confirm Delete",
@@ -841,9 +996,11 @@
       "tabs": {
         "chat": "Chat History",
         "compare": "Compare History",
+        "configuration": "Configuration",
         "extract": "Extract History",
         "files": "Artifacts",
         "members": "Members",
+        "runtime": "Runtime",
         "sessions": "My Sessions",
         "summarize": "Summary History",
         "workflows": "Workflows"
@@ -857,6 +1014,7 @@
       "yesterday": "Yesterday"
     },
     "error": {
+      "failed-to-create": "Failed to create project",
       "delete-failed": "Failed to delete {{title}}",
       "failed-to-create-session": "Failed to create session",
       "failed-to-load": "Failed to load project details",
@@ -893,7 +1051,57 @@
       "artifacts-uploaded": "Artifacts uploaded successfully"
     },
     "total": "Total",
-    "users": "Users"
+    "users": "Users",
+    "workflows": {
+      "tab-title": "Workflows",
+      "assigned-title": "Assigned Workflows",
+      "available-title": "Available Workflows",
+      "no-assigned": "No workflows assigned to this project",
+      "no-published": "No published workflows available",
+      "no-description": "No description available",
+      "nodes": "nodes",
+      "published": "Published",
+      "draft": "Draft",
+      "assign": "Assign",
+      "enable": "Enable workflow",
+      "disable": "Disable workflow",
+      "edit-config": "Edit configuration",
+      "preview": "Preview workflow",
+      "preview-not-found": "Workflow not found for preview",
+      "remove": "Remove from project",
+      "assigned-on": "Assigned on",
+      "pagination": "Workflows pagination",
+      "assigned-success": "Workflow \"{{name}}\" assigned successfully",
+      "updated-success": "Workflow configuration updated",
+      "removed-success": "Workflow removed from project",
+      "confirm-remove-title": "Remove Workflow",
+      "confirm-remove-message": "Are you sure you want to remove \"{{name}}\" from this project?",
+      "config": {
+        "title": "Configure Workflow",
+        "edit-title": "Edit Workflow Configuration",
+        "assign": "Assign to Project",
+        "output-scope-title": "Output Storage Scope",
+        "output-scope-description": "Choose where artifacts and generated outputs from this workflow should be stored",
+        "output-scope": {
+          "label": "Storage Scope",
+          "helper": "Determines where workflow outputs are saved"
+        },
+        "scope": {
+          "project": {
+            "label": "Project Scope",
+            "description": "Outputs will be stored at the project level, accessible across all sessions"
+          },
+          "session": {
+            "label": "Session Scope",
+            "description": "Outputs will be stored within the current session only"
+          },
+          "both": {
+            "label": "Both Scopes",
+            "description": "Outputs will be stored at both project and session levels"
+          }
+        }
+      }
+    }
   },
   "query_string": "Query string",
   "quick_settings": "Quick settings",
@@ -961,6 +1169,347 @@
       "original": "Original Words",
       "reduction": "Reduction",
       "summary": "Summary Words"
+    }
+  },
+  "composites": {
+    "list": {
+      "title": "Composite Workflows",
+      "subtitle": "Manage your Tier 2 composite workflows - reusable building blocks for templates",
+      "view_templates": "View Templates",
+      "sync_workflows": "Sync from Editor",
+      "open_editor": "Open Workflow Editor",
+      "tab_all": "All",
+      "tab_published": "Published",
+      "tab_draft": "Drafts",
+      "search_placeholder": "Search composites...",
+      "info_title": "How Composites Work",
+      "info_message": "Composites are created from 'Reusable' workflows in the Workflow Editor. Mark a workflow as 'Reusable' and 'Public', then sync here to convert it to a composite that can be used in Template Workflows.",
+      "empty_title": "No composites yet",
+      "empty_message": "Create reusable workflows in the Workflow Editor, then sync them here to use in Template Workflows.",
+      "create_in_editor": "Create in Editor",
+      "sync_available": "Sync {{count}} workflows",
+      "inputs": "inputs",
+      "outputs": "outputs",
+      "nodes": "nodes",
+      "no_description": "No description",
+      "view_in_editor": "View in Editor",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete_confirm_title": "Delete Composite",
+      "delete_confirm_message": "Are you sure you want to delete '{{name}}'? Templates using this composite may stop working.",
+      "deleted_success": "Composite deleted",
+      "published_success": "Composite published",
+      "unpublished_success": "Composite unpublished",
+      "sync_success": "Successfully synced {{count}} workflows to composites",
+      "already_synced": "All workflows are already synced",
+      "no_workflows_to_sync": "No reusable workflows available to sync",
+      "sync_error": "Error syncing workflows. Please try again.",
+      "workflows_available_for_sync": "{{count}} workflow(s) available to sync",
+      "sync_now": "Sync Now",
+      "no_source_workflow": "Source workflow not found"
+    }
+  },
+  "templates": {
+    "loading": "Loading templates...",
+    "loading_template": "Loading template...",
+    "no_enabled": "No templates enabled",
+    "enable_hint": "Enable templates from project settings to start using workflows",
+    "no_description": "No description available",
+    "no_results": "No results available",
+    "assigned": "assigned",
+    "view_template": "View Template",
+    "configure": "Configure",
+    "disable": "Disable",
+    "enable": "Enable",
+    "project_canvas": {
+      "title": "Project Templates",
+      "toolbox": "Toolbox",
+      "available_templates": "Available Templates",
+      "no_templates": "No templates available",
+      "ui_components": "UI Components",
+      "template_node": "Template",
+      "ui_node": "UI Component",
+      "search_placeholder": "Search...",
+      "drag_hint_title": "Drag & Drop Templates",
+      "drag_hint_desc": "Drag templates and UI components from the toolbox to build your project workflow"
+    },
+    "list": {
+      "title": "Template Workflows",
+      "subtitle": "Manage your Tier 3 template workflows that provide complete user interfaces",
+      "create_new": "Create Template",
+      "manage_composites": "Manage Composites",
+      "tab_all": "All",
+      "tab_published": "Published",
+      "tab_draft": "Drafts",
+      "search_placeholder": "Search templates...",
+      "empty_title": "No templates yet",
+      "empty_message": "Create your first template workflow to provide a complete user interface for your composites.",
+      "create_first": "Create First Template",
+      "composites": "composites",
+      "components": "components",
+      "no_description": "No description",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete_confirm_title": "Delete Template",
+      "delete_confirm_message": "Are you sure you want to delete '{{name}}'? This action cannot be undone.",
+      "deleted_success": "Template deleted",
+      "published_success": "Template published",
+      "unpublished_success": "Template unpublished",
+      "duplicated_success": "Template duplicated"
+    },
+    "selection": {
+      "title": "Activate Template",
+      "select_description": "Choose a template to activate for this project. Templates provide pre-configured workflows with user interfaces.",
+      "search": "Search templates",
+      "search_placeholder": "Search by name or description...",
+      "no_templates": "No templates found",
+      "configure_scope": "Configure Data Scopes",
+      "scope_description": "Choose where data from each output should be stored. Project scope persists across all sessions, while session scope is temporary.",
+      "scope": "Scope",
+      "no_output_ports": "This template has no configurable output ports",
+      "quick_scope": "Set all ports to",
+      "activate": "Activate Template"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "select_or_create": "Select or Create a Session",
+      "description": "Choose an existing session or create a new one to start interacting with this template.",
+      "new": "New Session",
+      "runtime": "Runtime",
+      "empty": "No sessions yet",
+      "start_first": "Start a new session to begin",
+      "session": "Session",
+      "enter_name": "Enter session name",
+      "rename": "Rename session",
+      "delete": "Delete session",
+      "confirm_delete": "Delete this session?",
+      "confirm_delete_message": "This action cannot be undone. All session data will be lost.",
+      "created": "Created",
+      "created_at": "Created at",
+      "created_a": "Created at",
+      "admin_data": {
+        "title": "Data Map",
+        "no_bindings": "No UI bindings are configured for this runtime.",
+        "no_component_bindings": "This component has no data bindings.",
+        "select_binding": "Select a binding to inspect its runtime payload.",
+        "property": "Component Property",
+        "workflow_path": "Workflow Path",
+        "source": "Scope Source",
+        "value_type": "Value Type",
+        "value": "Resolved Value",
+        "unscoped": "Not Scoped",
+        "source_session": "Session Context",
+        "source_project": "Project Context",
+        "source_both": "Session + Project Context",
+        "source_unknown": "Unknown / Unmapped",
+        "no_value": "No value",
+        "empty_string": "(empty string)",
+        "array_items": "Array ({{count}} items)",
+        "object_keys": "Object ({{count}} keys)"
+      }
+    },
+    "status": {
+      "idle": "Ready",
+      "running": "Running",
+      "completed": "Completed",
+      "error": "Error"
+    },
+    "scope": {
+      "project": "Project",
+      "session": "Session",
+      "both": "Both"
+    },
+    "layout": {
+      "chat_with_files": "Chat with Files",
+      "standalone_single": "Single Component",
+      "standalone_tabs": "Tabbed Components",
+      "comparison_view": "Comparison View",
+      "dashboard": "Dashboard",
+      "custom": "Custom Layout",
+      "custom_description": "Custom component arrangement"
+    },
+    "components": {
+      "chat": "Chat",
+      "file_uploader": "File Uploader",
+      "result_viewer": "Result Viewer",
+      "text_input": "Text Input",
+      "document_list": "Document List",
+      "comparison_panel": "Comparison Panel",
+      "data_table": "Data Table",
+      "chart": "Chart"
+    },
+    "comparison": {
+      "left": "Left Panel",
+      "right": "Right Panel"
+    },
+    "execution": {
+      "start": "Start Execution",
+      "stop": "Stop Execution",
+      "reset": "Reset",
+      "view_results": "View Results"
+    },
+    "assigned-success": "Template '{{name}}' activated successfully",
+    "removed-success": "Template removed successfully",
+    "confirm-remove-title": "Remove Template",
+    "confirm-remove-message": "Are you sure you want to remove '{{name}}' from this project? This will remove all associated sessions.",
+    "scopes": {
+      "title": "Configure Data Scopes",
+      "ports": "ports",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "intermediates": "Intermediate Data",
+      "scope": "Scope",
+      "collection": "Collection Name",
+      "collection_placeholder": "e.g., project_docs",
+      "session": "Session Only",
+      "project": "Project-Wide",
+      "both": "Both Session & Project",
+      "no_ports": "No data ports to configure",
+      "updated_success": "Data scopes updated successfully"
+    },
+    "status": {
+      "idle": "Ready",
+      "running": "Running",
+      "completed": "Completed",
+      "error": "Error",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "published": "Published",
+      "draft": "Draft"
+    },
+    "tab_title": "Templates",
+    "run_templates": "Run Templates",
+    "builder": {
+      "title": "Template Builder",
+      "create_title": "Create Template Workflow",
+      "edit_title": "Edit Template Workflow",
+      "save_draft": "Save as Draft",
+      "publish": "Publish",
+      "published_success": "Template published successfully!",
+      "saved_success": "Template saved as draft",
+      "save_error": "Error saving template. Please try again.",
+      "step1_label": "Basic Info",
+      "step2_label": "Select Composites",
+      "step3_label": "Layout",
+      "step4_label": "UI Components",
+      "step5_label": "Data Scope",
+      "step1_title": "Basic Information",
+      "step1_subtitle": "Enter the template name and description",
+      "step2_title": "Select Composites",
+      "step2_subtitle": "Choose the composite workflows to include in this template",
+      "step3_title": "Layout Configuration",
+      "step3_subtitle": "Choose how your template will be presented to users",
+      "step4_title": "UI Components",
+      "step4_subtitle": "Configure the user interface components",
+      "step5_title": "Data Scope Configuration",
+      "step5_subtitle": "Define where each data port stores its data - session (temporary) or project (persistent and shareable)",
+      "name": "Template Name",
+      "name_placeholder": "e.g., Sales Assistant Pro",
+      "description": "Description",
+      "description_placeholder": "Describe what this template does...",
+      "available_composites": "Available Composites",
+      "available_composites_hint": "Click to add published composite workflows",
+      "no_published_composites": "No published composites available. Create and publish composites first.",
+      "selected_composites": "Selected Composites",
+      "selected_composites_hint": "Drag to reorder, click X to remove",
+      "no_composites_selected": "Click composites from the left panel to add them",
+      "composite_already_added": "This composite is already added to the template",
+      "presentation_pattern": "Presentation Pattern",
+      "layout_type": "Layout Type",
+      "preview": "Preview",
+      "add_component": "Add Component",
+      "suggested": "Suggested Components",
+      "no_components": "No UI components added yet. Add components to configure the user interface.",
+      "scope": "Scope",
+      "set_all": "Set All",
+      "show_data_flow": "Show data flow visualization in runtime UI",
+      "input_ports": "Input Data",
+      "output_ports": "Output Data",
+      "intermediate_data": "Intermediate Connections",
+      "storage_name": "Storage Name",
+      "storage_name_placeholder": "e.g., project_documents",
+      "shareable": "Shareable between projects",
+      "no_data_ports": "No data ports to configure",
+      "add_composites_first": "Add composite workflows in Step 2 to configure data scope",
+      "validation_error": "Please fill in all required fields",
+      "select_composites_error": "Please select at least one composite",
+      "form_incomplete": "Form incomplete",
+      "fill_basic_info": "Please fill in the basic template information"
+    },
+    "canvas": {
+      "page_title": "Template Builder - {{name}}",
+      "create_title": "Create Template Workflow",
+      "edit_title": "Edit Template Workflow",
+      "reset_view": "Reset View",
+      "basic_info": "Basic Information",
+      "auto_session": "Auto-sync session",
+      "auto_session_hint": "Automatically sync data between session storage and composite ports",
+      "composites": "Composites",
+      "no_composites": "No published composites. Create composites in the Composite Builder first.",
+      "storage": "Storage",
+      "context": "Context Storage",
+      "ui_components": "UI Components",
+      "no_items": "No items available",
+      "legend": "Legend",
+      "composite_flow": "Composite",
+      "session_context": "Session Context",
+      "project_context": "Project Context",
+      "session_flow": "Session storage flow",
+      "ui_binding": "UI binding",
+      "hide_palette": "Hide palette",
+      "show_palette": "Show palette",
+      "drag_hint_title": "Drag composites onto the canvas",
+      "drag_hint_desc": "Drag composite workflows from the palette and connect their ports to context storage nodes",
+      "add_composite": "Add at least one composite workflow",
+      "context_exists": "This context node already exists on canvas",
+      "cannot_delete_context": "Context storage nodes cannot be deleted",
+      "session_exists": "Session storage already exists on canvas",
+      "cannot_delete_session": "Cannot delete session storage node",
+      "help_text": "Build your template visually:",
+      "help_step1": "Drag composites from the palette onto the canvas",
+      "help_step2": "Connect composite outputs to Context Storage to persist data",
+      "help_step3": "Connect context data to composite inputs for data flow",
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "no_inputs": "No inputs",
+      "no_outputs": "No outputs",
+      "no_ports": "No exposed ports",
+      "session_desc": "Temporary data within current session",
+      "project_desc": "Persistent data shared across all sessions",
+      "stored_data": "Stored Data",
+      "no_stored_data": "Connect composite outputs to store data",
+      "store": "Store",
+      "retrieve": "Retrieve",
+      "store_tooltip": "Connect output ports to store data",
+      "retrieve_tooltip": "Connect to input ports to use stored data",
+      "connect_outputs": "Connect Outputs Here",
+      "store_here": "Store Data",
+      "store_hint": "Connect composite output ports here to store their data in this context",
+      "session_scope": "Session Scope",
+      "project_scope": "Project Scope",
+      "session_scope_hint": "Data persists only during the current session and is cleared when the session ends",
+      "project_scope_hint": "Data persists across all sessions and is shared with all project members",
+      "session_hint": "Connect composite outputs here to persist them across sessions",
+      "context_default_info": "Session and Project Context nodes are automatically added to your canvas. Drag composites from above to connect them.",
+      "drop_files": "Drop files here",
+      "query": "Query",
+      "history": "History",
+      "response": "Response",
+      "messages": "Messages",
+      "files": "Files",
+      "metadata": "Metadata",
+      "data": "Data",
+      "format": "Format",
+      "value": "Value",
+      "chat_query_tooltip": "User message input",
+      "chat_history_tooltip": "Chat history for context",
+      "chat_response_tooltip": "AI response to display",
+      "chat_messages_tooltip": "Message history to display",
+      "files_tooltip": "Uploaded files output",
+      "metadata_tooltip": "File metadata output",
+      "data_tooltip": "Data to display",
+      "format_tooltip": "Display format (json, text, html)",
+      "value_tooltip": "Text input value"
     }
   },
   "system_prompt": "System prompt",

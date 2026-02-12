@@ -110,11 +110,11 @@ export interface NodeDetailsDialogData {
     </div>
   `,
     styles: [`
-    .dialog-title { display:flex; align-items:center; gap:8px; padding: 15px;}
+    :host { display: block; }
+    .dialog-title { display:flex; align-items:center; gap:8px; }
     .title-form { flex: 1; }
-    .dialog-content { padding: 8px 16px 16px; box-sizing: border-box; }
     .badges { display:flex; gap:6px; margin-bottom:8px; }
-    .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, #fff); }
+    .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, transparent); }
     .ports { display:flex; gap:12px; margin: 0 0 12px; }
     .ports-label { font-weight: 600; margin-bottom:4px; }
     .port-chip { padding:4px 8px; border-radius:8px; background: color-mix(in srgb, var(--mat-neutral) 18%, transparent); }
@@ -126,9 +126,6 @@ export interface NodeDetailsDialogData {
     .port-form app-field-host { min-width: 0; }
     .port-field-placeholder { min-height: 48px; }
     :host ::ng-deep .mat-mdc-tab-body-content { padding: 12px 4px 4px; box-sizing: border-box; }
-    :host ::ng-deep .mat-mdc-dialog-container .mat-mdc-dialog-surface { height: 100%; display: flex; flex-direction: column; }
-    :host ::ng-deep .mat-mdc-dialog-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    :host ::ng-deep .mat-mdc-dialog-actions { margin-top: auto; }
     :host ::ng-deep .mat-mdc-tab-group { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body-wrapper { flex: 1; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body { flex: 1; min-height: 0; }
@@ -152,11 +149,13 @@ export class NodeDetailsDialogComponent implements OnDestroy {
         return (this.data.portTypeOptions ?? []).length
             ? this.data.portTypeOptions
             : [
-                { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
-                { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
-                { value: 'json', label: 'workflow.dialog.port_type_options.json' },
-                { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
                 { value: 'string', label: 'workflow.dialog.port_type_options.string' },
+                { value: 'json', label: 'workflow.dialog.port_type_options.json' },
+                { value: 'file', label: 'workflow.dialog.port_type_options.file' },
+                { value: 'boolean', label: 'workflow.dialog.port_type_options.boolean' },
+                { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
+                { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
+                { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
             ];
     }
 
@@ -309,7 +308,7 @@ export class NodeDetailsDialogComponent implements OnDestroy {
                 label: 'workflow.dialog.port_type',
                 placeholder: 'workflow.dialog.port_type_placeholder',
                 helperText: 'workflow.dialog.port_type_help',
-                options: this.portTypeOptions.map(o => ({ label: o.label, value: o.value })),
+                options: this.portTypeOptions.map(o => ({ label: this.translate.instant(o.label), value: o.value })),
                 multiple: false,
                 required: true,
                 validators: [Validators.required],

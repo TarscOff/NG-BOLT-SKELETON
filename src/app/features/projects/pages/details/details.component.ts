@@ -26,19 +26,25 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ProjectsService } from '../../services/projects.service';
-import { FileItem, HistoryItem, Member, ArtifactsDataDto, ProjectDto, ProjectSessionDto, WorkflowItem } from '../../interfaces/project.model';
+import { FileItem, HistoryItem, Member, ArtifactsDataDto, ProjectDto, ProjectSessionDto, ProjectTemplateAssignment } from '../../interfaces/project.model';
 import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared';
-import { LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
+import { KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
+import { UserRole } from '@cadai/pxs-ng-core/enums';
 import { ConfirmDialogData, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateTime } from 'luxon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { Store } from '@ngrx/store';
-import { AppSelectors } from '@cadai/pxs-ng-core/store';
 import { FavoritesFacade } from '@shared/services/favorites.facade';
 import { FavoriteType } from '@store/interfaces/favorites.model';
+import { ProjectWorkflowsStore } from '../../data/project-workflows.store';
+import { TemplateWorkflowsStore } from '@features/workflows/templates/data/template-workflows.store';
+import { WorkflowsStore } from '@features/workflows/data/workflows.store';
+import { ProjectTemplateCanvasComponent } from '../../components/project-template-canvas/project-template-canvas.component';
+import { TemplateExecutionPanelComponent, TemplateExecutionConfig } from '../../components/template-execution-panel/template-execution-panel.component';
+import { TemplateWorkflow } from '@features/workflows/templates/interfaces/template-workflow.interface';
 
 @Component({
     selector: 'app-project-details',
@@ -62,10 +68,14 @@ import { FavoriteType } from '@store/interfaces/favorites.model';
         MatDividerModule,
         MatProgressBarModule,
         MatProgressSpinnerModule,
+        MatSlideToggleModule,
         SeoComponent,
         MatChipsModule,
-        MatExpansionModule
+        MatExpansionModule,
+        TemplateExecutionPanelComponent,
+        ProjectTemplateCanvasComponent,
     ],
+    providers: [WorkflowsStore], // Only WorkflowsStore needs to be provided (others are providedIn: 'root')
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectDetailsComponent implements OnInit, OnDestroy {
@@ -77,8 +87,10 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     private readonly toolbarService = inject(ToolbarActionsService);
     private readonly destroyRef = inject(DestroyRef);
     private readonly toast = inject(ToastService);
-    private readonly store = inject(Store);
     private readonly favoritesFacade = inject(FavoritesFacade);
+    private readonly projectWorkflowsStore = inject(ProjectWorkflowsStore);
+    private readonly templateWorkflowsStore = inject(TemplateWorkflowsStore);
+    private readonly keycloak = inject(KeycloakService);
     private dialog = inject(MatDialog);
 
     // State
@@ -86,16 +98,35 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     readonly error = signal<string | null>(null);
     readonly project = signal<ProjectDto | null>(null);
 
+    // Current project ID for store operations
+    private readonly currentProjectId = computed(() => this.project()?.project_id ?? '');
+
     // Computed URL for favorites
     private readonly currentUrl = computed(() => {
         const projectId = this.project()?.project_id;
         return projectId ? `/genai-projects/${projectId}` : null;
     });
 
-    // User role from store
-    readonly isAdmin$ = this.store
-        .select(AppSelectors.UserSelectors.selectUserRole)
-        .pipe(map(roles => roles?.includes('ROLE_admin') ?? false));
+    // Admin signal for template
+    readonly isAdmin = signal(false);
+
+    // ======== TEMPLATE WORKFLOWS (Tier 3) ========
+    
+    // Template assignments from store (reactive)
+    private readonly templateAssignmentsFromStore = signal<ProjectTemplateAssignment[]>([]);
+    private readonly templatesByIdFromStore = signal<Map<string, TemplateWorkflow>>(new Map());
+    private readonly templateSessionCounts = signal<Record<string, number>>({});
+    private readonly templateSessionCountSubscriptions = new Set<string>();
+    readonly templateAssignments = this.templateAssignmentsFromStore.asReadonly();
+    readonly templateAssignmentsCount = computed(() => this.templateAssignments().length);
+    readonly enabledTemplateAssignments = computed(() =>
+        this.templateAssignments().filter(t => t.enabled)
+    );
+    
+    // Enabled templates count (for the Run Templates tab)
+    readonly enabledTemplatesCount = computed(() =>
+        this.templateAssignments().filter(t => t.enabled).length
+    );
 
     // Files
     readonly files = signal<FileItem[]>([]);
@@ -200,6 +231,12 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
     constructor() {
         this.setupToolbarActions();
+        this.initAdminStatus();
+    }
+
+    private initAdminStatus(): void {
+        const { roles } = this.keycloak.getUserCtx();
+        this.isAdmin.set(roles.includes(UserRole.ROLE_admin));
     }
 
     ngOnInit(): void {
@@ -208,6 +245,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             this.router.navigate(['/projects']);
             return;
         }
+        this.subscribeToTemplates();
         this.loadProjectDetails(projectId);
     }
 
@@ -227,6 +265,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             }
 
             this.project.set(project);
+
+            // Subscribe to template assignments from the store (Tier 3 templates)
+            this.subscribeToTemplateAssignments(projectId);
 
             // Update toolbar with favorites after project is loaded
             this.updateToolbarWithFavorites();
@@ -888,9 +929,119 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         this.layoutService.setTitle(title);
     }
 
+    // ======== WORKFLOW MANAGEMENT (Admin only) ========
+
+    private subscribeToTemplates(): void {
+        this.templateWorkflowsStore.templates$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(templates => {
+                const map = new Map<string, TemplateWorkflow>();
+                templates.forEach(template => map.set(template.id, template));
+                this.templatesByIdFromStore.set(map);
+            });
+    }
+
+    // Subscribe to template assignments from the store
+    private subscribeToTemplateAssignments(projectId: string): void {
+        this.templateWorkflowsStore.selectAssignmentsByProject(projectId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(assignments => {
+                const hydratedAssignments = assignments.map(a => ({
+                    ...a,
+                    assignedAt: typeof a.assignedAt === 'string'
+                        ? DateTime.fromISO(a.assignedAt)
+                        : a.assignedAt,
+                    updatedAt: a.updatedAt && typeof a.updatedAt === 'string'
+                        ? DateTime.fromISO(a.updatedAt)
+                        : a.updatedAt,
+                })) as unknown as ProjectTemplateAssignment[];
+
+                this.templateAssignmentsFromStore.set(hydratedAssignments);
+                hydratedAssignments.forEach(assignment => this.subscribeToTemplateSessionCount(assignment.id));
+            });
+    }
+
+    private subscribeToTemplateSessionCount(assignmentId: string): void {
+        if (this.templateSessionCountSubscriptions.has(assignmentId)) {
+            return;
+        }
+
+        this.templateSessionCountSubscriptions.add(assignmentId);
+        this.templateWorkflowsStore.selectSessionsByAssignment(assignmentId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(sessions => {
+                this.templateSessionCounts.update(counts => ({
+                    ...counts,
+                    [assignmentId]: sessions.length,
+                }));
+            });
+    }
+
+    getTemplateById(templateId: string): TemplateWorkflow | null {
+        return this.templatesByIdFromStore().get(templateId) ?? null;
+    }
+
+    getTemplateSessionCount(assignmentId: string): number {
+        return this.templateSessionCounts()[assignmentId] ?? 0;
+    }
+
+    getTemplateExecutionConfig(
+        assignment: ProjectTemplateAssignment,
+        template: TemplateWorkflow
+    ): TemplateExecutionConfig {
+        return {
+            projectId: this.project()?.project_id ?? '',
+            assignment,
+            template,
+        };
+    }
+
+    getTemplateIcon(assignment: ProjectTemplateAssignment): string {
+        const template = this.getTemplateById(assignment.templateId);
+        if (!template) return 'hub';
+
+        const assignmentConfig = assignment.configuration as Record<string, unknown> | undefined;
+        const overrideTemplate = assignmentConfig?.['uiTemplate'] as Record<string, unknown> | undefined;
+        const overrideComponents = Array.isArray(overrideTemplate?.['components'])
+            ? overrideTemplate['components'] as Record<string, unknown>[]
+            : [];
+        const componentTypes = overrideComponents.length
+            ? overrideComponents
+                .map(component => typeof component['type'] === 'string' ? component['type'] : null)
+                .filter((type): type is string => !!type)
+            : template.uiTemplate.components.map(component => component.type);
+        const layout = typeof overrideTemplate?.['layout'] === 'string'
+            ? overrideTemplate['layout']
+            : template.uiTemplate.layout;
+
+        if (componentTypes.includes('chat')) {
+            if (componentTypes.includes('file-uploader') || componentTypes.includes('file-upload')) {
+                return 'smart_toy';
+            }
+            return 'chat';
+        }
+        if (componentTypes.includes('file-uploader') || componentTypes.includes('file-upload')) {
+            return 'upload_file';
+        }
+        if (componentTypes.includes('comparison-panel') || componentTypes.includes('compare')) {
+            return 'compare';
+        }
+
+        switch (layout) {
+            case 'chat-with-files':
+                return 'smart_toy';
+            case 'comparison-view':
+                return 'compare';
+            case 'dashboard':
+                return 'dashboard';
+            default:
+                return 'hub';
+        }
+    }
+
     // Trackers
     trackFile = (_: number, f: FileItem) => f.id;
-    trackWf = (_: number, w: WorkflowItem) => w.id;
     trackMem = (_: number, m: Member) => m.id;
     trackHist = (_: number, h: HistoryItem) => h.id;
+    trackTemplateAssignment = (_: number, assignment: ProjectTemplateAssignment) => assignment.id;
 }

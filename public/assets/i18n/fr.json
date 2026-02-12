@@ -12,6 +12,7 @@
   "TEAM_MEMBERS": "Membres de l'équipe",
   "add_favorite": "Ajouter aux favoris",
   "trigger_chat": "Déclencheur Chat",
+  "trigger_manual": "Déclencheur Manuel",
   "trigger_file_upload": "Déclencheur Upload de fichier",
   "trigger_webhook": "Déclencheur Webhook",
   "workflow": {
@@ -149,7 +150,9 @@
         "embeddings": "Embeddings",
         "json": "JSON",
         "collection": "Collection",
-        "string": "Texte"
+        "string": "Texte",
+        "file": "Fichier",
+        "boolean": "Booléen"
       }
     },
     "palette": {
@@ -211,6 +214,114 @@
       "update": "Mettre à jour"
     },
     "forms": {
+      "common": {
+        "llm_endpoint": {
+          "label": "Point de terminaison LLM",
+          "placeholder": "http://ollama:11434/api",
+          "helper": "L'URL du point de terminaison de l'API LLM."
+        },
+        "model": {
+          "label": "Modèle",
+          "placeholder": "ex. tinyllama",
+          "helper": "L'identifiant du modèle à utiliser."
+        },
+        "chromadb_url": {
+          "label": "URL ChromaDB",
+          "placeholder": "chromadb:8000",
+          "helper": "L'adresse du serveur ChromaDB."
+        },
+        "errors": {
+          "llm_endpoint_required": "Le point de terminaison LLM est requis",
+          "model_required": "Le modèle est requis",
+          "chromadb_url_required": "L'URL ChromaDB est requise"
+        }
+      },
+      "triggers": {
+        "errors": {
+          "max_chars_required": "Le nombre maximal de caractères est requis",
+          "positive_integer": "La valeur doit être un nombre supérieur à 0."
+        },
+        "common": {
+          "accepted_types": {
+            "label": "Types de fichiers acceptés",
+            "placeholder": "application/pdf,text/plain,...",
+            "helper": "Types MIME ou extensions, séparés par des virgules."
+          },
+          "max_file_size": {
+            "label": "Taille max fichier (octets)",
+            "placeholder": "10485760",
+            "helper": "Taille maximale autorisée par fichier."
+          },
+          "max_files": {
+            "label": "Nombre max de fichiers",
+            "placeholder": "5",
+            "helper": "Nombre maximal de fichiers acceptés."
+          }
+        },
+        "chat": {
+          "max_chars": {
+            "label": "Caractères max message",
+            "placeholder": "4000",
+            "helper": "Nombre maximum de caractères pour le message utilisateur."
+          },
+          "placeholder": {
+            "label": "Placeholder du champ",
+            "placeholder": "Tapez votre message...",
+            "helper": "Texte affiché avant la saisie utilisateur."
+          },
+          "enable_attachments": {
+            "label": "Activer les pièces jointes",
+            "helper": "Autorise l'envoi de fichiers depuis le chat."
+          }
+        },
+        "file_upload": {
+          "multiple": {
+            "label": "Autoriser plusieurs fichiers",
+            "helper": "Si désactivé, un seul fichier est autorisé."
+          }
+        },
+        "webhook": {
+          "accept_content_types": {
+            "label": "Content-types acceptés",
+            "placeholder": "application/json,text/plain,multipart/form-data",
+            "helper": "Content-types acceptés, séparés par des virgules."
+          },
+          "max_payload_size": {
+            "label": "Taille max payload (octets)",
+            "placeholder": "1048576",
+            "helper": "Taille maximale autorisée pour le payload webhook."
+          },
+          "parse_json": {
+            "label": "Parser automatiquement le JSON",
+            "helper": "Si activé, les payloads JSON sont parsés automatiquement."
+          }
+        },
+        "manual": {
+          "label": {
+            "label": "Libellé du déclencheur",
+            "placeholder": "Exécuter",
+            "helper": "Libellé du bouton ou de l'action manuelle."
+          },
+          "require_confirmation": {
+            "label": "Demander confirmation",
+            "helper": "Demande une confirmation avant l'exécution manuelle."
+          }
+        }
+      },
+      "chat": {
+        "system_prompt": {
+          "label": "Prompt système",
+          "placeholder": "Instructions pour l'assistant IA...",
+          "helper": "Définissez le comportement et la personnalité de l'IA."
+        },
+        "temperature": {
+          "label": "Température",
+          "helper": "Des valeurs plus élevées rendent la sortie plus créative mais moins prévisible."
+        },
+        "errors": {
+          "temperature_required": "La température est requise"
+        }
+      },
       "vector_store": {
         "options": {
           "azure_cosmos_db": "Azure Cosmos DB (vecteurs)",
@@ -423,8 +534,23 @@
   "collection_metadata": "Métadonnées de collection",
   "common": {
     "back": "Retour",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "edit": "Modifier",
     "home": "Accueil",
-    "signIn": "Se connecter"
+    "loading": "Chargement...",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "rename": "Renommer",
+    "save": "Enregistrer",
+    "search": "Rechercher",
+    "signIn": "Se connecter",
+    "update": "Mettre à jour"
+  },
+  "COMMON": {
+    "LOADING": "Chargement..."
   },
   "compareTpl": {
     "added": "Ajouté",
@@ -792,6 +918,34 @@
     "clearFilters": "Effacer les filtres",
     "create-first": "Créer votre premier projet",
     "create-new": "Nouveau Projet",
+    "wizard": {
+      "title": "Créer un Projet",
+      "subtitle": "Définissez les métadonnées puis concevez les vues runtime avec les templates de niveau 3.",
+      "steps": {
+        "metadata": "Métadonnées du Projet",
+        "design": "Conception du Projet"
+      },
+      "form": {
+        "name": "Nom du Projet",
+        "name_placeholder": "Entrez le nom du projet",
+        "name_required": "Le nom du projet est requis",
+        "description": "Description",
+        "description_placeholder": "Décrivez ce projet",
+        "metadata": "Tags",
+        "metadata_placeholder": "Tags séparés par des virgules",
+        "metadata_hint": "Exemple : ventes, interne, t1"
+      },
+      "preview_title": "Aperçu du Projet",
+      "design_help": "Glissez les templates et composants UI, puis reliez les ports pour le comportement runtime.",
+      "requirements": {
+        "metadata_invalid": "Complétez les métadonnées du projet avant de créer.",
+        "assign_template": "Assignez au moins un template pour continuer."
+      },
+      "assigned_templates": "template(s) assigné(s)",
+      "create": "Créer le Projet",
+      "assign_required": "Assignez au moins un template avant de créer le projet.",
+      "success": "Projet créé avec succès."
+    },
     "delete": {
       "confirm-message": "Êtes-vous sûr de vouloir supprimer le projet \"{{name}}\" ? Cette action est irréversible.",
       "confirm-title": "Confirmer la suppression",
@@ -841,9 +995,11 @@
       "tabs": {
         "chat": "Historique Chat",
         "compare": "Historique Comparaison",
+        "configuration": "Configuration",
         "extract": "Historique Extraction",
         "files": "Atéfacts",
         "members": "Membres",
+        "runtime": "Runtime",
         "sessions": "Mes Sessions",
         "summarize": "Historique Résumé",
         "workflows": "Workflows"
@@ -857,6 +1013,7 @@
       "yesterday": "Hier"
     },
     "error": {
+      "failed-to-create": "Échec de la création du projet",
       "delete-failed": "Échec de la suppression de {{title}}",
       "failed-to-create-session": "Échec de la création de la session",
       "failed-to-load": "Échec du chargement des détails du projet",
@@ -893,7 +1050,57 @@
       "artifacts-uploaded": "Artéfacts téléchargés avec succès"
     },
     "total": "Total",
-    "users": "Utilisateurs"
+    "users": "Utilisateurs",
+    "workflows": {
+      "tab-title": "Workflows",
+      "assigned-title": "Workflows Assignés",
+      "available-title": "Workflows Disponibles",
+      "no-assigned": "Aucun workflow assigné à ce projet",
+      "no-published": "Aucun workflow publié disponible",
+      "no-description": "Aucune description disponible",
+      "nodes": "nœuds",
+      "published": "Publié",
+      "draft": "Brouillon",
+      "assign": "Assigner",
+      "enable": "Activer le workflow",
+      "disable": "Désactiver le workflow",
+      "edit-config": "Modifier la configuration",
+      "preview": "Aperçu du workflow",
+      "preview-not-found": "Workflow introuvable pour l'aperçu",
+      "remove": "Retirer du projet",
+      "assigned-on": "Assigné le",
+      "pagination": "Pagination des workflows",
+      "assigned-success": "Workflow \"{{name}}\" assigné avec succès",
+      "updated-success": "Configuration du workflow mise à jour",
+      "removed-success": "Workflow retiré du projet",
+      "confirm-remove-title": "Retirer le Workflow",
+      "confirm-remove-message": "Êtes-vous sûr de vouloir retirer \"{{name}}\" de ce projet ?",
+      "config": {
+        "title": "Configurer le Workflow",
+        "edit-title": "Modifier la Configuration du Workflow",
+        "assign": "Assigner au Projet",
+        "output-scope-title": "Portée du Stockage des Sorties",
+        "output-scope-description": "Choisissez où les artéfacts et les sorties générées par ce workflow doivent être stockés",
+        "output-scope": {
+          "label": "Portée de Stockage",
+          "helper": "Détermine où les sorties du workflow sont enregistrées"
+        },
+        "scope": {
+          "project": {
+            "label": "Portée Projet",
+            "description": "Les sorties seront stockées au niveau du projet, accessibles dans toutes les sessions"
+          },
+          "session": {
+            "label": "Portée Session",
+            "description": "Les sorties seront stockées uniquement dans la session courante"
+          },
+          "both": {
+            "label": "Les Deux Portées",
+            "description": "Les sorties seront stockées aux niveaux projet et session"
+          }
+        }
+      }
+    }
   },
   "query_string": "Chaîne de requête",
   "quick_settings": "Paramètres rapides",
@@ -988,5 +1195,340 @@
   "toolbox": "Boite a outils",
   "untoggle": "Déplier",
   "user_prompt": "Prompt utilisateur",
-  "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d'un nœud (source), puis sur le port gauche d'un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options."
+  "workflow_help": "Faites glisser depuis la palette. Cliquez sur le port droit d'un nœud (source), puis sur le port gauche d'un autre nœud (cible) pour connecter. Cliquez avec le bouton droit sur les nœuds pour les options.",
+  "composites": {
+    "list": {
+      "title": "Workflows Composites",
+      "subtitle": "Gérez vos workflows composites de niveau 2 - blocs réutilisables pour les templates",
+      "view_templates": "Voir les Templates",
+      "sync_workflows": "Synchroniser depuis l'Éditeur",
+      "open_editor": "Ouvrir l'Éditeur de Workflows",
+      "tab_all": "Tous",
+      "tab_published": "Publiés",
+      "tab_draft": "Brouillons",
+      "search_placeholder": "Rechercher des composites...",
+      "info_title": "Comment fonctionnent les Composites",
+      "info_message": "Les composites sont créés à partir de workflows 'Réutilisables' dans l'Éditeur de Workflows. Marquez un workflow comme 'Réutilisable' et 'Public', puis synchronisez ici pour le convertir en composite utilisable dans les Templates.",
+      "empty_title": "Aucun composite pour le moment",
+      "empty_message": "Créez des workflows réutilisables dans l'Éditeur de Workflows, puis synchronisez-les ici pour les utiliser dans les Templates.",
+      "create_in_editor": "Créer dans l'Éditeur",
+      "sync_available": "Synchroniser {{count}} workflows",
+      "inputs": "entrées",
+      "outputs": "sorties",
+      "nodes": "nœuds",
+      "no_description": "Aucune description",
+      "view_in_editor": "Voir dans l'Éditeur",
+      "publish": "Publier",
+      "unpublish": "Dépublier",
+      "delete_confirm_title": "Supprimer le Composite",
+      "delete_confirm_message": "Êtes-vous sûr de vouloir supprimer '{{name}}' ? Les templates utilisant ce composite pourraient cesser de fonctionner.",
+      "deleted_success": "Composite supprimé",
+      "published_success": "Composite publié",
+      "unpublished_success": "Composite dépublié",
+      "sync_success": "{{count}} workflows synchronisés avec succès en composites",
+      "already_synced": "Tous les workflows sont déjà synchronisés",
+      "no_workflows_to_sync": "Aucun workflow réutilisable disponible à synchroniser",
+      "sync_error": "Erreur lors de la synchronisation des workflows. Veuillez réessayer.",
+      "workflows_available_for_sync": "{{count}} workflow(s) disponible(s) à synchroniser",
+      "sync_now": "Synchroniser maintenant",
+      "no_source_workflow": "Workflow source introuvable"
+    }
+  },
+  "templates": {
+    "loading": "Chargement des templates...",
+    "loading_template": "Chargement du template...",
+    "no_enabled": "Aucun template activé",
+    "enable_hint": "Activez les templates depuis les paramètres du projet pour commencer à utiliser les workflows",
+    "no_description": "Aucune description disponible",
+    "no_results": "Aucun résultat disponible",
+    "assigned": "assigné(s)",
+    "view_template": "Voir le Template",
+    "configure": "Configurer",
+    "disable": "Désactiver",
+    "enable": "Activer",
+    "project_canvas": {
+      "title": "Templates du Projet",
+      "toolbox": "Boîte à outils",
+      "available_templates": "Templates Disponibles",
+      "no_templates": "Aucun template disponible",
+      "ui_components": "Composants UI",
+      "template_node": "Template",
+      "ui_node": "Composant UI",
+      "search_placeholder": "Rechercher...",
+      "drag_hint_title": "Glisser-Déposer des Templates",
+      "drag_hint_desc": "Glissez des templates et des composants UI depuis la boîte à outils pour construire votre workflow de projet"
+    },
+    "list": {
+      "title": "Templates de Workflows",
+      "subtitle": "Gérez vos templates de workflows de niveau 3 qui fournissent des interfaces utilisateur complètes",
+      "create_new": "Créer un Template",
+      "manage_composites": "Gérer les Composites",
+      "tab_all": "Tous",
+      "tab_published": "Publiés",
+      "tab_draft": "Brouillons",
+      "search_placeholder": "Rechercher des templates...",
+      "empty_title": "Aucun template pour le moment",
+      "empty_message": "Créez votre premier template de workflow pour fournir une interface utilisateur complète pour vos composites.",
+      "create_first": "Créer le Premier Template",
+      "composites": "composites",
+      "components": "composants",
+      "no_description": "Aucune description",
+      "publish": "Publier",
+      "unpublish": "Dépublier",
+      "delete_confirm_title": "Supprimer le Template",
+      "delete_confirm_message": "Êtes-vous sûr de vouloir supprimer '{{name}}' ? Cette action est irréversible.",
+      "deleted_success": "Template supprimé",
+      "published_success": "Template publié",
+      "unpublished_success": "Template dépublié",
+      "duplicated_success": "Template dupliqué"
+    },
+    "selection": {
+      "title": "Activer le Template",
+      "select_description": "Choisissez un template à activer pour ce projet. Les templates fournissent des workflows pré-configurés avec des interfaces utilisateur.",
+      "search": "Rechercher des templates",
+      "search_placeholder": "Rechercher par nom ou description...",
+      "no_templates": "Aucun template trouvé",
+      "configure_scope": "Configurer les Portées de Données",
+      "scope_description": "Choisissez où stocker les données de chaque sortie. La portée projet persiste entre toutes les sessions, tandis que la portée session est temporaire.",
+      "scope": "Portée",
+      "no_output_ports": "Ce template n'a pas de ports de sortie configurables",
+      "quick_scope": "Définir tous les ports sur",
+      "activate": "Activer le Template"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "select_or_create": "Sélectionner ou Créer une Session",
+      "description": "Choisissez une session existante ou créez-en une nouvelle pour commencer à interagir avec ce template.",
+      "new": "Nouvelle Session",
+      "runtime": "Exécution",
+      "empty": "Aucune session pour le moment",
+      "start_first": "Démarrez une nouvelle session pour commencer",
+      "session": "Session",
+      "enter_name": "Entrez le nom de la session",
+      "rename": "Renommer la session",
+      "delete": "Supprimer la session",
+      "confirm_delete": "Supprimer cette session ?",
+      "confirm_delete_message": "Cette action est irréversible. Toutes les données de la session seront perdues.",
+      "created": "Créé",
+      "created_at": "Créé le",
+      "created_a": "Créé le",
+      "admin_data": {
+        "title": "Carte des Données",
+        "no_bindings": "Aucune liaison UI n'est configurée pour ce runtime.",
+        "no_component_bindings": "Ce composant n'a aucune liaison de données.",
+        "select_binding": "Sélectionnez une liaison pour inspecter son payload runtime.",
+        "property": "Propriété du Composant",
+        "workflow_path": "Chemin Workflow",
+        "source": "Source de Portée",
+        "value_type": "Type de Valeur",
+        "value": "Valeur Résolue",
+        "unscoped": "Non configuré",
+        "source_session": "Contexte Session",
+        "source_project": "Contexte Projet",
+        "source_both": "Contexte Session + Projet",
+        "source_unknown": "Inconnu / Non mappé",
+        "no_value": "Aucune valeur",
+        "empty_string": "(chaîne vide)",
+        "array_items": "Tableau ({{count}} éléments)",
+        "object_keys": "Objet ({{count}} clés)"
+      }
+    },
+    "status": {
+      "idle": "Prêt",
+      "running": "En cours",
+      "completed": "Terminé",
+      "error": "Erreur",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "published": "Publié",
+      "draft": "Brouillon"
+    },
+    "scope": {
+      "project": "Projet",
+      "session": "Session",
+      "both": "Les deux"
+    },
+    "layout": {
+      "chat_with_files": "Chat avec Fichiers",
+      "standalone_single": "Composant Unique",
+      "standalone_tabs": "Composants en Onglets",
+      "comparison_view": "Vue de Comparaison",
+      "dashboard": "Tableau de Bord",
+      "custom": "Disposition Personnalisée",
+      "custom_description": "Arrangement personnalisé des composants"
+    },
+    "components": {
+      "chat": "Chat",
+      "file_uploader": "Téléverseur de Fichiers",
+      "result_viewer": "Visionneuse de Résultats",
+      "text_input": "Entrée Texte",
+      "document_list": "Liste de Documents",
+      "comparison_panel": "Panneau de Comparaison",
+      "data_table": "Table de Données",
+      "chart": "Graphique"
+    },
+    "comparison": {
+      "left": "Panneau Gauche",
+      "right": "Panneau Droit"
+    },
+    "execution": {
+      "start": "Démarrer l'Exécution",
+      "stop": "Arrêter l'Exécution",
+      "reset": "Réinitialiser",
+      "view_results": "Voir les Résultats"
+    },
+    "assigned-success": "Template '{{name}}' activé avec succès",
+    "removed-success": "Template supprimé avec succès",
+    "confirm-remove-title": "Supprimer le Template",
+    "confirm-remove-message": "Êtes-vous sûr de vouloir supprimer '{{name}}' de ce projet ? Cela supprimera toutes les sessions associées.",
+    "scopes": {
+      "title": "Configurer les Portées de Données",
+      "ports": "ports",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "intermediates": "Données Intermédiaires",
+      "scope": "Portée",
+      "collection": "Nom de Collection",
+      "collection_placeholder": "ex: docs_projet",
+      "session": "Session Uniquement",
+      "project": "À l'échelle du Projet",
+      "both": "Session & Projet",
+      "no_ports": "Aucun port de données à configurer",
+      "updated_success": "Portées de données mises à jour avec succès"
+    },
+    "tab_title": "Templates",
+    "run_templates": "Exécuter Templates",
+    "builder": {
+      "title": "Constructeur de Template",
+      "create_title": "Créer un Template de Workflow",
+      "edit_title": "Modifier le Template de Workflow",
+      "save_draft": "Enregistrer comme Brouillon",
+      "publish": "Publier",
+      "published_success": "Template publié avec succès !",
+      "saved_success": "Template enregistré comme brouillon",
+      "save_error": "Erreur lors de l'enregistrement du template. Veuillez réessayer.",
+      "step1_label": "Infos de Base",
+      "step2_label": "Sélectionner les Composites",
+      "step3_label": "Disposition",
+      "step4_label": "Composants UI",
+      "step5_label": "Portée des Données",
+      "step1_title": "Informations de Base",
+      "step1_subtitle": "Entrez le nom et la description du template",
+      "step2_title": "Sélectionner les Composites",
+      "step2_subtitle": "Choisissez les workflows composites à inclure dans ce template",
+      "step3_title": "Configuration de la Disposition",
+      "step3_subtitle": "Choisissez comment votre template sera présenté aux utilisateurs",
+      "step4_title": "Composants UI",
+      "step4_subtitle": "Configurez les composants de l'interface utilisateur",
+      "step5_title": "Configuration de la Portée des Données",
+      "step5_subtitle": "Définissez où chaque port de données stocke ses données - session (temporaire) ou projet (persistant et partageable)",
+      "name": "Nom du Template",
+      "name_placeholder": "ex., Assistant Commercial Pro",
+      "description": "Description",
+      "description_placeholder": "Décrivez ce que fait ce template...",
+      "available_composites": "Composites Disponibles",
+      "available_composites_hint": "Cliquez pour ajouter des workflows composites publiés",
+      "no_published_composites": "Aucun composite publié disponible. Créez et publiez d'abord des composites.",
+      "selected_composites": "Composites Sélectionnés",
+      "selected_composites_hint": "Glissez pour réordonner, cliquez X pour supprimer",
+      "no_composites_selected": "Cliquez sur les composites du panneau de gauche pour les ajouter",
+      "composite_already_added": "Ce composite est déjà ajouté au template",
+      "presentation_pattern": "Modèle de Présentation",
+      "layout_type": "Type de Disposition",
+      "preview": "Aperçu",
+      "add_component": "Ajouter un Composant",
+      "suggested": "Composants Suggérés",
+      "no_components": "Aucun composant UI ajouté. Ajoutez des composants pour configurer l'interface utilisateur.",
+      "scope": "Portée",
+      "set_all": "Tout Définir",
+      "show_data_flow": "Afficher la visualisation du flux de données dans l'interface d'exécution",
+      "input_ports": "Données d'Entrée",
+      "output_ports": "Données de Sortie",
+      "intermediate_data": "Connexions Intermédiaires",
+      "storage_name": "Nom de Stockage",
+      "storage_name_placeholder": "ex., documents_projet",
+      "shareable": "Partageable entre projets",
+      "no_data_ports": "Aucun port de données à configurer",
+      "add_composites_first": "Ajoutez des workflows composites à l'étape 2 pour configurer la portée des données",
+      "validation_error": "Veuillez remplir tous les champs requis",
+      "select_composites_error": "Veuillez sélectionner au moins un composite",
+      "form_incomplete": "Formulaire incomplet",
+      "fill_basic_info": "Veuillez renseigner les informations de base du template"
+    },
+    "canvas": {
+      "page_title": "Créateur de Template - {{name}}",
+      "create_title": "Créer un Template Workflow",
+      "edit_title": "Modifier le Template Workflow",
+      "reset_view": "Réinitialiser la Vue",
+      "basic_info": "Informations de base",
+      "auto_session": "Synchronisation automatique",
+      "auto_session_hint": "Synchroniser automatiquement les données entre le stockage de session et les ports composites",
+      "composites": "Composites",
+      "no_composites": "Aucun composite publié. Créez des composites dans le Créateur de Composites d'abord.",
+      "storage": "Stockage",
+      "context": "Stockage Contextuel",
+      "ui_components": "Composants UI",
+      "no_items": "Aucun élément disponible",
+      "legend": "Légende",
+      "composite_flow": "Composite",
+      "session_context": "Contexte de Session",
+      "project_context": "Contexte de Projet",
+      "session_flow": "Flux de stockage de session",
+      "ui_binding": "Liaison UI",
+      "hide_palette": "Masquer la palette",
+      "show_palette": "Afficher la palette",
+      "drag_hint_title": "Glissez des composites sur le canevas",
+      "drag_hint_desc": "Glissez des workflows composites depuis la palette et connectez leurs ports aux nœuds de stockage contextuel",
+      "add_composite": "Ajoutez au moins un workflow composite",
+      "context_exists": "Ce nœud de contexte existe déjà sur le canevas",
+      "cannot_delete_context": "Les nœuds de stockage contextuel ne peuvent pas être supprimés",
+      "session_exists": "Le stockage de session existe déjà sur le canevas",
+      "cannot_delete_session": "Impossible de supprimer le nœud de stockage de session",
+      "help_text": "Construisez votre template visuellement :",
+      "help_step1": "Glissez des composites de la palette vers le canevas",
+      "help_step2": "Connectez les sorties des composites au Stockage Contextuel pour persister les données",
+      "help_step3": "Connectez les données contextuelles aux entrées des composites pour le flux de données",
+      "inputs": "Entrées",
+      "outputs": "Sorties",
+      "no_inputs": "Aucune entrée",
+      "no_outputs": "Aucune sortie",
+      "no_ports": "Aucun port exposé",
+      "session_desc": "Données temporaires dans la session actuelle",
+      "project_desc": "Données persistantes partagées entre toutes les sessions",
+      "stored_data": "Données stockées",
+      "no_stored_data": "Connectez les sorties des composites pour stocker des données",
+      "store": "Stocker",
+      "retrieve": "Récupérer",
+      "store_tooltip": "Connectez les ports de sortie pour stocker les données",
+      "retrieve_tooltip": "Connectez aux ports d'entrée pour utiliser les données stockées",
+      "connect_outputs": "Connectez les Sorties Ici",
+      "store_here": "Stocker les Données",
+      "store_hint": "Connectez les ports de sortie des composites ici pour stocker leurs données dans ce contexte",
+      "session_scope": "Portée de Session",
+      "project_scope": "Portée de Projet",
+      "session_scope_hint": "Les données persistent uniquement pendant la session actuelle et sont effacées à la fin de la session",
+      "project_scope_hint": "Les données persistent entre toutes les sessions et sont partagées avec tous les membres du projet",
+      "session_hint": "Connectez les sorties des composites ici pour les persister entre les sessions",
+      "context_default_info": "Les nœuds de Contexte Session et Projet sont automatiquement ajoutés à votre canevas. Glissez des composites ci-dessus pour les connecter.",
+      "drop_files": "Déposez les fichiers ici",
+      "query": "Requête",
+      "history": "Historique",
+      "response": "Réponse",
+      "messages": "Messages",
+      "files": "Fichiers",
+      "metadata": "Métadonnées",
+      "data": "Données",
+      "format": "Format",
+      "value": "Valeur",
+      "chat_query_tooltip": "Saisie du message utilisateur",
+      "chat_history_tooltip": "Historique du chat pour le contexte",
+      "chat_response_tooltip": "Réponse IA à afficher",
+      "chat_messages_tooltip": "Historique des messages à afficher",
+      "files_tooltip": "Sortie des fichiers téléversés",
+      "metadata_tooltip": "Sortie des métadonnées des fichiers",
+      "data_tooltip": "Données à afficher",
+      "format_tooltip": "Format d'affichage (json, texte, html)",
+      "value_tooltip": "Valeur de la saisie de texte"
+    }
+  }
 }
