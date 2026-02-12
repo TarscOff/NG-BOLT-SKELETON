@@ -141,12 +141,9 @@
       "add_output": "Add output",
       "port_name": "Name",
       "port_name_placeholder": "Port name",
-      "port_name_help": "Give this port a clear, unique label.",
       "port_type": "Type",
       "port_type_placeholder": "Select a type",
-      "port_type_help": "Used to validate compatibility between connections.",
       "required": "Required",
-      "port_required_help": "Required ports must be connected before running.",
       "port_type_options": {
         "query_string": "Query string",
         "embeddings": "Embeddings",

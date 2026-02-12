@@ -754,6 +754,77 @@ private arePortTypesCompatible(sourceType?: string, targetType?: string): boolea
 - Provides clear feedback for debugging
 - Aligns with industry standards (n8n-inspired)
 
+### Node Details Dialog with Logs Panels (Feb 2026)
+
+**Files touched:**
+- `src/app/features/workflows/sub/action-node/node-details-dialog/node-details-dialog.component.ts`
+- `src/app/features/workflows/sub/action-node/action-node.component.ts`
+
+**Changes:**
+
+1. **Logs Panel Integration**
+   - Added dedicated logs expansion panels to node details dialog
+   - Logs panels appear in both inputs and outputs sections (left and right columns)
+   - Each section includes collapsible logs expansion panel with consistent styling
+   - Logs styled to match their respective section colors (accent for inputs, error for outputs)
+
+2. **Dialog Layout Enhancement**
+   - Three-column layout: inputs (left) | tabs (center) | outputs (right)
+   - Inputs section: Port list + logs panel with accent color theming
+   - Outputs section: Port list + logs panel with error color theming
+   - Both sections use `mat-expansion-panel` with custom styling
+   - Empty state shows placeholder: "No logs available yet"
+
+3. **Visual Design**
+   - Color-coded expansion panels using `color-mix()` for transparency:
+     - Inputs: Accent color variations (`--mat-accent`)
+     - Outputs: Error color variations (`--mat-error`)
+   - Monospace logs content area with rounded corners
+   - Consistent spacing and padding throughout
+   - Port count badges with matching color schemes
+
+4. **Component Structure**
+   - Logs sections integrated into main dialog template
+   - Translation keys: `workflow.runPanel.logs`, `workflow.runPanel.no_logs`
+   - Expansion panels default to expanded state for immediate visibility
+   - Logs content area prepared for future real-time execution log streaming
+
+**Technical Details:**
+
+```typescript
+// Logs panel structure (inputs section)
+<mat-expansion-panel [expanded]="true" class="custom-expansion-panel">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      <div class="logs-header">{{ 'workflow.runPanel.logs' | translate }}</div>
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <div class="logs-content">
+    <p class="logs-placeholder">{{ 'workflow.runPanel.no_logs' | translate }}</p>
+  </div>
+</mat-expansion-panel>
+```
+
+**Styling highlights:**
+```scss
+.node-inputs .custom-expansion-panel { 
+  background: color-mix(in srgb, var(--mat-accent) 8%, var(--md-sys-color-surface-container)); 
+  border: 1px solid color-mix(in srgb, var(--mat-accent) 30%, transparent);
+}
+
+.node-outputs .custom-expansion-panel { 
+  background: color-mix(in srgb, var(--mat-error) 8%, var(--md-sys-color-surface-container)); 
+  border: 1px solid color-mix(in srgb, var(--mat-error) 30%, transparent);
+}
+```
+
+**Future Enhancements:**
+- Real-time log streaming during workflow execution
+- Log filtering and search functionality
+- Log level indicators (info, warning, error)
+- Export logs functionality
+- Linkable log entries to execution timeline
+
 ### Port Editing Persistence (Jan 2026)
 
 **Files touched:**

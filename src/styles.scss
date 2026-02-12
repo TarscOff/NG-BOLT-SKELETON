@@ -186,3 +186,9 @@ a[mat-mini-fab] {
     opacity: 1 !important;
   }
 }
+
+.action-node-dialog {
+  .mdc-dialog__surface {
+      border-radius: 0 !important;
+  }
+}

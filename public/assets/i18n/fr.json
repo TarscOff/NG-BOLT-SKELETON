@@ -140,12 +140,9 @@
       "add_output": "Ajouter une sortie",
       "port_name": "Nom",
       "port_name_placeholder": "Nom du port",
-      "port_name_help": "Donnez un libellé clair et unique à ce port.",
       "port_type": "Type",
       "port_type_placeholder": "Sélectionner un type",
-      "port_type_help": "Utilisé pour valider la compatibilité des connexions.",
       "required": "Obligatoire",
-      "port_required_help": "Les ports obligatoires doivent être connectés avant d’exécuter.",
       "port_type_options": {
         "query_string": "Chaîne de requête",
         "embeddings": "Embeddings",

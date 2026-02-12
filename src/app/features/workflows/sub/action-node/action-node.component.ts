@@ -677,11 +677,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
     this.dialog.open(NodeDetailsDialogComponent, {
       data: dialogData,
-      width: '90vw',
-      maxWidth: '90vw',
-      height: '90vh',
-      maxHeight: '90vh',
-      panelClass: 'wf-node-dialog',
+      width: '100vw',
+      maxWidth: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      panelClass: ['wf-node-dialog', 'full-window-dialog', 'action-node-dialog'],
       autoFocus: false,
     });
   }
@@ -734,6 +734,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   }
 
   private computeDialogPorts(): WorkflowPorts {
+    // If portsOverride exists (from previous dialog changes), use it directly
+    if (this.portsOverride) {
+      return this.portsOverride;
+    }
+    
     const original = (this.model as Record<string, unknown> | null) ?? null;
     const base: WorkflowPorts = this.safeModel.ports ?? { inputs: [], outputs: [] };
 
