@@ -858,7 +858,19 @@ export class TemplateExecutionPanelComponent implements OnInit, OnDestroy {
     private readonly dialog = inject(MatDialog);
     private readonly destroy$ = new Subject<void>();
 
-    @Input({ required: true }) config!: TemplateExecutionConfig;
+    private readonly configSignal = signal<TemplateExecutionConfig | null>(null);
+
+    @Input({ required: true }) set config(value: TemplateExecutionConfig) {
+        this.configSignal.set(value);
+    }
+
+    get config(): TemplateExecutionConfig {
+        const config = this.configSignal();
+        if (!config) {
+            throw new Error('TemplateExecutionPanelComponent: config input is required.');
+        }
+        return config;
+    }
 
     @Output() sessionCreated = new EventEmitter<TemplateExecutionSession>();
     @Output() sessionDeleted = new EventEmitter<string>();
