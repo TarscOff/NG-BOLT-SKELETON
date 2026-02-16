@@ -2,11 +2,47 @@ import { ActionDefinitionLite, PortsMap, PortsMapValue, WorkflowEdge, WorkflowNo
 
 /** ---------- Ports helpers (single source) ---------- */
 
+const PORT_TYPE_BY_REFERENCE: Record<string, string> = {
+  user_prompt: 'string',
+  system_prompt: 'string',
+  query_string: 'string',
+  message: 'string',
+  payload_text: 'string',
+  filter_document_publication_datetime: 'string',
+  llm_response: 'string',
+  trigger: 'boolean',
+  file: 'file',
+  source_file: 'file',
+  payload_file: 'file',
+  files: 'file[]',
+  collection: 'collection',
+  collection_out: 'collection',
+  embeddings: 'list[float]',
+  chat_history: 'json',
+  context: 'string',
+  langchain_documents: 'langchain_documents',
+  embedded_langchain_documents: 'embedded_langchain_documents',
+};
+
+function normalizeReferenceKey(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+}
+
+export function inferPortTypeFromReference(reference: string | undefined): string | undefined {
+  if (!reference) return undefined;
+  const normalized = normalizeReferenceKey(reference);
+  if (!normalized) return undefined;
+  if (PORT_TYPE_BY_REFERENCE[normalized]) return PORT_TYPE_BY_REFERENCE[normalized];
+  if (normalized.endsWith('_file') || normalized.startsWith('file_')) return 'file';
+  if (normalized.includes('chat_history')) return 'json';
+  return undefined;
+}
+
 export function portCountsFor(type: string): { inputs: number; outputs: number } {
-  const t = (type ?? '').toString().toLowerCase();
+  const t = (type ?? '').toString().toLowerCase().replace(/-/g, '_');
   if (t === 'composite') return { inputs: 1, outputs: 1 };
-  if (t === 'run-panel' || t === 'details' || t === 'preview') return { inputs: 0, outputs: 0 };
-  const triggers = new Set(['trigger_chat', 'trigger_file_upload', 'trigger_webhook']);
+  if (t === 'run_panel' || t === 'details' || t === 'preview') return { inputs: 0, outputs: 0 };
+  const triggers = new Set(['trigger_chat', 'trigger_file_upload', 'trigger_webhook', 'trigger_manual']);
   if (triggers.has(t)) return { inputs: 0, outputs: 1 };
   return { inputs: 1, outputs: 1 };
 }
@@ -89,18 +125,29 @@ export function ensurePorts(
   const norm = (p: WorkflowPort, idx: number, prefix: 'in' | 'out'): WorkflowPort => {
     const dataRef = pickString(p, ['data_reference', 'dataReference']);
     const artifact = pickString(p, ['artifact_type', 'artifactType']);
+    const explicitType = typeof p.type === 'string' ? p.type : undefined;
+    const inferredType = inferPortTypeFromReference(dataRef ?? p.id ?? p.label);
+    const resolvedType = artifact
+      ?? ((explicitType && explicitType !== 'json' && explicitType !== 'any') ? explicitType : undefined)
+      ?? inferredType
+      ?? explicitType
+      ?? 'json';
 
     const normalized: WorkflowPort = {
       ...p,
       id: p.id ?? `${prefix}-${idx + 1}`,
       label: dataRef ?? p.label ?? `${prefix} ${idx + 1}`,
-      type: p.type ?? artifact ?? 'json',
+      type: resolvedType,
       required: p.required,
       readonly: p.readonly,
     };
 
     if (dataRef) normalized.data_reference = dataRef;
-    if (artifact) normalized.artifact_type = artifact;
+    if (artifact) {
+      normalized.artifact_type = artifact;
+    } else if (inferredType) {
+      normalized.artifact_type = inferredType;
+    }
     return normalized;
   };
 
@@ -169,13 +216,23 @@ export function portsFromHandles(node: WorkflowNode): WorkflowPorts | null {
     const artifact = pickString(rec, ['artifact_type', 'artifactType']);
     const id = (typeof rec['id'] === 'string' ? (rec['id'] as string) : `${prefix}-${idx + 1}`);
     const label = (dataRef ?? (typeof rec['label'] === 'string' ? (rec['label'] as string) : undefined) ?? `${prefix} ${idx + 1}`);
-    const type = (typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined) ?? artifact ?? 'json';
+    const explicitType = typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined;
+    const inferredType = inferPortTypeFromReference(dataRef ?? id ?? label);
+    const type = artifact
+      ?? ((explicitType && explicitType !== 'json' && explicitType !== 'any') ? explicitType : undefined)
+      ?? inferredType
+      ?? explicitType
+      ?? 'json';
     const required = (typeof rec['required'] === 'boolean' ? (rec['required'] as boolean) : undefined);
     const readonly = (typeof rec['readonly'] === 'boolean' ? (rec['readonly'] as boolean) : undefined);
 
     const port: WorkflowPort = { id, label, type, required, readonly };
     if (dataRef) port.data_reference = dataRef;
-    if (artifact) port.artifact_type = artifact;
+    if (artifact) {
+      port.artifact_type = artifact;
+    } else if (inferredType) {
+      port.artifact_type = inferredType;
+    }
     return port;
   };
 

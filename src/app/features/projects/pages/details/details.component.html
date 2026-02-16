@@ -38,6 +38,28 @@
         <mat-card-content>
             <mat-tab-group [fitInkBarToContent]="true">
 
+                <!-- ACTIVATED RUNTIME TABS (Flat: same level as Sessions/Artifacts/Configuration) -->
+                @for (assignment of enabledTemplateAssignments(); track trackTemplateAssignment($index, assignment)) {
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">{{ getTemplateIcon(assignment) }}</mat-icon>
+                        {{ assignment.templateName }} ({{ getTemplateSessionCount(assignment.id) }})
+                    </ng-template>
+
+                    @if (getTemplateById(assignment.templateId); as template) {
+                    <div class="run-templates-container">
+                        <app-template-execution-panel [config]="getTemplateExecutionConfig(assignment, template)">
+                        </app-template-execution-panel>
+                    </div>
+                    } @else {
+                    <div class="loading-state">
+                        <mat-spinner color="neutral" class="neutral" diameter="48"></mat-spinner>
+                        <p>{{ 'templates.loading_template' | translate }}</p>
+                    </div>
+                    }
+                </mat-tab>
+                }
+
                 <!-- MY SESSIONS TAB -->
                 <mat-tab>
                     <ng-template mat-tab-label>
@@ -446,6 +468,23 @@
                     </div>
                     }
                 </mat-tab>
+
+                <!-- CONFIGURATION TAB (Admin only - Tier 3 design canvas) -->
+                @if (isAdmin()) {
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <mat-icon class="tab-icon">tune</mat-icon>
+                        {{ 'projects.details.tabs.configuration' | translate }} ({{ templateAssignmentsCount() }})
+                    </ng-template>
+
+                    <div class="templates-container">
+                        <app-project-template-canvas 
+                            [projectId]="project()?.project_id ?? ''"
+                            [projectName]="project()?.name">
+                        </app-project-template-canvas>
+                    </div>
+                </mat-tab>
+                }
 
                 <!-- CHAT HISTORY TAB -->
                 <!-- <mat-tab>

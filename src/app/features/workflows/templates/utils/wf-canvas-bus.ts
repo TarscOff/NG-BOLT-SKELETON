@@ -16,6 +16,18 @@ export class WfCanvasBus {
   pipelineCancel$ = new Subject<{ runId?: string }>();
   toggleRunPanel$ = new Subject<{ anchorNodeId?: string }>();
   onNodeDelete$ = new Subject<{ nodeId: string }>();
+  contextItemDelete$ = new Subject<{ nodeId: string; itemId: string }>();
+  contextItemRename$ = new Subject<{ nodeId: string; itemId: string; newItemId: string; label?: string }>();
+  contextItemsSync$ = new Subject<{
+    nodeId: string;
+    items: {
+      id: string;
+      label: string;
+      sourceCompositeId: string;
+      sourcePortId: string;
+      dataType: string;
+    }[];
+  }>();
   nodeFormStatus$ = new Subject<{ nodeId: string; invalid: boolean; invalidFields?: string[] }>();
   nodeFlagsPatch$ = new Subject<{ nodeId: string; flags: Record<string, unknown> }>();
   nodePortsChanged$ = new Subject<{ nodeId: string; inputs: WorkflowPorts['inputs']; outputs: WorkflowPorts['outputs'] }>();

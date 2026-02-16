@@ -1,0 +1,536 @@
+// Template Canvas Builder Styles - ng-draw-flow based
+
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    height: 100%;
+}
+
+// Dark mode grid pattern
+::ng-deep html.dark .pan-zoom {
+    background-color: var(--mat-sys-on-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2210%22 height%3D%2210%22 viewBox%3D%220 0 10 10%22 fill%3D%22none%22%3E%3Ccircle cx%3D%225%22 cy%3D%225%22 r%3D%221%22 fill%3D%22%23FFFFFF%22 fill-opacity%3D%220.3%22%2F%3E%3C%2Fsvg%3E");
+}
+
+// ============================================================================
+// MAIN CONTAINER
+// ============================================================================
+
+.template-canvas-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: calc(100vh - 64px);
+    background: transparent;
+}
+
+.mat-drawer-container {
+    background: transparent;
+}
+
+// ============================================================================
+// PALETTE SIDENAV
+// ============================================================================
+
+.palette-sidenav {
+    padding: 0;
+    width: 300px;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.palette-header {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
+    background: inherit;
+}
+
+.palette-search {
+    ::ng-deep {
+        .mat-mdc-form-field {
+            width: 100%;
+        }
+
+        .mdc-text-field {
+            background: transparent;
+        }
+    }
+
+    &:focus-within {
+        border-color: color-mix(in srgb, var(--mat-primary) 45%, transparent);
+    }
+}
+
+.palette-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+
+    &.basic-info {
+        border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 15%, transparent);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        color: var(--mat-primary);
+        margin-bottom: 8px;
+
+        mat-icon {
+            font-size: 20px;
+        }
+    }
+}
+
+.palette-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--mat-primary) 60%, #000);
+    margin-top: 8px;
+}
+
+.palette-section:first-child .palette-section-title {
+    margin-top: 0;
+}
+
+.palette-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+    max-height: calc(100vh - 400px);
+}
+
+.context-info {
+    margin-top: auto;
+    border-top: 1px solid color-mix(in srgb, var(--mat-neutral) 15%, transparent);
+
+    .context-info-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px;
+        background: color-mix(in srgb, var(--mat-primary) 8%, transparent);
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--mat-on-surface-variant);
+        line-height: 1.4;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: var(--mat-primary);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+    }
+}
+
+.palette-empty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// ============================================================================
+// PALETTE PILLS
+// ============================================================================
+
+.palette-pill {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 45px;
+    gap: 8px;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+
+    mat-icon {
+        margin-left: 8px;
+    }
+
+    &.composite {
+        background: var(--mat-primary);
+        border: var(--mat-primary);
+
+        &:hover {
+            background: var(--mat-primary);
+        }
+    }
+
+    &.storage {
+        background: var(--mat-warn);
+        border: var(--mat-warn);
+
+        &:hover {
+            background: var(--mat-warn);
+        }
+    }
+
+    &.ui {
+        background: var(--mat-accent);
+        border: var(--mat-accent);
+
+        &:hover {
+            background: var(--mat-accent);
+        }
+    }
+
+    &.preview-shadow {
+        opacity: 0.9;
+        color: var(--mat-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 10px;
+        width: 70px !important;
+        height: 70px !important;
+        flex-direction: column;
+        justify-content: center;
+
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
+
+        .pill-label {
+            font-size: 10px;
+            text-align: center;
+        }
+    }
+
+    &.placeholder {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    &.cdk-drag-dragging {
+        opacity: 1;
+    }
+}
+
+.cdk-drag-placeholder {
+    opacity: 1 !important;
+}
+
+// ============================================================================
+// LEGEND
+// ============================================================================
+
+.palette-legend {
+    padding: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--mat-neutral) 15%, transparent);
+
+    .legend-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--mat-on-surface-variant);
+        margin-bottom: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        margin-bottom: 4px;
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+
+            &.composite {
+                background: var(--mat-primary);
+            }
+
+            &.session {
+                background: var(--mat-warn);
+            }
+
+            &.project {
+                background: var(--mat-success);
+            }
+
+            &.ui {
+                background: var(--mat-accent);
+            }
+        }
+    }
+}
+
+// ============================================================================
+// CANVAS PANE
+// ============================================================================
+
+.canvas-pane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+}
+
+.canvas-pane_actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+}
+
+.palette-toggle {
+    z-index: 1000;
+    background-color: var(--mat-primary);
+    color: #fff;
+    height: 40px;
+    border-radius: var(--mdc-filled-button-container-shape);
+}
+
+.graph-invalid-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--mat-error);
+    color: var(--mat-error);
+    background: color-mix(in srgb, var(--mat-error) 12%, transparent);
+    font-size: 12px;
+    line-height: 1;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+}
+
+// ============================================================================
+// CANVAS WRAPPER
+// ============================================================================
+
+.canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+.template-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 2px solid color-mix(in srgb, var(--mat-neutral) 60%, #fff);
+    border-radius: 8px;
+    --df-connection-selectable-area-stroke-width: 0.8rem;
+
+    // Make all df-input and df-output connectors bigger
+    ::ng-deep {
+        df-input,
+        df-output {
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            min-height: 18px !important;
+
+            &::before,
+            &::after {
+                width: 18px !important;
+                height: 18px !important;
+            }
+        }
+    }
+
+    ::ng-deep path.selectable-area {
+        pointer-events: stroke;
+    }
+
+    &.wf-connecting {
+        --df-connection-selectable-area-stroke-width: 1rem;
+
+        ::ng-deep df-input,
+        ::ng-deep df-output {
+            pointer-events: auto !important;
+            filter: drop-shadow(0 0 10px color-mix(in srgb, var(--mat-primary) 45%, transparent));
+            transform: scale(1.06);
+        }
+    }
+}
+
+.help-text {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    margin: 0;
+    pointer-events: none;
+    color: var(--md-sys-color-on-surface);
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+// ============================================================================
+// EMPTY STATE
+// ============================================================================
+
+.empty-canvas-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 32px;
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 10;
+
+    mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: var(--mat-primary);
+        opacity: 0.5;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 8px;
+        color: var(--mat-on-surface);
+        font-weight: 500;
+    }
+
+    p {
+        margin: 0;
+        color: var(--mat-on-surface-variant);
+        font-size: 14px;
+    }
+}
+
+// ============================================================================
+// LOADING STATE
+// ============================================================================
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+
+    .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        color: var(--mat-on-surface-variant);
+
+        .loading-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+// ============================================================================
+// DARK MODE
+// ============================================================================
+
+:host-context(.dark) {
+    .palette-pill {
+
+        &.composite {
+            background: var(--mat-accent);
+            border: var(--mat-accent);
+
+            &:hover {
+                background: var(--mat-accent);
+            }
+        }
+
+        &.storage {
+            background: var(--mat-warn);
+            border: var(--mat-warn);
+
+            &:hover {
+                background: var(--mat-warn);
+            }
+        }
+
+        &.ui {
+            background: var(--mat-accent);
+            border: var(--mat-accent);
+
+            &:hover {
+                background: var(--mat-accent);
+            }
+        }
+
+    }
+
+    .palette-sidenav {
+        border-right-color: color-mix(in srgb, var(--mat-neutral) 40%, transparent);
+    }
+
+    .context-info .context-info-box {
+        background: color-mix(in srgb, var(--mat-primary) 15%, transparent);
+    }
+
+    .template-canvas {
+        border-color: color-mix(in srgb, var(--mat-neutral) 40%, transparent);
+    }
+
+    .empty-canvas-hint {
+        background: color-mix(in srgb, var(--mat-sys-surface-container) 90%, transparent);
+    }
+}

@@ -2,7 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [2.0.27](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.26...v2.0.27) (2026-01-28)
+### [2.0.4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.4) (2026-02-12)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
+* **app:** integration API and ci updates + latest changes on core ([ccf717d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ccf717d5d19abe137f08a962a59243929add24c5))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([2a96139](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2a9613960f2ba9d55fefb73f1d8109e10f04696f))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([dc8fbc0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/dc8fbc01926a4e678d4d2535a87fefd6b9b7ea49))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([9c2c0f8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/9c2c0f804e5b989fe19bf30ac4eacd0625265df7))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([1cd8f33](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/1cd8f333a66b82d8fa85bef9c46356ee1aed73e2))
+* **csp:** fixing csp lines ([6e5f08a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+* **csp:** fixing csp lines ([c33aeba](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
+* **favorites:** adding favorites feature ([94e71e3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/94e71e34e2b10c6005879acd109fb0ccd1c3e34e))
+* **favorites:** adding favorites feature ([29b55f8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
+* **favorites:** adding favorites feature ([d05a5ef](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/d05a5ef39de54ae93d8b9af55df84250d8e456af))
+* **favorites:** adding favorites feature ([59d63b5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/59d63b5f409edc9bc83daa866f43a86909447b19))
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
+* **tiers:** fixing workflows tiers and tempalting ([a1b3d78](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a1b3d78aa795a3dfb8e5e058870e2bf84ccc7d69))
+* **workflows:**  full API integration + styles readaptations + sessions grouping ([abfcb02](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/abfcb021a8e52e09b46b72dd8b984a874b709da7))
+* **workflows:** workflows ([8e8219d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
+* **workflows:** workflows ([14bd08c](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
+* **workflows:** workflows ([a4e3683](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a4e3683cbd6efc70d9dd377fe516b3396c2188f1))
+
+
+### Bug Fixes
+
+* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
+* **ciCd:** fixing ci-cd ([b1c28ab](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
+* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+* **ciCd:** fixing ci-cd ([a95eb10](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
+* **ciCd:** fixing ci-cd ([db07ab8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
+* **ciCd:** fixing ci-cd documentation ([1572c43](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
+* **workflows:** updating docs ([19edb13](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/19edb1360fdf743579b1f23760f83234f04505d8))
+* **workflows:** updating docs ([2ab3df9](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2ab3df9ebd0793b15feafc3d4de992f33dbd5b69))
+
+### [2.0.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.3) (2025-12-04)
 
 
 ### Bug Fixes

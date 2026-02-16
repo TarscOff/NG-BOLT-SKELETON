@@ -286,16 +286,25 @@
 			font-size: 14px;
 			width: 14px;
 			height: 14px;
+			color: inherit;
 		}
 		
 		&.badge-primary {
 			background: linear-gradient(135deg, var(--mat-primary-variant) 20%, var(--mat-accent) 100%);
-			color: var(--md-sys-color-on-primary, white);
+			color: white;
+			
+			mat-icon {
+				color: white;
+			}
 		}
 		
 		&.badge-accent {
 			background: linear-gradient(135deg, var(--mat-accent) 20%, var(--mat-primary-variant) 100%);
-			color: var(--md-sys-color-on-secondary, white);
+			color: white;
+			
+			mat-icon {
+				color: white;
+			}
 		}
 		
 		&.badge-muted {

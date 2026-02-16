@@ -17,6 +17,14 @@
                 (click)="toggleMultiSelect()" [matTooltip]="'workflow.multi_select' | translate">
                 <mat-icon>{{ multiSelectMode() ? 'checklist' : 'playlist_add_check' }}</mat-icon>
             </button>
+            <button mat-icon-button color="accent" [matTooltip]="'composites.list.title' | translate"
+                (click)="openCompositesPage()">
+                <mat-icon>account_tree</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" [matTooltip]="'templates.list.title' | translate"
+                (click)="openTemplatesPage()">
+                <mat-icon>dashboard_customize</mat-icon>
+            </button>
             <button mat-icon-button color="accent" [matTooltip]="'workflow.new' | translate"
                 (click)="openNewWorkflowDialog()">
                 <mat-icon>add</mat-icon>
@@ -136,7 +144,7 @@
         @if (selectedWorkflow()) {
         <app-workflow-canvas-df [workflowId]="selectedWorkflow()?.id" [nodes]="canvasNodes()"
             [executableNodes]="execTypes()" [edges]="canvasEdges()" [actionsNodes]="actionsNodes"
-            [availableActions]="availableActions()" [disabled]="false"
+            [availableActions]="availableActions()" [disabled]="false" [autoCenter]="true"
             [workflowName]="selectedWorkflow()?.name" (OnCanvasChange)="onChange($any($event))"
             (selectionChange)="onSelectionChange($event)" (validationChange)="onValidation($event)"
             (workflowNameChange)="onWorkflowNameChange($event)"></app-workflow-canvas-df>

@@ -15,11 +15,12 @@ import {
     SessionChatHistoryContentDto,
     ChatMessageDto,
     ProjectSessionStatusDto,
+    ProjectSessionVisibility,
     UpdateSessionNameDto,
     ArtifactsDataDto,
     ChatMessageResponseDto
 } from "../interfaces/project.model";
-import { map, Observable, throwError } from "rxjs";
+import { catchError, map, Observable, of, throwError } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { DateTime } from "luxon";
 
@@ -27,6 +28,9 @@ import { DateTime } from "luxon";
     providedIn: 'root',
 })
 export class ProjectsService {
+    private readonly localProjectsStorageKey = 'local_projects_v1';
+    private readonly localProjectSessionsStorageKey = 'local_project_sessions_v1';
+    private readonly localProjectArtifactsStorageKey = 'local_project_artifacts_v1';
 
     constructor(
         private http: HttpClient,
@@ -44,12 +48,43 @@ export class ProjectsService {
 
     getProjectsList(): Observable<ProjectDto[]> {
         const url = `${this.base}/projects`;
-        return this.http.get<ProjectDto[]>(url);
+        return this.http.get<ProjectDto[]>(url).pipe(
+            map(remoteProjects => this.mergeWithLocalProjects(remoteProjects)),
+            catchError(() => of(this.getLocalProjects()))
+        );
     }
 
     deleteProject(projectId: string): Observable<void> {
+        if (this.removeLocalProject(projectId)) {
+            return of(void 0);
+        }
         const url = `${this.base}/projects/${projectId}`;
         return this.http.delete<void>(url);
+    }
+
+    createProject(payload: {
+        name: string;
+        description?: string;
+        metadata?: Record<string, unknown>;
+    }): Observable<ProjectDto> {
+        const url = `${this.base}/projects`;
+        const requestPayload: Record<string, unknown> = {
+            name: payload.name,
+        };
+        if (payload.description) requestPayload['description'] = payload.description;
+        if (payload.metadata) requestPayload['metadata'] = payload.metadata;
+
+        return this.http.post<ProjectDto>(url, requestPayload).pipe(
+            map(project => {
+                this.upsertLocalProject(project);
+                return project;
+            }),
+            catchError(() => {
+                const localProject = this.createLocalProject(payload);
+                this.upsertLocalProject(localProject);
+                return of(localProject);
+            })
+        );
     }
 
     getProjectTemplates(projectId: string): Observable<ProjectTemplateDto[]> {
@@ -91,66 +126,161 @@ export class ProjectsService {
     }
 
     getProjectsFilesInfo(projectId: string): Observable<ProjectArtifactsTypesDto[]> {
+        const localArtifacts = this.getLocalProjectArtifacts(projectId);
+        if (this.isLocalProjectId(projectId)) {
+            return of(this.buildLocalArtifactsTypes(localArtifacts));
+        }
+
         const url = `${this.base}/projects/${projectId}/artifacts/types`;
-        return this.http.get<ProjectArtifactsTypesDto[]>(url);
+        return this.http.get<ProjectArtifactsTypesDto[]>(url).pipe(
+            catchError(() => of(this.buildLocalArtifactsTypes(localArtifacts)))
+        );
     }
 
     getProjectsFilesData(projectId: string): Observable<ArtifactsDataDto[]> {
+        const localArtifacts = this.getLocalProjectArtifacts(projectId);
+        if (this.isLocalProjectId(projectId)) {
+            return of(localArtifacts);
+        }
+
         const url = `${this.base}/projects/${projectId}/artifacts`;
-        return this.http.get<ArtifactsDataDto[]>(url);
+        return this.http.get<ArtifactsDataDto[]>(url).pipe(
+            catchError(() => of(localArtifacts))
+        );
     }
 
     getProjectsSessions(projectId: string): Observable<ProjectSessionDto[]> {
+        const localSessions = this.getLocalProjectSessions(projectId);
+        if (this.isLocalProjectId(projectId)) {
+            return of(localSessions);
+        }
+
         const url = `${this.base}/projects/${projectId}/sessions`;
-        return this.http.get<ProjectSessionDto[]>(url);
+        return this.http.get<ProjectSessionDto[]>(url).pipe(
+            catchError(() => of(localSessions))
+        );
     }
 
     createProjectsSessions(projectId: string): Observable<ProjectSessionDto> {
+        if (this.isLocalProjectId(projectId)) {
+            return of(this.createAndStoreLocalSession(projectId));
+        }
+
         const url = `${this.base}/projects/${projectId}/session`;
         return this.http.post<ProjectSessionDto>(url, {
             "session_visibility": "none"
-        });
+        }).pipe(
+            map(session => {
+                this.upsertLocalProjectSession(projectId, session);
+                return session;
+            }),
+            catchError(() => of(this.createAndStoreLocalSession(projectId)))
+        );
     }
 
     getSessionById(sessionId: string): Observable<ProjectSessionDto> {
+        const localSession = this.findLocalSessionById(sessionId);
+        if (localSession) {
+            return of(localSession);
+        }
+
         const url = `${this.base}/sessions/${sessionId}`;
-        return this.http.get<ProjectSessionDto>(url);
+        return this.http.get<ProjectSessionDto>(url).pipe(
+            catchError(() => {
+                const fallback = this.findLocalSessionById(sessionId);
+                return fallback ? of(fallback) : throwError(() => new Error('Session not found'));
+            })
+        );
     }
 
     getSessionArtifacts(sessionId: string): Observable<ArtifactsDataDto[]> {
+        const localArtifacts = this.getLocalSessionArtifacts(sessionId);
+        const localSession = this.findLocalSessionById(sessionId);
+        if (localSession) {
+            return of(localArtifacts);
+        }
+
         const url = `${this.base}/sessions/${sessionId}/artifacts`;
-        return this.http.get<ArtifactsDataDto[]>(url);
+        return this.http.get<ArtifactsDataDto[]>(url).pipe(
+            catchError(() => of(localArtifacts))
+        );
     }
 
     getSessionStatusById(sessionId: string): Observable<ProjectSessionStatusDto> {
+        const localSession = this.findLocalSessionById(sessionId);
+        if (localSession) {
+            return of(this.buildLocalSessionStatus(localSession));
+        }
+
         const url = `${this.base}/sessions/${sessionId}/status`;
-        return this.http.get<ProjectSessionStatusDto>(url);
+        return this.http.get<ProjectSessionStatusDto>(url).pipe(
+            map(status => this.normalizeSessionStatus(status, sessionId)),
+            catchError(() => {
+                const fallback = this.findLocalSessionById(sessionId);
+                return fallback
+                    ? of(this.buildLocalSessionStatus(fallback))
+                    : of(this.buildUnavailableSessionStatus(sessionId));
+            })
+        );
     }
 
     updateSessionName(sessionId: string, payload: { session_name: string, session_visibility: "none" | string }): Observable<UpdateSessionNameDto> {
+        const localUpdated = this.updateLocalSessionName(sessionId, payload.session_name, payload.session_visibility);
+        if (localUpdated) {
+            return of(localUpdated);
+        }
+
         const url = `${this.base}/sessions/${sessionId}`;
-        return this.http.patch<UpdateSessionNameDto>(url, payload);
+        return this.http.patch<UpdateSessionNameDto>(url, payload).pipe(
+            catchError(() => {
+                const fallback = this.updateLocalSessionName(sessionId, payload.session_name, payload.session_visibility);
+                return fallback
+                    ? of(fallback)
+                    : throwError(() => new Error('Failed to update session name'));
+            })
+        );
     }
 
     deleteSessionById(sessionId: string): Observable<void> {
+        if (this.removeLocalSessionById(sessionId)) {
+            return of(void 0);
+        }
+
         const url = `${this.base}/sessions/${sessionId}`;
-        return this.http.delete<void>(url);
+        return this.http.delete<void>(url).pipe(
+            catchError(() => {
+                if (this.removeLocalSessionById(sessionId)) {
+                    return of(void 0);
+                }
+                return throwError(() => new Error('Failed to delete session'));
+            })
+        );
     }
 
     getChatHistory(sessionId: string): Observable<SessionChatHistoryDto[]> {
+        const localSession = this.findLocalSessionById(sessionId);
+        if (localSession) {
+            return of([]);
+        }
+
         const url = `${this.base}/sessions/${sessionId}/artifacts/chat_history`;
-        return this.http.get<SessionChatHistoryDto[]>(url);
+        return this.http.get<SessionChatHistoryDto[]>(url).pipe(
+            catchError(() => of([]))
+        );
     }
 
     getChatHistoryDataContent(artifactId: string): Observable<ChatMessageDto[]> {
         return this.getArtifactContent(artifactId).pipe(
-            map(content => content.messages)
+            map(content => content.messages),
+            catchError(() => of([]))
         );
     }
 
     getArtifactContent(artifactId: string): Observable<SessionChatHistoryContentDto> {
         const url = `${this.base}/artifacts/${artifactId}/data`;
-        return this.http.get<SessionChatHistoryContentDto>(url);
+        return this.http.get<SessionChatHistoryContentDto>(url).pipe(
+            catchError(() => of({ messages: [] }))
+        );
     }
 
     sendMessage(
@@ -163,6 +293,10 @@ export class ProjectsService {
             return throwError(() => new Error('No content to send'));
         }
 
+        if (this.isLocalProjectId(projectId) || !!this.findLocalSessionById(sessionId)) {
+            return of(this.buildMockChatMessageResponse(templateId));
+        }
+
         // TODO. this is hardcoded, should be removed in the future and only handled on BE side
         const messageInputId = "6c34cfd1-ac55-492c-b730-4f3815a2309d";
         const userPromptId = "c9d2e9dd-77c8-4c72-8157-cc079498994b";
@@ -172,7 +306,9 @@ export class ProjectsService {
         textFormData.append(userPromptId, content);
 
         const textEndpoint = `${this.base}/sessions/${sessionId}/execute/${templateId}`;
-        return this.http.post<ChatMessageResponseDto>(textEndpoint, textFormData);
+        return this.http.post<ChatMessageResponseDto>(textEndpoint, textFormData).pipe(
+            catchError(() => of(this.buildMockChatMessageResponse(templateId)))
+        );
     }
 
     submitArtifacts(
@@ -184,6 +320,10 @@ export class ProjectsService {
             return throwError(() => new Error('No files to upload'));
         }
 
+        if (this.findLocalSessionById(sessionId)) {
+            return of(this.buildMockChatMessageResponse(fileTemplateId));
+        }
+
         // TODO. this is hardcoded, should be removed in the future and only handled on BE side
         const fileInputId = "442f052c-f371-4b30-8f97-89109cc61fb2";
 
@@ -191,9 +331,328 @@ export class ProjectsService {
         files.forEach((file) => {
             fileFormData.append(fileInputId, file);
         });
-
         const fileEndpoint = `${this.base}/sessions/${sessionId}/execute/${fileTemplateId}`;
-        return this.http.post<ChatMessageResponseDto>(fileEndpoint, fileFormData);
+        return this.http.post<ChatMessageResponseDto>(fileEndpoint, fileFormData).pipe(
+            catchError(() => of(this.buildMockChatMessageResponse(fileTemplateId)))
+        );
+    }
+
+    private mergeWithLocalProjects(remoteProjects: ProjectDto[]): ProjectDto[] {
+        const mergedById = new Map<string, ProjectDto>();
+        for (const project of remoteProjects ?? []) {
+            mergedById.set(project.project_id, project);
+        }
+        for (const project of this.getLocalProjects()) {
+            if (!mergedById.has(project.project_id)) {
+                mergedById.set(project.project_id, project);
+            }
+        }
+        return [...mergedById.values()];
+    }
+
+    private getLocalProjects(): ProjectDto[] {
+        try {
+            const raw = localStorage.getItem(this.localProjectsStorageKey);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return [];
+            return parsed.filter(project =>
+                !!project &&
+                typeof project === 'object' &&
+                typeof project.project_id === 'string' &&
+                typeof project.name === 'string'
+            ) as ProjectDto[];
+        } catch {
+            return [];
+        }
+    }
+
+    private setLocalProjects(projects: ProjectDto[]): void {
+        try {
+            localStorage.setItem(this.localProjectsStorageKey, JSON.stringify(projects));
+        } catch {
+            // Ignore localStorage errors
+        }
+    }
+
+    private upsertLocalProject(project: ProjectDto): void {
+        const current = this.getLocalProjects();
+        const next = [
+            project,
+            ...current.filter(existing => existing.project_id !== project.project_id),
+        ];
+        this.setLocalProjects(next);
+    }
+
+    private removeLocalProject(projectId: string): boolean {
+        const current = this.getLocalProjects();
+        const next = current.filter(project => project.project_id !== projectId);
+        if (next.length === current.length) {
+            return false;
+        }
+        this.setLocalProjects(next);
+        this.removeLocalProjectSessions(projectId);
+        this.removeLocalProjectArtifacts(projectId);
+        return true;
+    }
+
+    private createLocalProject(payload: {
+        name: string;
+        description?: string;
+    }): ProjectDto {
+        const now = new Date().toISOString();
+        return {
+            project_id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            name: payload.name.trim(),
+            owner: 'local-user',
+            client_id: 'local',
+            roles: [],
+            created_on: now,
+        };
+    }
+
+    private isLocalProjectId(projectId: string): boolean {
+        return projectId.startsWith('local-');
+    }
+
+    private getLocalSessionsByProjectMap(): Record<string, ProjectSessionDto[]> {
+        try {
+            const raw = localStorage.getItem(this.localProjectSessionsStorageKey);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return {};
+            return parsed as Record<string, ProjectSessionDto[]>;
+        } catch {
+            return {};
+        }
+    }
+
+    private setLocalSessionsByProjectMap(map: Record<string, ProjectSessionDto[]>): void {
+        try {
+            localStorage.setItem(this.localProjectSessionsStorageKey, JSON.stringify(map));
+        } catch {
+            // Ignore localStorage errors
+        }
+    }
+
+    private getLocalProjectSessions(projectId: string): ProjectSessionDto[] {
+        return this.getLocalSessionsByProjectMap()[projectId] ?? [];
+    }
+
+    private upsertLocalProjectSession(projectId: string, session: ProjectSessionDto): void {
+        const map = this.getLocalSessionsByProjectMap();
+        const existing = map[projectId] ?? [];
+        map[projectId] = [
+            session,
+            ...existing.filter(item => item.session_id !== session.session_id),
+        ];
+        this.setLocalSessionsByProjectMap(map);
+    }
+
+    private createAndStoreLocalSession(projectId: string): ProjectSessionDto {
+        const now = new Date().toISOString();
+        const session: ProjectSessionDto = {
+            created_on: now,
+            updated_on: now,
+            session_id: `local-session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            session_name: `Session ${new Date().toLocaleString()}`,
+            session_owner_id: 'local-user',
+            session_visibility: ProjectSessionVisibility.SESSION_OWNER,
+            user_role: 'owner',
+        };
+        this.upsertLocalProjectSession(projectId, session);
+        return session;
+    }
+
+    private removeLocalProjectSessions(projectId: string): void {
+        const map = this.getLocalSessionsByProjectMap();
+        if (!(projectId in map)) return;
+        delete map[projectId];
+        this.setLocalSessionsByProjectMap(map);
+    }
+
+    private findLocalSessionById(sessionId: string): ProjectSessionDto | null {
+        const map = this.getLocalSessionsByProjectMap();
+        for (const sessions of Object.values(map)) {
+            const found = sessions.find(session => session.session_id === sessionId);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    private updateLocalSessionName(
+        sessionId: string,
+        sessionName: string,
+        sessionVisibility: "none" | string
+    ): UpdateSessionNameDto | null {
+        const map = this.getLocalSessionsByProjectMap();
+        for (const [projectId, sessions] of Object.entries(map)) {
+            const index = sessions.findIndex(session => session.session_id === sessionId);
+            if (index < 0) continue;
+
+            const now = new Date().toISOString();
+            const updated: ProjectSessionDto = {
+                ...sessions[index],
+                session_name: sessionName,
+                updated_on: now,
+                session_visibility: (sessionVisibility === 'none'
+                    ? sessions[index].session_visibility
+                    : sessionVisibility) as ProjectSessionVisibility,
+            };
+            map[projectId] = [
+                updated,
+                ...sessions.filter(session => session.session_id !== sessionId),
+            ];
+            this.setLocalSessionsByProjectMap(map);
+
+            return {
+                created_on: updated.created_on,
+                updated_on: updated.updated_on,
+                session_id: updated.session_id,
+                session_name: updated.session_name,
+                session_owner_id: updated.session_owner_id,
+                session_visibility: updated.session_visibility,
+                user_role: updated.user_role,
+            };
+        }
+        return null;
+    }
+
+    private removeLocalSessionById(sessionId: string): boolean {
+        const map = this.getLocalSessionsByProjectMap();
+        let updated = false;
+        for (const [projectId, sessions] of Object.entries(map)) {
+            const next = sessions.filter(session => session.session_id !== sessionId);
+            if (next.length === sessions.length) continue;
+            map[projectId] = next;
+            updated = true;
+        }
+        if (updated) {
+            this.setLocalSessionsByProjectMap(map);
+        }
+        return updated;
+    }
+
+    private getLocalArtifactsByProjectMap(): Record<string, ArtifactsDataDto[]> {
+        try {
+            const raw = localStorage.getItem(this.localProjectArtifactsStorageKey);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return {};
+            return parsed as Record<string, ArtifactsDataDto[]>;
+        } catch {
+            return {};
+        }
+    }
+
+    private setLocalArtifactsByProjectMap(map: Record<string, ArtifactsDataDto[]>): void {
+        try {
+            localStorage.setItem(this.localProjectArtifactsStorageKey, JSON.stringify(map));
+        } catch {
+            // Ignore localStorage errors
+        }
+    }
+
+    private getLocalProjectArtifacts(projectId: string): ArtifactsDataDto[] {
+        return this.getLocalArtifactsByProjectMap()[projectId] ?? [];
+    }
+
+    private getLocalSessionArtifacts(sessionId: string): ArtifactsDataDto[] {
+        const localProject = this.findLocalProjectBySessionId(sessionId);
+        if (!localProject) return [];
+        return this.getLocalProjectArtifacts(localProject);
+    }
+
+    private findLocalProjectBySessionId(sessionId: string): string | null {
+        const map = this.getLocalSessionsByProjectMap();
+        for (const [projectId, sessions] of Object.entries(map)) {
+            if (sessions.some(session => session.session_id === sessionId)) {
+                return projectId;
+            }
+        }
+        return null;
+    }
+
+    private removeLocalProjectArtifacts(projectId: string): void {
+        const map = this.getLocalArtifactsByProjectMap();
+        if (!(projectId in map)) return;
+        delete map[projectId];
+        this.setLocalArtifactsByProjectMap(map);
+    }
+
+    private buildLocalArtifactsTypes(artifacts: ArtifactsDataDto[]): ProjectArtifactsTypesDto[] {
+        if (!artifacts.length) return [];
+
+        const byReference = new Map<string, { total: number; byType: Map<string, number> }>();
+        for (const artifact of artifacts) {
+            const referenceKey = artifact.data_reference;
+            const typeKey = artifact.artifact_type;
+            const existing = byReference.get(referenceKey) ?? {
+                total: 0,
+                byType: new Map<string, number>(),
+            };
+            existing.total += 1;
+            existing.byType.set(typeKey, (existing.byType.get(typeKey) ?? 0) + 1);
+            byReference.set(referenceKey, existing);
+        }
+
+        return [...byReference.entries()].map(([reference, info]) => ({
+            data_reference: reference as never,
+            total: info.total,
+            artifact_types: [...info.byType.entries()].map(([artifactType, count]) => ({
+                artifact_type: artifactType as never,
+                type_total: count,
+            })),
+        }));
+    }
+
+    private buildLocalSessionStatus(session: ProjectSessionDto): ProjectSessionStatusDto {
+        return {
+            session_id: session.session_id,
+            updated_on: session.updated_on,
+            status: 'not_started',
+            workflow_executions: [],
+        };
+    }
+
+    private buildUnavailableSessionStatus(sessionId: string): ProjectSessionStatusDto {
+        return {
+            session_id: sessionId,
+            updated_on: new Date().toISOString(),
+            status: 'not_started',
+            workflow_executions: [],
+        };
+    }
+
+    private normalizeSessionStatus(
+        status: ProjectSessionStatusDto | null | undefined,
+        sessionId: string
+    ): ProjectSessionStatusDto {
+        if (!status) {
+            return this.buildUnavailableSessionStatus(sessionId);
+        }
+
+        return {
+            session_id: status.session_id || sessionId,
+            updated_on: status.updated_on || new Date().toISOString(),
+            status: status.status || 'not_started',
+            workflow_executions: Array.isArray(status.workflow_executions)
+                ? status.workflow_executions
+                : [],
+        };
+    }
+
+    private buildMockChatMessageResponse(templateId: string): ChatMessageResponseDto {
+        const now = DateTime.now();
+        return {
+            completed_on: now,
+            created_on: now,
+            updated_on: now,
+            workflow_instance_id: `local-workflow-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            workflow_name: `Local Execution (${templateId})`,
+            workflow_status: 'completed',
+            tasks: [],
+        };
     }
 
 
