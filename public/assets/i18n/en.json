@@ -106,7 +106,8 @@
       "skipped": "Skipped",
       "submit": "Submit",
       "success": "Success",
-      "title": "Runs panel"
+      "title": "Runs panel",
+      "no_executions": "No executions yet."
     },
     "errors": {
       "cycleDetected": "There is a cycle in the workflow. Please remove it.",
@@ -120,7 +121,8 @@
       "saveFailed": "Failed to save the workflow.",
       "invalid_graph": "Workflow is invalid. Fix missing links or fields.",
       "missingPinnedData": "Upstream data missing. Pin data or connect inputs before running from here.",
-      "nodeNotFound": "Node not found."
+      "nodeNotFound": "Node not found.",
+      "incompatible_port_types": "Cannot connect {{sourceNode}}.{{sourcePort}} ({{sourceType}}) to {{targetNode}}.{{targetPort}} ({{targetType}}). Port types are incompatible."
     },
     "validation": {
       "missing_inputs": "Missing inputs",
@@ -141,12 +143,9 @@
       "add_output": "Add output",
       "port_name": "Name",
       "port_name_placeholder": "Port name",
-      "port_name_help": "Give this port a clear, unique label.",
       "port_type": "Type",
       "port_type_placeholder": "Select a type",
-      "port_type_help": "Used to validate compatibility between connections.",
       "required": "Required",
-      "port_required_help": "Required ports must be connected before running.",
       "port_type_options": {
         "query_string": "Query string",
         "embeddings": "Embeddings",
@@ -172,6 +171,13 @@
       "reusable": "Reusable"
     },
     "needs_republish": "Needs republish",
+    "status": {
+      "queued": "Queued",
+      "running": "Running",
+      "success": "Success",
+      "error": "Error",
+      "skipped": "Skipped"
+    },
     "toast": {
       "draft_saved": "Draft saved (not published)",
       "published": "Workflow published",
@@ -1111,7 +1117,8 @@
   "result": "Result",
   "retrieved_documents": "Retrieved documents",
   "role": "Role",
-  "run-panel": "Run panel",
+  "run-panel": "Run panel ({{count}})",
+  "run-panel_details": "Run panel details",
   "running": "Running",
   "selection": "Selection",
   "source_file": "Source file",

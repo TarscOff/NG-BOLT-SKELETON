@@ -742,11 +742,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
 
     this.dialog.open(NodeDetailsDialogComponent, {
       data: dialogData,
-      width: '90vw',
-      maxWidth: '90vw',
-      height: '90vh',
-      maxHeight: '90vh',
-      panelClass: 'wf-node-dialog',
+      width: '100vw',
+      maxWidth: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      panelClass: ['wf-node-dialog', 'full-window-dialog', 'action-node-dialog'],
       autoFocus: false,
     });
   }
@@ -799,6 +799,11 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
   }
 
   private computeDialogPorts(): WorkflowPorts {
+    // If portsOverride exists (from previous dialog changes), use it directly
+    if (this.portsOverride) {
+      return this.portsOverride;
+    }
+    
     const original = (this.model as Record<string, unknown> | null) ?? null;
     const base: WorkflowPorts = this.safeModel.ports ?? { inputs: [], outputs: [] };
 
@@ -1164,6 +1169,55 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     const s = this.statusSig();
     if (!s) return '';
     return s;
+  }
+
+  /**
+   * Gets the Material icon name based on the current node status.
+   */
+  getStatusIcon(): string {
+    const status = this.statusSig();
+    switch (status) {
+      case 'queued':
+        return 'schedule';
+      case 'running':
+        return 'hourglass_empty';
+      case 'success':
+        return 'check_circle';
+      case 'error':
+        return 'error';
+      case 'skipped':
+        return 'skip_next';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Gets the tooltip text based on the current node status.
+   */
+  getStatusTooltip(): string {
+    const status = this.statusSig();
+    switch (status) {
+      case 'queued':
+        return 'workflow.status.queued';
+      case 'running':
+        return 'workflow.status.running';
+      case 'success':
+        return 'workflow.status.success';
+      case 'error':
+        return 'workflow.status.error';
+      case 'skipped':
+        return 'workflow.status.skipped';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Checks if the node has an active status to display.
+   */
+  hasStatus(): boolean {
+    return this.statusSig() !== null;
   }
 
   private patchParams(params: Record<string, unknown>): void {
