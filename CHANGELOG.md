@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.10](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.9...v2.0.10) (2026-02-16)
+
+
+### Bug Fixes
+
+* **conflicts:** fixing conflicts ([152ab35](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/152ab3558f017e58aed4c060395b72ecf96d65b7))
+
 ### [2.0.9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.8...v2.0.9) (2026-02-16)
 
 
