@@ -1,0 +1,123 @@
+{
+  "version": "2.0.8",
+  "tag": "v2.0.8",
+  "previousTag": "v2.0.7",
+  "date": "2026-02-16T10:36:37.119Z",
+  "stats": {
+    "features": 2,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "993d5bc",
+        "type": "feat",
+        "scope": "templates",
+        "subject": "fixing tier workflow builder",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ab04834",
+        "type": "feat",
+        "scope": "tiers",
+        "subject": "fixing workflows tiers and tempalting",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "50f851a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.8 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8f2945a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.7",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "748c7c8",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "50f851a617a961e0b6326df2ab514cf219af4826",
+      "shortHash": "50f851a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.8 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "748c7c89b7da7bb75ddcdeb55532ee47906e02ac",
+      "shortHash": "748c7c8",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/coreupdate\n\nSee merge request genai/frontend/frontend-generic!5"
+    },
+    {
+      "hash": "993d5bc67ef98baae68b325fa3825bba0c0495db",
+      "shortHash": "993d5bc",
+      "type": "feat",
+      "scope": "templates",
+      "subject": "fixing tier workflow builder",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ab0483436f5aed73599911aef526479ce5329b91",
+      "shortHash": "ab04834",
+      "type": "feat",
+      "scope": "tiers",
+      "subject": "fixing workflows tiers and tempalting",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "8f2945a110443e21b1a9dfede9675c1f28fe2289",
+      "shortHash": "8f2945a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.7",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
