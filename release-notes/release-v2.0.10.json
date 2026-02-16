@@ -1,0 +1,105 @@
+{
+  "version": "2.0.10",
+  "tag": "v2.0.10",
+  "previousTag": "v2.0.9",
+  "date": "2026-02-16T11:21:17.794Z",
+  "stats": {
+    "features": 0,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "152ab35",
+        "type": "fix",
+        "scope": "conflicts",
+        "subject": "fixing conflicts",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "17b02bd",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.10 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "dd49add",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.9",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "4cbe22d",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'fix/conflicts' into 'develop'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "17b02bd4d8f8084f38f59e5cb7f8950c1c463245",
+      "shortHash": "17b02bd",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.10 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "4cbe22d058fcc60fa5957496765bf46171bab96c",
+      "shortHash": "4cbe22d",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'fix/conflicts' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(conflicts): fixing conflicts\n\nSee merge request genai/frontend/frontend-generic!7"
+    },
+    {
+      "hash": "152ab3558f017e58aed4c060395b72ecf96d65b7",
+      "shortHash": "152ab35",
+      "type": "fix",
+      "scope": "conflicts",
+      "subject": "fixing conflicts",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "dd49add5ce011f03d6e515d5b631edd19fe8e0a0",
+      "shortHash": "dd49add",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.9",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
