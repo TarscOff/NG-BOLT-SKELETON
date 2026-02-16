@@ -1,0 +1,122 @@
+{
+  "version": "2.0.6",
+  "tag": "v2.0.6",
+  "previousTag": "v2.0.5",
+  "date": "2025-12-10T10:26:21.762Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 4,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "a07a305",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.6 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8dc0182",
+        "type": "chore",
+        "scope": "core",
+        "subject": "updating navigation",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "b9d445a",
+        "type": "chore",
+        "scope": "core",
+        "subject": "init core + app starter + gitlabCnfig + docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2c0b0b8",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.5",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "35a1943",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #38 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "a07a305de035176cde42fa40c6131822df435eb4",
+      "shortHash": "a07a305",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.6 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "35a1943283f89550c8398d8051984e7791d9143d",
+      "shortHash": "35a1943",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #38 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
+    },
+    {
+      "hash": "8dc01826d85e0ee7519901265b14621c43729312",
+      "shortHash": "8dc0182",
+      "type": "chore",
+      "scope": "core",
+      "subject": "updating navigation",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "b9d445aab0c5f9b4e4dba359d8c2ba08c6d75e52",
+      "shortHash": "b9d445a",
+      "type": "chore",
+      "scope": "core",
+      "subject": "init core + app starter + gitlabCnfig + docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2c0b0b8523b59d18f3f4851dfe34d9937ed11845",
+      "shortHash": "2c0b0b8",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.5",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

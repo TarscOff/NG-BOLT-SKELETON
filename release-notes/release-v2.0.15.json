@@ -1,0 +1,105 @@
+{
+  "version": "2.0.15",
+  "tag": "v2.0.15",
+  "previousTag": "v2.0.14",
+  "date": "2025-12-24T12:42:41.680Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "abfcb02",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "full API integration + styles readaptations + sessions grouping",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "a24bf69",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.15 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d8facb1",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.14",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "d03a946",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #52 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "a24bf69d38c843725b0a30e7a9b23128358aab21",
+      "shortHash": "a24bf69",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.15 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d03a946736c99957b3cf36ca8ecc2ef58873ba2a",
+      "shortHash": "d03a946",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #52 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(workflows):  full API integration + styles readaptations + sessi…"
+    },
+    {
+      "hash": "abfcb021a8e52e09b46b72dd8b984a874b709da7",
+      "shortHash": "abfcb02",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "full API integration + styles readaptations + sessions grouping",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d8facb1d95ba827e5233acceeb0ec19e93675c14",
+      "shortHash": "d8facb1",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.14",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

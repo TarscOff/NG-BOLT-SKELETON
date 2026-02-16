@@ -1,0 +1,104 @@
+{
+  "version": "2.0.8",
+  "tag": "v2.0.8",
+  "previousTag": "v2.0.7",
+  "date": "2025-12-17T10:37:23.293Z",
+  "stats": {
+    "features": 0,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 3,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "b0aacb8",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.8 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "df70aa4",
+        "type": "chore",
+        "scope": "core",
+        "subject": "allign core with skeleton",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d635200",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.7",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "3b7c75a",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #42 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "b0aacb8373b157ee48f54d5c320dfbd54e07f485",
+      "shortHash": "b0aacb8",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.8 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "3b7c75a5947ff27ba44816b70c32cb38937e9313",
+      "shortHash": "3b7c75a",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #42 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "chore(core): allign core with skeleton"
+    },
+    {
+      "hash": "df70aa4dd3a401bfc0a694a05a950fe19cd7c5b5",
+      "shortHash": "df70aa4",
+      "type": "chore",
+      "scope": "core",
+      "subject": "allign core with skeleton",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d6352002aeca471cb76068386d45525e9dfb8dc3",
+      "shortHash": "d635200",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.7",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

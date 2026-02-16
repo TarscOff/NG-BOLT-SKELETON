@@ -45,17 +45,169 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+* **workflows:** updating docs ([19edb13](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/19edb1360fdf743579b1f23760f83234f04505d8))
+* **workflows:** updating docs ([2ab3df9](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/2ab3df9ebd0793b15feafc3d4de992f33dbd5b69))
 
-### [2.0.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.2) (2025-12-04)
+### [2.0.26](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.25...v2.0.26) (2026-01-26)
 
-### [2.0.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.1) (2025-12-04)
+
+### Features
+
+* **workflows:** workflows ([8e8219d](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
+* **workflows:** workflows ([14bd08c](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
+
+### [2.0.25](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.24...v2.0.25) (2026-01-26)
+
+
+### Features
+
+* **workflows:** workflows ([a4e3683](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/a4e3683cbd6efc70d9dd377fe516b3396c2188f1))
+
+### [2.0.24](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.23...v2.0.24) (2026-01-14)
 
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([a95eb10](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
-* **ciCd:** fixing ci-cd ([db07ab8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
+* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
+
+### [2.0.23](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.22...v2.0.23) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([94e71e3](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/94e71e34e2b10c6005879acd109fb0ccd1c3e34e))
+
+### [2.0.22](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.21...v2.0.22) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([29b55f8](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
+
+### [2.0.21](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.20...v2.0.21) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([d05a5ef](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/d05a5ef39de54ae93d8b9af55df84250d8e456af))
+
+### [2.0.20](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.19...v2.0.20) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([59d63b5](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/59d63b5f409edc9bc83daa866f43a86909447b19))
+
+### [2.0.19](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.18...v2.0.19) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([2a96139](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/2a9613960f2ba9d55fefb73f1d8109e10f04696f))
+
+### [2.0.18](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.17...v2.0.18) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
+
+### [2.0.17](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.16...v2.0.17) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([dc8fbc0](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/dc8fbc01926a4e678d4d2535a87fefd6b9b7ea49))
+
+### [2.0.16](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.15...v2.0.16) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([9c2c0f8](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/9c2c0f804e5b989fe19bf30ac4eacd0625265df7))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([1cd8f33](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/1cd8f333a66b82d8fa85bef9c46356ee1aed73e2))
+
+### [2.0.15](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.14...v2.0.15) (2025-12-24)
+
+
+### Features
+
+* **workflows:**  full API integration + styles readaptations + sessions grouping ([abfcb02](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/abfcb021a8e52e09b46b72dd8b984a874b709da7))
+
+### [2.0.14](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.13...v2.0.14) (2025-12-23)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
+
+### [2.0.13](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.12...v2.0.13) (2025-12-23)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ccf717d](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/ccf717d5d19abe137f08a962a59243929add24c5))
+
+### [2.0.12](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.11...v2.0.12) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+
+### [2.0.11](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.10...v2.0.11) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
+
+### [2.0.10](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.9...v2.0.10) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([6e5f08a](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+
+### [2.0.9](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.8...v2.0.9) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([c33aeba](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
+
+### [2.0.8](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.7...v2.0.8) (2025-12-17)
+
+### [2.0.7](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.6...v2.0.7) (2025-12-11)
+
+### [2.0.6](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.5...v2.0.6) (2025-12-10)
+
+### [2.0.5](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.4...v2.0.5) (2025-12-04)
+
+### [2.0.4](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.3...v2.0.4) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([b1c28ab](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
+* **ciCd:** fixing ci-cd documentation ([1572c43](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
+
+### [2.0.3](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.2...v2.0.3) (2025-12-04)
+
+### [2.0.2](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.1...v2.0.2) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([ce37a1b](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+
+### [2.0.1](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.0...v2.0.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([a95eb10](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
+* **ciCd:** fixing ci-cd ([db07ab8](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
 
 ## [2.0.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.11.5...v2.0.0) (2025-12-03)
 

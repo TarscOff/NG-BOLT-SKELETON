@@ -1,0 +1,105 @@
+{
+  "version": "2.0.19",
+  "tag": "v2.0.19",
+  "previousTag": "v2.0.18",
+  "date": "2026-01-12T15:29:47.477Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "2a96139",
+        "type": "feat",
+        "scope": "chat",
+        "subject": "splitting endpoints and adding artifacts upload as independent feature",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "9627192",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.19 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "3207426",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.18",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "883568a",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #56 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "962719259f2e851dcd62ab0659ccf80614bdc0bf",
+      "shortHash": "9627192",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.19 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "883568a33a463a74444e2a3d0ee52f0ed0fc3641",
+      "shortHash": "883568a",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #56 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(chat): splitting endpoints and adding artifacts upload as indepe…"
+    },
+    {
+      "hash": "2a9613960f2ba9d55fefb73f1d8109e10f04696f",
+      "shortHash": "2a96139",
+      "type": "feat",
+      "scope": "chat",
+      "subject": "splitting endpoints and adding artifacts upload as independent feature",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "3207426e6537cce6ad676102511b461099b9ac26",
+      "shortHash": "3207426",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.18",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "version": "2.0.13",
+  "tag": "v2.0.13",
+  "previousTag": "v2.0.12",
+  "date": "2025-12-23T16:32:41.516Z",
+  "stats": {
+    "features": 1,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 2,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "ccf717d",
+        "type": "feat",
+        "scope": "app",
+        "subject": "integration API and ci updates + latest changes on core",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "2575dd2",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.13 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "8026a7c",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.12",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "fa114f8",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #50 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "84bf9a7",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'develop' into fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "2575dd2efd3a4b602f5ca7036218fb36fe346ec3",
+      "shortHash": "2575dd2",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.13 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fa114f818f32497a947fb17d1c649e24b28323c9",
+      "shortHash": "fa114f8",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #50 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(app): integration API and ci updates + latest changes on core"
+    },
+    {
+      "hash": "84bf9a7945cd6da2ed827b472fc7b915e892672c",
+      "shortHash": "84bf9a7",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'develop' into fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ccf717d5d19abe137f08a962a59243929add24c5",
+      "shortHash": "ccf717d",
+      "type": "feat",
+      "scope": "app",
+      "subject": "integration API and ci updates + latest changes on core",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "8026a7c04534db1bc7e01064d54758dc59b02067",
+      "shortHash": "8026a7c",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.12",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

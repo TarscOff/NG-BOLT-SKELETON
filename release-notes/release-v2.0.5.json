@@ -1,8 +1,8 @@
 {
-  "version": "2.0.3",
-  "tag": "v2.0.3",
-  "previousTag": "v2.0.2",
-  "date": "2025-12-04T14:03:29.134Z",
+  "version": "2.0.5",
+  "tag": "v2.0.5",
+  "previousTag": "v2.0.4",
+  "date": "2025-12-04T14:40:08.556Z",
   "stats": {
     "features": 0,
     "fixes": 0,
@@ -22,18 +22,18 @@
     "docs": [],
     "chores": [
       {
-        "hash": "42fe6b0",
+        "hash": "9534366",
         "type": "chore",
         "scope": "release",
-        "subject": "v2.0.3 – CI release develop",
+        "subject": "v2.0.5 – CI release develop",
         "breaking": false,
         "notes": []
       },
       {
-        "hash": "daaf616",
+        "hash": "20be3e7",
         "type": "chore",
         "scope": "release",
-        "subject": "add JSON notes for v2.0.2",
+        "subject": "add JSON notes for v2.0.4",
         "breaking": false,
         "notes": []
       }
@@ -41,10 +41,10 @@
     "tests": [],
     "others": [
       {
-        "hash": "a99fc4a",
+        "hash": "079bc2e",
         "type": "other",
         "scope": null,
-        "subject": "Update azure-pipelines.yaml",
+        "subject": "Update README.md",
         "breaking": false,
         "notes": []
       }
@@ -53,31 +53,31 @@
   },
   "commits": [
     {
-      "hash": "42fe6b0bb40a133206d79d3472f7ca60a276d770",
-      "shortHash": "42fe6b0",
+      "hash": "9534366365909b796df0e16a7ff2355fb525bb1a",
+      "shortHash": "9534366",
       "type": "chore",
       "scope": "release",
-      "subject": "v2.0.3 – CI release develop",
+      "subject": "v2.0.5 – CI release develop",
       "breaking": false,
       "notes": [],
       "body": ""
     },
     {
-      "hash": "a99fc4aa707c8ff9962af38df278ba3dec7558a6",
-      "shortHash": "a99fc4a",
+      "hash": "079bc2e1aaf725b2e8e11ac24e9790aeeb042c6a",
+      "shortHash": "079bc2e",
       "type": "other",
       "scope": null,
-      "subject": "Update azure-pipelines.yaml",
+      "subject": "Update README.md",
       "breaking": false,
       "notes": [],
       "body": ""
     },
     {
-      "hash": "daaf616d1d2db3273e028f8193d2e4447343e4d3",
-      "shortHash": "daaf616",
+      "hash": "20be3e7e7c5cf0b3ed79fb27d799bec2dd145ec5",
+      "shortHash": "20be3e7",
       "type": "chore",
       "scope": "release",
-      "subject": "add JSON notes for v2.0.2",
+      "subject": "add JSON notes for v2.0.4",
       "breaking": false,
       "notes": [],
       "body": ""

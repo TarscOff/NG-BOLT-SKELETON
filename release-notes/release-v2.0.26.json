@@ -1,0 +1,123 @@
+{
+  "version": "2.0.26",
+  "tag": "v2.0.26",
+  "previousTag": "v2.0.25",
+  "date": "2026-01-26T14:45:28.595Z",
+  "stats": {
+    "features": 2,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "8e8219d",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflows",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "14bd08c",
+        "type": "feat",
+        "scope": "workflows",
+        "subject": "workflows",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "36eceea",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.26 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "9ac423a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.25",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "c6aa436",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #63 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "36eceea520cfb050bf02e03792d451a97306a8e8",
+      "shortHash": "36eceea",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.26 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "c6aa436eec35686b42d2a03c340a3c5fd1061be2",
+      "shortHash": "c6aa436",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #63 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
+    },
+    {
+      "hash": "8e8219db048c071334927c3d66112f3dcf8adf18",
+      "shortHash": "8e8219d",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflows",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "14bd08cff74cea9af6f6459f0cc790aab2855f71",
+      "shortHash": "14bd08c",
+      "type": "feat",
+      "scope": "workflows",
+      "subject": "workflows",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "9ac423abe698f6b4f82db6d32601f47e6d49c0b7",
+      "shortHash": "9ac423a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.25",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
