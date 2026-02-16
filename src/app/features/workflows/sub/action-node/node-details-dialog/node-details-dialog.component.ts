@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { FieldConfigService } from '@cadai/pxs-ng-core/services';
@@ -34,11 +36,14 @@ export interface NodeDetailsDialogData {
 @Component({
     selector: 'app-node-details-dialog',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatIconModule, MatTabsModule, MatCheckboxModule, DynamicFormComponent, FieldHostComponent, TranslateModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatIconModule, MatTabsModule, MatCheckboxModule, MatTooltipModule, MatExpansionModule, DynamicFormComponent, FieldHostComponent, TranslateModule],
     template: `
     <h2 mat-dialog-title class="dialog-title">
       <mat-icon *ngIf="data.icon">{{ data.icon }}</mat-icon>
       <app-dynamic-form class="title-form" [form]="labelForm" [config]="labelConfig"></app-dynamic-form>
+      <button mat-icon-button mat-dialog-close class="close-button" [attr.aria-label]="'close' | translate">
+        <mat-icon>close</mat-icon>
+      </button>
     </h2>
     <div mat-dialog-content class="dialog-content">
       <div class="badges">
@@ -46,67 +51,122 @@ export interface NodeDetailsDialogData {
         <span class="badge" *ngIf="data.pinned">{{ 'workflow.node.pinned' | translate }}</span>
         <span class="badge" *ngIf="data.disabled">{{ 'workflow.node.disabled' | translate }}</span>
       </div>
-
-      <mat-tab-group>
-        <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.params' | translate }}</ng-template>
-          <app-dynamic-form [form]="data.form" [config]="data.config"></app-dynamic-form>
-        </mat-tab>
-        <mat-tab>
-          <ng-template mat-tab-label>{{ 'workflow.dialog.ports' | translate }}</ng-template>
-          <div class="ports-editor">
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.inputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of inputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
+      <div class="dialog-content__container">
+        <div class="node-inputs">
+          <mat-expansion-panel [expanded]="true" class="custom-expansion-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <h3>{{ 'workflow.dialog.inputs' | translate }}</h3>
+                <span class="port-count">{{ inputs.length }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="port-info-list">
+              <div class="port-info-item" *ngFor="let p of inputs">
+                <div class="port-info-name">
+                  <span>{{ p.form.get('label')?.value }}</span>
+                  <mat-icon class="required-icon" *ngIf="p.form.get('required')?.value" 
+                    [matTooltip]="'workflow.dialog.required' | translate">star</mat-icon>
+                </div>
+                <span class="port-info-type">{{ p.form.get('type')?.value }}</span>
+              </div>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel [expanded]="true" class="custom-expansion-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <div class="logs-header">{{ 'workflow.runPanel.logs' | translate }}</div>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="logs-content">
+              <p class="logs-placeholder">{{ 'workflow.runPanel.no_logs' | translate }}</p>
+            </div>
+          </mat-expansion-panel>
+        </div>
+        <mat-tab-group>
+          <mat-tab>
+            <ng-template mat-tab-label>{{ 'workflow.dialog.params' | translate }}</ng-template>
+            <app-dynamic-form [form]="data.form" [config]="data.config"></app-dynamic-form>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>{{ 'workflow.dialog.ports' | translate }}</ng-template>
+            <div class="ports-editor">
+              <div class="ports-section">
+                <div class="ports-title">{{ 'workflow.dialog.inputs' | translate }}</div>
+                <div class="port-row" *ngFor="let p of inputs; let i = index">
+                  <form [formGroup]="p.form" class="port-form">
+                    @for (field of p.config; track field.name) {
+                      @if (p.form.get(field.name); as ctl) {
+                        <app-field-host [field]="field" [control]="ctl"></app-field-host>
+                      } @else {
+                        <div class="port-field-placeholder"></div>
+                      }
                     }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeInput(i)" [disabled]="inputs.length <= 1">
-                  <mat-icon>close</mat-icon>
+                  </form>
+                  <button mat-icon-button color="warn" (click)="removeInput(i)" [disabled]="inputs.length <= 1">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <button mat-flat-button color="primary" (click)="addInput()">
+                  <mat-icon>add</mat-icon>
+                  {{ 'workflow.dialog.add_input' | translate }}
                 </button>
               </div>
-              <button mat-flat-button color="primary" (click)="addInput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_input' | translate }}
-              </button>
-            </div>
 
-            <div class="ports-section">
-              <div class="ports-title">{{ 'workflow.dialog.outputs' | translate }}</div>
-              <div class="port-row" *ngFor="let p of outputs; let i = index">
-                <form [formGroup]="p.form" class="port-form">
-                  @for (field of p.config; track field.name) {
-                    @if (p.form.get(field.name); as ctl) {
-                      <app-field-host [field]="field" [control]="ctl"></app-field-host>
-                    } @else {
-                      <div class="port-field-placeholder"></div>
+              <div class="ports-section">
+                <div class="ports-title">{{ 'workflow.dialog.outputs' | translate }}</div>
+                <div class="port-row" *ngFor="let p of outputs; let i = index">
+                  <form [formGroup]="p.form" class="port-form">
+                    @for (field of p.config; track field.name) {
+                      @if (p.form.get(field.name); as ctl) {
+                        <app-field-host [field]="field" [control]="ctl"></app-field-host>
+                      } @else {
+                        <div class="port-field-placeholder"></div>
+                      }
                     }
-                  }
-                </form>
-                <button mat-icon-button color="warn" (click)="removeOutput(i)" [disabled]="outputs.length <= 1">
-                  <mat-icon>close</mat-icon>
+                  </form>
+                  <button mat-icon-button color="warn" (click)="removeOutput(i)" [disabled]="outputs.length <= 1">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <button mat-flat-button color="primary" (click)="addOutput()">
+                  <mat-icon>add</mat-icon>
+                  {{ 'workflow.dialog.add_output' | translate }}
                 </button>
               </div>
-              <button mat-flat-button color="primary" (click)="addOutput()">
-                <mat-icon>add</mat-icon>
-                {{ 'workflow.dialog.add_output' | translate }}
-              </button>
             </div>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
-    <div mat-dialog-actions align="end">
-      <button mat-flat-button mat-dialog-close>
-        <mat-icon>close</mat-icon>
-        {{ 'close' | translate }}
-      </button>
+          </mat-tab>
+        </mat-tab-group>
+        <div class="node-outputs">
+          <mat-expansion-panel [expanded]="true" class="custom-expansion-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <h3>{{ 'workflow.dialog.outputs' | translate }}</h3>
+                <span class="port-count">{{ outputs.length }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="port-info-list">
+              <div class="port-info-item" *ngFor="let p of outputs">
+                <div class="port-info-name">
+                  <span>{{ p.form.get('label')?.value }}</span>
+                  <mat-icon class="required-icon" *ngIf="p.form.get('required')?.value"
+                    [matTooltip]="'workflow.dialog.required' | translate">star</mat-icon>
+                </div>
+                <span class="port-info-type">{{ p.form.get('type')?.value }}</span>
+              </div>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel [expanded]="true" class="custom-expansion-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <div class="logs-header">{{ 'workflow.runPanel.logs' | translate }}</div>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="logs-content">
+              <p class="logs-placeholder">{{ 'workflow.runPanel.no_logs' | translate }}</p>
+            </div>
+          </mat-expansion-panel>
+        </div>
+      </div>
     </div>
   `,
     styles: [`
@@ -123,6 +183,7 @@ export interface NodeDetailsDialogData {
     .ports-title { font-weight:600; font-size:12px; text-transform: uppercase; opacity:0.7; }
     .port-row { display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; }
     .port-form { flex: 1; display:grid; grid-template-columns: minmax(140px, 1fr) minmax(160px, 1fr) auto; gap:8px; align-items:center; }
+    :host ::ng-deep .port-form .mat-mdc-slide-toggle { margin-bottom: 20px; }
     .port-form app-field-host { min-width: 0; }
     .port-field-placeholder { min-height: 48px; }
     :host ::ng-deep .mat-mdc-tab-body-content { padding: 12px 4px 4px; box-sizing: border-box; }
@@ -130,6 +191,7 @@ export interface NodeDetailsDialogData {
     :host ::ng-deep .mat-mdc-tab-body-wrapper { flex: 1; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body { flex: 1; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body-content { height: 100%; overflow: auto; }
+    :host { display: flex; flex-direction: column; flex: 1; padding: 32px 0; }
   `]
 })
 export class NodeDetailsDialogComponent implements OnDestroy {
@@ -190,6 +252,7 @@ export class NodeDetailsDialogComponent implements OnDestroy {
                 layoutClass: 'primary',
                 color: 'primary',
                 defaultValue: labelValue,
+                helperText: undefined
             })
         ];
         this.labelControl = this.fb.control(labelValue, {
@@ -289,7 +352,7 @@ export class NodeDetailsDialogComponent implements OnDestroy {
                 name: 'label',
                 label: 'workflow.dialog.port_name',
                 placeholder: 'workflow.dialog.port_name_placeholder',
-                helperText: 'workflow.dialog.port_name_help',
+                helperText: undefined,
                 defaultValue: port.label ?? '',
                 required: true,
                 minLength: labelMin,
@@ -320,7 +383,7 @@ export class NodeDetailsDialogComponent implements OnDestroy {
             this.fields.getToggleField({
                 name: 'required',
                 label: 'workflow.dialog.required',
-                helperText: 'workflow.dialog.port_required_help',
+                helperText: undefined,
                 required: false,
                 layoutClass: 'primary',
                 color: 'primary',

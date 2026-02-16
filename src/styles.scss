@@ -276,3 +276,9 @@ html.dark {
     border-top-color: rgba(255, 255, 255, 0.12);
   }
 }
+
+.action-node-dialog {
+  .mdc-dialog__surface {
+      border-radius: 0 !important;
+  }
+}

@@ -1,0 +1,43 @@
+<div class="run-panel-container">
+    <div class="panel-header">
+        <button mat-icon-button (click)="onClose()" [matTooltip]="'close' | translate">
+            <mat-icon>close</mat-icon>
+        </button>
+        <h3>{{ 'workflow.runPanel.title' | translate }}</h3>
+        <span class="spacer"></span>
+    </div>
+    
+    <div class="panel-content">
+        @if (workflow()) {
+            <div class="workflow-info">
+                <h4>{{ workflow()?.name }}</h4>
+            </div>
+            
+            <div class="execution-section">
+                @if (runs().length > 0) {
+                    <div class="run-list">
+                        <div class="run-list-title">{{ 'workflow.runPanel.runs' | translate }}</div>
+                        @for (run of runs(); track run.id; let i = $index) {
+                            <button type="button" class="run-item" [class.active]="activeRunId() === run.id" (click)="selectRun(run.id)">
+                                <div class="run-item-title">#{{ runs().length - i }} • {{ run.workflow.name }}</div>
+                                <div class="run-item-meta">
+                                    <span>{{ run.startedAt | date:'short' }}</span>
+                                    <span [ngClass]="['status-chip', runStatus(run)]">{{ ('status.' + runStatus(run)) | translate }}</span>
+                                </div>
+                            </button>
+                        }
+                    </div>
+                } @else {
+                    <div class="empty-execution">
+                        <mat-icon>history</mat-icon>
+                        <p>{{ 'workflow.runPanel.no_executions' | translate }}</p>
+                    </div>
+                }
+            </div>
+        } @else {
+        <div class="empty">
+            {{ 'workflow.runPanel.empty' | translate : { default: 'No pipeline to run yet.' } }}
+        </div>
+        }
+    </div>
+</div>

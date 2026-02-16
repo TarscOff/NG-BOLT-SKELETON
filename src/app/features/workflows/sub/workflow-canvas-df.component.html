@@ -84,12 +84,6 @@
     @if (!disabledSig()) {
     <div class="canvas-pane_actions">
       <app-dynamic-form class="form" [config]="fieldConfig" [form]="form"></app-dynamic-form>
-      <button mat-fab extended class="run-panel-btn" color="warn" (click)="toggleRunPanel()"
-        [attr.aria-expanded]="showRunPanel()" matTooltip="{{showRunPanel() ? 'close' : 'open' }}">
-        <mat-icon>{{ showRunPanel() ? 'visibility_off' : 'visibility' }}</mat-icon>
-        {{"run-panel" | translate}}
-      </button>
-
       <button mat-fab extended class="palette-toggle" color="primary"
         (click)="!disabledSig() && showPalette.set(!showPalette())" [disabled]="disabledSig()"
         [attr.aria-expanded]="showPalette()" matTooltip="{{showPalette() ? 'close' : 'open' }}">
