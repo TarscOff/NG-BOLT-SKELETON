@@ -30,6 +30,7 @@ import {
     ensurePorts,
 } from './data/workflows.store';
 import { inferPortTypeFromReference } from './templates/utils/workflow-graph.utils';
+import { RunPanelDetailComponent } from './sub/run-panel/run-panel-detail.component';
 type UnsavedChoice = 'save' | 'discard' | 'cancel';
 
 @Component({
