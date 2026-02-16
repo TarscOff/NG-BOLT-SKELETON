@@ -1,0 +1,123 @@
+{
+  "version": "2.0.16",
+  "tag": "v2.0.16",
+  "previousTag": "v2.0.15",
+  "date": "2026-01-12T10:17:45.698Z",
+  "stats": {
+    "features": 2,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "9c2c0f8",
+        "type": "feat",
+        "scope": "chat",
+        "subject": "splitting endpoints and adding artifacts upload as independent feature",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1cd8f33",
+        "type": "feat",
+        "scope": "chat",
+        "subject": "splitting endpoints and adding artifacts upload as independent feature",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "38fce18",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.16 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2e4894a",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.15",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "783da28",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #53 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "38fce1858b8c904d8941b98abc7d564c1620fda1",
+      "shortHash": "38fce18",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.16 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "783da2800f8a898e8d640dc74536d4fdd4ba17fc",
+      "shortHash": "783da28",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #53 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(chat): splitting endpoints and adding artifacts upload as independent featureFix/core update"
+    },
+    {
+      "hash": "9c2c0f804e5b989fe19bf30ac4eacd0625265df7",
+      "shortHash": "9c2c0f8",
+      "type": "feat",
+      "scope": "chat",
+      "subject": "splitting endpoints and adding artifacts upload as independent feature",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1cd8f333a66b82d8fa85bef9c46356ee1aed73e2",
+      "shortHash": "1cd8f33",
+      "type": "feat",
+      "scope": "chat",
+      "subject": "splitting endpoints and adding artifacts upload as independent feature",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2e4894a2fc1aa6235966358f4d41b277d7f97944",
+      "shortHash": "2e4894a",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.15",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

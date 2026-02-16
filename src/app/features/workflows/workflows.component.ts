@@ -414,7 +414,7 @@ export class WorkflowsComponent implements OnInit {
                 require_confirmation: false,
             },
         },
-    
+
         embed: {
             make: () => [
                 this.fieldsConfigService.getTextField({

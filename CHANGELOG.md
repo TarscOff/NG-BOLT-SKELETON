@@ -2,122 +2,212 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [2.0.8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.7...v2.0.8) (2026-02-16)
+### [2.0.4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.4) (2026-02-12)
 
 
 ### Features
 
-* **templates:** fixing tier workflow builder ([993d5bc](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/993d5bc67ef98baae68b325fa3825bba0c0495db))
-* **tiers:** fixing workflows tiers and tempalting ([ab04834](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/ab0483436f5aed73599911aef526479ce5329b91))
-
-### [2.0.7](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.6...v2.0.7) (2026-01-28)
-
-
-### Bug Fixes
-
-* **workflows:** updating docs ([19edb13](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/19edb1360fdf743579b1f23760f83234f04505d8))
-
-### [2.0.6](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.5...v2.0.6) (2026-01-28)
-
-
-### Bug Fixes
-
-* **workflows:** updating docs ([2ab3df9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/2ab3df9ebd0793b15feafc3d4de992f33dbd5b69))
-
-### [2.0.5](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.4...v2.0.5) (2026-01-26)
-
-
-### Features
-
-* **workflows:** workflows ([8e8219d](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
-* **workflows:** workflows ([14bd08c](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
-
-### 2.0.4 (2026-01-26)
-
-
-### Features
-
-* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
-* **app:** integration API and ci updates + latest changes on core ([ccf717d](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/ccf717d5d19abe137f08a962a59243929add24c5))
-* **chat:** splitting endpoints and adding artifacts upload as independent feature ([2a96139](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/2a9613960f2ba9d55fefb73f1d8109e10f04696f))
-* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
-* **chat:** splitting endpoints and adding artifacts upload as independent feature ([dc8fbc0](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/dc8fbc01926a4e678d4d2535a87fefd6b9b7ea49))
-* **chat:** splitting endpoints and adding artifacts upload as independent feature ([9c2c0f8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/9c2c0f804e5b989fe19bf30ac4eacd0625265df7))
-* **chat:** splitting endpoints and adding artifacts upload as independent feature ([1cd8f33](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/1cd8f333a66b82d8fa85bef9c46356ee1aed73e2))
-* **components:** charts, tables, layout, components finalized ([6961312](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/6961312b15b8e16a2f6b159839a5e58f89ee185c))
-* **components:** custom components + form builder OK ([6b56b4f](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/6b56b4f43b111923c3b60f5ae7b746551b34aca0))
-* **config:** app fully configurable and passes items to core ([879b79f](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/879b79fa9186a1246b817492ad9bec7f82008339))
-* **core:** installing new package ([50651a5](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/50651a5e8272a1e2311965dedbdda1123a75b3e3))
-* **csp:** fixing csp lines ([6e5f08a](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
-* **csp:** fixing csp lines ([c33aeba](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
-* **documentation:** adding documentation and relative paths for each ([187a0cd](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/187a0cdc5819afc16a34d81ec8e2c9d8c7a3fc38))
-* **dynamicForms:** dynamic forms enhanced with more attributes ([93554b6](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/93554b66d361ce921f7bc998db9f4a4bbf9a7ebf))
-* **favorites:** adding favorites feature ([94e71e3](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/94e71e34e2b10c6005879acd109fb0ccd1c3e34e))
-* **favorites:** adding favorites feature ([29b55f8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
-* **favorites:** adding favorites feature ([d05a5ef](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/d05a5ef39de54ae93d8b9af55df84250d8e456af))
-* **favorites:** adding favorites feature ([59d63b5](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/59d63b5f409edc9bc83daa866f43a86909447b19))
-* **keycloack:** keycloak init and guards implementation ([8b63154](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/8b631541f5bd1e03923b29b6d283270c699025df))
-* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
-* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
-* **templating:** creating workflows dynanic templates ([de351f3](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/de351f34bfe79113b6ff687ef632bdb1419f9af9))
-* **templating:** creating workflows dynanic templates + refactoring code ([9162ea3](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/9162ea3f2d71285f4c58014b0027dc9badf48294))
-* **templating:** creating workflows dynanic templates + refactoring code ([cddd33a](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/cddd33a98a84c932e2673c8220416476925937f5))
-* **templating:** creating workflows dynanic templates + refactoring code ([13064a9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/13064a9f7d91c2ecd598668bb8314c592b7c145b))
-* **templating:** creating workflows dynanic templates + refactoring code ([c3b251a](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/c3b251aad093c62efcb75401c06da27bf35e2d19))
-* **workflows:**  full API integration + styles readaptations + sessions grouping ([abfcb02](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/abfcb021a8e52e09b46b72dd8b984a874b709da7))
-* **workflows:** workflow builder instance ([c314382](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/c314382e79d099206f2f655836b7ca1f1ad40c70))
-* **workflows:** workflow builder instance ([4c6d09a](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/4c6d09acb7a1ad7e207b78efd606b59a605a3517))
-* **workflows:** workflows ([a4e3683](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/a4e3683cbd6efc70d9dd377fe516b3396c2188f1))
-* **wortkflow:** dynamic entrypoints enabled ([6f88d64](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/6f88d649c2499c346e08e1693b4247f3499334f4))
-* **wortkflow:** dynamic entrypoints enabled ([e81e562](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/e81e56224bc4851b870ea4098c860121ad98a593))
-* **wortkflow:** dynamic entrypoints enabled ([325d284](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/325d28470cf48b13521bd7fbcd25afe4765c7487))
-* **wortkflow:** dynamic entrypoints enabled ([36dd9d5](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/36dd9d53f48e51aac777e9b1943bfd1dfff69288))
-* **wortkflow:** dynamic entrypoints enabled ([2461a5d](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/2461a5dbd26419129de12533e182f87a589791e1))
-* **wortkflow:** dynamic workflow builder ([51af30c](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/51af30ce14b30b73ba633283c49c88774eaa634f))
+* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
+* **app:** integration API and ci updates + latest changes on core ([ccf717d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ccf717d5d19abe137f08a962a59243929add24c5))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([2a96139](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2a9613960f2ba9d55fefb73f1d8109e10f04696f))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([dc8fbc0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/dc8fbc01926a4e678d4d2535a87fefd6b9b7ea49))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([9c2c0f8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/9c2c0f804e5b989fe19bf30ac4eacd0625265df7))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([1cd8f33](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/1cd8f333a66b82d8fa85bef9c46356ee1aed73e2))
+* **csp:** fixing csp lines ([6e5f08a](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+* **csp:** fixing csp lines ([c33aeba](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
+* **favorites:** adding favorites feature ([94e71e3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/94e71e34e2b10c6005879acd109fb0ccd1c3e34e))
+* **favorites:** adding favorites feature ([29b55f8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
+* **favorites:** adding favorites feature ([d05a5ef](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/d05a5ef39de54ae93d8b9af55df84250d8e456af))
+* **favorites:** adding favorites feature ([59d63b5](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/59d63b5f409edc9bc83daa866f43a86909447b19))
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
+* **tiers:** fixing workflows tiers and tempalting ([a1b3d78](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a1b3d78aa795a3dfb8e5e058870e2bf84ccc7d69))
+* **workflows:**  full API integration + styles readaptations + sessions grouping ([abfcb02](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/abfcb021a8e52e09b46b72dd8b984a874b709da7))
+* **workflows:** workflows ([8e8219d](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
+* **workflows:** workflows ([14bd08c](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
+* **workflows:** workflows ([a4e3683](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a4e3683cbd6efc70d9dd377fe516b3396c2188f1))
 
 
 ### Bug Fixes
 
-* **appConfig:** passing environments from hsot app to core ([1506931](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/1506931e97c295dbd108d0f0fe437bd64a45f58a))
-* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
-* **ciCd:** fixing ci-cd ([b1c28ab](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
-* **ciCd:** fixing ci-cd ([ce37a1b](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
-* **ciCd:** fixing ci-cd ([a95eb10](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
-* **ciCd:** fixing ci-cd ([db07ab8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
-* **ciCd:** fixing ci-cd documentation ([1572c43](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
-* **ci:** fix ci/cd ([cc97858](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/cc97858efd1ce5ccccdaed78f27d99cc11312e09))
-* **ci:** fix ci/cd ([e3a5a36](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/e3a5a36be66d17aad51935c4906f438f08267ddf))
-* **ci:** fix ci/cd ([60897ab](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/60897ab594339b3b5634a168a1ae677b21a8cb5f))
-* **ci:** fix ci/cd ([7eeb763](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/7eeb76306d1e6be184c3896f8dd8f9a12895384c))
-* **ci:** fix ci/cd ([cfe1aba](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/cfe1aba5957233c42c6ffd5ee7f98a292444d83b))
-* **ci:** fix ci/cd ([14515f6](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/14515f65d26e6d31a8b6a993585ba916493ae3d5))
-* **ci:** fix ci/cd ([2d30868](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/2d30868831b9c6123ab186d0720ecbbc84c1a66c))
-* **ci:** fix ci/cd ([c17debb](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/c17debbace7c9d54b2f5b7a39859703171e2a61d))
-* **ci:** fix ci/cd ([9a31fd0](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/9a31fd0be61f3c1db64ef5c20a88913a6b1147af))
-* **ci:** fix ci/cd ([b2d82fd](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/b2d82fdaa53b0875194094de46d1cc9c6eb53967))
-* **ci:** fix ci/cd ([c1dcba7](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/c1dcba7d2ede94ac30ff8793968d94cf94c1c735))
-* **ci:** fix ci/cd ([f904f77](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/f904f77db076652d697046c936d7ae0cee7f4aa9))
-* **ci:** fix ci/cd ([37f56f8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/37f56f84bc56bbc2e3315d73e08ccee895047c6b))
-* **core:** app changes implementation to angular 19 + updating module + udpating configs ([a3f2159](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/a3f215926329313f7f625d6117bd4e11a79e4fdd))
-* **quickSettings:** fixing quick settings and conenction to NGX Store on the SDk + udpating module ([bc77f91](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/bc77f918b8f84123e5525d0230c04ffcfb373c27))
-* **workflows:** workflows fix ([29c7cc9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/29c7cc94f8665433d61ca989114b032b34802279))
+* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
+* **ciCd:** fixing ci-cd ([b1c28ab](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
+* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+* **ciCd:** fixing ci-cd ([a95eb10](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
+* **ciCd:** fixing ci-cd ([db07ab8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
+* **ciCd:** fixing ci-cd documentation ([1572c43](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
+* **workflows:** updating docs ([19edb13](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/19edb1360fdf743579b1f23760f83234f04505d8))
+* **workflows:** updating docs ([2ab3df9](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/2ab3df9ebd0793b15feafc3d4de992f33dbd5b69))
 
 ### [2.0.3](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.3) (2025-12-04)
 
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([ce37a1b](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+* **workflows:** updating docs ([19edb13](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/19edb1360fdf743579b1f23760f83234f04505d8))
+* **workflows:** updating docs ([2ab3df9](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/2ab3df9ebd0793b15feafc3d4de992f33dbd5b69))
 
-### [2.0.2](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.1...v2.0.2) (2025-12-04)
+### [2.0.26](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.25...v2.0.26) (2026-01-26)
 
-### [2.0.1](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v2.0.0...v2.0.1) (2025-12-04)
+
+### Features
+
+* **workflows:** workflows ([8e8219d](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/8e8219db048c071334927c3d66112f3dcf8adf18))
+* **workflows:** workflows ([14bd08c](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/14bd08cff74cea9af6f6459f0cc790aab2855f71))
+
+### [2.0.25](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.24...v2.0.25) (2026-01-26)
+
+
+### Features
+
+* **workflows:** workflows ([a4e3683](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/a4e3683cbd6efc70d9dd377fe516b3396c2188f1))
+
+### [2.0.24](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.23...v2.0.24) (2026-01-14)
 
 
 ### Bug Fixes
 
-* **ciCd:** fixing ci-cd ([a95eb10](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
-* **ciCd:** fixing ci-cd ([db07ab8](https://dev.azure.com/cadai/Socle/_git/FrontEnd/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
+* **chats:** fixing chat behaviour and fixing statuses in whole app ([cbdddf1](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/cbdddf194710556ca3555f205a37b5aa10eac259))
+
+### [2.0.23](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.22...v2.0.23) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([94e71e3](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/94e71e34e2b10c6005879acd109fb0ccd1c3e34e))
+
+### [2.0.22](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.21...v2.0.22) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([29b55f8](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/29b55f80e798bb43efe6a2dc59df605e4f5e5953))
+
+### [2.0.21](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.20...v2.0.21) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([d05a5ef](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/d05a5ef39de54ae93d8b9af55df84250d8e456af))
+
+### [2.0.20](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.19...v2.0.20) (2026-01-13)
+
+
+### Features
+
+* **favorites:** adding favorites feature ([59d63b5](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/59d63b5f409edc9bc83daa866f43a86909447b19))
+
+### [2.0.19](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.18...v2.0.19) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([2a96139](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/2a9613960f2ba9d55fefb73f1d8109e10f04696f))
+
+### [2.0.18](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.17...v2.0.18) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([65b7220](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/65b72206c1cba5a09bfc7f29b18c41d132cfbe62))
+
+### [2.0.17](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.16...v2.0.17) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([dc8fbc0](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/dc8fbc01926a4e678d4d2535a87fefd6b9b7ea49))
+
+### [2.0.16](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.15...v2.0.16) (2026-01-12)
+
+
+### Features
+
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([9c2c0f8](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/9c2c0f804e5b989fe19bf30ac4eacd0625265df7))
+* **chat:** splitting endpoints and adding artifacts upload as independent feature ([1cd8f33](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/1cd8f333a66b82d8fa85bef9c46356ee1aed73e2))
+
+### [2.0.15](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.14...v2.0.15) (2025-12-24)
+
+
+### Features
+
+* **workflows:**  full API integration + styles readaptations + sessions grouping ([abfcb02](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/abfcb021a8e52e09b46b72dd8b984a874b709da7))
+
+### [2.0.14](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.13...v2.0.14) (2025-12-23)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ca15ce4](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/ca15ce483c66f20af7595a48b25a217d7f251125))
+
+### [2.0.13](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.12...v2.0.13) (2025-12-23)
+
+
+### Features
+
+* **app:** integration API and ci updates + latest changes on core ([ccf717d](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/ccf717d5d19abe137f08a962a59243929add24c5))
+
+### [2.0.12](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.11...v2.0.12) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([7f52654](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/7f5265412bd522f73d07db2bc6cfb170cf7f3a0e))
+
+### [2.0.11](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.10...v2.0.11) (2025-12-18)
+
+
+### Features
+
+* **nginx:** fixing cors on nginx and updating ci ([463dfd0](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/463dfd0605bb56564ade008952e7cbdf3b589977))
+
+### [2.0.10](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.9...v2.0.10) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([6e5f08a](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/6e5f08ab75157c66d13d36a044e717a04653a01d))
+
+### [2.0.9](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.8...v2.0.9) (2025-12-17)
+
+
+### Features
+
+* **csp:** fixing csp lines ([c33aeba](https://github.com/TarscOff/NG-BOLT-SKELETON/commit/c33aeba09af010a1b0747c51de5f2dd87974851f))
+
+### [2.0.8](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.7...v2.0.8) (2025-12-17)
+
+### [2.0.7](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.6...v2.0.7) (2025-12-11)
+
+### [2.0.6](https://github.com/TarscOff/NG-BOLT-SKELETON/compare/v2.0.5...v2.0.6) (2025-12-10)
+
+### [2.0.5](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.4...v2.0.5) (2025-12-04)
+
+### [2.0.4](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.3...v2.0.4) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([b1c28ab](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/b1c28ab07aad62628d2acb2a0302a01f061ed217))
+* **ciCd:** fixing ci-cd documentation ([1572c43](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/1572c43f2147934c01d140dd8b7a24cb8488a7a7))
+
+### [2.0.3](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.2...v2.0.3) (2025-12-04)
+
+### [2.0.2](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.1...v2.0.2) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([ce37a1b](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/ce37a1b4c64d4cf7fca8c9e0fed36d6210071146))
+
+### [2.0.1](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/compare/v2.0.0...v2.0.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ciCd:** fixing ci-cd ([a95eb10](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/a95eb108e2642df73af06a0d49b97f385751f22c))
+* **ciCd:** fixing ci-cd ([db07ab8](https://github.com/TarikHaddadi/NG-BOLT-SKELETON/commit/db07ab8d963a1718abedae4e8e76aa15eaf08338))
 
 ## [2.0.0](https://dev.azure.com/cadai/Socle/_git/FrontEnd/compare/v1.11.5...v2.0.0) (2025-12-03)
 

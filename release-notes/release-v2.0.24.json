@@ -1,0 +1,105 @@
+{
+  "version": "2.0.24",
+  "tag": "v2.0.24",
+  "previousTag": "v2.0.23",
+  "date": "2026-01-14T14:34:08.988Z",
+  "stats": {
+    "features": 0,
+    "fixes": 1,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "cbdddf1",
+        "type": "fix",
+        "scope": "chats",
+        "subject": "fixing chat behaviour and fixing statuses in whole app",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "0e458f7",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.24 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "ae48dab",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.23",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "baa40c7",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #61 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "0e458f77437b20d819b8367193e740d5f8d0bccf",
+      "shortHash": "0e458f7",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.24 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "baa40c7813fa9efa09fd095ae6896cf80820145b",
+      "shortHash": "baa40c7",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #61 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(chats): fixing chat behaviour and fixing statuses in whole app"
+    },
+    {
+      "hash": "cbdddf194710556ca3555f205a37b5aa10eac259",
+      "shortHash": "cbdddf1",
+      "type": "fix",
+      "scope": "chats",
+      "subject": "fixing chat behaviour and fixing statuses in whole app",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "ae48dabfc328fc91d4bf8cc0c1323dcd71f244da",
+      "shortHash": "ae48dab",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.23",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}

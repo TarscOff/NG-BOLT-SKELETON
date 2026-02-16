@@ -2,44 +2,27 @@
   "version": "2.0.8",
   "tag": "v2.0.8",
   "previousTag": "v2.0.7",
-  "date": "2026-02-16T10:36:37.119Z",
+  "date": "2025-12-17T10:37:23.293Z",
   "stats": {
-    "features": 2,
+    "features": 0,
     "fixes": 0,
     "perf": 0,
     "refactor": 0,
     "docs": 0,
-    "chores": 2,
+    "chores": 3,
     "tests": 0,
     "others": 1,
     "breaking": 0
   },
   "sections": {
-    "features": [
-      {
-        "hash": "993d5bc",
-        "type": "feat",
-        "scope": "templates",
-        "subject": "fixing tier workflow builder",
-        "breaking": false,
-        "notes": []
-      },
-      {
-        "hash": "ab04834",
-        "type": "feat",
-        "scope": "tiers",
-        "subject": "fixing workflows tiers and tempalting",
-        "breaking": false,
-        "notes": []
-      }
-    ],
+    "features": [],
     "fixes": [],
     "perf": [],
     "refactor": [],
     "docs": [],
     "chores": [
       {
-        "hash": "50f851a",
+        "hash": "b0aacb8",
         "type": "chore",
         "scope": "release",
         "subject": "v2.0.8 – CI release develop",
@@ -47,7 +30,15 @@
         "notes": []
       },
       {
-        "hash": "8f2945a",
+        "hash": "df70aa4",
+        "type": "chore",
+        "scope": "core",
+        "subject": "allign core with skeleton",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "d635200",
         "type": "chore",
         "scope": "release",
         "subject": "add JSON notes for v2.0.7",
@@ -58,10 +49,10 @@
     "tests": [],
     "others": [
       {
-        "hash": "748c7c8",
+        "hash": "3b7c75a",
         "type": "other",
         "scope": null,
-        "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+        "subject": "Merge pull request #42 from TarscOff/fix/coreUpdate",
         "breaking": false,
         "notes": []
       }
@@ -70,8 +61,8 @@
   },
   "commits": [
     {
-      "hash": "50f851a617a961e0b6326df2ab514cf219af4826",
-      "shortHash": "50f851a",
+      "hash": "b0aacb8373b157ee48f54d5c320dfbd54e07f485",
+      "shortHash": "b0aacb8",
       "type": "chore",
       "scope": "release",
       "subject": "v2.0.8 – CI release develop",
@@ -80,38 +71,28 @@
       "body": ""
     },
     {
-      "hash": "748c7c89b7da7bb75ddcdeb55532ee47906e02ac",
-      "shortHash": "748c7c8",
+      "hash": "3b7c75a5947ff27ba44816b70c32cb38937e9313",
+      "shortHash": "3b7c75a",
       "type": "other",
       "scope": null,
-      "subject": "Merge branch 'fix/coreUpdate' into 'develop'",
+      "subject": "Merge pull request #42 from TarscOff/fix/coreUpdate",
       "breaking": false,
       "notes": [],
-      "body": "Fix/coreupdate\n\nSee merge request genai/frontend/frontend-generic!5"
+      "body": "chore(core): allign core with skeleton"
     },
     {
-      "hash": "993d5bc67ef98baae68b325fa3825bba0c0495db",
-      "shortHash": "993d5bc",
-      "type": "feat",
-      "scope": "templates",
-      "subject": "fixing tier workflow builder",
-      "breaking": false,
-      "notes": [],
-      "body": ""
-    },
-    {
-      "hash": "ab0483436f5aed73599911aef526479ce5329b91",
-      "shortHash": "ab04834",
-      "type": "feat",
-      "scope": "tiers",
-      "subject": "fixing workflows tiers and tempalting",
+      "hash": "df70aa4dd3a401bfc0a694a05a950fe19cd7c5b5",
+      "shortHash": "df70aa4",
+      "type": "chore",
+      "scope": "core",
+      "subject": "allign core with skeleton",
       "breaking": false,
       "notes": [],
       "body": ""
     },
     {
-      "hash": "8f2945a110443e21b1a9dfede9675c1f28fe2289",
-      "shortHash": "8f2945a",
+      "hash": "d6352002aeca471cb76068386d45525e9dfb8dc3",
+      "shortHash": "d635200",
       "type": "chore",
       "scope": "release",
       "subject": "add JSON notes for v2.0.7",

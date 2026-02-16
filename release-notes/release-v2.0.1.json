@@ -2,7 +2,7 @@
   "version": "2.0.1",
   "tag": "v2.0.1",
   "previousTag": "v2.0.0",
-  "date": "2025-12-04T13:39:49.483Z",
+  "date": "2025-12-04T13:39:58.259Z",
   "stats": {
     "features": 0,
     "fixes": 2,
@@ -11,7 +11,7 @@
     "docs": 0,
     "chores": 2,
     "tests": 0,
-    "others": 2,
+    "others": 3,
     "breaking": 0
   },
   "sections": {
@@ -39,7 +39,7 @@
     "docs": [],
     "chores": [
       {
-        "hash": "1824eff",
+        "hash": "1ed61e5",
         "type": "chore",
         "scope": "release",
         "subject": "v2.0.1 – CI release develop",
@@ -58,10 +58,18 @@
     "tests": [],
     "others": [
       {
-        "hash": "4af91f5",
+        "hash": "130beb6",
         "type": "other",
         "scope": null,
-        "subject": "Merged PR 1892: fix ci",
+        "subject": "Merge pull request #33 from TarikHaddadi/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "cae58c2",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #31 from TarikHaddadi/fix/coreUpdate",
         "breaking": false,
         "notes": []
       },
@@ -78,8 +86,8 @@
   },
   "commits": [
     {
-      "hash": "1824eff54fabfde30a88acd00cb5419349433961",
-      "shortHash": "1824eff",
+      "hash": "1ed61e5e98b9cbe3b5c61f5c5dcdd136d66ff748",
+      "shortHash": "1ed61e5",
       "type": "chore",
       "scope": "release",
       "subject": "v2.0.1 – CI release develop",
@@ -88,14 +96,14 @@
       "body": ""
     },
     {
-      "hash": "4af91f581c9e9b63473634bd02c71777842dcd69",
-      "shortHash": "4af91f5",
+      "hash": "130beb629721d5816ce9eb5ef53b8c5e07463047",
+      "shortHash": "130beb6",
       "type": "other",
       "scope": null,
-      "subject": "Merged PR 1892: fix ci",
+      "subject": "Merge pull request #33 from TarikHaddadi/fix/coreUpdate",
       "breaking": false,
       "notes": [],
-      "body": "fix ci"
+      "body": "Fix/core update"
     },
     {
       "hash": "a95eb108e2642df73af06a0d49b97f385751f22c",
@@ -116,6 +124,16 @@
       "breaking": false,
       "notes": [],
       "body": ""
+    },
+    {
+      "hash": "cae58c210f26f240c72a9656e52a0283b001b63d",
+      "shortHash": "cae58c2",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #31 from TarikHaddadi/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "Fix/core update"
     },
     {
       "hash": "6dd7630d4fc5396698c2c1126bea1652375bd9d6",

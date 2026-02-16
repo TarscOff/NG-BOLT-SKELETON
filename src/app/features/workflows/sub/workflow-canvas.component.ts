@@ -1511,6 +1511,15 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.pendingCenterAfterSwitch = false;
       this.scheduleCenterOnNodes();
     }
+
+    if (
+      this.pendingCenterAfterSwitch &&
+      !this.workflowSwitchInProgress &&
+      (m?.nodes?.length ?? 0) > 0
+    ) {
+      this.pendingCenterAfterSwitch = false;
+      this.scheduleCenterOnNodes();
+    }
   };
 
   /** Handle node selection event */

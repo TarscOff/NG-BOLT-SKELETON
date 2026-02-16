@@ -170,178 +170,11 @@ export interface NodeDetailsDialogData {
     </div>
   `,
     styles: [`
-    .dialog-title { display:flex; align-items:center; gap:8px; padding: 15px; }
+    :host { display: block; }
+    .dialog-title { display:flex; align-items:center; gap:8px; }
     .title-form { flex: 1; }
     .badges { display:flex; gap:6px; margin-bottom:8px; }
-    .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, #fff); }
-    .dialog-content__container { display: flex; gap: 16px; flex: 1; }
-    .node-inputs, .node-outputs { flex: 0.45; display:flex; flex-direction: column; gap: 16px; border-radius: 8px; padding: 12px; }
-    .node-inputs { background: color-mix(in srgb, var(--mat-accent) 12%, transparent); }
-    .node-outputs { background: color-mix(in srgb, var(--mat-error) 12%, transparent); }
-    :host .dialog-title .close-button { margin-bottom: 20px; } 
-    :host .dialog-title .mat-icon { margin-bottom: 20px; } 
-    .node-inputs .custom-expansion-panel { 
-      background: color-mix(in srgb, var(--mat-accent) 8%, var(--md-sys-color-surface-container)); 
-      border: 1px solid color-mix(in srgb, var(--mat-accent) 30%, transparent);
-      border-radius: 8px;
-      box-shadow: none;
-    }
-    
-    .node-outputs .custom-expansion-panel { 
-      background: color-mix(in srgb, var(--mat-error) 8%, var(--md-sys-color-surface-container)); 
-      border: 1px solid color-mix(in srgb, var(--mat-error) 30%, transparent);
-      border-radius: 8px;
-      box-shadow: none;
-    }
-    
-    .node-inputs .custom-expansion-panel ::ng-deep .mat-expansion-panel-header,
-    .node-inputs .custom-expansion-panel ::ng-deep .mat-expansion-panel-body {
-      background: transparent;
-    }
-    
-    .node-outputs .custom-expansion-panel ::ng-deep .mat-expansion-panel-header,
-    .node-outputs .custom-expansion-panel ::ng-deep .mat-expansion-panel-body {
-      background: transparent;
-    }
-    
-    .node-inputs mat-panel-title h3,
-    .node-inputs .logs-header {
-      color: var(--mat-accent);
-    }
-    
-    .node-outputs mat-panel-title h3,
-    .node-outputs .logs-header {
-      color: var(--mat-error);
-    }
-    
-    .node-inputs mat-panel-title,
-    .node-outputs mat-panel-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      gap: 8px;
-    }
-    
-    .node-inputs mat-panel-title h3,
-    .node-outputs mat-panel-title h3 {
-      margin: 0;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    
-    .node-inputs .port-count {
-      background: color-mix(in srgb, var(--mat-accent) 25%, transparent);
-      color: var(--mat-accent);
-    }
-    
-    .node-outputs .port-count {
-      background: color-mix(in srgb, var(--mat-error) 25%, transparent);
-      color: var(--mat-error);
-    }
-    
-    .node-inputs .port-info-item {
-      background: color-mix(in srgb, var(--mat-accent) 5%, var(--md-sys-color-surface));
-      border: 1px solid color-mix(in srgb, var(--mat-accent) 20%, transparent);
-    }
-    
-    .node-outputs .port-info-item {
-      background: color-mix(in srgb, var(--mat-error) 5%, var(--md-sys-color-surface));
-      border: 1px solid color-mix(in srgb, var(--mat-error) 20%, transparent);
-    }
-    
-    .port-info-block { 
-      background: var(--md-sys-color-surface-container); 
-      border: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
-      border-radius: 8px; 
-      padding: 12px;
-    }
-    .port-info-header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 15%, transparent);
-    }
-    .port-info-header h3 { 
-      margin: 0; 
-      font-size: 14px; 
-      font-weight: 600;
-      color: var(--md-sys-color-primary);
-    }
-    .port-count { 
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      padding: 2px 8px; 
-      border-radius: 12px; 
-      font-size: 12px; 
-      font-weight: 600;
-    }
-    .port-info-list { display: flex; flex-direction: column; gap: 8px; padding: 0 12px 12px; }
-    .port-info-item { 
-      display: flex; 
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px;
-      background: var(--md-sys-color-surface);
-      border-radius: 6px;
-      border: 1px solid color-mix(in srgb, var(--mat-neutral) 12%, transparent);
-    }
-    .port-info-name { 
-      display: flex; 
-      align-items: center; 
-      gap: 6px;
-      font-weight: 500;
-      font-size: 13px;
-    }
-    .required-icon { 
-      color: var(--mat-warn); 
-      font-size: 14px; 
-      width: 14px; 
-      height: 14px;
-    }
-    .port-info-type { 
-      font-size: 11px; 
-      color: color-mix(in srgb, var(--md-sys-color-on-surface) 70%, transparent);
-      font-family: monospace;
-      background: color-mix(in srgb, var(--mat-neutral) 10%, transparent);
-      padding: 2px 6px;
-      border-radius: 4px;
-      align-self: flex-start;
-    }
-    
-    .logs-section {
-      background: var(--md-sys-color-surface-container);
-      border: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
-      border-radius: 8px;
-      padding: 12px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .logs-header {
-      font-weight: 600;
-      font-size: 14px;
-      margin: 0;
-      color: var(--md-sys-color-primary);
-    }
-    .logs-content {
-      overflow: auto;
-      font-family: monospace;
-      font-size: 12px;
-      background: var(--md-sys-color-surface);
-      border-radius: 4px;
-      padding: 8px;
-      margin: 0 12px 12px;
-      min-height: 80px;
-    }
-    .logs-placeholder {
-      margin: 0;
-      color: color-mix(in srgb, var(--md-sys-color-on-surface) 50%, transparent);
-      font-style: italic;
-    }
-    
+    .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, transparent); }
     .ports { display:flex; gap:12px; margin: 0 0 12px; }
     .ports-label { font-weight: 600; margin-bottom:4px; }
     .port-chip { padding:4px 8px; border-radius:8px; background: color-mix(in srgb, var(--mat-neutral) 18%, transparent); }
@@ -354,9 +187,6 @@ export interface NodeDetailsDialogData {
     .port-form app-field-host { min-width: 0; }
     .port-field-placeholder { min-height: 48px; }
     :host ::ng-deep .mat-mdc-tab-body-content { padding: 12px 4px 4px; box-sizing: border-box; }
-    :host ::ng-deep .mat-mdc-dialog-container .mat-mdc-dialog-surface { height: 100%; display: flex; flex-direction: column; border-radius: 0; border-radius: 0 !important; }
-    :host ::ng-deep .mat-mdc-dialog-content { flex: 1; display: flex; flex-direction: column; max-height: fit-content; }
-    :host ::ng-deep .mat-mdc-dialog-actions { margin-top: auto; }
     :host ::ng-deep .mat-mdc-tab-group { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body-wrapper { flex: 1; min-height: 0; }
     :host ::ng-deep .mat-mdc-tab-body { flex: 1; min-height: 0; }
@@ -540,8 +370,8 @@ export class NodeDetailsDialogComponent implements OnDestroy {
                 name: 'type',
                 label: 'workflow.dialog.port_type',
                 placeholder: 'workflow.dialog.port_type_placeholder',
-                helperText: undefined,
-                options: this.portTypeOptions.map(o => ({ label: o.label, value: o.value })),
+                helperText: 'workflow.dialog.port_type_help',
+                options: this.portTypeOptions.map(o => ({ label: this.translate.instant(o.label), value: o.value })),
                 multiple: false,
                 required: true,
                 validators: [Validators.required],

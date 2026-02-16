@@ -1,0 +1,123 @@
+{
+  "version": "2.0.27",
+  "tag": "v2.0.27",
+  "previousTag": "v2.0.26",
+  "date": "2026-01-28T10:08:41.795Z",
+  "stats": {
+    "features": 0,
+    "fixes": 2,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [],
+    "fixes": [
+      {
+        "hash": "19edb13",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "2ab3df9",
+        "type": "fix",
+        "scope": "workflows",
+        "subject": "updating docs",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "78d97ef",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.27 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fbabdb3",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.26",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "563f281",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge pull request #64 from TarscOff/fix/coreUpdate",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "78d97efd497bbe4cde91c69b6b7350bc15a90f55",
+      "shortHash": "78d97ef",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.27 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "563f2818f5ded5456741581ebda6878b7cf89a67",
+      "shortHash": "563f281",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge pull request #64 from TarscOff/fix/coreUpdate",
+      "breaking": false,
+      "notes": [],
+      "body": "fix(workflows): updating docs"
+    },
+    {
+      "hash": "19edb1360fdf743579b1f23760f83234f04505d8",
+      "shortHash": "19edb13",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "2ab3df9ebd0793b15feafc3d4de992f33dbd5b69",
+      "shortHash": "2ab3df9",
+      "type": "fix",
+      "scope": "workflows",
+      "subject": "updating docs",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fbabdb3c4486774d906f45df69d88631a42639a9",
+      "shortHash": "fbabdb3",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.26",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
