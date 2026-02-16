@@ -634,6 +634,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   private lastIncomingSig = '';
   /** Last topology signature */
   private lastTopoSig = '';
+   /** Timestamp of last local change */
+  private lastLocalChangeAt = 0;
+
   /** Flag indicating a local change is in progress */
   private localChangeInProgress = false;
   /** Timeout handle for local change window */
