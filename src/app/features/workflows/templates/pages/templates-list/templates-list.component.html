@@ -1,0 +1,101 @@
+<app-seo [pageTitle]="'templates.list.title' | translate" [description]="'Manage your template workflows'"
+    [keywords]="'templates, workflows, ai'" (titleChange)="onTitleChange($event)">
+
+</app-seo>
+
+<div class="templates-list-container">
+    <!-- Tabs and Search -->
+    <div class="filters-section">
+        <div class="tabs">
+            <button mat-button [class.active]="selectedTab() === 'all'" (click)="selectedTab.set('all')">
+                {{ 'templates.list.tab_all' | translate }}
+                <span class="count-badge">{{ templateCounts().all }}</span>
+            </button>
+            <button mat-button [class.active]="selectedTab() === 'published'" (click)="selectedTab.set('published')">
+                {{ 'templates.list.tab_published' | translate }}
+                <span class="count-badge">{{ templateCounts().published }}</span>
+            </button>
+            <button mat-button [class.active]="selectedTab() === 'draft'" (click)="selectedTab.set('draft')">
+                {{ 'templates.list.tab_draft' | translate }}
+                <span class="count-badge">{{ templateCounts().draft }}</span>
+            </button>
+        </div>
+
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>{{ 'common.search' | translate }}</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+                [placeholder]="'templates.list.search_placeholder' | translate">
+            @if (searchQuery()) {
+            <button matSuffix mat-icon-button (click)="searchQuery.set('')">
+                <mat-icon>close</mat-icon>
+            </button>
+            }
+        </mat-form-field>
+    </div>
+
+    <!-- Templates Grid -->
+    @if (templates().length === 0) {
+    <div class="empty-state">
+        <mat-icon>dashboard_customize</mat-icon>
+        <h3>{{ 'templates.list.empty_title' | translate }}</h3>
+        <p>{{ 'templates.list.empty_message' | translate }}</p>
+        <button mat-flat-button color="primary" (click)="createNew()">
+            <mat-icon>add</mat-icon>
+            {{ 'templates.list.create_first' | translate }}
+        </button>
+    </div>
+    } @else {
+    <div class="templates-grid">
+        @for (template of templates(); track trackById($index, template)) {
+        <mat-card class="template-card" [class.published]="template.status === 'published'">
+            <mat-card-header>
+                <div mat-card-avatar class="pattern-icon">
+                    <mat-icon>{{ getPatternIcon(template.presentationPattern) }}</mat-icon>
+                </div>
+                <mat-card-title>{{ template.name }}</mat-card-title>
+                <mat-card-subtitle>
+                    <mat-chip [color]="getStatusColor(template.status)" size="small">
+                        {{ 'templates.status.' + template.status | translate }}
+                    </mat-chip>
+                </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+                <div class="template-meta">
+                    <div class="meta-item">
+                        <mat-icon>account_tree</mat-icon>
+                        <span>{{ template.compositeWorkflows.length }} {{ 'templates.list.composites' | translate
+                            }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <mat-icon>schedule</mat-icon>
+                        <span>{{ template.metadata.updatedAt | date:'short' }}</span>
+                    </div>
+                </div>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+                <button mat-icon-button
+                    [matTooltip]="(template.status === 'published' ? 'templates.list.unpublish' : 'templates.list.publish') | translate"
+                    (click)="togglePublish(template)">
+                    <mat-icon>{{ template.status === 'published' ? 'unpublished' : 'publish' }}</mat-icon>
+                </button>
+                <button mat-icon-button [matTooltip]="'common.duplicate' | translate"
+                    (click)="duplicateTemplate(template)">
+                    <mat-icon>content_copy</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" [matTooltip]="'common.edit' | translate"
+                    (click)="editTemplate(template)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" [matTooltip]="'common.delete' | translate"
+                    (click)="deleteTemplate(template)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-card-actions>
+        </mat-card>
+        }
+    </div>
+    }
+</div>

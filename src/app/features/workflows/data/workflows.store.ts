@@ -10,19 +10,29 @@ import {
     computeValidation as sharedComputeValidation,
     sanitizeGraph as sharedSanitizeGraph,
 } from '../templates/utils/workflow-graph.utils';
+import { WorkflowStatus, visibilityToStatus } from '@shared/types/workflow.types';
+
+/**
+ * Legacy visibility type - use WorkflowStatus enum for new code
+ * @deprecated Use WorkflowStatus enum instead
+ */
+export type WorkflowVisibility = 'public' | 'draft';
 
 export interface WorkflowDraft {
     id: string;
     name: string;
     description?: string;
-    visibility?: 'public' | 'draft';
+    /** @deprecated Use status field with WorkflowStatus enum */
+    visibility?: WorkflowVisibility;
+    /** Workflow status - preferred over visibility */
+    status?: WorkflowStatus;
     kind?: 'standard' | 'reusable';
     nodes: WorkflowNode[];
     edges: WorkflowEdge[];
     createdAt: string;
     updatedAt: string;
     version: number;
-    needsRepublish?: boolean; // Ajout du flag pour workflows publics modifiés
+    needsRepublish?: boolean; // Flag for modified public workflows
 }
 
 export interface PortTypeOption {
@@ -77,11 +87,13 @@ export interface WorkflowState {
 
 const STORAGE_KEY = 'app_workflows_v1';
 const DEFAULT_PORT_TYPES: PortTypeOption[] = [
-    { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
-    { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
-    { value: 'json', label: 'workflow.dialog.port_type_options.json' },
-    { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
     { value: 'string', label: 'workflow.dialog.port_type_options.string' },
+    { value: 'json', label: 'workflow.dialog.port_type_options.json' },
+    { value: 'file', label: 'workflow.dialog.port_type_options.file' },
+    { value: 'boolean', label: 'workflow.dialog.port_type_options.boolean' },
+    { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
+    { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
+    { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
 ];
 
 @Injectable()
@@ -178,7 +190,11 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
 
     readonly loadWorkflow = this.updater((state, payload: { workflow: WorkflowDraft }) => {
         const cleaned = sanitizeGraph(payload.workflow.nodes, payload.workflow.edges);
-        const wf = { ...payload.workflow, nodes: cleaned.nodes, edges: cleaned.edges };
+        const wf = {
+            ...payload.workflow,
+            nodes: stripTransientNodeFields(cleaned.nodes),
+            edges: cleaned.edges,
+        };
         const sig = workflowSig(wf);
         const dirtyById = { ...state.dirtyById, [payload.workflow.id]: false };
         const savedSigById = { ...state.savedSigById, [payload.workflow.id]: sig };
@@ -199,25 +215,29 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const wf = state.workflows.find((w) => w.id === state.selectedWorkflowId);
         if (!wf) return state;
         const cleaned = sanitizeGraph(payload.nodes, payload.edges);
+        const cleanedNodes = stripTransientNodeFields(cleaned.nodes);
         const currentClean = sanitizeGraph(wf.nodes, wf.edges);
-        if (graphSig(cleaned.nodes, cleaned.edges) === graphSig(currentClean.nodes, currentClean.edges)) {
+        if (graphSig(cleanedNodes, cleaned.edges) === graphSig(currentClean.nodes, currentClean.edges)) {
             return state;
         }
         let updated: WorkflowDraft;
-        if (wf.visibility === 'public') {
+        // When a published workflow is modified, it goes back to draft state
+        const wasPublished = wf.visibility === 'public' || wf.status === WorkflowStatus.PUBLISHED;
+        if (wasPublished) {
             updated = {
                 ...wf,
-                nodes: cleaned.nodes,
+                nodes: cleanedNodes,
                 edges: cleaned.edges,
                 updatedAt: new Date().toISOString(),
                 version: wf.version + 1,
                 needsRepublish: true,
                 visibility: 'draft',
+                status: WorkflowStatus.UNPUBLISHED, // Mark as unpublished (was published but now modified)
             };
         } else {
             updated = {
                 ...wf,
-                nodes: cleaned.nodes,
+                nodes: cleanedNodes,
                 edges: cleaned.edges,
                 updatedAt: new Date().toISOString(),
                 version: wf.version + 1,
@@ -254,7 +274,9 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         const forceDraftOnKind = payload.kind === 'standard' && wf.kind === 'reusable';
 
         let updated: WorkflowDraft;
-        if (wf.visibility === 'public') {
+        // When a published workflow is modified, it goes back to draft state
+        const wasPublished = wf.visibility === 'public' || wf.status === WorkflowStatus.PUBLISHED;
+        if (wasPublished) {
             updated = {
                 ...wf,
                 ...changes,
@@ -262,6 +284,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
                 version: wf.version + 1,
                 needsRepublish: true,
                 visibility: 'draft',
+                status: WorkflowStatus.UNPUBLISHED, // Mark as unpublished (was published but now modified)
             };
         } else {
             updated = {
@@ -273,7 +296,7 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
             };
         }
         if (forceDraftOnKind && updated.visibility !== 'draft') {
-            updated = { ...updated, visibility: 'draft' };
+            updated = { ...updated, visibility: 'draft', status: WorkflowStatus.DRAFT };
         }
 
         const sig = workflowSig(updated);
@@ -293,13 +316,15 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         };
     });
 
-    readonly createWorkflow = this.updater((state, payload: { name?: string; description?: string; visibility?: 'public' | 'draft'; kind?: 'standard' | 'reusable' }) => {
+    readonly createWorkflow = this.updater((state, payload: { name?: string; description?: string; visibility?: WorkflowVisibility; kind?: 'standard' | 'reusable' }) => {
         const now = new Date().toISOString();
+        const visibility = payload.visibility ?? 'draft';
         const workflow: WorkflowDraft = {
             id: newId(),
             name: payload.name || 'Untitled workflow',
             description: payload.description,
-            visibility: payload.visibility ?? 'draft',
+            visibility,
+            status: visibilityToStatus(visibility), // Sync status field
             kind: payload.kind ?? 'standard',
             nodes: [],
             edges: [],
@@ -322,16 +347,19 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
         };
     });
 
-    readonly createWorkflowWithGraph = this.updater((state, payload: { name?: string; description?: string; visibility?: 'public' | 'draft'; kind?: 'standard' | 'reusable'; nodes: WorkflowNode[]; edges: WorkflowEdge[] }) => {
+    readonly createWorkflowWithGraph = this.updater((state, payload: { name?: string; description?: string; visibility?: WorkflowVisibility; kind?: 'standard' | 'reusable'; nodes: WorkflowNode[]; edges: WorkflowEdge[] }) => {
         const now = new Date().toISOString();
+        const visibility = payload.visibility ?? 'draft';
+        const cleaned = sanitizeGraph(payload.nodes, payload.edges);
         const workflow: WorkflowDraft = {
             id: newId(),
             name: payload.name || 'Untitled workflow',
             description: payload.description,
-            visibility: payload.visibility ?? 'draft',
+            visibility,
+            status: visibilityToStatus(visibility), // Sync status field
             kind: payload.kind ?? 'standard',
-            nodes: payload.nodes,
-            edges: payload.edges,
+            nodes: stripTransientNodeFields(cleaned.nodes),
+            edges: cleaned.edges,
             createdAt: now,
             updatedAt: now,
             version: 1,
@@ -425,13 +453,19 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
     });
 
     readonly updateWorkflow = this.updater((state, payload: { workflow: WorkflowDraft }) => {
-        const sig = workflowSig(payload.workflow);
+        const cleaned = sanitizeGraph(payload.workflow.nodes, payload.workflow.edges);
+        const normalizedWorkflow: WorkflowDraft = {
+            ...payload.workflow,
+            nodes: stripTransientNodeFields(cleaned.nodes),
+            edges: cleaned.edges,
+        };
+        const sig = workflowSig(normalizedWorkflow);
         const dirtyById = { ...state.dirtyById, [payload.workflow.id]: false };
-        const savedSigById = { ...state.savedSigById, [payload.workflow.id]: sig };
+        const savedSigById = { ...state.savedSigById, [normalizedWorkflow.id]: sig };
 
         return {
             ...state,
-            workflows: upsertById(state.workflows, payload.workflow),
+            workflows: upsertById(state.workflows, normalizedWorkflow),
             dirtyById,
             savedSigById,
             dirty: getDirtyFor(dirtyById, state.selectedWorkflowId),
@@ -583,8 +617,29 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
     private persistToStorage(): void {
         try {
             const snapshot = this.get();
-            const { workflows, executionHistory, catalog, catalogLoaded, dirtyById, savedSigById, portTypes } = snapshot;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ workflows, executionHistory, catalog, catalogLoaded, dirtyById, savedSigById, portTypes }));
+            const {
+                workflows,
+                selectedWorkflowId,
+                executionHistory,
+                catalog,
+                catalogLoaded,
+                dirtyById,
+                savedSigById,
+                portTypes
+            } = snapshot;
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    workflows,
+                    selectedWorkflowId,
+                    executionHistory,
+                    catalog,
+                    catalogLoaded,
+                    dirtyById,
+                    savedSigById,
+                    portTypes
+                })
+            );
         } catch (err) {
             console.error('Failed to persist workflows', err);
         }
@@ -604,16 +659,29 @@ export class WorkflowsStore extends ComponentStore<WorkflowState> {
                     seededSavedSigById[wf.id] = workflowSig(wf);
                 }
             }
+            const parsedSelectedWorkflowId = typeof parsed.selectedWorkflowId === 'string'
+                ? parsed.selectedWorkflowId
+                : null;
+            const selectedWorkflowId = parsedSelectedWorkflowId && workflows.some(wf => wf.id === parsedSelectedWorkflowId)
+                ? parsedSelectedWorkflowId
+                : workflows.at(-1)?.id ?? null;
             const dirtyById = workflows.reduce<Record<string, boolean>>((acc, wf) => {
                 acc[wf.id] = workflowSig(wf) !== (seededSavedSigById[wf.id] ?? '');
                 return acc;
             }, {});
+            const selectedWorkflow = selectedWorkflowId
+                ? workflows.find(wf => wf.id === selectedWorkflowId) ?? null
+                : null;
+            const selectedValidation = selectedWorkflow
+                ? sharedComputeValidation(selectedWorkflow.nodes, selectedWorkflow.edges)
+                : { valid: true, nodeValidity: {} };
             this.patchState({
                 workflows,
-                selectedWorkflowId: null,
+                selectedWorkflowId,
                 dirtyById,
                 savedSigById: seededSavedSigById,
-                dirty: false,
+                dirty: getDirtyFor(dirtyById, selectedWorkflowId),
+                validation: selectedValidation,
                 executionHistory: parsed.executionHistory ?? [],
                 catalog: parsed.catalog ?? [],
                 catalogLoaded: parsed.catalogLoaded ?? false,
@@ -702,14 +770,14 @@ function graphSig(nodes: WorkflowNode[], edges: WorkflowEdge[]): string {
         .map(n => ({
             id: n.id,
             type: n.type,
-            x: n.x ?? 0,
-            y: n.y ?? 0,
+            x: Math.round(n.x ?? 0),
+            y: Math.round(n.y ?? 0),
             data: {
                 label: n.data?.label ?? '',
                 aiType: n.data?.aiType ?? '',
-                params: n.data?.params ?? {},
+                params: stripTransientParams(n.data?.params),
             },
-            ports: n.ports ?? { inputs: [], outputs: [] },
+            ports: canonicalizePorts(n.ports),
         }))
         .sort((a, b) => a.id.localeCompare(b.id));
     const es = [...edges]
@@ -749,6 +817,50 @@ function removeDirty<T>(dirtyById: Record<string, T>, id: string): Record<string
 
 function clone<T>(v: T): T {
     return JSON.parse(JSON.stringify(v)) as T;
+}
+
+function stripTransientNodeFields(nodes: WorkflowNode[]): WorkflowNode[] {
+    return nodes.map((node) => ({
+        ...node,
+        data: {
+            ...node.data,
+            params: stripTransientParams(node.data?.params),
+        },
+    }));
+}
+
+function stripTransientParams(params: unknown): Record<string, unknown> {
+    if (!params || typeof params !== 'object') return {};
+    const source = params as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(source)) {
+        // Canvas/runtime-only flags should not participate in persistence dirty checks
+        if (key === 'ui' || key === '__missingIn' || key === '__missingOut' || key === '__formInvalid') {
+            continue;
+        }
+        out[key] = value;
+    }
+    return out;
+}
+
+function canonicalizePorts(ports: WorkflowNode['ports'] | undefined): WorkflowNode['ports'] {
+    const normalize = (list: WorkflowNode['ports']['inputs']) =>
+        [...(list ?? [])]
+            .map((port) => ({
+                id: port.id,
+                label: port.label ?? '',
+                type: port.type ?? 'json',
+                required: !!port.required,
+                readonly: !!port.readonly,
+                data_reference: port.data_reference ?? '',
+                artifact_type: port.artifact_type ?? '',
+            }))
+            .sort((a, b) => a.id.localeCompare(b.id));
+
+    return {
+        inputs: normalize(ports?.inputs ?? []),
+        outputs: normalize(ports?.outputs ?? []),
+    };
 }
 
 // delegate ensurePorts

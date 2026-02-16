@@ -401,6 +401,71 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
     }
   }
 
+  private normalizeInitialValuesForConfig(
+    values: Record<string, unknown>,
+    config: FieldConfig[]
+  ): Record<string, unknown> {
+    const normalized: Record<string, unknown> = { ...values };
+
+    for (const field of config ?? []) {
+      if (!Object.prototype.hasOwnProperty.call(normalized, field.name)) continue;
+      normalized[field.name] = this.normalizeFieldValueForPatch(field, normalized[field.name]);
+    }
+
+    return normalized;
+  }
+
+  private normalizeFieldValueForPatch(field: FieldConfig, value: unknown): unknown {
+    switch (field.type) {
+      case 'toggle':
+        return !!value;
+      case 'range': {
+        if (value === null || value === undefined || value === '') {
+          if (typeof field.defaultValue === 'number') return field.defaultValue;
+          if (typeof field.defaultValue === 'string') {
+            const parsedDefault = Number(field.defaultValue);
+            if (Number.isFinite(parsedDefault)) return parsedDefault;
+          }
+          return field.min ?? 0;
+        }
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : (field.min ?? 0);
+      }
+      case 'dropdown':
+      case 'chips':
+        return field.multiple === true ? this.asArray(value) : (value ?? null);
+      case 'file':
+        return field.multiple === true ? this.asArray(value) : (value ?? null);
+      case 'group': {
+        const groupValue = isObject(value) && !Array.isArray(value)
+          ? (value as Record<string, unknown>)
+          : {};
+        return this.normalizeInitialValuesForConfig(groupValue, field.children ?? []);
+      }
+      case 'array': {
+        const list = Array.isArray(value) ? value : [];
+        if (!field.children?.length) return list;
+        return list.map(item =>
+          this.normalizeInitialValuesForConfig(
+            isObject(item) && !Array.isArray(item)
+              ? (item as Record<string, unknown>)
+              : {},
+            field.children ?? []
+          )
+        );
+      }
+      default:
+        if (this.isTextLikeFieldType(field.type)) {
+          return value === null || value === undefined ? '' : String(value);
+        }
+        return value;
+    }
+  }
+
+  private isTextLikeFieldType(type: string | undefined): boolean {
+    return ['text', 'email', 'phone', 'password', 'textarea', 'autocomplete'].includes((type ?? '').toLowerCase());
+  }
+
   private normalizeSelectDefault(field: FieldConfig): { single: unknown | null; multi: unknown[] } {
     const multiple = field.multiple === true;
     const opts = field.options;
@@ -911,15 +976,19 @@ export class WfNodeComponent extends DrawFlowBaseNode implements OnDestroy, OnIn
       Object.entries(dataAny).filter(([k]) => !RESERVED.has(k))
     );
     const initial = { ...defaults, ...current };
+    const normalizedInitial = this.normalizeInitialValuesForConfig(initial, this.config);
 
     this.form.reset({}, { emitEvent: false });
 
-    if (Object.keys(initial).length) {
-      this.form.patchValue(initial, { emitEvent: false });
+    if (Object.keys(normalizedInitial).length) {
+      this.form.patchValue(normalizedInitial, { emitEvent: false });
 
-      const payload = this.stripReserved(initial);
-      const currentParams = (this.safeModel?.params ?? {});
-      if (!this.valuesEqual(currentParams, payload)) {
+      const payload = this.stripReserved(normalizedInitial);
+      const currentParams = (this.safeModel?.params ?? {}) as Record<string, unknown>;
+      const comparableCurrent = this.stripReserved(
+        this.normalizeInitialValuesForConfig(currentParams, this.config)
+      );
+      if (!this.valuesEqual(comparableCurrent, payload)) {
         this.bus.nodeParamsChanged$.next({ nodeId: this.nodeId, params: payload });
       }
     }

@@ -1,0 +1,963 @@
+.template-builder-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: transparent;
+}
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+.builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: var(--mat-toolbar-container-background-color, white);
+    border-bottom: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+
+        button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    }
+}
+
+// ============================================================================
+// STEPPER
+// ============================================================================
+
+.stepper-container {
+    padding: 24px 48px;
+    background: var(--mat-toolbar-container-background-color, white);
+    border-bottom: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+}
+
+.step-indicators {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: color-mix(in srgb, var(--mat-primary) 10%, transparent);
+    }
+
+    .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 500;
+        background: color-mix(in srgb, var(--mat-primary) 15%, transparent);
+        color: var(--mat-primary, #3f51b5);
+        transition: all 0.2s ease;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .step-label {
+        font-size: 14px;
+        color: var(--mat-primary, #3f51b5);
+        white-space: nowrap;
+    }
+
+    &.active {
+        .step-number {
+            background: var(--mat-primary-color, #3f51b5);
+            color: white;
+        }
+
+        .step-label {
+            color: var(--mat-primary-color, #3f51b5);
+            font-weight: 500;
+        }
+    }
+
+    &.completed {
+        .step-number {
+            background: var(--mat-primary-color, #3f51b5);
+            color: white;
+        }
+
+        .step-label {
+            color: rgba(0, 0, 0, 0.87);
+        }
+    }
+}
+
+.step-connector {
+    width: 40px;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease;
+
+    &.completed {
+        background: var(--mat-primary-color, #3f51b5);
+    }
+}
+
+// ============================================================================
+// STEP CONTENT
+// ============================================================================
+
+.step-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.step-card {
+    max-width: 800px;
+    margin: 0 auto;
+
+    mat-card-header {
+        margin-bottom: 24px;
+    }
+
+    mat-card-actions {
+        padding: 16px 24px;
+        margin: 0;
+    }
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.section-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mat-primary, #3f51b5);
+    margin-bottom: 12px;
+}
+
+// ============================================================================
+// COMPOSITES STEP
+// ============================================================================
+
+.composites-step {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.composites-list,
+.selected-composites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 200px;
+}
+
+.composite-item,
+.selected-composite-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--mat-card-container-color, white);
+    border: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: var(--mat-primary-color, #3f51b5);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &.added {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .composite-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+
+        .composite-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .composite-desc {
+            font-size: 12px;
+            color: var(--mat-primary, #3f51b5);
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.selected-composite-item {
+    background: rgba(var(--mat-primary-color-rgb, 63, 81, 181), 0.05);
+    border-color: var(--mat-primary-color, #3f51b5);
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--mat-primary, #3f51b5);
+    opacity: 0.5;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+// ============================================================================
+// LAYOUT STEP
+// ============================================================================
+
+.pattern-selection {
+    margin-bottom: 24px;
+}
+
+.pattern-options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.pattern-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 32px;
+    border: 2px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+
+    mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: var(--mat-primary, #3f51b5);
+        opacity: 0.7;
+    }
+
+    span {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--mat-primary, #3f51b5);
+    }
+
+    &:hover {
+        border-color: var(--mat-primary-color, #3f51b5);
+    }
+
+    &.selected {
+        border-color: var(--mat-primary-color, #3f51b5);
+        background: rgba(var(--mat-primary-color-rgb, 63, 81, 181), 0.08);
+
+        mat-icon {
+            color: var(--mat-primary-color, #3f51b5);
+        }
+    }
+}
+
+.layout-selection {
+    margin: 24px 0;
+}
+
+.layout-preview {
+    margin-top: 24px;
+}
+
+.preview-container {
+    padding: 24px;
+    background: color-mix(in srgb, var(--mat-primary) 8%, transparent);
+    border-radius: 8px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-box {
+    padding: 16px 24px;
+    background: var(--mat-primary-color, #3f51b5);
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 100px;
+}
+
+.preview-single {
+    display: flex;
+    justify-content: center;
+
+    .preview-box {
+        min-width: 200px;
+    }
+}
+
+.preview-tabs {
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 4px;
+    border-radius: 8px;
+
+    .preview-tab {
+        padding: 12px 24px;
+        background: var(--mat-primary-color, #3f51b5);
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &:first-child {
+            background: var(--mat-primary-color, #3f51b5);
+        }
+
+        &:not(:first-child) {
+            background: color-mix(in srgb, var(--mat-primary) 15%, transparent);
+            color: var(--mat-primary, #3f51b5);
+        }
+    }
+}
+
+.preview-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    mat-icon {
+        color: var(--mat-primary-color, #3f51b5);
+    }
+}
+
+.preview-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+
+    mat-icon {
+        color: var(--mat-primary-color, #3f51b5);
+    }
+}
+
+.preview-chat-files {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+
+    .files {
+        background: rgba(0, 0, 0, 0.6);
+    }
+}
+
+.preview-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+
+    .left {
+        background: var(--mat-primary-color, #3f51b5);
+    }
+
+    .right {
+        background: var(--mat-accent-color, #ff4081);
+    }
+}
+
+// ============================================================================
+// UI COMPONENTS STEP
+// ============================================================================
+
+.ui-components-step {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.add-component-section {
+    margin-bottom: 16px;
+}
+
+.suggested-components {
+    margin: 16px 0;
+
+    .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        mat-chip {
+            cursor: pointer;
+
+            mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+                margin-right: 4px;
+            }
+        }
+    }
+}
+
+.ui-components-list {
+    margin-top: 24px;
+    min-height: 200px;
+}
+
+.ui-component-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--mat-card-container-color, white);
+    border: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .component-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        mat-form-field.compact {
+            width: 200px;
+
+            ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+                display: none;
+            }
+        }
+    }
+}
+
+// ============================================================================
+// EMPTY STATE & LOADING
+// ============================================================================
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--mat-primary, #3f51b5);
+    opacity: 0.7;
+
+    mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.6;
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+    }
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 48px;
+}
+
+// ============================================================================
+// CDK DRAG & DROP
+// ============================================================================
+
+.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.cdk-drag-placeholder {
+    opacity: 0;
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .selected-composite-item:not(.cdk-drag-placeholder),
+.cdk-drop-list-dragging .ui-component-item:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// ============================================================================
+// MAT DIVIDER
+// ============================================================================
+
+mat-divider {
+    margin: 24px 0;
+}
+// ============================================================================
+// STEP 5: DATA SCOPE
+// ============================================================================
+
+.step-data-scope {
+    .scope-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+
+        .scope-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border: 2px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+            border-radius: 12px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                border-color: var(--mat-primary-color, #3f51b5);
+            }
+
+            &.active {
+                border-color: var(--mat-primary-color, #3f51b5);
+                background: rgba(63, 81, 181, 0.04);
+            }
+
+            .scope-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                margin-bottom: 12px;
+
+                mat-icon {
+                    color: white;
+                }
+            }
+
+            .scope-info {
+                text-align: center;
+                margin-bottom: 12px;
+
+                h4 {
+                    margin: 0 0 4px;
+                    font-size: 16px;
+                    font-weight: 500;
+                }
+
+                p {
+                    margin: 0 0 8px;
+                    font-size: 12px;
+                    color: var(--mat-primary, #3f51b5);
+                    opacity: 0.7;
+                }
+
+                .scope-count {
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: var(--mat-primary-color, #3f51b5);
+                }
+            }
+        }
+    }
+
+    .visualization-toggle {
+        display: flex;
+        align-items: center;
+        margin: 16px 0;
+        padding: 12px 16px;
+        background: color-mix(in srgb, var(--mat-primary) 5%, transparent);
+        border-radius: 8px;
+    }
+
+    .port-section {
+        margin: 24px 0;
+
+        h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 16px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--mat-primary, #3f51b5);
+
+            mat-icon {
+                color: var(--mat-primary-color, #3f51b5);
+            }
+        }
+
+        &.intermediates h3 mat-icon {
+            color: #9c27b0;
+        }
+
+        .port-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .port-item {
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+            border-left: 4px solid #9e9e9e;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .port-main {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+
+                .port-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex: 1;
+
+                    mat-icon {
+                        color: var(--mat-primary, #3f51b5);
+                        opacity: 0.7;
+                    }
+
+                    .port-name {
+                        font-weight: 500;
+                        color: var(--mat-primary, #3f51b5);
+                    }
+
+                    .data-type {
+                        font-size: 11px;
+                        height: 24px;
+                    }
+                }
+
+                .scope-select {
+                    width: 180px;
+                }
+            }
+
+            .port-project-options {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px dashed var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+
+                .storage-name {
+                    flex: 1;
+                    max-width: 300px;
+                }
+            }
+        }
+    }
+
+    .empty-state {
+        span {
+            font-size: 12px;
+            color: var(--mat-primary, #3f51b5);
+            opacity: 0.5;
+            margin-top: 8px;
+        }
+    }
+}
+
+// ============================================================================
+// DARK MODE SUPPORT
+// ============================================================================
+
+:host-context(.dark) {
+    .template-builder-container {
+        background: transparent;
+    }
+
+    .builder-header {
+        background: var(--md-sys-color-surface, #1e1e1e);
+        border-bottom-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+
+        h1 {
+            color: var(--mat-neutral, white);
+        }
+    }
+
+    .stepper-container {
+        background: var(--md-sys-color-surface, #1e1e1e);
+        border-bottom-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+    }
+
+    .step-indicator {
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .step-number {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--mat-neutral, white);
+            opacity: 0.8;
+        }
+
+        .step-label {
+            color: var(--mat-neutral, white);
+            opacity: 0.8;
+        }
+
+        &.active {
+            .step-number {
+                opacity: 1;
+            }
+            .step-label {
+                color: var(--mat-neutral, white);
+                opacity: 1;
+            }
+        }
+
+        &.completed {
+            .step-label {
+                color: var(--mat-neutral, white);
+            }
+        }
+    }
+
+    .step-connector {
+        background: rgba(255, 255, 255, 0.12);
+
+        &.completed {
+            background: var(--mat-primary-color, #82b1ff);
+        }
+    }
+
+    .section-label {
+        color: var(--mat-neutral, white);
+        opacity: 0.8;
+    }
+
+    .composite-item,
+    .selected-composite-item {
+        background: var(--md-sys-color-surface, #2d2d2d);
+        border-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+
+        &:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .composite-info {
+            .composite-name {
+                color: var(--mat-neutral, white);
+            }
+
+            .composite-desc {
+                color: var(--mat-neutral, white);
+                opacity: 0.7;
+            }
+        }
+    }
+
+    .selected-composite-item {
+        background: rgba(var(--mat-primary-color-rgb, 130, 177, 255), 0.1);
+    }
+
+    .drag-handle {
+        color: var(--mat-neutral, white);
+        opacity: 0.5;
+    }
+
+    .pattern-option {
+        border-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+        background: var(--md-sys-color-surface, #2d2d2d);
+
+        mat-icon {
+            color: var(--mat-neutral, white);
+            opacity: 0.8;
+        }
+
+        span {
+            color: var(--mat-neutral, white);
+        }
+
+        &:hover {
+            border-color: var(--mat-primary-color, #82b1ff);
+        }
+
+        &.selected {
+            background: rgba(var(--mat-primary-color-rgb, 130, 177, 255), 0.15);
+
+            mat-icon {
+                color: var(--mat-primary-color, #82b1ff);
+                opacity: 1;
+            }
+        }
+    }
+
+    .preview-container {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .preview-tabs {
+        background: var(--md-sys-color-surface, #2d2d2d);
+
+        .preview-tab:not(:first-child) {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--mat-neutral, white);
+            opacity: 0.8;
+        }
+    }
+
+    .ui-component-item {
+        background: var(--md-sys-color-surface, #2d2d2d);
+        border-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+
+        &:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    .empty-state {
+        color: var(--mat-neutral, white);
+        opacity: 0.7;
+
+        mat-icon {
+            color: var(--mat-neutral, white);
+            opacity: 0.5;
+        }
+    }
+
+    .step-data-scope {
+        .scope-card {
+            background: var(--md-sys-color-surface, #2d2d2d);
+            border-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+
+            &.active {
+                background: rgba(var(--mat-primary-color-rgb, 130, 177, 255), 0.1);
+            }
+
+            .scope-info {
+                h4 {
+                    color: var(--mat-neutral, white);
+                }
+
+                p {
+                    color: var(--mat-neutral, white);
+                    opacity: 0.7;
+                }
+            }
+        }
+
+        .visualization-toggle {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--mat-neutral, white);
+        }
+
+        .port-section {
+            h3 {
+                color: var(--mat-neutral, white);
+            }
+
+            .port-item {
+                background: var(--md-sys-color-surface, #2d2d2d);
+                border-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+
+                &:hover {
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                }
+
+                .port-main .port-label {
+                    mat-icon {
+                        color: var(--mat-neutral, white);
+                        opacity: 0.7;
+                    }
+
+                    .port-name {
+                        color: var(--mat-neutral, white);
+                    }
+                }
+
+                .port-project-options {
+                    border-top-color: var(--mat-divider-color, rgba(255, 255, 255, 0.12));
+                }
+            }
+        }
+
+        .empty-state span {
+            color: var(--mat-neutral, white);
+            opacity: 0.5;
+        }
+    }
+}

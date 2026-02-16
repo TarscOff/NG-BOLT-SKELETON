@@ -115,7 +115,7 @@ export class ProjectsComponent implements OnInit {
         const newAction: ToolbarAction = {
             id: 'create-project',
             icon: 'add',
-            disabled$: of(true),
+            disabled$: of(false),
             tooltip: this.translateService.instant('projects.create-new'),
             class: "primary",
             variant: "flat",

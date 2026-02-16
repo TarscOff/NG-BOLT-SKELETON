@@ -9,13 +9,15 @@ $tertiary-palette: mat.$green-palette;
 
 // M3 theming: only primary + tertiary are allowed here in your version
 $light-theme: mat.define-theme((color: (theme-type: light, primary: $primary-palette, tertiary: $tertiary-palette),
-      typography: (brand-family: 'ProximusRegular, sans-serif')));
+      typography: (brand-family: 'ProximusRegular', plain-family: 'ProximusRegular')));
 
 $dark-theme: mat.define-theme((color: (theme-type: dark, primary: $primary-palette, tertiary: $tertiary-palette),
-      typography: (brand-family: 'ProximusRegular, sans-serif')));
+      typography: (brand-family: 'ProximusRegular', plain-family: 'ProximusRegular')));
 
 // Apply light theme by default
 :root {
+  --mdc-typography-font-family: 'ProximusRegular', sans-serif;
+  --mat-app-font-family: 'ProximusRegular', sans-serif;
   @include mat.all-component-themes($light-theme);
 }
 
@@ -184,6 +186,94 @@ a[mat-mini-fab] {
   &:hover:not(:disabled)::after,
   &:focus:not(:disabled)::after {
     opacity: 1 !important;
+  }
+}
+
+// Workflow Preview Dialog Panel
+.workflow-preview-dialog-panel {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: 16px;
+    
+    .mdc-dialog__surface {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+  }
+  
+  .mat-mdc-dialog-content {
+    padding: 0;
+    max-height: none;
+  }
+}
+
+// Dark mode support for workflow preview dialog
+html.dark .workflow-preview-dialog-panel {
+  .mdc-dialog__surface {
+    background-color: var(--mat-sys-surface-container, #1e1e1e);
+  }
+}
+
+// ============================================================================
+// GLOBAL DIALOG STYLES - Consistent visual style across all dialogs
+// ============================================================================
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 12px;
+
+  .mdc-dialog__surface {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+}
+
+// Dialog title
+h2[mat-dialog-title],
+[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+
+  mat-icon {
+    color: var(--mat-primary, #1976d2);
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+// Dialog content
+.mat-mdc-dialog-content,
+[mat-dialog-content] {
+  padding: 1.5rem !important;
+  min-width: 400px;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+// Dialog actions
+.mat-mdc-dialog-actions,
+[mat-dialog-actions] {
+  padding: 1rem 1.5rem !important;
+  margin: 0;
+  gap: 0.5rem;
+  border-top: 1px solid var(--mat-divider-color, rgba(0, 0, 0, 0.12));
+}
+
+// Dark mode dialog adjustments
+html.dark {
+  h2[mat-dialog-title],
+  [mat-dialog-title] {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .mat-mdc-dialog-actions,
+  [mat-dialog-actions] {
+    border-top-color: rgba(255, 255, 255, 0.12);
   }
 }
 

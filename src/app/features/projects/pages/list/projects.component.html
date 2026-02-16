@@ -36,6 +36,10 @@
         <mat-card-subtitle>{{ 'projects.subtitle' | translate }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-actions align="end">
+        <button mat-flat-button color="primary" (click)="createProject()">
+          <mat-icon>add</mat-icon>
+          {{ 'projects.create-new' | translate }}
+        </button>
       </mat-card-actions>
       <mat-card-content>
         <!-- Filter/Search Card -->
@@ -124,7 +128,7 @@
       <mat-icon>folder_off</mat-icon>
       <h3>{{ 'projects.no-projects' | translate }}</h3>
       <p>{{ 'projects.no-projects-description' | translate }}</p>
-      <button mat-flat-button color="primary" (click)="createProject()" disabled>
+      <button mat-flat-button color="primary" (click)="createProject()">
         <mat-icon>add</mat-icon>
         {{ 'projects.create-first' | translate }}
       </button>

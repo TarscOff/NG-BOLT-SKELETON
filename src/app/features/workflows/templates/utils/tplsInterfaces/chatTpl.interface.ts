@@ -28,11 +28,13 @@ export interface ChatConfig {
   showTimestamps?: boolean;
   showAvatars?: boolean;
   allowMarkdown?: boolean;
+  showHistoryArea?: boolean;
   
   // Interaction Options
   allowEdit?: boolean;
   allowDelete?: boolean;
   autoScroll?: boolean;
+  showInputArea?: boolean;
   
   // Input Options
   maxLength?: number;

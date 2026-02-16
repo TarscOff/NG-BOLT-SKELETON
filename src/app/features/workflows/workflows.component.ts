@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, Signal, computed, effect, inject, Injector, OnInit, runInInjectionContext, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SeoComponent, ConfirmDialogComponent, DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
 import { FieldConfigService, LayoutService, ToolbarActionsService, ToastService } from '@cadai/pxs-ng-core/services';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,11 +25,11 @@ import { map } from 'rxjs/operators';
 import { WorkflowsStore, WorkflowDraft, WorkflowExecutionLog, WorkflowValidationState } from './data/workflows.store';
 import { WorkflowsCatalogService } from './data/workflows-catalog.service';
 import { NewWorkflowDialogComponent, NewWorkflowDialogData } from './sub/new-workflow-dialog.component';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
     ensurePorts,
 } from './data/workflows.store';
-import { RunPanelDetailComponent } from './sub/run-panel/run-panel-detail.component';
+import { inferPortTypeFromReference } from './templates/utils/workflow-graph.utils';
 type UnsavedChoice = 'save' | 'discard' | 'cancel';
 
 @Component({
@@ -60,6 +61,7 @@ type UnsavedChoice = 'save' | 'discard' | 'cancel';
 export class WorkflowsComponent implements OnInit {
     private toolbar = inject(ToolbarActionsService);
     private destroyRef = inject(DestroyRef);
+    private router = inject(Router);
     store = inject(WorkflowsStore);
     readonly dirty = toSignal(this.store.dirty$, { initialValue: false });
     private catalogService = inject(WorkflowsCatalogService);
@@ -70,6 +72,14 @@ export class WorkflowsComponent implements OnInit {
     private injector = inject(Injector);
     private bus = inject(WfCanvasBus);
     private republishSeen = new Map<string, boolean>();
+    private readonly defaultAcceptedUploadTypesCsv = [
+        'application/pdf',
+        'text/plain',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/json',
+        'text/markdown',
+    ].join(',');
 
     readonly workflows: Signal<WorkflowDraft[]> = toSignal(this.store.workflows$, { initialValue: [] as WorkflowDraft[] }) as Signal<WorkflowDraft[]>;
     workflowFilter = signal<string>('');
@@ -128,8 +138,31 @@ export class WorkflowsComponent implements OnInit {
         return [...composites, ...base];
     });
     execTypes = computed<Set<PaletteType>>(() => {
-        const types = this.availableActions().map(a => a.type as PaletteType);
-        return new Set<PaletteType>([...types, 'composite' as PaletteType]);
+        const mergedTypes = new Set<string>();
+
+        for (const action of this.availableActions()) {
+            const raw = (action.type ?? '').toString().trim();
+            if (!raw) continue;
+            mergedTypes.add(raw);
+            mergedTypes.add(this.normalizeTypeToken(raw));
+        }
+
+        for (const node of this.selectedWorkflow()?.nodes ?? []) {
+            const rawNodeType = (node.type ?? '').toString().trim();
+            if (rawNodeType) {
+                mergedTypes.add(rawNodeType);
+                mergedTypes.add(this.normalizeTypeToken(rawNodeType));
+            }
+
+            const rawAiType = (node.data?.aiType ?? '').toString().trim();
+            if (rawAiType) {
+                mergedTypes.add(rawAiType);
+                mergedTypes.add(this.normalizeTypeToken(rawAiType));
+            }
+        }
+
+        mergedTypes.add('composite');
+        return new Set<PaletteType>(Array.from(mergedTypes) as PaletteType[]);
     });
     canvasNodes = computed<WorkflowNode[]>(() => {
         const allNodes = this.nodes();
@@ -142,324 +175,341 @@ export class WorkflowsComponent implements OnInit {
     actionsNodes: Record<string, ActionFormSpec> = {
 
         chat: {
-            make: () => [ 
-                /* F.getTextAreaField({
-                    name: 'system_prompt',
-                    label: 'system_prompt',
-                    placeholder: 'System prompt…',
-                    rows: 10,
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(500)],
-                    maxLength: 500
-                }),
-                F.getTextAreaField({
-                    name: 'chat_message',
-                    label: 'chat_message',
-                    placeholder: 'Ask anything…',
-                    rows: 10,
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(2000)],
-                    maxLength: 2000
-                }),
-                F.getDropdownField({
-                    name: 'temperature',
-                    label: 'Temperature',
-                    options: [
-                        { label: '0 – Deterministic', value: 0 },
-                        { label: '0.3', value: 0.3 },
-                        { label: '0.7', value: 0.7 },
-                        { label: '1.0 – Creative', value: 1 },
-                    ],
+            make: () => [
+                this.fieldsConfigService.getTextField({
+                    name: 'llm_endpoint',
+                    label: 'workflow.forms.common.llm_endpoint.label',
+                    placeholder: 'workflow.forms.common.llm_endpoint.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    errorMessages: { required: "Temperature is required" },
-                    defaultValue: 0.3,
-                    helperText: "Saisissez la temperature",
-                }), */
+                    errorMessages: { required: 'workflow.forms.common.errors.llm_endpoint_required' },
+                    defaultValue: 'http://ollama:11434/api',
+                    helperText: 'workflow.forms.common.llm_endpoint.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'model',
+                    label: 'workflow.forms.common.model.label',
+                    placeholder: 'workflow.forms.common.model.placeholder',
+                    required: true,
+                    validators: [Validators.required],
+                    errorMessages: { required: 'workflow.forms.common.errors.model_required' },
+                    defaultValue: 'tinyllama',
+                    helperText: 'workflow.forms.common.model.helper',
+                }),
             ],
             defaults: {
-                temperature: 0.3
+                llm_endpoint: 'http://ollama:11434/api',
+                model: 'tinyllama',
             },
             
         },
         // Trigger nodes: appear in toolbox as sources (only outputs)
-        trigger_chat: {
+        'trigger-chat': {
             make: () => [
-
+                this.fieldsConfigService.getTextField({
+                    name: 'max_chars',
+                    label: 'workflow.forms.triggers.chat.max_chars.label',
+                    placeholder: 'workflow.forms.triggers.chat.max_chars.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'workflow.forms.triggers.errors.max_chars_required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: '4000',
+                    helperText: 'workflow.forms.triggers.chat.max_chars.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'placeholder',
+                    label: 'workflow.forms.triggers.chat.placeholder.label',
+                    placeholder: 'workflow.forms.triggers.chat.placeholder.placeholder',
+                    defaultValue: 'Type your message...',
+                    helperText: 'workflow.forms.triggers.chat.placeholder.helper',
+                }),
+                this.fieldsConfigService.getToggleField({
+                    name: 'enable_attachments',
+                    label: 'workflow.forms.triggers.chat.enable_attachments.label',
+                    helperText: 'workflow.forms.triggers.chat.enable_attachments.helper',
+                    defaultValue: true,
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'accepted_types',
+                    label: 'workflow.forms.triggers.common.accepted_types.label',
+                    placeholder: 'workflow.forms.triggers.common.accepted_types.placeholder',
+                    required: true,
+                    minLength: 1,
+                    maxLength: 500,
+                    validators: [Validators.required, Validators.maxLength(500)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        maxlength: 'form.errors.input.maxlength',
+                    },
+                    defaultValue: this.defaultAcceptedUploadTypesCsv,
+                    helperText: 'workflow.forms.triggers.common.accepted_types.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'max_file_size',
+                    label: 'workflow.forms.triggers.common.max_file_size.label',
+                    placeholder: 'workflow.forms.triggers.common.max_file_size.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: String(10 * 1024 * 1024),
+                    helperText: 'workflow.forms.triggers.common.max_file_size.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'max_files',
+                    label: 'workflow.forms.triggers.common.max_files.label',
+                    placeholder: 'workflow.forms.triggers.common.max_files.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: '5',
+                    helperText: 'workflow.forms.triggers.common.max_files.helper',
+                }),
             ],
             defaults: {
+                max_chars: 4000,
+                placeholder: 'Type your message...',
+                enable_attachments: true,
+                accepted_types: this.defaultAcceptedUploadTypesCsv,
+                max_file_size: 10 * 1024 * 1024,
+                max_files: 5,
             },
         },
 
-        trigger_file_upload: {
+        'trigger-file-upload': {
             make: () => [
-
+                this.fieldsConfigService.getTextField({
+                    name: 'accepted_types',
+                    label: 'workflow.forms.triggers.common.accepted_types.label',
+                    placeholder: 'workflow.forms.triggers.common.accepted_types.placeholder',
+                    required: true,
+                    minLength: 1,
+                    maxLength: 500,
+                    validators: [Validators.required, Validators.maxLength(500)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        maxlength: 'form.errors.input.maxlength',
+                    },
+                    defaultValue: this.defaultAcceptedUploadTypesCsv,
+                    helperText: 'workflow.forms.triggers.common.accepted_types.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'max_file_size',
+                    label: 'workflow.forms.triggers.common.max_file_size.label',
+                    placeholder: 'workflow.forms.triggers.common.max_file_size.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: String(10 * 1024 * 1024),
+                    helperText: 'workflow.forms.triggers.common.max_file_size.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'max_files',
+                    label: 'workflow.forms.triggers.common.max_files.label',
+                    placeholder: 'workflow.forms.triggers.common.max_files.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: '5',
+                    helperText: 'workflow.forms.triggers.common.max_files.helper',
+                }),
+                this.fieldsConfigService.getToggleField({
+                    name: 'multiple',
+                    label: 'workflow.forms.triggers.file_upload.multiple.label',
+                    helperText: 'workflow.forms.triggers.file_upload.multiple.helper',
+                    defaultValue: true,
+                }),
             ],
             defaults: {
+                accepted_types: this.defaultAcceptedUploadTypesCsv,
+                max_file_size: 10 * 1024 * 1024,
+                max_files: 5,
+                multiple: true,
             },
         },
 
-        trigger_webhook: {
+        'trigger-webhook': {
             make: () => [
-
+                this.fieldsConfigService.getTextField({
+                    name: 'accept_content_types',
+                    label: 'workflow.forms.triggers.webhook.accept_content_types.label',
+                    placeholder: 'workflow.forms.triggers.webhook.accept_content_types.placeholder',
+                    required: true,
+                    minLength: 1,
+                    maxLength: 500,
+                    validators: [Validators.required, Validators.maxLength(500)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        maxlength: 'form.errors.input.maxlength',
+                    },
+                    defaultValue: 'application/json,text/plain,multipart/form-data',
+                    helperText: 'workflow.forms.triggers.webhook.accept_content_types.helper',
+                }),
+                this.fieldsConfigService.getTextField({
+                    name: 'max_payload_size',
+                    label: 'workflow.forms.triggers.webhook.max_payload_size.label',
+                    placeholder: 'workflow.forms.triggers.webhook.max_payload_size.placeholder',
+                    required: true,
+                    minLength: 1,
+                    validators: [Validators.required, Validators.pattern(/^[1-9]\d*$/)],
+                    errorMessages: {
+                        required: 'form.errors.input.required',
+                        pattern: 'workflow.forms.triggers.errors.positive_integer',
+                    },
+                    defaultValue: String(1024 * 1024),
+                    helperText: 'workflow.forms.triggers.webhook.max_payload_size.helper',
+                }),
+                this.fieldsConfigService.getToggleField({
+                    name: 'parse_json',
+                    label: 'workflow.forms.triggers.webhook.parse_json.label',
+                    helperText: 'workflow.forms.triggers.webhook.parse_json.helper',
+                    defaultValue: true,
+                }),
             ],
             defaults: {
+                accept_content_types: 'application/json,text/plain,multipart/form-data',
+                max_payload_size: 1024 * 1024,
+                parse_json: true,
+            },
+        },
+
+        'trigger-manual': {
+            make: () => [
+                this.fieldsConfigService.getTextField({
+                    name: 'label',
+                    label: 'workflow.forms.triggers.manual.label.label',
+                    placeholder: 'workflow.forms.triggers.manual.label.placeholder',
+                    defaultValue: 'Run now',
+                    helperText: 'workflow.forms.triggers.manual.label.helper',
+                }),
+                this.fieldsConfigService.getToggleField({
+                    name: 'require_confirmation',
+                    label: 'workflow.forms.triggers.manual.require_confirmation.label',
+                    helperText: 'workflow.forms.triggers.manual.require_confirmation.helper',
+                    defaultValue: false,
+                }),
+            ],
+            defaults: {
+                label: 'Run now',
+                require_confirmation: false,
             },
         },
     
         embed: {
             make: () => [
-                /*              F.getTextAreaField({
-                    name: 'text',
-                    label: 'workflow.forms.embed.text.label',
-                    placeholder: 'workflow.forms.embed.text.placeholder',
-                    required: true,
-                    rows: 6,
-                    validators: [Validators.required, Validators.maxLength(4000)],
-                    errorMessages: { required: 'workflow.forms.embed.errors.text_required' },
-                    maxLength: 4000,
-                    helperText: 'workflow.forms.embed.text.helper',
-                }),
-                F.getDropdownField({
-                    name: 'embedding_model',
-                    label: 'workflow.forms.embed.embedding_model.label',
-                    options: [
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
-                        { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
-                    ],
+                this.fieldsConfigService.getTextField({
+                    name: 'llm_endpoint',
+                    label: 'workflow.forms.common.llm_endpoint.label',
+                    placeholder: 'workflow.forms.common.llm_endpoint.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    errorMessages: { required: 'workflow.forms.embed.errors.model_required' },
-                    defaultValue: 'text-embedding-3-small',
-                    helperText: 'workflow.forms.embed.embedding_model.helper',
+                    errorMessages: { required: 'workflow.forms.common.errors.llm_endpoint_required' },
+                    defaultValue: 'http://ollama:11434/api',
+                    helperText: 'workflow.forms.common.llm_endpoint.helper',
                 }),
-                F.getToggleField({
-                    name: 'normalize_embeddings',
-                    label: 'workflow.forms.embed.normalize_embeddings.label',
-                    helperText: 'workflow.forms.embed.normalize_embeddings.helper',
-                    required: false,
-                    defaultValue: true,
-                }), */
+                this.fieldsConfigService.getTextField({
+                    name: 'model',
+                    label: 'workflow.forms.common.model.label',
+                    placeholder: 'workflow.forms.common.model.placeholder',
+                    required: true,
+                    validators: [Validators.required],
+                    errorMessages: { required: 'workflow.forms.common.errors.model_required' },
+                    defaultValue: 'jeffh/intfloat-multilingual-e5-large-instruct:f16',
+                    helperText: 'workflow.forms.common.model.helper',
+                }),
             ],
             defaults: {
-                embedding_model: 'text-embedding-3-small',
-                normalize_embeddings: true,
+                llm_endpoint: 'http://ollama:11434/api',
+                model: 'jeffh/intfloat-multilingual-e5-large-instruct:f16',
             },
         },
 
         retrieve: {
             make: () => [
-                /*             F.getTextAreaField({
-                    name: 'query',
-                    label: 'workflow.forms.retrieve.query.label',
-                    placeholder: 'workflow.forms.retrieve.query.placeholder',
-                    rows: 4,
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(2000)],
-                    errorMessages: { required: 'workflow.forms.retrieve.errors.query_required' },
-                    maxLength: 2000,
-                }),
-                F.getDropdownField({
-                    name: 'vector_store',
-                    label: 'workflow.forms.retrieve.vector_store.label',
-                    options: [
-                        { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
-                        { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
-                        { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
-                        { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
-                        { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
-                    ],
+                this.fieldsConfigService.getTextField({
+                    name: 'chromadb_url',
+                    label: 'workflow.forms.common.chromadb_url.label',
+                    placeholder: 'workflow.forms.common.chromadb_url.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    defaultValue: 'azure_cosmos_db',
-                    helperText: 'workflow.forms.retrieve.vector_store.helper',
+                    errorMessages: { required: 'workflow.forms.common.errors.chromadb_url_required' },
+                    defaultValue: 'chromadb:8000',
+                    helperText: 'workflow.forms.common.chromadb_url.helper',
                 }),
-                F.getRangeField({
-                    name: 'top_k',
-                    label: 'workflow.forms.retrieve.top_k.label',
-                    min: 1,
-                    max: 20,
-                    step: 1,
-                    defaultValue: 5,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.retrieve.top_k.helper',
-                }),
-                F.getRangeField({
-                    name: 'score_threshold',
-                    label: 'workflow.forms.retrieve.score_threshold.label',
-                    min: 0,
-                    max: 1,
-                    step: 0.05,
-                    defaultValue: 0.2,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.retrieve.score_threshold.helper',
-                }),
-                F.getToggleField({
-                    name: 'include_metadata',
-                    label: 'workflow.forms.retrieve.include_metadata.label',
-                    helperText: 'workflow.forms.retrieve.include_metadata.helper',
-                    required: false,
-                    defaultValue: true,
-                }), */
             ],
             defaults: {
-                vector_store: 'azure_cosmos_db',
-                top_k: 5,
-                score_threshold: 0.2,
-                include_metadata: true,
+                chromadb_url: 'chromadb:8000',
             },
         },
 
-        convert_and_chunk: {
+        'convert-and-chunk': {
+            make: () => [],
+            defaults: {},
+        },
+
+        'embed-langchain-documents': {
             make: () => [
-                /*                 F.getDropdownField({
-                    name: 'text_splitter',
-                    label: 'workflow.forms.convert_and_chunk.text_splitter.label',
-                    options: [
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.recursive', value: 'recursive_character' },
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.markdown', value: 'markdown' },
-                        { label: 'workflow.forms.convert_and_chunk.text_splitter.options.token', value: 'token' },
-                    ],
+                this.fieldsConfigService.getTextField({
+                    name: 'llm_endpoint',
+                    label: 'workflow.forms.common.llm_endpoint.label',
+                    placeholder: 'workflow.forms.common.llm_endpoint.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    defaultValue: 'recursive_character',
-                    helperText: 'workflow.forms.convert_and_chunk.text_splitter.helper',
+                    errorMessages: { required: 'workflow.forms.common.errors.llm_endpoint_required' },
+                    defaultValue: 'http://ollama:11434/api',
+                    helperText: 'workflow.forms.common.llm_endpoint.helper',
                 }),
-                F.getRangeField({
-                    name: 'chunk_size',
-                    label: 'workflow.forms.convert_and_chunk.chunk_size.label',
-                    min: 200,
-                    max: 4000,
-                    step: 100,
-                    defaultValue: 1000,
+                this.fieldsConfigService.getTextField({
+                    name: 'model',
+                    label: 'workflow.forms.common.model.label',
+                    placeholder: 'workflow.forms.common.model.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    helperText: 'workflow.forms.convert_and_chunk.chunk_size.helper',
+                    errorMessages: { required: 'workflow.forms.common.errors.model_required' },
+                    defaultValue: 'jeffh/intfloat-multilingual-e5-large-instruct:f16',
+                    helperText: 'workflow.forms.common.model.helper',
                 }),
-                F.getRangeField({
-                    name: 'chunk_overlap',
-                    label: 'workflow.forms.convert_and_chunk.chunk_overlap.label',
-                    min: 0,
-                    max: 800,
-                    step: 50,
-                    defaultValue: 200,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.convert_and_chunk.chunk_overlap.helper',
-                }),
-                F.getToggleField({
-                    name: 'clean_whitespace',
-                    label: 'workflow.forms.convert_and_chunk.clean_whitespace.label',
-                    helperText: 'workflow.forms.convert_and_chunk.clean_whitespace.helper',
-                    required: false,
-                    defaultValue: true,
-                }),
-                F.getToggleField({
-                    name: 'add_source_metadata',
-                    label: 'workflow.forms.convert_and_chunk.add_source_metadata.label',
-                    helperText: 'workflow.forms.convert_and_chunk.add_source_metadata.helper',
-                    required: false,
-                    defaultValue: true,
-                }), */
             ],
             defaults: {
-                text_splitter: 'recursive_character',
-                chunk_size: 1000,
-                chunk_overlap: 200,
-                clean_whitespace: true,
-                add_source_metadata: true,
+                llm_endpoint: 'http://ollama:11434/api',
+                model: 'jeffh/intfloat-multilingual-e5-large-instruct:f16',
             },
         },
 
-        embed_langchain_documents: {
+        'store-embedded-langchain-documents': {
             make: () => [
-                /*                 F.getDropdownField({
-                    name: 'embedding_model',
-                    label: 'workflow.forms.embed_langchain_documents.embedding_model.label',
-                    options: [
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_small', value: 'text-embedding-3-small' },
-                        { label: 'workflow.forms.embed.embedding_model.options.openai_large', value: 'text-embedding-3-large' },
-                        { label: 'workflow.forms.embed.embedding_model.options.local', value: 'all-MiniLM-L6-v2' },
-                    ],
+                this.fieldsConfigService.getTextField({
+                    name: 'chromadb_url',
+                    label: 'workflow.forms.common.chromadb_url.label',
+                    placeholder: 'workflow.forms.common.chromadb_url.placeholder',
                     required: true,
                     validators: [Validators.required],
-                    defaultValue: 'text-embedding-3-small',
+                    errorMessages: { required: 'workflow.forms.common.errors.chromadb_url_required' },
+                    defaultValue: 'chromadb:8000',
+                    helperText: 'workflow.forms.common.chromadb_url.helper',
                 }),
-                F.getRangeField({
-                    name: 'batch_size',
-                    label: 'workflow.forms.embed_langchain_documents.batch_size.label',
-                    min: 1,
-                    max: 128,
-                    step: 1,
-                    defaultValue: 32,
-                    required: true,
-                    validators: [Validators.required],
-                    helperText: 'workflow.forms.embed_langchain_documents.batch_size.helper',
-                }),
-                F.getToggleField({
-                    name: 'normalize_embeddings',
-                    label: 'workflow.forms.embed.normalize_embeddings.label',
-                    helperText: 'workflow.forms.embed.normalize_embeddings.helper',
-                    required: false,
-                    defaultValue: true,
-                }), */
             ],
             defaults: {
-                embedding_model: 'text-embedding-3-small',
-                batch_size: 32,
-                normalize_embeddings: true,
-            },
-        },
-
-        store_embedded_langchain_documents: {
-            make: () => [
-                /*                 F.getDropdownField({
-                    name: 'vector_store',
-                    label: 'workflow.forms.store_embedded_langchain_documents.vector_store.label',
-                    options: [
-                        { label: 'workflow.forms.vector_store.options.azure_cosmos_db', value: 'azure_cosmos_db' },
-                        { label: 'workflow.forms.vector_store.options.azure_ai_search', value: 'azure_ai_search' },
-                        { label: 'workflow.forms.vector_store.options.pinecone', value: 'pinecone' },
-                        { label: 'workflow.forms.vector_store.options.qdrant', value: 'qdrant' },
-                        { label: 'workflow.forms.vector_store.options.pgvector', value: 'pgvector' },
-                    ],
-                    required: true,
-                    validators: [Validators.required],
-                    defaultValue: 'azure_cosmos_db',
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.vector_store.helper',
-                }),
-                F.getTextField({
-                    name: 'collection_name',
-                    label: 'workflow.forms.store_embedded_langchain_documents.collection_name.label',
-                    placeholder: 'workflow.forms.store_embedded_langchain_documents.collection_name.placeholder',
-                    required: true,
-                    validators: [Validators.required, Validators.maxLength(128)],
-                    errorMessages: { required: 'workflow.forms.store_embedded_langchain_documents.errors.collection_required' },
-                }),
-                F.getTextField({
-                    name: 'namespace',
-                    label: 'workflow.forms.store_embedded_langchain_documents.namespace.label',
-                    placeholder: 'workflow.forms.store_embedded_langchain_documents.namespace.placeholder',
-                    required: false,
-                    validators: [Validators.maxLength(128)],
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.namespace.helper',
-                }),
-                F.getToggleField({
-                    name: 'upsert',
-                    label: 'workflow.forms.store_embedded_langchain_documents.upsert.label',
-                    helperText: 'workflow.forms.store_embedded_langchain_documents.upsert.helper',
-                    required: false,
-                    defaultValue: true,
-                }), */
-            ],
-            defaults: {
-                vector_store: 'azure_cosmos_db',
-                collection_name: 'documents',
-                namespace: 'default',
-                upsert: true,
+                chromadb_url: 'chromadb:8000',
             },
         },
     };
@@ -489,12 +539,12 @@ export class WorkflowsComponent implements OnInit {
                 icon: "travel_explore",
                 ports: {
                     inputs: [
-                        { id: 'embeddings', data_reference: 'embeddings', artifact_type: 'json' },
+                        { id: 'embeddings', data_reference: 'embeddings', artifact_type: 'list[float]' },
                         { id: 'collection', data_reference: 'collection', artifact_type: 'collection' },
                         { id: 'filter_document_publication_datetime', data_reference: 'filter_document_publication_datetime', artifact_type: 'string' },
                     ],
                     outputs: [
-                        { id: 'context', data_reference: 'context', artifact_type: 'json' },
+                        { id: 'context', data_reference: 'context', artifact_type: 'string' },
                     ],
                 },
                 ports_map: {
@@ -540,7 +590,7 @@ export class WorkflowsComponent implements OnInit {
                         { id: 'source_file', data_reference: 'source_file', artifact_type: 'file' },
                     ],
                     outputs: [
-                        { id: 'langchain_documents', data_reference: 'langchain_documents', artifact_type: 'file' },
+                        { id: 'langchain_documents', data_reference: 'langchain_documents', artifact_type: 'langchain_documents' },
                     ],
                 },
                 ports_map: {
@@ -555,10 +605,10 @@ export class WorkflowsComponent implements OnInit {
                 icon: "hive",
                 ports: {
                     inputs: [
-                        { id: 'langchain_documents', data_reference: 'langchain_documents', artifact_type: 'json' },
+                        { id: 'langchain_documents', data_reference: 'langchain_documents', artifact_type: 'langchain_documents' },
                     ],
                     outputs: [
-                        { id: 'embedded_langchain_documents', data_reference: 'embedded_langchain_documents', artifact_type: 'json' },
+                        { id: 'embedded_langchain_documents', data_reference: 'embedded_langchain_documents', artifact_type: 'embedded_langchain_documents' },
                     ],
                 },
                 ports_map: {
@@ -573,8 +623,8 @@ export class WorkflowsComponent implements OnInit {
                 icon: "inventory_2",
                 ports: {
                     inputs: [
-                        { id: 'collection', data_reference: 'collection', artifact_type: 'string' },
-                        { id: 'embedded_langchain_documents', data_reference: 'embedded_langchain_documents', artifact_type: 'collection' },
+                        { id: 'collection', data_reference: 'collection', artifact_type: 'collection' },
+                        { id: 'embedded_langchain_documents', data_reference: 'embedded_langchain_documents', artifact_type: 'embedded_langchain_documents' },
                     ],
                     outputs: [
                         { id: 'collection_out', data_reference: 'collection', artifact_type: 'collection' },
@@ -634,6 +684,21 @@ export class WorkflowsComponent implements OnInit {
                 ports_map: {
                     payload_text: { required: false, readonly: false },
                     payload_file: { required: false, readonly: false }
+                }
+            }
+        },
+        {
+            type: 'trigger_manual',
+            params: {
+                icon: 'touch_app',
+                ports: {
+                    inputs: [],
+                    outputs: [
+                        { id: 'trigger', data_reference: 'trigger', artifact_type: 'boolean' }
+                    ]
+                },
+                ports_map: {
+                    trigger: { required: false, readonly: false }
                 }
             }
         },
@@ -739,7 +804,7 @@ export class WorkflowsComponent implements OnInit {
         return workflows
             .filter(w =>
                 w.kind === 'reusable' &&
-                w.visibility === 'public' &&
+                (w.visibility === 'public' || w.status === 'published') &&
                 w.id !== currentId
             ).map(w => ({
                 type: `composite`,
@@ -768,22 +833,184 @@ export class WorkflowsComponent implements OnInit {
             };
         });
         const edges = wf.edges ?? [];
-        const indeg = new Map<string, number>();
-        const outdeg = new Map<string, number>();
-        for (const n of nodes) {
-            indeg.set(n.id, 0);
-            outdeg.set(n.id, 0);
-        }
-        for (const e of edges) {
-            indeg.set(e.target, (indeg.get(e.target) ?? 0) + 1);
-            outdeg.set(e.source, (outdeg.get(e.source) ?? 0) + 1);
+        const incomingConnections = new Set<string>();
+        const outgoingConnections = new Set<string>();
+        const incomingConnectionsNormalized = new Set<string>();
+        const outgoingConnectionsNormalized = new Set<string>();
+        const incomingNodeLevelConnections = new Set<string>();
+        const outgoingNodeLevelConnections = new Set<string>();
+        const inputById = new Map<string, WorkflowPorts['inputs'][number]>();
+        const outputById = new Map<string, WorkflowPorts['outputs'][number]>();
+
+        const normalizePortToken = (value: string | null | undefined): string =>
+            (value ?? '')
+                .toString()
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_');
+
+        const extractPortTokenCandidates = (value: string | null | undefined): string[] => {
+            const raw = (value ?? '').toString().trim();
+            if (!raw) return [];
+            const candidates = new Set<string>([raw]);
+            const delimiters = ['::', ':', '/', '.', '|', '->', '__', '--'];
+            for (const delimiter of delimiters) {
+                const parts = raw.split(delimiter).map(part => part.trim()).filter(Boolean);
+                if (parts.length > 1) {
+                    candidates.add(parts[parts.length - 1]);
+                }
+            }
+            return Array.from(candidates);
+        };
+
+        const readStringField = (
+            record: Record<string, unknown>,
+            keys: string[]
+        ): string | undefined => {
+            for (const key of keys) {
+                const value = record[key];
+                if (typeof value === 'string' && value.trim().length > 0) {
+                    return value.trim();
+                }
+            }
+            return undefined;
+        };
+
+        const parsePortsFromEdgeId = (
+            edgeIdRaw: unknown,
+            sourceNodeId: string,
+            targetNodeId: string
+        ): { sourcePort?: string; targetPort?: string } => {
+            const edgeId = edgeIdRaw;
+            if (typeof edgeId !== 'string' || !edgeId.trim()) {
+                return {};
+            }
+
+            const src = (sourceNodeId ?? '').toString();
+            const tgt = (targetNodeId ?? '').toString();
+            const prefix = `e-${src}__`;
+            const middle = `--${tgt}__`;
+            if (edgeId.startsWith(prefix)) {
+                const middleIdx = edgeId.indexOf(middle, prefix.length);
+                if (middleIdx > prefix.length) {
+                    const sourcePort = edgeId.slice(prefix.length, middleIdx);
+                    const targetPort = edgeId.slice(middleIdx + middle.length);
+                    return {
+                        sourcePort: sourcePort || undefined,
+                        targetPort: targetPort || undefined,
+                    };
+                }
+            }
+
+            const fallback = edgeId.match(/^e-(.+?)__(.+?)--(.+?)__(.+)$/);
+            if (fallback && fallback.length === 5) {
+                return {
+                    sourcePort: fallback[2] || undefined,
+                    targetPort: fallback[4] || undefined,
+                };
+            }
+
+            return {};
+        };
+
+        interface NormalizedEdge {
+            source: string;
+            target: string;
+            sourcePort?: string;
+            targetPort?: string;
         }
 
-        const sourceNodes = nodes.filter(n => (indeg.get(n.id) ?? 0) === 0);
-        const sinkNodes = nodes.filter(n => (outdeg.get(n.id) ?? 0) === 0);
+        const normalizedEdges: NormalizedEdge[] = edges.map(edge => {
+            const edgeRecord = edge as unknown as Record<string, unknown>;
+            const sourceNodeId = readStringField(edgeRecord, [
+                'source',
+                'source_node_id',
+                'sourceNodeId',
+            ]) ?? '';
+            const targetNodeId = readStringField(edgeRecord, [
+                'target',
+                'target_node_id',
+                'targetNodeId',
+            ]) ?? '';
+            const parsedFromId = parsePortsFromEdgeId(edgeRecord['id'], sourceNodeId, targetNodeId);
+            const sourcePort = readStringField(edgeRecord, [
+                'sourcePort',
+                'source_port',
+                'source_handle_id',
+                'sourceHandleId',
+                'source_handle',
+                'sourceHandle',
+            ]) ?? parsedFromId.sourcePort;
+            const targetPort = readStringField(edgeRecord, [
+                'targetPort',
+                'target_port',
+                'target_handle_id',
+                'targetHandleId',
+                'target_handle',
+                'targetHandle',
+            ]) ?? parsedFromId.targetPort;
 
-        const inputs: WorkflowPorts['inputs'] = [];
-        const outputs: WorkflowPorts['outputs'] = [];
+            return {
+                source: sourceNodeId,
+                target: targetNodeId,
+                sourcePort,
+                targetPort,
+            };
+        });
+
+        for (const edge of normalizedEdges) {
+            if (!edge.source || !edge.target) {
+                continue;
+            }
+            const sourcePort = edge.sourcePort;
+            const targetPort = edge.targetPort;
+
+            if (typeof sourcePort === 'string' && sourcePort.trim().length > 0) {
+                for (const candidate of extractPortTokenCandidates(sourcePort)) {
+                    outgoingConnections.add(`${edge.source}:${candidate}`);
+                    outgoingConnectionsNormalized.add(`${edge.source}:${normalizePortToken(candidate)}`);
+                }
+            } else {
+                outgoingNodeLevelConnections.add(edge.source);
+            }
+
+            if (typeof targetPort === 'string' && targetPort.trim().length > 0) {
+                for (const candidate of extractPortTokenCandidates(targetPort)) {
+                    incomingConnections.add(`${edge.target}:${candidate}`);
+                    incomingConnectionsNormalized.add(`${edge.target}:${normalizePortToken(candidate)}`);
+                }
+            } else {
+                incomingNodeLevelConnections.add(edge.target);
+            }
+        }
+
+        const isInputPortConnected = (nodeId: string, portId: string): boolean => {
+            if (incomingNodeLevelConnections.has(nodeId)) return true;
+            for (const candidate of extractPortTokenCandidates(portId)) {
+                if (incomingConnections.has(`${nodeId}:${candidate}`)) return true;
+                if (incomingConnectionsNormalized.has(`${nodeId}:${normalizePortToken(candidate)}`)) return true;
+            }
+            return false;
+        };
+
+        const isOutputPortConnected = (nodeId: string, portId: string): boolean => {
+            if (outgoingNodeLevelConnections.has(nodeId)) return true;
+            for (const candidate of extractPortTokenCandidates(portId)) {
+                if (outgoingConnections.has(`${nodeId}:${candidate}`)) return true;
+                if (outgoingConnectionsNormalized.has(`${nodeId}:${normalizePortToken(candidate)}`)) return true;
+            }
+            return false;
+        };
+
+        const isTriggerNodeType = (type: string | undefined): boolean => {
+            const normalized = (type ?? '').toString().trim().toLowerCase().replace(/-/g, '_');
+            return (
+                normalized === 'trigger_chat' ||
+                normalized === 'trigger_file_upload' ||
+                normalized === 'trigger_webhook' ||
+                normalized === 'trigger_manual'
+            );
+        };
 
         const resolveLabel = (n: WorkflowNode, p: WorkflowPorts['inputs'][number]) => {
             const ref =
@@ -803,32 +1030,60 @@ export class WorkflowsComponent implements OnInit {
                 ('artifactType' in p && typeof (p as { artifactType?: unknown }).artifactType === 'string'
                     ? (p as { artifactType?: string }).artifactType
                     : undefined);
-            return art ?? p.type ?? 'json';
+            const inferred = inferPortTypeFromReference(
+                ('data_reference' in p && typeof (p as { data_reference?: unknown }).data_reference === 'string'
+                    ? (p as { data_reference?: string }).data_reference
+                    : undefined) ??
+                ('dataReference' in p && typeof (p as { dataReference?: unknown }).dataReference === 'string'
+                    ? (p as { dataReference?: string }).dataReference
+                    : undefined) ??
+                p.id
+            );
+            if (art) return art;
+            if (p.type && p.type !== 'json' && p.type !== 'any') return p.type;
+            return inferred ?? p.type ?? 'json';
         };
 
-        for (const n of sourceNodes) {
+        for (const n of nodes) {
+            const isTriggerNode = isTriggerNodeType(n.type);
             const ins = n.ports?.inputs ?? [];
             for (const p of ins) {
-                inputs.push({
-                    id: `${n.id}:${p.id}`,
+                if (isInputPortConnected(n.id, p.id)) continue;
+                const id = `${n.id}:${p.id}`;
+                if (inputById.has(id)) continue;
+                inputById.set(id, {
+                    id,
                     label: resolveLabel(n, p),
                     type: resolveType(p),
                     required: p.required,
                 });
+            }
+            const outs = n.ports?.outputs ?? [];
+            for (const p of outs) {
+                if (!isTriggerNode && isOutputPortConnected(n.id, p.id)) continue;
+                const id = `${n.id}:${p.id}`;
+                if (isTriggerNode) {
+                    if (inputById.has(id)) continue;
+                    inputById.set(id, {
+                        id,
+                        label: resolveLabel(n, p),
+                        type: resolveType(p),
+                        required: p.required,
+                    });
+                } else {
+                    if (outputById.has(id)) continue;
+                    outputById.set(id, {
+                        id,
+                        label: resolveLabel(n, p),
+                        type: resolveType(p),
+                        required: p.required,
+                    });
+                }
             }
         }
 
-        for (const n of sinkNodes) {
-            const outs = n.ports?.outputs ?? [];
-            for (const p of outs) {
-                outputs.push({
-                    id: `${n.id}:${p.id}`,
-                    label: resolveLabel(n, p),
-                    type: resolveType(p),
-                    required: p.required,
-                });
-            }
-        }
+        const inputs = [...inputById.values()];
+        const outputs = [...outputById.values()];
 
         return {
             inputs: inputs.length ? inputs : [{ id: 'in-1', label: 'in 1', type: 'json', required: false }],
@@ -870,7 +1125,13 @@ export class WorkflowsComponent implements OnInit {
             const artifact = pickString(rec, ['artifact_type', 'artifactType']);
             const id = (typeof rec['id'] === 'string' ? (rec['id'] as string) : `${prefix}-${idx + 1}`);
             const label = (dataRef ?? (typeof rec['label'] === 'string' ? (rec['label'] as string) : undefined) ?? `${prefix} ${idx + 1}`);
-            const type = (typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined) ?? artifact ?? 'json';
+            const explicitType = typeof rec['type'] === 'string' ? (rec['type'] as string) : undefined;
+            const inferredType = inferPortTypeFromReference(dataRef ?? id ?? label);
+            const type = artifact
+                ?? ((explicitType && explicitType !== 'json' && explicitType !== 'any') ? explicitType : undefined)
+                ?? inferredType
+                ?? explicitType
+                ?? 'json';
             const required = (typeof rec['required'] === 'boolean' ? (rec['required'] as boolean) : undefined);
 
             const port = { id, label, type, required } as WorkflowPorts['inputs'][number] & {
@@ -878,7 +1139,11 @@ export class WorkflowsComponent implements OnInit {
                 artifact_type?: string;
             };
             if (dataRef) port.data_reference = dataRef;
-            if (artifact) port.artifact_type = artifact;
+            if (artifact) {
+                port.artifact_type = artifact;
+            } else if (inferredType) {
+                port.artifact_type = inferredType;
+            }
             return port as WorkflowPorts['inputs'][number];
         };
 
@@ -969,6 +1234,21 @@ export class WorkflowsComponent implements OnInit {
         this.sidebarCollapsed.set(true);
     }
 
+    /** Navigate to Template Builder to create Tier 3 templates */
+    openTemplateBuilder(): void {
+        this.router.navigate(['/genai-workflows/templates/builder']);
+    }
+
+    /** Navigate to Templates List page */
+    openTemplatesPage(): void {
+        this.router.navigate(['/genai-workflows/templates']);
+    }
+
+    /** Navigate to Composites List page */
+    openCompositesPage(): void {
+        this.router.navigate(['/genai-workflows/composites']);
+    }
+
     toggleMultiSelect(): void {
         this.multiSelectMode.update(v => !v);
         if (!this.multiSelectMode()) {
@@ -1016,7 +1296,9 @@ export class WorkflowsComponent implements OnInit {
 
 
     private async confirmUnsavedChoice(): Promise<UnsavedChoice> {
-        if (!this.dirty()) return 'discard'; // meaning: proceed
+        const selected = this.selectedWorkflow();
+        const selectedDirty = selected ? !!this.canDraftById()[selected.id] : false;
+        if (!selectedDirty) return 'discard'; // meaning: proceed
 
         const choice = await firstValueFrom(
             this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, UnsavedChoice>(
@@ -1038,15 +1320,18 @@ export class WorkflowsComponent implements OnInit {
     async selectWorkflow(id: string): Promise<void> {
         if (this.selectedWorkflow()?.id === id) return;
 
-        const choice = await this.confirmUnsavedChoice();
+        const rawChoice = await this.confirmUnsavedChoice() as UnsavedChoice | boolean | null | undefined;
+        const choice: UnsavedChoice =
+            rawChoice === 'save' || rawChoice === 'discard' || rawChoice === 'cancel'
+                ? rawChoice
+                : (rawChoice ? 'save' : 'cancel');
 
-        if (!choice) return;
-
-        if (choice) {
+        if (choice === 'cancel') return;
+        if (choice === 'save') {
             this.store.saveSelected();
         }
 
-        // discard or saved -> proceed
+        // "discard" or "save" -> proceed
         this.store.selectWorkflow({ id });
         this.store.revalidateSelected();
         this.sidebarCollapsed.set(false);
@@ -1220,6 +1505,14 @@ export class WorkflowsComponent implements OnInit {
 
         this.store.updateWorkflow({ workflow: updated });
         this.toast.show(this.translate.instant('workflow.toast.published'));
+    }
+
+    private normalizeTypeToken(value: string | null | undefined): string {
+        return (value ?? '')
+            .toString()
+            .trim()
+            .toLowerCase()
+            .replace(/-/g, '_');
     }
 
     private initializeFilterForm(): void {

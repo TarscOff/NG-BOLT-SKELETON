@@ -1,0 +1,187 @@
+<div class="summary-result-container" #runtimeResultContainer>
+  <app-export-overlay-tpl />
+
+  <div class="runtime-header">
+    <div class="runtime-header-info">
+      <mat-icon [color]="(isDark$ | async) ? 'accent' : 'primary'">
+        {{ mode === 'markdown' ? 'article' : 'description' }}
+      </mat-icon>
+      <span class="runtime-title">
+        {{ mode === 'markdown' ? 'Markdown' : ('summarizeTpl.results' | translate) }}
+      </span>
+    </div>
+    <div class="runtime-header-actions">
+      <div class="result-actions">
+        @if (actionResult(); as exportResult) {
+          <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+            (click)="handleExport({ format: 'pdf', result: exportResult })"
+            [disabled]="(exportService.isExporting$ | async)"
+            matTooltip="{{ 'summarizeTpl.exportPdf' | translate }}">
+            <mat-icon>picture_as_pdf</mat-icon>
+          </button>
+          <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+            (click)="handleExport({ format: 'docx', result: exportResult })"
+            [disabled]="(exportService.isExporting$ | async)"
+            matTooltip="{{ 'summarizeTpl.exportDocx' | translate }}">
+            <mat-icon>description</mat-icon>
+          </button>
+          <button mat-icon-button [color]="(isDark$ | async) ? 'neutral' : 'primary'"
+            (click)="handleExport({ format: 'txt', result: exportResult })"
+            [disabled]="(exportService.isExporting$ | async)"
+            matTooltip="{{ 'summarizeTpl.exportTxt' | translate }}">
+            <mat-icon>notes</mat-icon>
+          </button>
+          <button mat-icon-button [matTooltip]="(copied() ? 'summarizeTpl.copied' : 'summarizeTpl.copy') | translate"
+            (click)="copyToClipboard()" [color]="(isDark$ | async) ? 'neutral' : 'success'">
+            <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+        }
+        @if (!isPreloadedMode$()) {
+          <button mat-icon-button [matTooltip]="'compareTpl.clear' | translate" (click)="clearAll()"
+            [disabled]="!canClear()"
+            [color]="(isDark$ | async) ? 'accent' : 'accent'">
+            <mat-icon>clear_all</mat-icon>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (result; as resultData) {
+    <div class="result-header">
+      <div class="metadata-chips">
+        <mat-chip-set>
+          <mat-chip>
+            <mat-icon matChipAvatar>{{ getStyleIcon() }}</mat-icon>
+            {{ 'summarizeTpl.styles.' + resultData.style | translate }}
+          </mat-chip>
+          <mat-chip>
+            <mat-icon matChipAvatar>{{ getLengthIcon() }}</mat-icon>
+            {{ 'summarizeTpl.lengths.' + resultData.length | translate }}
+          </mat-chip>
+          <mat-chip>
+            <mat-icon matChipAvatar>language</mat-icon>
+            {{ resultData.language.toUpperCase() }}
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+  }
+
+  @if (result; as resultData) {
+    @if (resultData.files.length > 0 && showDetails) {
+      <div class="source-files">
+        <div class="section-header">
+          <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">folder_open</mat-icon>
+          <span>{{ 'summarizeTpl.sourceFiles' | translate }}</span>
+        </div>
+        <div class="files-list">
+          @for (file of resultData.files; track file.key) {
+            <div class="file-info-card">
+              <mat-icon class="file-icon">
+                {{ getFileIcon(file) }}
+              </mat-icon>
+              <div class="file-details">
+                <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
+                @if (file.size) {
+                  <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                }
+                @if (file.ext) {
+                  <span class="file-type">{{ file.ext | uppercase }}</span>
+                }
+                @if (file.uploadDate) {
+                  <span class="file-date">{{ file.uploadDate | date: 'short' }}</span>
+                }
+              </div>
+              <mat-icon class="status-icon success">check_circle</mat-icon>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="word-count-section">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">analytics</mat-icon>
+        <span>{{ 'summarizeTpl.statistics' | translate }}</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">{{ 'summarizeTpl.wordCount.original' | translate }}</div>
+          <div class="stat-value">{{ resultData.wordCount.original }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">{{ 'summarizeTpl.wordCount.summary' | translate }}</div>
+          <div class="stat-value">{{ resultData.wordCount.summary }}</div>
+        </div>
+        <div class="stat-card reduction" [attr.data-level]="getReductionColor()">
+          <div class="stat-label">{{ 'summarizeTpl.wordCount.reduction' | translate }}</div>
+          <div class="stat-value">
+            {{ resultData.wordCount.reduction }}%
+            <mat-icon>trending_down</mat-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (resultData.keyPoints.length > 0) {
+      <div class="key-points-section">
+        <div class="section-header">
+          <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">checklist</mat-icon>
+          <span>{{ 'summarizeTpl.keyPoints' | translate }}</span>
+        </div>
+        <ul class="key-points-list">
+          @for (point of resultData.keyPoints; track $index) {
+            <li class="key-point">
+              <mat-icon class="point-icon">arrow_right</mat-icon>
+              <span>{{ point }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <div class="summary-section">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">auto_awesome</mat-icon>
+        <span>{{ 'summarizeTpl.summaryText' | translate }}</span>
+      </div>
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-text" [innerHTML]="resultData.summary"></div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    @if (resultData.completedAt && showDetails) {
+      <div class="meta-footer">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">schedule</mat-icon>
+        <span>
+          {{ 'summarizeTpl.processedIn' | translate }}:
+          {{ (resultData.completedAt.getTime() - resultData.createdAt.getTime()) / 1000 | number:'1.1-1' }}s
+        </span>
+        <span class="separator">•</span>
+        <span>{{ resultData.createdAt | date:'short' }}</span>
+      </div>
+    }
+  } @else if (mode === 'markdown' && hasMarkdownContent) {
+    <div class="summary-section">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">auto_awesome</mat-icon>
+        <span>{{ 'summarizeTpl.summaryText' | translate }}</span>
+      </div>
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-text" [innerHTML]="renderedMarkdown()"></div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  } @else {
+    <div class="summary-section">
+      <div class="section-header">
+        <mat-icon [color]="(isDark$ | async) ? 'neutral' : 'primary'">info</mat-icon>
+        <span>{{ 'templates.no_results' | translate }}</span>
+      </div>
+    </div>
+  }
+</div>

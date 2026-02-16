@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.7...v2.0.8) (2026-02-16)
+
+
+### Features
+
+* **templates:** fixing tier workflow builder ([993d5bc](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/993d5bc67ef98baae68b325fa3825bba0c0495db))
+* **tiers:** fixing workflows tiers and tempalting ([ab04834](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/ab0483436f5aed73599911aef526479ce5329b91))
+
 ### [2.0.7](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.6...v2.0.7) (2026-01-28)
 
 

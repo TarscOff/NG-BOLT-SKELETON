@@ -172,7 +172,6 @@ export interface NodeDetailsDialogData {
     styles: [`
     .dialog-title { display:flex; align-items:center; gap:8px; padding: 15px; }
     .title-form { flex: 1; }
-    .dialog-content { padding: 8px 16px 16px; box-sizing: border-box; }
     .badges { display:flex; gap:6px; margin-bottom:8px; }
     .badge { padding:3px 8px; border-radius:12px; font-size:12px; background: color-mix(in srgb, var(--mat-neutral) 25%, #fff); }
     .dialog-content__container { display: flex; gap: 16px; flex: 1; }
@@ -382,11 +381,13 @@ export class NodeDetailsDialogComponent implements OnDestroy {
         return (this.data.portTypeOptions ?? []).length
             ? this.data.portTypeOptions
             : [
-                { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
-                { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
-                { value: 'json', label: 'workflow.dialog.port_type_options.json' },
-                { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
                 { value: 'string', label: 'workflow.dialog.port_type_options.string' },
+                { value: 'json', label: 'workflow.dialog.port_type_options.json' },
+                { value: 'file', label: 'workflow.dialog.port_type_options.file' },
+                { value: 'boolean', label: 'workflow.dialog.port_type_options.boolean' },
+                { value: 'collection', label: 'workflow.dialog.port_type_options.collection' },
+                { value: 'embeddings', label: 'workflow.dialog.port_type_options.embeddings' },
+                { value: 'query_string', label: 'workflow.dialog.port_type_options.query_string' },
             ];
     }
 

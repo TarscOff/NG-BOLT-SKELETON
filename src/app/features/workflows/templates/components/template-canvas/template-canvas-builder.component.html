@@ -1,0 +1,175 @@
+<app-seo 
+    [pageTitle]="'templates.builder.title' | translate"
+    [description]="'Template workflow builder for creating Tier 3 templates'"
+    [keywords]="'template, workflow, builder, ai'"
+    (titleChange)="onTitleChange($event)">
+</app-seo>
+
+<mat-sidenav-container class="template-canvas-container" (backdropClick)="showPalette.set(false)">
+    
+    <!-- Palette Sidenav -->
+    @if (filteredComposites().length || storageItems.length) {
+    <mat-sidenav class="palette-sidenav" 
+                 position="start" 
+                 mode="side" 
+                 [opened]="showPalette() && !isLoading()"
+                 cdkDropList
+                 #paletteList="cdkDropList"
+                 [cdkDropListConnectedTo]="[canvasList]"
+                 [cdkDropListSortingDisabled]="true" 
+                 [cdkDropListData]="[]">
+
+        <!-- Palette Header -->
+        <div class="palette-header">
+            <div class="palette-search">
+                <app-dynamic-form [config]="paletteFieldConfig" [form]="paletteForm"></app-dynamic-form>
+            </div>
+        </div>
+
+        <!-- Basic Info Section -->
+        <div class="palette-section basic-info">
+            <div class="section-header">
+                <mat-icon>info</mat-icon>
+                <span>{{ 'templates.canvas.basic_info' | translate }}</span>
+            </div>
+            <app-dynamic-form [config]="basicInfoFields" [form]="basicInfoForm"></app-dynamic-form>
+        </div>
+
+        <div class="palette-items" #paletteHost>
+            <!-- Composites Section -->
+            @if (filteredComposites().length) {
+            <div class="palette-section">
+                <div class="palette-section-title">{{ 'templates.canvas.composites' | translate }}</div>
+                @for (item of filteredComposites(); track item.compositeId) {
+                    <button mat-flat-button 
+                            class="palette-pill composite" 
+                            cdkDrag 
+                            [cdkDragData]="item"
+                            [cdkDragDisabled]="isLoading()" 
+                            [disabled]="isLoading()" 
+                            cdkDragRootElement=".palette-pill"
+                            (cdkDragStarted)="isPaletteDragging.set(true)" 
+                            (cdkDragEnded)="isPaletteDragging.set(false)">
+                        <mat-icon>{{ item.icon }}</mat-icon>
+                        <span class="pill-label">{{ item.label }}</span>
+                        <ng-template cdkDragPreview [matchSize]="true">
+                            <div class="palette-pill preview-shadow composite">
+                                <mat-icon>{{ item.icon }}</mat-icon>
+                                <span class="pill-label">{{ item.label }}</span>
+                            </div>
+                        </ng-template>
+                        <ng-template cdkDragPlaceholder>
+                            <button mat-flat-button class="palette-pill placeholder" disabled>
+                                <mat-icon>{{ item.icon }}</mat-icon>
+                                <span class="pill-label">{{ item.label }}</span>
+                            </button>
+                        </ng-template>
+                    </button>
+                }
+            </div>
+            } @else if (!paletteFilter()) {
+            <div class="palette-section">
+                <div class="palette-section-title">{{ 'templates.canvas.composites' | translate }}</div>
+                <div class="palette-empty">
+                    <mat-icon>info</mat-icon>
+                    <span>{{ 'templates.canvas.no_composites' | translate }}</span>
+                </div>
+            </div>
+            }
+
+            <!-- Context Storage Info - Already added by default -->
+            <div class="palette-section context-info">
+                <div class="context-info-box">
+                    <mat-icon>info</mat-icon>
+                    <span>{{ 'templates.canvas.context_default_info' | translate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="palette-legend">
+            <div class="legend-title">{{ 'templates.canvas.legend' | translate }}</div>
+            <div class="legend-item">
+                <div class="legend-color composite"></div>
+                <span>{{ 'templates.canvas.composite_flow' | translate }}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color session"></div>
+                <span>{{ 'templates.canvas.session_context' | translate }}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color project"></div>
+                <span>{{ 'templates.canvas.project_context' | translate }}</span>
+            </div>
+        </div>
+    </mat-sidenav>
+    }
+
+    <!-- Canvas Content Area -->
+    <mat-sidenav-content class="canvas-pane">
+        <!-- Canvas Actions Bar -->
+        @if (!isLoading()) {
+        <div class="canvas-pane_actions">
+            <button mat-fab extended 
+                    class="palette-toggle" 
+                    color="primary"
+                    (click)="!isLoading() && showPalette.set(!showPalette())" 
+                    [disabled]="isLoading()"
+                    [attr.aria-expanded]="showPalette()" 
+                    [matTooltip]="showPalette() ? 'close' : 'open'">
+                <mat-icon>{{ showPalette() ? 'close' : 'apps' }}</mat-icon>
+                {{ 'toolbox' | translate }}
+            </button>
+
+            @if (!canSave()) {
+            <span class="badge badge-warn graph-invalid-badge error"
+                  [matTooltip]="validationMessage()">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ validationMessage() }}</span>
+            </span>
+            }
+        </div>
+        }
+
+        <!-- Loading State -->
+        @if (isLoading()) {
+        <div class="loading-overlay">
+            <div class="loading-content">
+                <mat-icon class="loading-icon">hub</mat-icon>
+                <span>{{ 'common.loading' | translate }}</span>
+            </div>
+        </div>
+        } @else {
+        <!-- Canvas Wrapper with ng-draw-flow -->
+        <div class="canvas-wrap">
+            <ng-draw-flow 
+                #flowEl 
+                #flow 
+                class="template-canvas" 
+                [formControl]="flowControl"
+                (nodeMoved)="onNodeMoved($event)"
+                (connectionCreated)="onConnectionCreated($event)" 
+                (connectionDeleted)="onConnectionDeleted($event)"
+                (nodeDeleted)="onNodeDeleted($event)"
+                cdkDropList
+                #canvasList="cdkDropList"
+                [cdkDropListConnectedTo]="[paletteList]"
+                [cdkDropListData]="{}"
+                (cdkDropListDropped)="onDrop($any($event))">
+            </ng-draw-flow>
+            
+            <!-- Empty State Hint -->
+            @if (isCanvasEmpty()) {
+            <div class="empty-canvas-hint">
+                <mat-icon>hub</mat-icon>
+                <h3>{{ 'templates.canvas.drag_hint_title' | translate }}</h3>
+                <p>{{ 'templates.canvas.drag_hint_desc' | translate }}</p>
+            </div>
+            }
+            
+            <!-- Help Text -->
+            <p class="help-text">{{ 'workflow_help' | translate }}</p>
+        </div>
+        }
+    </mat-sidenav-content>
+</mat-sidenav-container>

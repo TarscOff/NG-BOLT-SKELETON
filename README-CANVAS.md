@@ -1,4 +1,4 @@
-# Workflow Canvas — How to Use, Configure & Extend
+# Workflow Canvas Documentation
 
 _Last updated: 2026-01-28_
 
