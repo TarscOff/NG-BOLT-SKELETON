@@ -24,6 +24,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { ChatService } from '../../services/chat.service';
 import { ChatInputComponent } from './chatInput/chatInput.component';
@@ -36,7 +42,13 @@ import {
   ChatInputData,
 } from '../../utils/tplsInterfaces/chatTpl.interface';
 import { AppSelectors } from '@cadai/pxs-ng-core/store';
-import { ChatMessageResponseDto, TaskDto, WorkflowStatusDto } from '@features/projects/interfaces/project.model';
+import {
+  ArtifactsDataDto,
+  ChatMessageResponseDto,
+  FileItem,
+  TaskDto,
+  WorkflowStatusDto,
+} from '@features/projects/interfaces/project.model';
 import { ToastService } from '@cadai/pxs-ng-core/services';
 import { DateTime } from 'luxon';
 import { ProjectsService } from '@features/projects/services/projects.service';
@@ -52,6 +64,12 @@ import { ProjectsService } from '@features/projects/services/projects.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatSidenavModule,
+    MatMenuModule,
     ChatMessageComponent,
     ChatInputComponent,
   ],
@@ -127,7 +145,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================================
   // OUTPUTS
   // ============================================================================
-  @Output() messageSent = new EventEmitter<void>();
+  @Output() messageSent = new EventEmitter<ChatInputData>();
   @Output() messageDeleted = new EventEmitter<string>();
   @Output() messageEdited = new EventEmitter<{ id: string; content: string }>();
   @Output() chatCleared = new EventEmitter<void>();
@@ -156,6 +174,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly _workflowStatus = signal<WorkflowStatusDto | null>(null);
   private readonly _isPolling = signal<boolean>(false);
   private readonly _hasRunningWorkflows = signal<boolean>(false);
+  private readonly _files = signal<FileItem[]>([]);
+  private readonly _artifactsPanelOpen = signal(false);
+  private readonly _selectedFileReference = signal<string>('all');
+  private readonly _isLoadingArtifacts = signal(false);
 
   // ============================================================================
   // PRIVATE PROPERTIES
@@ -180,6 +202,36 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   isPolling$ = computed(() => this._isPolling());
   isPreloadedMode$ = computed(() => this._mode().mode === 'preloaded');
   hasRunningWorkflows$ = computed(() => this._hasRunningWorkflows());
+  files$ = computed(() => this._files());
+  filesCount$ = computed(() => this._files().length);
+  artifactsPanelOpen$ = computed(() => this._artifactsPanelOpen());
+  selectedFileReference$ = computed(() => this._selectedFileReference());
+  isLoadingArtifacts$ = computed(() => this._isLoadingArtifacts());
+  groupedFiles$ = computed(() => {
+    const filesArray = this._files();
+    const groups = new Map<string, FileItem[]>();
+
+    filesArray.forEach(file => {
+      const reference = file.extraInfo?.data_reference || 'ungrouped';
+      if (!groups.has(reference)) {
+        groups.set(reference, []);
+      }
+      groups.get(reference)!.push(file);
+    });
+
+    return Array.from(groups.entries()).map(([reference, files]) => ({
+      reference,
+      files,
+    }));
+  });
+  availableReferences$ = computed(() => this.groupedFiles$().map(group => group.reference));
+  filteredGroupedFiles$ = computed(() => {
+    const selected = this._selectedFileReference();
+    if (selected === 'all') {
+      return this.groupedFiles$();
+    }
+    return this.groupedFiles$().filter(group => group.reference === selected);
+  });
   effectiveMaxLength$ = computed(() => {
     const config = this._config();
     return config.maxLength ?? config.maxMessageLength ?? 4000;
@@ -218,9 +270,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       showTimestamps: true,
       showAvatars: true,
       allowMarkdown: true,
+      showHistoryArea: true,
       allowEdit: true,
       allowDelete: true,
       maxLength: 4000,
+      showInputArea: true,
       placeholder: 'chatTpl.placeholder',
       emptyStateMessage: 'chatTpl.emptyState',
       enableAttachments: false,
@@ -258,6 +312,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     // Sync loading state
     effect(() => {
       this.loading = this._isLoading();
+    });
+
+    // Keep related session files synced with active session.
+    effect(() => {
+      const sessionId = this._sessionId();
+      if (!sessionId) {
+        this._files.set([]);
+        this._selectedFileReference.set('all');
+        return;
+      }
+      this.loadSessionArtifacts();
     });
   }
 
@@ -314,6 +379,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     return message.id;
   }
 
+  trackFile(index: number, file: FileItem): string {
+    return file.id || `${file.name}-${index}`;
+  }
+
   async onSendMessage(data: ChatInputData): Promise<void> {
     if (!this.canSendMessage$()) {
       return;
@@ -332,6 +401,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this._messages.update(msgs => [...msgs, userMessage]);
     this._isTyping.set(true);
+    this.messageSent.emit(data);
 
     // Determine which service method to call based on content type
     let sendMessageObs: Observable<ChatMessageResponseDto>;
@@ -364,6 +434,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
             this.startPollingWorkflowStatus(response.workflow_instance_id);
           } else {
             console.warn('No workflow_instance_id received from response');
+            this.loadSessionArtifacts();
+            this.loadChatHistory();
           }
         },
         error: err => {
@@ -431,6 +503,44 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   clearChat(): void {
     this._messages.set([]);
     this.chatCleared.emit();
+  }
+
+  toggleArtifactsPanel(): void {
+    const nextOpen = !this._artifactsPanelOpen();
+    this._artifactsPanelOpen.set(nextOpen);
+    if (nextOpen) {
+      this.loadSessionArtifacts();
+    }
+  }
+
+  closeArtifactsPanel(): void {
+    this._artifactsPanelOpen.set(false);
+  }
+
+  onFileReferenceChange(nextValue: string): void {
+    this._selectedFileReference.set(nextValue || 'all');
+  }
+
+  prettySize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)} MB`;
+  }
+
+  fileIcon(type?: string): string {
+    const ext = (type ?? '').toLowerCase();
+    if (ext === 'pdf' || ext === 'application/pdf') return 'picture_as_pdf';
+    if (ext === 'json' || ext === 'application/json') return 'code';
+    if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'image'].includes(ext)) return 'image';
+    if (['csv', 'xls', 'xlsx'].includes(ext)) return 'table_chart';
+    if (['ppt', 'pptx', 'key'].includes(ext)) return 'slideshow';
+    if (['doc', 'docx', 'rtf', 'odt', 'txt', 'md'].includes(ext)) return 'description';
+    if (['zip', 'rar', '7z', 'tar', 'gz', 'collection_metadata'].includes(ext)) return 'folder_zip';
+    if (['mp4', 'avi', 'mov', 'wmv', 'mkv', 'video'].includes(ext)) return 'movie';
+    if (['mp3', 'wav', 'flac', 'aac', 'audio'].includes(ext)) return 'audiotrack';
+    return 'attach_file';
   }
 
   scrollToBottom(): void {
@@ -660,12 +770,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
           this._isPolling.set(false);
           this._hasRunningWorkflows.set(false);
 
-          this.messageSent.emit();
-
           setTimeout(() => {
             this._workflowStatus.set(null);
             // Reload messages after workflow completes
             this.loadChatHistory();
+            this.loadSessionArtifacts();
           }, 2000);
         })
       )
@@ -715,5 +824,50 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private generateMessageId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private loadSessionArtifacts(): void {
+    const sessionId = this.sessionId$();
+    if (!sessionId) {
+      this._files.set([]);
+      this._selectedFileReference.set('all');
+      return;
+    }
+
+    this._isLoadingArtifacts.set(true);
+    this.projectService.getSessionArtifacts(sessionId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this._isLoadingArtifacts.set(false))
+      )
+      .subscribe({
+        next: artifacts => {
+          const files = this.mapToFiles(artifacts ?? []);
+          this._files.set(files);
+          const current = this._selectedFileReference();
+          if (current !== 'all' && !files.some(file => file.extraInfo?.data_reference === current)) {
+            this._selectedFileReference.set('all');
+          }
+        },
+        error: err => {
+          console.error('Error loading session artifacts:', err);
+          this._files.set([]);
+          this._selectedFileReference.set('all');
+        },
+      });
+  }
+
+  private mapToFiles(artifacts: ArtifactsDataDto[]): FileItem[] {
+    if (!artifacts?.length) {
+      return [];
+    }
+    return artifacts.map(artifact => ({
+      id: artifact.artifact_id,
+      name: artifact.artifact_name || artifact.artifact_id || 'Untitled File',
+      size: artifact.artifact_size,
+      type: artifact.artifact_type,
+      uploadedAt: DateTime.fromJSDate(new Date(artifact.created_on)),
+      extraInfo: artifact,
+    }));
   }
 }

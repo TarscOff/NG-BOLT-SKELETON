@@ -1,8 +1,184 @@
 import { DateTime } from "luxon";
+import { DataScope, PortDataScopeConfig as SharedPortDataScopeConfig } from '@shared/types/workflow.types';
 
 export enum ProjectSessionVisibility {
   PROJECT_ALL = "project_all",
   SESSION_OWNER = "session_owner"
+}
+
+// ============================================================================
+// WORKFLOW ASSIGNMENT (Legacy - for backward compatibility)
+// ============================================================================
+
+// Workflow assignment output scope
+export type WorkflowOutputScope = 'project' | 'session' | 'both';
+
+// Workflow assignment to project
+export interface ProjectWorkflowAssignment {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  workflowDescription?: string;
+  outputScope: WorkflowOutputScope;
+  enabled: boolean;
+  assignedAt: DateTime;
+  assignedBy?: string;
+}
+
+// Workflow execution session under a project workflow assignment
+export interface WorkflowExecutionSession {
+  id: string;
+  /** The assignment ID this session belongs to */
+  assignmentId: string;
+  /** Project ID */
+  projectId: string;
+  /** Workflow ID */
+  workflowId: string;
+  /** Session name (user-editable) */
+  name: string;
+  /** Session creation time */
+  createdAt: DateTime;
+  /** Last updated time */
+  updatedAt: DateTime;
+  /** User who created the session */
+  createdBy?: string;
+  /** Current execution status */
+  status: 'idle' | 'running' | 'completed' | 'error';
+  /** Last execution result summary */
+  lastResult?: WorkflowExecutionResult;
+}
+
+// Result of a workflow execution
+export interface WorkflowExecutionResult {
+  executionId: string;
+  startedAt: DateTime;
+  completedAt?: DateTime;
+  status: 'success' | 'error' | 'cancelled';
+  outputs?: Record<string, unknown>;
+  error?: string;
+}
+
+// ============================================================================
+// TEMPLATE WORKFLOW ASSIGNMENT (New 3-Tier System)
+// ============================================================================
+
+/** Data scope for port outputs in template workflows */
+export type TemplateDataScope = DataScope; // Re-use shared type
+
+/** 
+ * Configuration for a specific port's data scope
+ * Extends shared PortDataScopeConfig with project-specific fields
+ */
+export interface PortDataScopeConfig extends SharedPortDataScopeConfig {
+  /** Optional custom label for the data */
+  customLabel?: string;
+}
+
+/** Template workflow assignment to a project */
+export interface ProjectTemplateAssignment {
+  id: string;
+  /** Project ID this template is assigned to */
+  projectId: string;
+  /** Template Workflow ID (Tier 3) */
+  templateId: string;
+  /** Template name (cached for display) */
+  templateName: string;
+  /** Template description (cached) */
+  templateDescription?: string;
+  /** Whether this assignment is active */
+  enabled: boolean;
+  /** Data scope configuration for each output port */
+  portDataScopes: PortDataScopeConfig[];
+  /** Custom configuration overrides */
+  configuration?: Record<string, unknown>;
+  /** Assignment timestamp */
+  assignedAt: DateTime;
+  /** User who assigned the template */
+  assignedBy?: string;
+  /** Last update timestamp */
+  updatedAt?: DateTime;
+}
+
+/** Execution context for template sessions */
+export interface TemplateExecutionContext {
+  /** Project ID */
+  projectId: string;
+  /** Session ID */
+  sessionId: string;
+  /** Template assignment ID */
+  assignmentId: string;
+  /** User ID */
+  userId: string;
+  /** Current input values by port ID */
+  inputs: Record<string, unknown>;
+  /** Current output values by port ID */
+  outputs: Record<string, unknown>;
+  /** Chat history (if applicable) */
+  chatHistory?: ChatHistoryEntry[];
+  /** Uploaded files (if applicable) */
+  uploadedFiles?: UploadedFileInfo[];
+}
+
+/** Chat history entry for template sessions */
+export interface ChatHistoryEntry {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: DateTime;
+  metadata?: Record<string, unknown>;
+}
+
+/** Uploaded file info for template sessions */
+export interface UploadedFileInfo {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: DateTime;
+  /** Reference to stored artifact */
+  artifactId?: string;
+  /** Processing status */
+  status: 'pending' | 'processing' | 'completed' | 'error';
+}
+
+/** Template execution session */
+export interface TemplateExecutionSession {
+  id: string;
+  /** Template assignment ID */
+  assignmentId: string;
+  /** Project ID */
+  projectId: string;
+  /** Session name (user-editable) */
+  name: string;
+  /** Execution context with inputs/outputs */
+  context: TemplateExecutionContext;
+  /** Current session status */
+  status: 'idle' | 'running' | 'completed' | 'error';
+  /** Session creation time */
+  createdAt: DateTime;
+  /** Last update time */
+  updatedAt: DateTime;
+  /** User who created the session */
+  createdBy?: string;
+  /** Last execution result */
+  lastResult?: TemplateExecutionResult;
+}
+
+/** Result of a template execution */
+export interface TemplateExecutionResult {
+  executionId: string;
+  startedAt: DateTime;
+  completedAt?: DateTime;
+  status: 'success' | 'error' | 'cancelled' | 'partial';
+  /** Outputs by port ID */
+  outputs?: Record<string, unknown>;
+  /** Error message if failed */
+  error?: string;
+  /** Node-level execution status */
+  nodeStatuses?: Record<string, {
+    status: 'pending' | 'running' | 'completed' | 'error';
+    error?: string;
+  }>;
 }
 
 export interface ProjectSessionStatusDto {

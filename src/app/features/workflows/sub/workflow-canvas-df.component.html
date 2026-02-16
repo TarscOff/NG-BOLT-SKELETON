@@ -1,3 +1,10 @@
+@if (disabledSig()) {
+<!-- Simplified readonly preview mode - only canvas -->
+<div class="pxs-wf-canvas-wrap preview-mode">
+  <ng-draw-flow #flowEl #flow class="pxs-wf-canvas" [ngModel]="dfModel()">
+  </ng-draw-flow>
+</div>
+} @else {
 <mat-sidenav-container class="workflow-zone" (backdropClick)="showPalette.set(false)">
   @if (availableActionsSig().length) {
   <mat-sidenav class="pxs-wf-palette" position="start" mode="side" [opened]="showPalette() && !disabledSig()"
@@ -74,6 +81,7 @@
   }
 
   <mat-sidenav-content class="canvas-pane">
+    @if (!disabledSig()) {
     <div class="canvas-pane_actions">
       <app-dynamic-form class="form" [config]="fieldConfig" [form]="form"></app-dynamic-form>
       <button mat-fab extended class="run-panel-btn" color="warn" (click)="toggleRunPanel()"
@@ -96,6 +104,7 @@
       </span>
       }
     </div>
+    }
 
     <!-- Canvas wrapper is the drop target -->
     <div class="pxs-wf-canvas-wrap">
@@ -107,7 +116,9 @@
         [cdkDropListDisabled]="!isPaletteDragging() || disabledSig()" [cdkDropListData]="{}"
         (cdkDropListDropped)="onDrop($any($event))">
       </ng-draw-flow>
+      @if (!disabledSig()) {
       <p>{{ 'workflow_help' | translate }}</p>
+      }
 
       <span cdkOverlayOrigin #qaOrigin="cdkOverlayOrigin"
         style="position: fixed; width: 0; height: 0; pointer-events: none;" [style.left.px]="qaClient?.x || 0"
@@ -158,3 +169,4 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+}

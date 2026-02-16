@@ -1,329 +1,200 @@
-# Workflow System - Current Implementation
-
->_Last updated: 2026-01-28_
-
-This document describes the current workflow system implementation in the Angular application, including basic workflow management, visual canvas editing, and template components.
-
-## What's Actually Implemented
-
-### ✅ Workflow Canvas System
-- Visual drag-and-drop workflow editor using @ng-draw-flow/core
-- Node-based workflow creation with connections
-- Basic workflow execution and simulation
-- Workflow validation and error checking
-
-### ✅ Template Components
-- **Chat Component**: AI-powered conversational interface
-- **Compare Component**: Document comparison with diff visualization
-- **Summarize Component**: Multi-document summarization
-- **Extract Component**: Basic data extraction (structure exists, advanced features partial)
-
-### ✅ Template Services
-- HTTP services for each template type (Chat, Compare, Summarize, Extract)
-- Mock data implementations for development
-- Basic API integration patterns
-
-### ✅ Export System
-- Document export service with PDF/DOCX/TXT support
-- Export adapters for comparison and summary results
-- Screenshot-based PDF generation
-
-### ✅ Basic Workflow Management
-- Create, edit, save workflows
-- Workflow catalog integration
-- Execution history tracking
-- Search and filtering
-
-## 📚 Table of Contents
-
-1. [Architecture](#architecture)
-2. [Template Components](#template-components)
-3. [Template Services](#template-services)
-4. [Export System](#export-system)
-5. [Workflow Canvas](#workflow-canvas)
-6. [Current Limitations](#current-limitations)
-
----
-
-## Architecture
-
-```
-workflows/
-├── data/                          # Workflow state management
-│   ├── workflows.store.ts         # NgRx Component Store
-│   ├── workflows-catalog.service.ts # Action catalog loading
-│   └── workflows.component.ts     # Main workflow component
-├── sub/                           # Workflow canvas components
-│   ├── workflow-canvas.component.ts
-│   ├── action-node/
-│   ├── details-node/
-│   ├── run-panel/
-│   └── new-workflow-dialog.component.ts
-└── templates/                     # Template system
-    ├── components/
-    │   ├── chat/                  # Chat template
-    │   ├── compare/               # Document comparison
-    │   ├── extract/               # Data extraction
-    │   ├── summarize/            # Document summarization
-    │   ├── export-overlay/       # Shared export overlay
-    │   └── loader/               # Dynamic template loader
-    ├── services/
-    │   ├── chat.service.ts
-    │   ├── compare.service.ts
-    │   ├── extract.service.ts
-    │   ├── summarize.service.ts
-    │   ├── document-export.service.ts
-    │   └── templating.service.ts
-    └── utils/
-        ├── constants.ts          # Template constants
-        ├── template-config.interface.ts
-        ├── comparison-export.adapter.ts
-        ├── summary-export.adapter.ts
-        └── tplsInterfaces/       # Template interfaces
-
-```
-### Current Implementation Notes
-
-- **Workflow Canvas**: Basic drag-and-drop editor with node connections
-- **Template Components**: Four template types (Chat, Compare, Summarize, Extract)
-- **Services**: HTTP services with mock data fallbacks
-- **Export**: PDF/DOCX/TXT export for results
-- **State Management**: NgRx Component Store for workflows
-```
-
----
-
-## Template Components
-
-The system includes four template components that can be used independently or within workflows:
-
-### 1. 💬 Chat Template
-
-**Purpose**: AI-powered conversational interface with file attachments
-
-**Features**:
-- Real-time message sending and receiving
-- File attachments support
-- Message history
-- Markdown rendering
-
-**Import**:
-```typescript
-import { ChatComponent } from '@features/workflows/templates/components/chat/chat.component';
-import { ChatService } from '@features/workflows/templates/services/chat.service';
-```
-
-### 2. 🔄 Compare Template
-
-**Purpose**: Document comparison with diff visualization
-
-**Features**:
-- Side-by-side file upload
-- Difference highlighting
-- Export comparison results
-- Visual diff viewer
-
-**Import**:
-```typescript
-import { CompareComponent } from '@features/workflows/templates/components/compare/compare.component';
-import { CompareService } from '@features/workflows/templates/services/compare.service';
-```
-
-### 3. 📝 Summarize Template
-
-**Purpose**: Multi-document summarization
-
-**Features**:
-- Multiple file upload (up to 5 files)
-- Customizable summary length and style
-- Progress tracking
-- Export to PDF/DOCX/TXT
-
-**Import**:
-```typescript
-import { SummarizeComponent } from '@features/workflows/templates/components/summarize/summarize.component';
-import { SummarizeService } from '@features/workflows/templates/services/summarize.service';
-```
-
-### 4. 📤 Extract Template
-
-**Purpose**: Basic data extraction from documents
-
-**Status**: Structure exists, advanced features are partial
-
-**Features**:
-- File upload support
-- Basic extraction interface
-- Result display
-
-**Import**:
-```typescript
-import { ExtractComponent } from '@features/workflows/templates/components/extract/extract.component';
-import { ExtractService } from '@features/workflows/templates/services/extract.service';
-```
-
----
-
-## Template Services
-
-Each template has a corresponding service that handles API communication:
-
-### Chat Service
-```typescript
-@Injectable({ providedIn: 'root' })
-export class ChatService {
-  sendMessage(request: SendMessageRequest): Observable<SendMessageResponse>
-  uploadAttachment(file: File): Observable<UploadAttachmentResponse>
-  // Mock implementations available for development
-}
-```
-
-### Compare Service
-```typescript
-@Injectable({ providedIn: 'root' })
-export class CompareService {
-  uploadFile(request: CompareUploadRequest): Observable<CompareUploadResponse>
-  startComparison(request: CompareStartRequest): Observable<CompareStatusResponse>
-  getComparison(comparisonId: string): Observable<ComparisonResult>
-}
-```
-
-### Summarize Service
-```typescript
-@Injectable({ providedIn: 'root' })
-export class SummarizeService {
-  uploadFile(request: SummarizeUploadRequest): Observable<SummarizeUploadResponse>
-  startSummarization(request: SummarizeStartRequest): Observable<SummarizeStatusResponse>
-  getSummary(summaryId: string): Observable<SummaryResult>
-}
-```
-
-### Extract Service
-```typescript
-@Injectable({ providedIn: 'root' })
-export class ExtractService {
-  uploadFile(request: ExtractUploadRequest): Observable<ExtractUploadResponse>
-  startExtraction(request: ExtractStartRequest): Observable<ExtractStatusResponse>
-  getExtraction(extractId: string): Observable<ExtractResult>
-}
-```
-
-### Templating Service
-```typescript
-@Injectable({ providedIn: 'root' })
-export class TemplatingService {
-  getComponent(type: TemplateType): Type<unknown> | undefined
-  fetchTemplateConfig(): Observable<TemplatePageResponse>
-}
-```
-
----
-
-## Export System
-
-The system includes a document export service for exporting template results:
-
-### Document Export Service
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class DocumentExportService {
-  isExporting$: Observable<boolean>
-  
-  export<T extends ExportableData>(
-    adapter: ExportAdapter<T>,
-    options: ExportOptions
-  ): Promise<void>
-}
-```
-
-**Supported Formats:**
-- **PDF**: High-quality PDF generation with screenshots
-- **DOCX**: Microsoft Word format with formatting  
-- **TXT**: Plain text export
-
-**Available Export Adapters:**
-- `ComparisonExportAdapter` - For comparison results
-- `SummaryExportAdapter` - For summary results
-
----
-
-## Workflow Canvas
-
-The workflow canvas provides a visual drag-and-drop interface for creating workflows:
-
-- **Node-based editor** using @ng-draw-flow/core
-- **Action catalog** integration for available workflow actions
-- **Workflow execution** with progress tracking
-- **Validation** and error checking
-- **Execution history** and logging
-
-See [README-CANVAS.md](README-CANVAS.md) for detailed canvas documentation.
-
----
-
-## Current Limitations
-
-### Partial Implementations
-
-- **Extract Template**: Basic structure exists, advanced features incomplete
-- **API Integration**: Services have mock fallbacks, live endpoints may need configuration
-- **Export Adapters**: Only comparison and summary adapters implemented
-
-### Development Notes
-
-- Services include mock data implementations for development
-- Template components are functional but may lack advanced features
-- Workflow execution uses simulation rather than full backend integration
-- Export system supports basic PDF/DOCX/TXT generation
-
----
-
-## Usage Examples
-
-### Using a Template Component
-
-```typescript
-@Component({
-  template: `
-    <app-chat-tpl
-      [messages]="messages"
-      [currentUser]="currentUser"
-      (messageSent)="onMessageSent($event)"
-    />
-  `
-})
-export class ChatExampleComponent {
-  messages: ChatMessage[] = [];
-  currentUser: ChatSender = { id: 'user1', name: 'User' };
-
-  onMessageSent(content: string): void {
-    // Handle message
-  }
-}
-```
-
-### Using Template Service
-
-```typescript
-constructor(private chatService: ChatService) {}
-
-sendMessage(content: string): void {
-  this.chatService.sendMessage({ content })
-    .subscribe(response => {
-      // Handle response
-    });
-}
-```
-
-### Exporting Results
-
-```typescript
-exportResult(result: any): void {
-  const adapter = new ComparisonExportAdapter(result);
-  this.exportService.export(adapter, {
-    format: 'pdf',
-    filename: `result-${result.id}.pdf`
-  });
-}
-```
+# Templating and Runtime Wiring
+
+_Last updated: 2026-02-12_
+
+This document describes the current Tier-3 template/runtime implementation.
+
+## Scope
+
+This README covers:
+
+1. Template definition and assignment model
+2. Project UI design canvas behavior
+3. Session runtime rendering behavior
+4. Binding contracts per UI component
+5. Trigger constraint propagation to runtime config
+
+## Key Source Files
+
+- `src/app/features/workflows/templates/interfaces/template-workflow.interface.ts`
+- `src/app/features/workflows/templates/data/template-workflows.store.ts`
+- `src/app/features/projects/components/project-template-canvas/project-template-canvas.component.ts`
+- `src/app/features/projects/components/project-template-canvas/project-ui-node.component.ts`
+- `src/app/features/projects/components/template-execution-panel/template-execution-panel.component.ts`
+- `src/app/features/workflows/templates/components/result/runtime-result/runtime-result.component.ts`
+
+## Model: Template vs Assignment
+
+Template (`TemplateWorkflow`):
+- Tier-3 reusable contract
+- Contains composite wiring, context nodes, and `dataFlowConfig`
+
+Assignment (`ProjectTemplateAssignment`):
+- Project-specific runtime config
+- Stores:
+  - enable/disable state
+  - `portDataScopes`
+  - `configuration.projectCanvas`
+  - `configuration.uiTemplate` runtime override
+
+Runtime always prefers assignment override when available:
+- `assignment.configuration.uiTemplate` first
+- fallback to `template.uiTemplate`
+
+## Tier-3 Design Canvases
+
+### Template Canvas Builder (`/genai-workflows/templates/builder/:id?`)
+
+Purpose:
+- define template contract and data scope
+- connect composite ports with session/project context nodes
+
+Notes:
+- Session and Project context nodes are auto-present for new templates
+- Saved output includes:
+  - `compositeWorkflows`
+  - `edges`
+  - `contextNodes`
+  - `dataFlowConfig`
+- Legacy UI nodes can still be loaded from existing templates for compatibility
+
+### Project Template Canvas (inside project wizard/details)
+
+Purpose:
+- design project runtime UI by connecting template ports to UI components
+
+Current default UI palette:
+- `chat`
+- `compare` (Two Files)
+- `summarize` (One File Upload)
+- `result-view`
+- `markdown`
+
+View mode:
+- `single` -> runtime `standalone-single`
+- `tabs` -> runtime `standalone-tabs`
+
+Disable cascade logic:
+- UI node disables only when:
+  - it is linked to exactly one template
+  - that linked template is disabled
+- Shared UI nodes remain active
+
+## Runtime Session Panel
+
+Implementation:
+- `TemplateExecutionPanelComponent`
+
+Main responsibilities:
+- manage sessions (create/select/rename/delete)
+- render runtime UI from assignment/template bindings
+- propagate input/output context updates to `TemplateWorkflowsStore`
+- surface admin data-map diagnostics
+
+## UI Component Binding Contracts
+
+### Chat
+
+Ports (project UI node contract):
+- Inputs: `history`, `assistant_response`, `files`
+- Outputs: `user_query`, `uploaded_files`
+
+Runtime behavior:
+- history area shown only if `history` or `chat_history` binding exists
+- input area shown only if `user_query` or `query` binding exists
+- attachment UI shown only if `uploaded_files` / `files` / `file_upload` binding exists
+
+### Compare (Two Files)
+
+Ports:
+- Inputs: `comparison_result`
+- Outputs: `left_file`, `right_file`, `comparison_result`
+
+Runtime requirement:
+- both `left_file` and `right_file` must be bound
+
+### Summarize (One File Upload)
+
+Ports:
+- Inputs: `summary_result`
+- Outputs: `source_file`, `summary_result`
+
+Runtime requirement:
+- `source_file` must be bound
+
+### Result View
+
+Port:
+- Input: `result` (or generic bound value path)
+
+Rendering:
+- uses `RuntimeResultComponent` (shared result surface)
+- supports summary/compare/extract/generic payloads
+
+### Markdown
+
+Port:
+- Input: `markdown`
+
+Rendering:
+- uses `RuntimeResultComponent` in markdown mode
+- supports text/markdown and object fallbacks
+
+## Trigger Constraint Propagation
+
+Runtime resolves constraints by tracing binding workflow paths back to trigger nodes in the referenced composite graph.
+
+Supported trigger node types:
+- `trigger_chat`
+- `trigger_file_upload`
+- `trigger_webhook`
+- `trigger_manual`
+
+File constraint fields recognized from trigger params:
+- `accepted_types`, `acceptedTypes`, `allowedFileTypes`, `accept_content_types`, `acceptContentTypes`
+- `max_file_size`, `maxFileSize`, `max_payload_size`, `maxPayloadSize`
+- `max_files`, `maxFiles`
+- `multiple`
+
+Constraint merge behavior:
+- accepted types are intersected when possible, else union fallback
+- numeric limits use stricter values (minimum)
+- `multiple` is true only when all constraints allow it
+
+## Runtime Data Map (Admin)
+
+Admins can inspect binding diagnostics:
+- binding property
+- workflow path
+- resolved data scope
+- value type
+- live value preview/full value
+
+Scope labels are resolved from assignment `portDataScopes`:
+- `session`
+- `project`
+- `both`
+- `unscoped` (fallback when no match)
+
+## Backward Compatibility Notes
+
+Runtime still supports legacy component types in saved templates/assignments:
+- `extract`
+- `file-uploader` / `file-upload`
+- `result-viewer`
+
+These remain in rendering logic to avoid breaking existing saved configurations.
+
+## Current Dev-Mode Persistence
+
+Template data store keys:
+- `template_workflows_v1`
+- `composite_workflows_v1`
+- `micro_workflows_v1`
+- `template_assignments_v1`
+- `template_sessions_v1`
+
+Project local data keys:
+- `local_projects_v1`
+- `local_project_sessions_v1`
+- `local_project_artifacts_v1`

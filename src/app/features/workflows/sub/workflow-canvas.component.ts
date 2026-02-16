@@ -86,6 +86,7 @@ import {
   minEditCountsFor as sharedMinEditCountsFor,
   computeConnectivity as sharedComputeConnectivity,
   computeValidation as sharedComputeValidation,
+  inferPortTypeFromReference,
   sanitizeGraph as sharedSanitizeGraph,
 } from '../templates/utils/workflow-graph.utils';
 
@@ -111,6 +112,9 @@ import {
   providers: [
     dfPanZoomOptionsProvider({
       panSize: 20000,
+      minZoom: 0.1,
+      maxZoom: 3,
+      zoomStep: 0.1,
     }),
     provideNgDrawFlowConfigs({
       nodes: {
@@ -118,6 +122,7 @@ import {
         trigger_chat: WfNodeComponent,
         trigger_file_upload: WfNodeComponent,
         trigger_webhook: WfNodeComponent,
+        trigger_manual: WfNodeComponent,
         embed: WfNodeComponent,
         retrieve: WfNodeComponent,
         convert_and_chunk: WfNodeComponent,
@@ -147,9 +152,9 @@ import {
  * Manages nodes, edges, connectivity, and user interactions.
  */
 export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('flow', { static: true }) flow!: NgDrawFlowComponent;
-  @ViewChild('flowEl', { static: true, read: ElementRef })
-  private flowElementRef!: ElementRef<HTMLElement>;
+  @ViewChild('flow', { static: false }) flow?: NgDrawFlowComponent;
+  @ViewChild('flowEl', { static: false, read: ElementRef })
+  private flowElementRef?: ElementRef<HTMLElement>;
 
   /** Host listener for escape key to deselect node */
   @HostListener('document:keydown.escape')
@@ -167,23 +172,31 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   private readonly deletionWindowMs = 800;
   private lastWorkflowId: string | null | undefined = undefined;
   private workflowChangeCounter = signal(0);
+  private workflowSwitchInProgress = false;
+  private switchNodesApplied = false;
+  private switchEdgesApplied = false;
+  private centerScheduled = false;
+  private centerRetryCount = 0;
+  private readonly maxCenterRetryCount = 20;
+  private pendingCenterAfterSwitch = false;
   private acceptExternalOnce = false;
   private refreshAfterRenderScheduled = false;
 
   /** Setter for workflow ID - clears state on change */
   @Input() set workflowId(value: string | null | undefined) {
     if (value !== this.lastWorkflowId) {
+      this.beginWorkflowSwitch();
+      this.pendingCenterAfterSwitch = this.autoCenterEnabled;
       this.acceptExternalOnce = true;
       queueMicrotask(() => (this.acceptExternalOnce = false));
       this.suppressExternal = false;
 
-      // Workflow switched - force clear and reload nodes
+      // Workflow switched - keep current graph until next one is hydrated
+      // to avoid empty-canvas flashing during route/store transitions.
       this.lastWorkflowId = value;
       this.lastIncomingSig = '';
       this.lastTopoSig = '';
-      this.execNodes.set([]);
-      this.uiNodes.set([]);
-      this._edges.set([]);
+      this.pendingEdgesRaw = [];
       this.selectedNodeId.set(null);
       this.quickAddOpen = false;
       this.recentlyDeleted.clear();
@@ -198,6 +211,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   set nodes(value: WorkflowNode[] | null | undefined) {
 
     if (this.suppressExternal && !this.acceptExternalOnce) return;
+    if (this.workflowSwitchInProgress) this.switchNodesApplied = true;
 
     const now = Date.now();
     // prune old tombstones
@@ -214,7 +228,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       const outputs = base.outputs.map(p => ({ ...p, required: !!portsMap[p.id]?.required, readonly: !!portsMap[p.id]?.readonly }));
       for (const [id, meta] of Object.entries(portsMap)) {
         if (!baseIds.has(id)) {
-          outputs.push({ id, label: id, type: 'json', required: !!meta.required, readonly: !!meta.readonly });
+          const inferredType = inferPortTypeFromReference(id) ?? 'json';
+          outputs.push({ id, label: id, type: inferredType, artifact_type: inferredType, required: !!meta.required, readonly: !!meta.readonly });
         }
       }
       return { inputs, outputs };
@@ -235,6 +250,16 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         return { ...n, ports: this.ensurePorts(n.type, portsCandidate) };
       });
 
+    // During a workflow switch, never merge in-memory node coordinates from the
+    // previous workflow. The incoming graph is the persisted source of truth.
+    if (this.workflowSwitchInProgress) {
+      this.execNodes.set(incoming);
+      this.uiNodes.set([]);
+      this.applyEdges(this.pendingEdgesRaw, { skipIfSame: true });
+      this.finalizeWorkflowSwitchIfReady();
+      return;
+    }
+
     // enrichit les nodes avec les flags de connectivité dès le chargement initial
     if (incoming.length && this.execNodes().length === 0) {
       incoming = this.withUiConnectivity(incoming, this._edges());
@@ -249,7 +274,10 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     // if parent is sending exactly what we already have (topology-wise), ignore
     const sigNew = this.makeTopoSig(incoming, this._edges());
-    if (sigNew === this.lastIncomingSig || sigNew === this.lastTopoSig) return;
+    if (sigNew === this.lastIncomingSig || sigNew === this.lastTopoSig) {
+      this.finalizeWorkflowSwitchIfReady();
+      return;
+    }
     this.lastIncomingSig = sigNew;
 
     const current = this.execNodes();
@@ -267,39 +295,47 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.applyEdges(this.pendingEdgesRaw);
       // Force la diffusion de la connectivité pour chaque node dès le chargement
       this.emitConnectivity(mergedExec, this._edges());
+      this.finalizeWorkflowSwitchIfReady();
       return;
     }
 
     // merge-only: update existing IDs, do NOT add new ones from parent unless not racing a local change
-    const mergedExec = current.map(n => {
+    const justChangedLocally = Date.now() - this.lastLocalChangeAt < 300;
+    const currentBase = justChangedLocally ? current : current.filter(n => incomingById.has(n.id));
+    const currentBaseById = new Set(currentBase.map(n => n.id));
+    const mergedExec = currentBase.map(n => {
       const inc = incomingById.get(n.id);
       if (!inc) return n;
       return { ...inc, x: n.x, y: n.y, ports: this.ensurePorts(inc.type, inc.ports) };
     });
 
-    const justChangedLocally = Date.now() - this.lastLocalChangeAt < 300;
     if (!justChangedLocally) {
       for (const [id, inc] of incomingById) {
-        if (!currentById.has(id)) mergedExec.push({ ...inc, ports: this.ensurePorts(inc.type, inc.ports) });
+        if (!currentBaseById.has(id)) mergedExec.push({ ...inc, ports: this.ensurePorts(inc.type, inc.ports) });
       }
     }
 
     this.execNodes.set(mergedExec);
     this.schedulePublishGraphValidity();
     this.applyEdges(this.pendingEdgesRaw);
+    this.finalizeWorkflowSwitchIfReady();
   }
 
   /** Setter for edges - sanitizes and applies incoming edges */
   @Input({ required: true })
   set edges(value: WorkflowEdge[] | null | undefined) {
     if (this.suppressExternal && !this.acceptExternalOnce) return;
+    if (this.workflowSwitchInProgress) this.switchEdgesApplied = true;
     const incomingRaw = value ?? [];
     const incoming = this.sanitizeGraph(this.allNodes(), incomingRaw).edges;
     this.pendingEdgesRaw = value ?? [];
     this.applyEdges(this.pendingEdgesRaw, { skipIfSame: true });
 
     const cur = this._edges();
-    if (incoming.length === cur.length && incoming.every((e, i) => e.id === cur[i].id)) return;
+    if (incoming.length === cur.length && incoming.every((e, i) => e.id === cur[i].id)) {
+      this.finalizeWorkflowSwitchIfReady();
+      return;
+    }
 
     this._edges.set(incoming);
 
@@ -317,7 +353,26 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
     this.emitConnectivity(nodesWithUi, incoming);
     this.lastTopoSig = this.makeTopoSig(nextExec, incoming);
-    this.schedulePublishGraphValidity()
+    this.schedulePublishGraphValidity();
+    this.finalizeWorkflowSwitchIfReady();
+  }
+
+  private beginWorkflowSwitch(): void {
+    this.workflowSwitchInProgress = true;
+    this.switchNodesApplied = false;
+    this.switchEdgesApplied = false;
+  }
+
+  private finalizeWorkflowSwitchIfReady(): void {
+    if (!this.workflowSwitchInProgress) return;
+    if (!this.switchNodesApplied || !this.switchEdgesApplied) return;
+    this.workflowSwitchInProgress = false;
+    this.switchNodesApplied = false;
+    this.switchEdgesApplied = false;
+    if (this.autoCenterEnabled && this.allNodes().length > 0) {
+      this.pendingCenterAfterSwitch = true;
+      this.scheduleCenterOnNodes();
+    }
   }
 
   /** Action specs for nodes */
@@ -333,6 +388,34 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     this.disabledSig.set(!!value);
     this.applyReadOnlyState();
   }
+  
+  /** Auto-center flag - when true, centers the view on nodes after loading */
+  @Input() set autoCenter(value: boolean) {
+    this.autoCenterEnabled = !!value;
+    if (this.autoCenterEnabled && this.allNodes().length > 0) {
+      this.pendingCenterAfterSwitch = true;
+      this.scheduleCenterOnNodes();
+    }
+  }
+  private autoCenterEnabled = false;
+
+  private scheduleCenterOnNodes(): void {
+    if (this.centerScheduled) return;
+    this.centerScheduled = true;
+    const run = () => {
+      const centered = this.centerOnNodes();
+      if (!centered && this.centerRetryCount < this.maxCenterRetryCount) {
+        this.centerRetryCount += 1;
+        setTimeout(() => requestAnimationFrame(run), 60);
+        return;
+      }
+      this.centerRetryCount = 0;
+      this.centerScheduled = false;
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(run));
+  }
+  
   /** Setter for available actions */
   @Input() set availableActions(value: ActionDefinitionLite[]) {
     this.availableActionsSig.set(value ?? []);
@@ -746,15 +829,23 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   /** After view init lifecycle */
   ngAfterViewInit() {
-    const el = this.flowElementRef.nativeElement;
+    const el = this.flowElementRef?.nativeElement;
+    if (!el) {
+      this.refreshValidationAndConnectivityAfterRender();
+      return;
+    }
 
-    // Check if the selected Node is the scene to remove selected outline 
+    // Deselect only when clicking actual canvas background.
+    // Do not treat generic SVG paths as scene clicks because node icons/connectors
+    // are often rendered as <path>, which breaks node interactions.
     this.subs.add(this.renderer.listen(el, 'click', (ev: MouseEvent) => {
       const target = ev.target as HTMLElement | null;
-      const isScene =
-        target === el || (target && target.tagName.toUpperCase() === 'DF-SCENE') || (target && target.tagName.toUpperCase() === 'PATH');
+      const tag = target?.tagName?.toUpperCase() ?? '';
+      const isScene = target === el || tag === 'DF-SCENE';
+      const insideNode = !!target?.closest('[data-node-id], .wf-node, .node-label');
+      const insideOverlay = !!target?.closest('.cdk-overlay-pane, .mat-mdc-dialog-container, .quick-add');
 
-      if (isScene) {
+      if (isScene && !insideNode && !insideOverlay) {
         this.setSelectedNode(null);
       }
     }));
@@ -1150,6 +1241,10 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   /** Handle model change from DrawFlow */
   onModelChange = (m: DfDataModel): void => {
+    // During workflow switch/re-hydration, DrawFlow can briefly emit stale/empty models.
+    // Ignore these events to avoid pushing wrong graphs back to the store.
+    if (this.workflowSwitchInProgress) return;
+
     const prevExec = this.execNodes();
     const prevUi = this.uiNodes();
     const noNodes = !m?.nodes || m.nodes.length === 0;
@@ -1189,7 +1284,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
           const outputs = base.outputs.map(p => ({ ...p, required: !!portsMap[p.id]?.required, readonly: !!portsMap[p.id]?.readonly }));
           for (const [id, meta] of Object.entries(portsMap)) {
             if (!baseIds.has(id)) {
-              outputs.push({ id, label: id, type: 'json', required: !!meta.required, readonly: !!meta.readonly });
+              const inferredType = inferPortTypeFromReference(id) ?? 'json';
+              outputs.push({ id, label: id, type: inferredType, artifact_type: inferredType, required: !!meta.required, readonly: !!meta.readonly });
             }
           }
           portsCandidate = { inputs, outputs };
@@ -1238,6 +1334,15 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
       this.suppressExternal = true;
       this.emitExecOnly(nextExec, nextEdges);
       queueMicrotask(() => (this.suppressExternal = false));
+    }
+
+    if (
+      this.pendingCenterAfterSwitch &&
+      !this.workflowSwitchInProgress &&
+      (m?.nodes?.length ?? 0) > 0
+    ) {
+      this.pendingCenterAfterSwitch = false;
+      this.scheduleCenterOnNodes();
     }
   };
 
@@ -1335,11 +1440,7 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
 
   /** Set selected node */
   setSelectedNode(id: string | null): void {
-    const host = this.flowElementRef?.nativeElement;
-    if (!host) {
-      this.selectedNodeId.set(id);
-      return;
-    }
+    this.selectedNodeId.set(id);
   }
 
   /** Handle delete node */
@@ -2015,16 +2116,34 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private isExecutableNode(n: WorkflowNode): boolean {
-    const aiType = (n.data?.aiType ?? '').toString();
-    if ((n.type ?? '').toString().toLowerCase() === 'composite' || aiType.startsWith('wf:')) {
+    const nodeType = this.normalizeNodeTypeToken(n.type);
+    const aiTypeRaw = (n.data?.aiType ?? '').toString();
+    const aiType = this.normalizeNodeTypeToken(aiTypeRaw);
+
+    if (nodeType === 'composite' || aiTypeRaw.startsWith('wf:') || !!n.data?.params?.['__workflowId']) {
       return true;
     }
-    if (this.executableNodesSig().size === 0) return true;
-    const groupedSets = new Set<PaletteType>([
-      ...this.executableNodesSig()
-    ]);
 
-    return groupedSets.has(n.type as PaletteType);
+    if (nodeType === 'run_panel' || nodeType === 'details' || nodeType === 'preview') {
+      return false;
+    }
+
+    if (this.executableNodesSig().size === 0) return true;
+
+    const normalizedExecutableTypes = new Set<string>(
+      Array.from(this.executableNodesSig()).map(type => this.normalizeNodeTypeToken(type))
+    );
+
+    const matchesCatalog =
+      normalizedExecutableTypes.has(nodeType) ||
+      (aiType.length > 0 && normalizedExecutableTypes.has(aiType));
+
+    // Be permissive for persisted workflows: unknown node types should remain visible
+    // instead of disappearing when catalog/executable types drift.
+    if (!matchesCatalog && nodeType.length > 0) {
+      return true;
+    }
+    return matchesCatalog;
   }
 
   private filterForRuntime(
@@ -2077,23 +2196,34 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const candidate = rawType || aiType;
     if (!candidate) return 'composite';
     if (candidate.startsWith('wf:')) return 'composite';
-    const known = new Set([
-      'chat',
-      'trigger_chat',
-      'trigger_file_upload',
-      'trigger_webhook',
-      'embed',
-      'retrieve',
-      'convert_and_chunk',
-      'embed_langchain_documents',
-      'store_embedded_langchain_documents',
-      'composite',
-      'run-panel',
-      'details',
-      'preview',
-    ]);
-    if (known.has(candidate)) return candidate;
+
+    const normalized = this.normalizeNodeTypeToken(candidate);
+    const renderTypeByNormalized: Record<string, string> = {
+      chat: 'chat',
+      trigger_chat: 'trigger_chat',
+      trigger_file_upload: 'trigger_file_upload',
+      trigger_webhook: 'trigger_webhook',
+      trigger_manual: 'trigger_manual',
+      embed: 'embed',
+      retrieve: 'retrieve',
+      convert_and_chunk: 'convert_and_chunk',
+      embed_langchain_documents: 'embed_langchain_documents',
+      store_embedded_langchain_documents: 'store_embedded_langchain_documents',
+      composite: 'composite',
+      run_panel: 'run-panel',
+      details: 'details',
+      preview: 'preview',
+    };
+
+    if (renderTypeByNormalized[normalized]) {
+      return renderTypeByNormalized[normalized];
+    }
+
     return 'composite';
+  }
+
+  private normalizeNodeTypeToken(type: unknown): string {
+    return (type ?? '').toString().trim().toLowerCase().replace(/-/g, '_');
   }
 
   private applyReadOnlyState(): void {
@@ -2118,6 +2248,90 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         this.paletteForm.enable({ emitEvent: false });
       }
     }
+  }
+
+  /**
+   * Centers viewport on current graph without mutating node coordinates.
+   * This only adjusts DrawFlow pan/zoom state.
+   */
+  centerOnNodes(): boolean {
+    const hasFinitePosition = (n: WorkflowNode): boolean =>
+      typeof n.x === 'number' &&
+      Number.isFinite(n.x) &&
+      typeof n.y === 'number' &&
+      Number.isFinite(n.y);
+
+    const positionedExec = (this.execNodes() ?? []).filter(hasFinitePosition);
+    const positionedAll = (this.allNodes() ?? []).filter(hasFinitePosition);
+    const nodes = positionedExec.length > 0
+      ? positionedExec
+      : positionedAll;
+
+    if (!nodes.length) return false;
+    const flow = this.flow as unknown as {
+      resetPosition?: () => void;
+      panzoom?: unknown;
+    } | undefined;
+    if (!flow) return false;
+
+    const panzoom = flow.panzoom as {
+      panZoomService?: { panzoomModel?: { zoom?: number } };
+      panZoomOptions?: { minZoom?: number; maxZoom?: number };
+      setZoom?: (zoom: number) => void;
+      getGuardedCoordinates?: (x: number, y: number) => { x: number; y: number };
+      coordinates$?: { next: (value: { x: number; y: number }) => void };
+    } | undefined;
+    if (!panzoom) return false;
+
+    // Calculate graph bounds in node-space
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    const approxNodeWidth = 280;
+    const approxNodeHeight = 180;
+
+    nodes.forEach(n => {
+      const x = n.x ?? 0;
+      const y = n.y ?? 0;
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x + approxNodeWidth);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y + approxNodeHeight);
+    });
+
+    const viewport = this.flowElementRef?.nativeElement;
+    const viewportWidth = viewport?.clientWidth ?? 0;
+    const viewportHeight = viewport?.clientHeight ?? 0;
+    if (viewportWidth < 32 || viewportHeight < 32) {
+      return false;
+    }
+    const contentWidth = Math.max(1, maxX - minX);
+    const contentHeight = Math.max(1, maxY - minY);
+
+    // Fit-to-view with focus: allow zoom-in when graph is small.
+    const padding = nodes.length <= 2 ? 80 : 120;
+    const fitScaleX = viewportWidth > 0 ? (viewportWidth - padding) / contentWidth : 1;
+    const fitScaleY = viewportHeight > 0 ? (viewportHeight - padding) / contentHeight : 1;
+    const fitScale = Math.max(0.05, Math.min(fitScaleX, fitScaleY));
+    const focusFactor = 0.92;
+    const minZoom = panzoom.panZoomOptions?.minZoom ?? 0.1;
+    const maxZoom = panzoom.panZoomOptions?.maxZoom ?? 3;
+    const targetZoom = Math.max(minZoom, Math.min(maxZoom, fitScale * focusFactor));
+    panzoom.setZoom?.(targetZoom);
+
+    const effectiveZoom = panzoom.panZoomService?.panzoomModel?.zoom ?? (targetZoom || 1);
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const desiredPanX = viewportWidth > 0
+      ? (viewportWidth / 2) - (centerX * effectiveZoom)
+      : -centerX * effectiveZoom;
+    const desiredPanY = viewportHeight > 0
+      ? (viewportHeight / 2) - (centerY * effectiveZoom)
+      : -centerY * effectiveZoom;
+    const guardedPan = panzoom.getGuardedCoordinates
+      ? panzoom.getGuardedCoordinates(desiredPanX, desiredPanY)
+      : { x: desiredPanX, y: desiredPanY };
+    panzoom.coordinates$?.next(guardedPan);
+    return true;
   }
 
   private rebuildCompatibilityIndex(): void {

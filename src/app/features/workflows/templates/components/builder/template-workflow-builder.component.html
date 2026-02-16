@@ -1,0 +1,624 @@
+<div class="template-builder-container">
+    <!-- Header -->
+    <div class="builder-header">
+        <div class="header-left">
+            <button mat-icon-button (click)="cancel()" [matTooltip]="'common.back' | translate">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h1>
+                @if (isEditMode()) {
+                    {{ 'templates.builder.edit_title' | translate }}
+                } @else {
+                    {{ 'templates.builder.create_title' | translate }}
+                }
+            </h1>
+        </div>
+        <div class="header-actions">
+            <button mat-stroked-button (click)="cancel()">
+                {{ 'common.cancel' | translate }}
+            </button>
+            <button mat-stroked-button 
+                    color="primary" 
+                    [disabled]="!canSave() || isSaving()"
+                    [matTooltip]="validationMessage()"
+                    (click)="saveAsDraft()">
+                @if (isSaving()) {
+                    <mat-spinner diameter="20"></mat-spinner>
+                }
+                {{ 'templates.builder.save_draft' | translate }}
+            </button>
+            <button mat-flat-button 
+                    color="primary" 
+                    [disabled]="!canSave() || isSaving()"
+                    [matTooltip]="validationMessage()"
+                    (click)="saveAndPublish()">
+                @if (isSaving()) {
+                    <mat-spinner diameter="20"></mat-spinner>
+                }
+                <mat-icon>publish</mat-icon>
+                {{ 'templates.builder.publish' | translate }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper-container">
+        <div class="step-indicators">
+            @for (step of stepLabels; track $index) {
+                <div class="step-indicator" 
+                     role="button"
+                     tabindex="0"
+                     [class.active]="currentStep() === $index"
+                     [class.completed]="currentStep() > $index"
+                     (click)="goToStep($index)"
+                     (keydown.enter)="goToStep($index)"
+                     (keydown.space)="goToStep($index); $event.preventDefault()">
+                    <div class="step-number">
+                        @if (currentStep() > $index) {
+                            <mat-icon>check</mat-icon>
+                        } @else {
+                            {{ $index + 1 }}
+                        }
+                    </div>
+                    <span class="step-label">{{ step }}</span>
+                </div>
+                @if ($index < 4) {
+                    <div class="step-connector" [class.completed]="currentStep() > $index"></div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Step Content -->
+    <div class="step-content">
+        <!-- Step 1: Basic Info -->
+        @if (currentStep() === 0) {
+            <mat-card class="step-card">
+                <mat-card-header>
+                    <mat-card-title>{{ 'templates.builder.step1_title' | translate }}</mat-card-title>
+                    <mat-card-subtitle>{{ 'templates.builder.step1_subtitle' | translate }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <form [formGroup]="basicInfoForm" class="form-grid">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>{{ 'templates.builder.name' | translate }}</mat-label>
+                            <input matInput formControlName="name" 
+                                   [placeholder]="'templates.builder.name_placeholder' | translate">
+                            @if (basicInfoForm.get('name')?.hasError('required')) {
+                                <mat-error>{{ 'validation.required' | translate }}</mat-error>
+                            }
+                            @if (basicInfoForm.get('name')?.hasError('minlength')) {
+                                <mat-error>{{ 'validation.min_length' | translate: { min: 3 } }}</mat-error>
+                            }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>{{ 'templates.builder.description' | translate }}</mat-label>
+                            <textarea matInput formControlName="description" rows="3"
+                                      [placeholder]="'templates.builder.description_placeholder' | translate">
+                            </textarea>
+                        </mat-form-field>
+                    </form>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                    <button mat-flat-button color="primary" 
+                            [disabled]="!canProceedToComposites()"
+                            (click)="nextStep()">
+                        {{ 'common.next' | translate }}
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+        }
+
+        <!-- Step 2: Select Composites -->
+        @if (currentStep() === 1) {
+            <div class="composites-step">
+                <!-- Available Composites -->
+                <mat-card class="composites-available">
+                    <mat-card-header>
+                        <mat-card-title>{{ 'templates.builder.available_composites' | translate }}</mat-card-title>
+                        <mat-card-subtitle>{{ 'templates.builder.available_composites_hint' | translate }}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        @if (isLoading()) {
+                            <div class="loading-spinner">
+                                <mat-spinner diameter="40"></mat-spinner>
+                            </div>
+                        } @else if (availableComposites().length === 0) {
+                            <div class="empty-state">
+                                <mat-icon>hub</mat-icon>
+                                <p>{{ 'templates.builder.no_published_composites' | translate }}</p>
+                            </div>
+                        } @else {
+                            <div class="composites-list">
+                                @for (composite of availableComposites(); track trackByCompositeId($index, composite)) {
+                                    <div class="composite-item" 
+                                         role="button"
+                                         tabindex="0"
+                                         [class.added]="isCompositeSelected(composite.id)"
+                                         (click)="addComposite(composite)"
+                                         (keydown.enter)="addComposite(composite)"
+                                         (keydown.space)="addComposite(composite); $event.preventDefault()">
+                                        <mat-icon>hub</mat-icon>
+                                        <div class="composite-info">
+                                            <span class="composite-name">{{ composite.name }}</span>
+                                            <span class="composite-desc">{{ composite.description }}</span>
+                                        </div>
+                                        <button mat-icon-button color="primary">
+                                            <mat-icon>add_circle</mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Selected Composites -->
+                <mat-card class="composites-selected">
+                    <mat-card-header>
+                        <mat-card-title>{{ 'templates.builder.selected_composites' | translate }}</mat-card-title>
+                        <mat-card-subtitle>{{ 'templates.builder.selected_composites_hint' | translate }}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        @if (selectedComposites().length === 0) {
+                            <div class="empty-state">
+                                <mat-icon>add_box</mat-icon>
+                                <p>{{ 'templates.builder.no_composites_selected' | translate }}</p>
+                            </div>
+                        } @else {
+                            <div cdkDropList 
+                                 class="selected-composites-list"
+                                 (cdkDropListDropped)="onCompositeDrop($event)">
+                                @for (node of selectedComposites(); track trackByNodeId($index, node)) {
+                                    <div cdkDrag class="selected-composite-item">
+                                        <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                                        <mat-icon>hub</mat-icon>
+                                        <div class="composite-info">
+                                            <span class="composite-name">{{ node.label }}</span>
+                                            @if (getCompositeById(node.compositeWorkflowId); as composite) {
+                                                <span class="composite-desc">{{ composite.description }}</span>
+                                            }
+                                        </div>
+                                        <button mat-icon-button color="warn" 
+                                                (click)="removeComposite(node.id); $event.stopPropagation()">
+                                            <mat-icon>remove_circle</mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </mat-card-content>
+                    <mat-card-actions align="end">
+                        <button mat-stroked-button (click)="previousStep()">
+                            <mat-icon>arrow_back</mat-icon>
+                            {{ 'common.back' | translate }}
+                        </button>
+                        <button mat-flat-button color="primary" 
+                                [disabled]="!canProceedToLayout()"
+                                (click)="nextStep()">
+                            {{ 'common.next' | translate }}
+                            <mat-icon>arrow_forward</mat-icon>
+                        </button>
+                    </mat-card-actions>
+                </mat-card>
+            </div>
+        }
+
+        <!-- Step 3: Layout Configuration -->
+        @if (currentStep() === 2) {
+            <mat-card class="step-card">
+                <mat-card-header>
+                    <mat-card-title>{{ 'templates.builder.step3_title' | translate }}</mat-card-title>
+                    <mat-card-subtitle>{{ 'templates.builder.step3_subtitle' | translate }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <form [formGroup]="layoutForm">
+                        <!-- Presentation Pattern -->
+                        <div class="pattern-selection">
+                            <div class="section-label">{{ 'templates.builder.presentation_pattern' | translate }}</div>
+                            <div class="pattern-options">
+                                @for (option of patternOptions; track option.value) {
+                                    <div class="pattern-option" 
+                                         role="button"
+                                         tabindex="0"
+                                         [class.selected]="layoutForm.get('pattern')?.value === option.value"
+                                         (click)="layoutForm.patchValue({ pattern: option.value })"
+                                         (keydown.enter)="layoutForm.patchValue({ pattern: option.value })"
+                                         (keydown.space)="layoutForm.patchValue({ pattern: option.value }); $event.preventDefault()">
+                                        <mat-icon>{{ option.icon }}</mat-icon>
+                                        <span>{{ option.label }}</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <mat-divider></mat-divider>
+
+                        <!-- Layout Type -->
+                        <div class="layout-selection">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-label>{{ 'templates.builder.layout_type' | translate }}</mat-label>
+                                <mat-select formControlName="layout">
+                                    @for (option of layoutOptions(); track option.value) {
+                                        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="layout-preview">
+                            <div class="section-label">{{ 'templates.builder.preview' | translate }}</div>
+                            <div class="preview-container" [attr.data-layout]="layoutForm.get('layout')?.value">
+                                @switch (layoutForm.get('layout')?.value) {
+                                    @case ('standalone-single') {
+                                        <div class="preview-single">
+                                            <div class="preview-box">{{ selectedComposites()[0].label || 'Composite' }}</div>
+                                        </div>
+                                    }
+                                    @case ('standalone-tabs') {
+                                        <div class="preview-tabs">
+                                            @for (node of selectedComposites(); track node.id) {
+                                                <div class="preview-tab">{{ node.label }}</div>
+                                            }
+                                        </div>
+                                    }
+                                    @case ('linked-horizontal') {
+                                        <div class="preview-horizontal">
+                                            @for (node of selectedComposites(); track node.id; let last = $last) {
+                                                <div class="preview-box">{{ node.label }}</div>
+                                                @if (!last) {
+                                                    <mat-icon>arrow_forward</mat-icon>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    @case ('linked-vertical') {
+                                        <div class="preview-vertical">
+                                            @for (node of selectedComposites(); track node.id; let last = $last) {
+                                                <div class="preview-box">{{ node.label }}</div>
+                                                @if (!last) {
+                                                    <mat-icon>arrow_downward</mat-icon>
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    @case ('chat-with-files') {
+                                        <div class="preview-chat-files">
+                                            <div class="preview-box files">Files</div>
+                                            <div class="preview-box chat">Chat</div>
+                                        </div>
+                                    }
+                                    @case ('comparison-view') {
+                                        <div class="preview-comparison">
+                                            <div class="preview-box left">Left</div>
+                                            <div class="preview-box right">Right</div>
+                                        </div>
+                                    }
+                                    @default {
+                                        <div class="preview-single">
+                                            <div class="preview-box">Template</div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </form>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                    <button mat-stroked-button (click)="previousStep()">
+                        <mat-icon>arrow_back</mat-icon>
+                        {{ 'common.back' | translate }}
+                    </button>
+                    <button mat-flat-button color="primary" 
+                            [disabled]="!canProceedToUI()"
+                            (click)="nextStep()">
+                        {{ 'common.next' | translate }}
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+        }
+
+        <!-- Step 4: UI Components -->
+        @if (currentStep() === 3) {
+            <div class="ui-components-step">
+                <mat-card class="ui-components-card">
+                    <mat-card-header>
+                        <mat-card-title>{{ 'templates.builder.step4_title' | translate }}</mat-card-title>
+                        <mat-card-subtitle>{{ 'templates.builder.step4_subtitle' | translate }}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <!-- Add Component Button -->
+                        <div class="add-component-section">
+                            <button mat-stroked-button [matMenuTriggerFor]="componentMenu">
+                                <mat-icon>add</mat-icon>
+                                {{ 'templates.builder.add_component' | translate }}
+                            </button>
+                            <mat-menu #componentMenu="matMenu">
+                                @for (option of componentTypeOptions; track option.value) {
+                                    <button mat-menu-item (click)="addUIComponent(option.value)">
+                                        <mat-icon>{{ option.icon }}</mat-icon>
+                                        <span>{{ option.label }}</span>
+                                    </button>
+                                }
+                            </mat-menu>
+                        </div>
+
+                        <!-- Suggested Components -->
+                        @if (suggestedComponents().length > 0) {
+                            <div class="suggested-components">
+                                <div class="section-label">{{ 'templates.builder.suggested' | translate }}</div>
+                                <div class="chips">
+                                    @for (type of suggestedComponents(); track type) {
+                                        <mat-chip (click)="addUIComponent(type)">
+                                            <mat-icon>{{ getComponentIcon(type) }}</mat-icon>
+                                            {{ type }}
+                                        </mat-chip>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <mat-divider></mat-divider>
+
+                        <!-- UI Components List -->
+                        <div class="ui-components-list">
+                            @if (uiComponents().length === 0) {
+                                <div class="empty-state">
+                                    <mat-icon>widgets</mat-icon>
+                                    <p>{{ 'templates.builder.no_components' | translate }}</p>
+                                </div>
+                            } @else {
+                                <div cdkDropList 
+                                     (cdkDropListDropped)="onUIComponentDrop($event)">
+                                    @for (component of uiComponents(); track trackByComponentId($index, component)) {
+                                        <div cdkDrag class="ui-component-item">
+                                            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                                            <mat-icon [color]="'primary'">{{ getComponentIcon(component.type) }}</mat-icon>
+                                            <div class="component-info">
+                                                <mat-form-field appearance="outline" class="compact">
+                                                    <mat-label>Label</mat-label>
+                                                    <input matInput 
+                                                           [value]="component.label"
+                                                           (input)="updateUIComponent(component.id, { label: $any($event.target).value })">
+                                                </mat-form-field>
+                                                <mat-chip-set>
+                                                    <mat-chip>{{ component.type }}</mat-chip>
+                                                </mat-chip-set>
+                                            </div>
+                                            <button mat-icon-button color="warn" 
+                                                    (click)="removeUIComponent(component.id)">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </mat-card-content>
+                    <mat-card-actions align="end">
+                        <button mat-stroked-button (click)="previousStep()">
+                            <mat-icon>arrow_back</mat-icon>
+                            {{ 'common.back' | translate }}
+                        </button>
+                        <button mat-flat-button color="primary" (click)="goToStep(4); initializeDataFlowConfig()">
+                            {{ 'common.next' | translate }}
+                            <mat-icon>arrow_forward</mat-icon>
+                        </button>
+                    </mat-card-actions>
+                </mat-card>
+            </div>
+        }
+
+        <!-- Step 5: Data Scope Configuration -->
+        @if (currentStep() === 4) {
+            <div class="step-data-scope">
+                <mat-card class="step-card">
+                    <mat-card-header>
+                        <mat-card-title>{{ 'templates.builder.step5_title' | translate }}</mat-card-title>
+                        <mat-card-subtitle>{{ 'templates.builder.step5_subtitle' | translate }}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <!-- Scope Overview Cards -->
+                        <div class="scope-overview">
+                            @for (scopeOption of dataScopeOptions; track scopeOption.value) {
+                                <div class="scope-card" 
+                                     [class.active]="dataFlowConfig().defaultScope === scopeOption.value">
+                                    <div class="scope-icon" [style.background-color]="getScopeColor(scopeOption.value)">
+                                        <mat-icon>{{ scopeOption.icon }}</mat-icon>
+                                    </div>
+                                    <div class="scope-info">
+                                        <h4>{{ scopeOption.label }}</h4>
+                                        <p>{{ scopeOption.description }}</p>
+                                        <span class="scope-count">
+                                            @switch (scopeOption.value) {
+                                                @case ('session') { {{ scopeCounts().session }} ports }
+                                                @case ('project') { {{ scopeCounts().project }} ports }
+                                                @case ('both') { {{ scopeCounts().both }} ports }
+                                            }
+                                        </span>
+                                    </div>
+                                    <button mat-stroked-button (click)="setAllPortsScope(scopeOption.value)">
+                                        {{ 'templates.builder.set_all' | translate }}
+                                    </button>
+                                </div>
+                            }
+                        </div>
+
+                        <mat-divider></mat-divider>
+
+                        <!-- Data Visualization Toggle -->
+                        <div class="visualization-toggle">
+                            <mat-checkbox 
+                                [checked]="dataFlowConfig().showDataFlowVisualization"
+                                (change)="toggleDataFlowVisualization()">
+                                {{ 'templates.builder.show_data_flow' | translate }}
+                            </mat-checkbox>
+                        </div>
+
+                        <!-- Input Ports Section -->
+                        @if (dataFlowConfig().inputs.length > 0) {
+                            <div class="port-section">
+                                <h3>
+                                    <mat-icon>input</mat-icon>
+                                    {{ 'templates.builder.input_ports' | translate }}
+                                </h3>
+                                <div class="port-list">
+                                    @for (port of dataFlowConfig().inputs; track trackByPortPath($index, port)) {
+                                        <div class="port-item" [style.border-left-color]="getScopeColor(port.scope)">
+                                            <div class="port-main">
+                                                <div class="port-label">
+                                                    <mat-icon>{{ getScopeIcon(port.scope) }}</mat-icon>
+                                                    <span class="port-name">{{ port.label }}</span>
+                                                    <mat-chip class="data-type">{{ port.dataType }}</mat-chip>
+                                                </div>
+                                                <mat-form-field appearance="outline" class="scope-select">
+                                                    <mat-label>{{ 'templates.builder.scope' | translate }}</mat-label>
+                                                    <mat-select [value]="port.scope" 
+                                                                (selectionChange)="updatePortScope(port.portPath, $event.value)">
+                                                        @for (option of dataScopeOptions; track option.value) {
+                                                            <mat-option [value]="option.value">
+                                                                <mat-icon>{{ option.icon }}</mat-icon>
+                                                                {{ option.label }}
+                                                            </mat-option>
+                                                        }
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            @if (port.scope === 'project') {
+                                                <div class="port-project-options">
+                                                    <mat-form-field appearance="outline" class="storage-name">
+                                                        <mat-label>{{ 'templates.builder.storage_name' | translate }}</mat-label>
+                                                        <input matInput 
+                                                               [value]="port.storageName || ''"
+                                                               (input)="updatePortStorageName(port.portPath, $any($event.target).value)"
+                                                               [placeholder]="'templates.builder.storage_name_placeholder' | translate">
+                                                    </mat-form-field>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Output Ports Section -->
+                        @if (dataFlowConfig().outputs.length > 0) {
+                            <div class="port-section">
+                                <h3>
+                                    <mat-icon>output</mat-icon>
+                                    {{ 'templates.builder.output_ports' | translate }}
+                                </h3>
+                                <div class="port-list">
+                                    @for (port of dataFlowConfig().outputs; track trackByPortPath($index, port)) {
+                                        <div class="port-item" [style.border-left-color]="getScopeColor(port.scope)">
+                                            <div class="port-main">
+                                                <div class="port-label">
+                                                    <mat-icon>{{ getScopeIcon(port.scope) }}</mat-icon>
+                                                    <span class="port-name">{{ port.label }}</span>
+                                                    <mat-chip class="data-type">{{ port.dataType }}</mat-chip>
+                                                </div>
+                                                <mat-form-field appearance="outline" class="scope-select">
+                                                    <mat-label>{{ 'templates.builder.scope' | translate }}</mat-label>
+                                                    <mat-select [value]="port.scope" 
+                                                                (selectionChange)="updatePortScope(port.portPath, $event.value)">
+                                                        @for (option of dataScopeOptions; track option.value) {
+                                                            <mat-option [value]="option.value">
+                                                                <mat-icon>{{ option.icon }}</mat-icon>
+                                                                {{ option.label }}
+                                                            </mat-option>
+                                                        }
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            @if (port.scope === 'project') {
+                                                <div class="port-project-options">
+                                                    <mat-form-field appearance="outline" class="storage-name">
+                                                        <mat-label>{{ 'templates.builder.storage_name' | translate }}</mat-label>
+                                                        <input matInput 
+                                                               [value]="port.storageName || ''"
+                                                               (input)="updatePortStorageName(port.portPath, $any($event.target).value)"
+                                                               [placeholder]="'templates.builder.storage_name_placeholder' | translate">
+                                                    </mat-form-field>
+                                                    <mat-checkbox 
+                                                        [checked]="port.shareable"
+                                                        (change)="updatePortShareable(port.portPath, $event.checked)">
+                                                        {{ 'templates.builder.shareable' | translate }}
+                                                    </mat-checkbox>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Intermediate Data Section -->
+                        @if (dataFlowConfig().intermediates.length > 0) {
+                            <div class="port-section intermediates">
+                                <h3>
+                                    <mat-icon>sync_alt</mat-icon>
+                                    {{ 'templates.builder.intermediate_data' | translate }}
+                                </h3>
+                                <div class="port-list">
+                                    @for (port of dataFlowConfig().intermediates; track trackByPortPath($index, port)) {
+                                        <div class="port-item" [style.border-left-color]="getScopeColor(port.scope)">
+                                            <div class="port-main">
+                                                <div class="port-label">
+                                                    <mat-icon>{{ getScopeIcon(port.scope) }}</mat-icon>
+                                                    <span class="port-name">{{ port.label }}</span>
+                                                </div>
+                                                <mat-form-field appearance="outline" class="scope-select">
+                                                    <mat-label>{{ 'templates.builder.scope' | translate }}</mat-label>
+                                                    <mat-select [value]="port.scope" 
+                                                                (selectionChange)="updatePortScope(port.portPath, $event.value)">
+                                                        @for (option of dataScopeOptions; track option.value) {
+                                                            <mat-option [value]="option.value">
+                                                                <mat-icon>{{ option.icon }}</mat-icon>
+                                                                {{ option.label }}
+                                                            </mat-option>
+                                                        }
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Empty State -->
+                        @if (collectableDataPorts().length === 0) {
+                            <div class="empty-state">
+                                <mat-icon>data_object</mat-icon>
+                                <p>{{ 'templates.builder.no_data_ports' | translate }}</p>
+                                <span>{{ 'templates.builder.add_composites_first' | translate }}</span>
+                            </div>
+                        }
+                    </mat-card-content>
+                    <mat-card-actions align="end">
+                        <button mat-stroked-button (click)="previousStep()">
+                            <mat-icon>arrow_back</mat-icon>
+                            {{ 'common.back' | translate }}
+                        </button>
+                        <button mat-stroked-button color="primary" 
+                                [disabled]="!canSave() || isSaving()"
+                                [matTooltip]="validationMessage()"
+                                (click)="saveAsDraft()">
+                            {{ 'templates.builder.save_draft' | translate }}
+                        </button>
+                        <button mat-flat-button color="primary" 
+                                [disabled]="!canSave() || isSaving()"
+                                [matTooltip]="validationMessage()"
+                                (click)="saveAndPublish()">
+                            <mat-icon>publish</mat-icon>
+                            {{ 'templates.builder.publish' | translate }}
+                        </button>
+                    </mat-card-actions>                </mat-card>
+            </div>
+        }
+    </div>
+</div>

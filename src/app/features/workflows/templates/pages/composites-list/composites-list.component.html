@@ -1,0 +1,98 @@
+<app-seo [pageTitle]="'composites.list.title' | translate" [description]="'Manage your composite workflows'"
+    [keywords]="'composites, workflows, ai'" (titleChange)="onTitleChange($event)">
+
+</app-seo>
+
+<div class="composites-list-container">
+    <!-- Tabs and Search -->
+    <div class="filters-section">
+        <div class="tabs">
+            <button mat-button [class.active]="selectedTab() === 'all'" (click)="selectedTab.set('all')">
+                {{ 'composites.list.tab_all' | translate }}
+                <span class="count-badge">{{ compositeCounts().all }}</span>
+            </button>
+            <button mat-button [class.active]="selectedTab() === 'published'" (click)="selectedTab.set('published')">
+                {{ 'composites.list.tab_published' | translate }}
+                <span class="count-badge">{{ compositeCounts().published }}</span>
+            </button>
+            <button mat-button [class.active]="selectedTab() === 'draft'" (click)="selectedTab.set('draft')">
+                {{ 'composites.list.tab_draft' | translate }}
+                <span class="count-badge">{{ compositeCounts().draft }}</span>
+            </button>
+        </div>
+
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>{{ 'common.search' | translate }}</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+                [placeholder]="'composites.list.search_placeholder' | translate">
+            @if (searchQuery()) {
+            <button matSuffix mat-icon-button (click)="searchQuery.set('')">
+                <mat-icon>close</mat-icon>
+            </button>
+            }
+        </mat-form-field>
+    </div>
+
+    <!-- Composites Grid -->
+    @if (composites().length === 0) {
+    <div class="empty-state">
+        <mat-icon>account_tree</mat-icon>
+        <h3>{{ 'composites.list.empty_title' | translate }}</h3>
+        <p>{{ 'composites.list.empty_message' | translate }}</p>
+        <div class="empty-actions">
+            <button mat-flat-button color="primary" (click)="goToWorkflowEditor()">
+                <mat-icon>edit</mat-icon>
+                {{ 'composites.list.create_in_editor' | translate }}
+            </button>
+        </div>
+    </div>
+    } @else {
+    <div class="composites-grid">
+        @for (composite of composites(); track trackById($index, composite)) {
+        <mat-card class="composite-card" [class.published]="composite.status === 'published'">
+            <mat-card-header>
+                <div mat-card-avatar class="composite-icon">
+                    <mat-icon>account_tree</mat-icon>
+                </div>
+                <mat-card-title>{{ composite.name }}</mat-card-title>
+                <mat-card-subtitle>
+                    <mat-chip [color]="getStatusColor(composite.status)" size="small">
+                        {{ 'templates.status.' + composite.status | translate }}
+                    </mat-chip>
+                </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+
+                <div class="composite-meta">
+                    <div class="meta-item">
+                        <mat-icon>input</mat-icon>
+                        <span>{{ composite.exposedInputs.length }} {{ 'composites.list.inputs' | translate }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <mat-icon>output</mat-icon>
+                        <span>{{ composite.exposedOutputs.length }} {{ 'composites.list.outputs' | translate }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <mat-icon>hub</mat-icon>
+                        <span>{{ composite.nodes.length }} {{ 'composites.list.nodes' | translate }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <mat-icon>schedule</mat-icon>
+                        <span>{{ composite.metadata.updatedAt | date:'short' }}</span>
+                    </div>
+                </div>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+                <button mat-flat-button color="primary" (click)="viewInEditor(composite)">
+                    <mat-icon>edit</mat-icon>
+                    {{ 'composites.list.view_in_editor' | translate }}
+                </button>
+            </mat-card-actions>
+        </mat-card>
+        }
+    </div>
+    }
+</div>

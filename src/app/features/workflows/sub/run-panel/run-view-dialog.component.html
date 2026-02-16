@@ -1,27 +1,24 @@
-<div class="run-view">
-  <div class="run-view-header">
-    <div class="run-view-title">
-      <mat-icon>visibility</mat-icon>
-      <span>{{ 'workflow.runPanel.view' | translate }}</span>
-      <span class="divider">•</span>
-      <span class="name">{{ workflowName }}</span>
-    </div>
-    <button mat-icon-button (click)="close()" [matTooltip]="'close' | translate">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
+<h2 mat-dialog-title>
+  <mat-icon>visibility</mat-icon>
+  <span>{{ 'workflow.runPanel.view' | translate }}</span>
+  <span class="divider">•</span>
+  <span class="name">{{ workflowName }}</span>
+  <span class="spacer"></span>
+  <button mat-icon-button (click)="close()" [matTooltip]="'close' | translate">
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
 
-  <div class="run-view-content accent">
-    <app-workflow-canvas-df
-      class="run-view-canvas"
-      [workflowId]="run.id"
-      [nodes]="nodes"
-      [edges]="edges"
-      [actionsNodes]="actionsNodes"
-      [availableActions]="availableActions"
-      [executableNodes]="executableNodes"
-      [disabled]="true"
-      [workflowName]="workflowName">
-    </app-workflow-canvas-df>
-  </div>
-</div>
+<mat-dialog-content class="run-view-content accent">
+  <app-workflow-canvas-df
+    class="run-view-canvas"
+    [workflowId]="run.id"
+    [nodes]="nodes"
+    [edges]="edges"
+    [actionsNodes]="actionsNodes"
+    [availableActions]="availableActions"
+    [executableNodes]="executableNodes"
+    [disabled]="true"
+    [workflowName]="workflowName">
+  </app-workflow-canvas-df>
+</mat-dialog-content>
