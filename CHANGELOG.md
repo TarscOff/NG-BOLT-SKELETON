@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.8...v2.0.9) (2026-02-16)
+
+
+### Features
+
+* **worflow:** add stacked sidenav for workflow run details ([358a6e2](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/358a6e2d9a56f42798168cde3767ae4864104e79))
+* **workflow:** add icons to node depending on status ([34e1312](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/34e1312c1c896d6db71d3ce832706a5be459afe7))
+* **workflow:** add input and output section on node details dialog component ([bdc17a9](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/bdc17a929f742c29c42861415a3312d0b16872d9))
+* **workflow:** refactor run panel to sidebar with dynamic count display in toolbar ([1ad57b6](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/1ad57b641bddf0afa2845d26f5bfdabd049dc1ef))
+* **workflow:** update readme canvas ([1805c74](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/1805c74d796059acf41f1a011c05603780be9a5b))
+
 ### [2.0.8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.7...v2.0.8) (2026-02-16)
 
 
