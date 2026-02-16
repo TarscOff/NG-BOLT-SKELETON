@@ -1,0 +1,195 @@
+{
+  "version": "2.0.9",
+  "tag": "v2.0.9",
+  "previousTag": "v2.0.8",
+  "date": "2026-02-16T11:06:20.729Z",
+  "stats": {
+    "features": 5,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 2,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "bdc17a9",
+        "type": "feat",
+        "scope": "workflow",
+        "subject": "add input and output section on node details dialog component",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1805c74",
+        "type": "feat",
+        "scope": "workflow",
+        "subject": "update readme canvas",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "1ad57b6",
+        "type": "feat",
+        "scope": "workflow",
+        "subject": "refactor run panel to sidebar with dynamic count display in toolbar",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "358a6e2",
+        "type": "feat",
+        "scope": "worflow",
+        "subject": "add stacked sidenav for workflow run details",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "34e1312",
+        "type": "feat",
+        "scope": "workflow",
+        "subject": "add icons to node depending on status",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "752012d",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.9 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "4fa66f7",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.8",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "f60028a",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'bugfix/896-port-valdiation' into 'develop'",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "98e9519",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'develop' into 'bugfix/896-port-valdiation'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "752012d59ac6173cd3a840f39537828bfa1229d0",
+      "shortHash": "752012d",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.9 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "f60028a584ef09cc2e2e6169fadfd46cf0743874",
+      "shortHash": "f60028a",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'bugfix/896-port-valdiation' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "Bugfix/896 port valdiation\n\nSee merge request genai/frontend/frontend-generic!6"
+    },
+    {
+      "hash": "98e9519d4c926f6532145e9678931cb6b77a7ede",
+      "shortHash": "98e9519",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'develop' into 'bugfix/896-port-valdiation'",
+      "breaking": false,
+      "notes": [],
+      "body": "# Conflicts:\n#   README-CANVAS.md\n#   src/app/features/workflows/sub/action-node/node-details-dialog/node-details-dialog.component.ts\n#   src/app/features/workflows/sub/workflow-canvas.component.ts\n#   src/app/features/workflows/workflows.component.ts\n#   src/styles.scss"
+    },
+    {
+      "hash": "4fa66f7ad8124ed2b8953b1b18d2bbd9212e09b2",
+      "shortHash": "4fa66f7",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.8",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "bdc17a929f742c29c42861415a3312d0b16872d9",
+      "shortHash": "bdc17a9",
+      "type": "feat",
+      "scope": "workflow",
+      "subject": "add input and output section on node details dialog component",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1805c74d796059acf41f1a011c05603780be9a5b",
+      "shortHash": "1805c74",
+      "type": "feat",
+      "scope": "workflow",
+      "subject": "update readme canvas",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "1ad57b641bddf0afa2845d26f5bfdabd049dc1ef",
+      "shortHash": "1ad57b6",
+      "type": "feat",
+      "scope": "workflow",
+      "subject": "refactor run panel to sidebar with dynamic count display in toolbar",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "358a6e2d9a56f42798168cde3767ae4864104e79",
+      "shortHash": "358a6e2",
+      "type": "feat",
+      "scope": "worflow",
+      "subject": "add stacked sidenav for workflow run details",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "34e1312c1c896d6db71d3ce832706a5be459afe7",
+      "shortHash": "34e1312",
+      "type": "feat",
+      "scope": "workflow",
+      "subject": "add icons to node depending on status",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
