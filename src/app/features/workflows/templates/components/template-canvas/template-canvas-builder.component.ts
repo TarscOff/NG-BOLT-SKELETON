@@ -25,7 +25,7 @@ import {
     DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, debounceTime, filter, take, combineLatest, interval, merge, fromEvent } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -195,7 +195,7 @@ export interface PaletteItem {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
-    @ViewChild('flow', { static: true }) flow!: NgDrawFlowComponent;
+    @ViewChild('flow', { static: false }) flow?: NgDrawFlowComponent;
     @ViewChild('paletteList') paletteList!: CdkDropList;
     @ViewChild('canvasList') canvasList!: CdkDropList;
     
@@ -281,8 +281,13 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
     paletteFieldConfig: FieldConfig[] = [];
     paletteForm!: FormGroup;
 
-    /** ng-draw-flow FormControl - use FormControl instead of ngModel for stability */
-    readonly flowControl = new FormControl<DfDataModel>({ nodes: [], connections: [] });
+    /** ng-draw-flow model as signal for better reactivity */
+    private readonly _flowModel = signal<DfDataModel>({ nodes: [], connections: [] });
+    readonly flowModel = this._flowModel.asReadonly();
+    
+    /** Flow key to force ng-draw-flow recreation when model changes */
+    private readonly _flowKey = signal(0);
+    readonly flowKey = this._flowKey.asReadonly();
 
     // ========================================================================
     // PALETTE ITEMS
@@ -393,7 +398,8 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
         const model = this.buildDfModel();
         const flow = this.flow;
         if (!flow) {
-            this.flowControl.setValue(model, { emitEvent: false });
+            this._flowModel.set(model);
+            this._flowKey.update(k => k + 1); // Force ng-draw-flow recreation
             this.queueAutosave();
             return;
         }
@@ -403,7 +409,7 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
 
         // ng-draw-flow's writeValue path adds connections but does not prune removed ones.
         // Explicitly remove stale runtime connections before setting the canonical model.
-        const current = this.flowControl.value?.connections ?? [];
+        const current = this._flowModel()?.connections ?? [];
         const desiredKeys = new Set(model.connections.map(conn => this.connectionKey(conn)));
         const contextNodeIds = new Set(
             this._nodes()
@@ -423,7 +429,8 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
             }
         }
 
-        this.flowControl.setValue(model, { emitEvent: false });
+        this._flowModel.set(model);
+        this._flowKey.update(k => k + 1); // Force ng-draw-flow recreation
         this.queueAutosave();
     }
 
@@ -566,7 +573,7 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
             };
         } | undefined;
         collectTransientContextStoreTargets(flowAny?.connectionsService?.connections$?.value);
-        collectTransientContextStoreTargets(this.flowControl.value?.connections);
+        collectTransientContextStoreTargets(this._flowModel()?.connections);
 
         for (const connectorId of connectorIdsToPurge) {
             this.removeRuntimeConnectionsByConnectorId(connectorId);
@@ -2234,19 +2241,19 @@ export class TemplateCanvasBuilderComponent implements OnInit, OnDestroy {
 
     /** Check if template can be saved */
     readonly canSave = computed(() => {
-        return this.isBasicInfoValid() &&
-               this._nodes().some(n => n.type === 'composite') &&
-               !this.isSaving();
+            return this.isBasicInfoValid() &&
+                   this._nodes().some(n => n.type === 'composite') &&
+                   !this.isSaving();
     });
 
     /** Validation message */
     readonly validationMessage = computed(() => {
-        if (!this.isBasicInfoValid()) {
-            return this.translate.instant('templates.builder.fill_basic_info');
-        }
-        if (!this._nodes().some(n => n.type === 'composite')) {
-            return this.translate.instant('templates.canvas.add_composite');
-        }
+            if (!this.isBasicInfoValid()) {
+                return this.translate.instant('templates.builder.fill_basic_info');
+            }
+            if (!this._nodes().some(n => n.type === 'composite')) {
+                return this.translate.instant('templates.canvas.add_composite');
+            }
         return '';
     });
 

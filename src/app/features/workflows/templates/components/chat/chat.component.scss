@@ -560,6 +560,79 @@
   }
 }
 
+// System Prompt Panel
+.system-prompt-panel {
+  width: 30%;
+  min-width: 320px;
+  max-width: 560px;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    background: linear-gradient(135deg, var(--mat-primary-variant) 60%, var(--mat-accent) 100%) border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    opacity: 0.18;
+    z-index: -1;
+  }
+
+  .panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--mat-sys-surface);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 15px 15px 0 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .system-prompt-input {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    
+    ::ng-deep {
+      app-chat-input-tpl {
+        width: 100%;
+      }
+    }
+  }
+}
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);

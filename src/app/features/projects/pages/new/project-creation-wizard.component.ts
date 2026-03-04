@@ -42,7 +42,7 @@ import { ProjectTemplateCanvasComponent } from '../../components/project-templat
         MatStepperModule,
         DynamicFormComponent,
         SeoComponent,
-        ProjectTemplateCanvasComponent,
+        ProjectTemplateCanvasComponent
     ],
     template: `
         <app-seo
@@ -143,6 +143,7 @@ import { ProjectTemplateCanvasComponent } from '../../components/project-templat
 
         .wizard-page {
             overflow: hidden;
+            height: inherit;
         }
 
         .wizard-shell {
@@ -158,13 +159,21 @@ import { ProjectTemplateCanvasComponent } from '../../components/project-templat
             overflow: visible;
             background: transparent;
 
+            ::ng-deep .mat-horizontal-stepper-wrapper {
+               height: 100%;
+            }
+
+            ::ng-deep .mat-horizontal-stepper-content-current {
+                height: 100%;
+            }
+
             ::ng-deep .mat-horizontal-content-container {
+                flex: 1;
                 padding: 1rem;
-                overflow: visible;
             }
 
             ::ng-deep .mat-horizontal-stepper-content {
-                overflow: visible;
+                overflow: auto;
             }
         }
 
@@ -215,10 +224,10 @@ import { ProjectTemplateCanvasComponent } from '../../components/project-templat
         }
 
         .canvas-host {
-            flex: 1;
-            min-height: 520px;
-            height: min(68vh, 820px);
             border-radius: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .step-actions {

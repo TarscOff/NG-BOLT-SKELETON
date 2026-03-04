@@ -107,6 +107,10 @@ export const routes: Routes = [
             path: ':id',
             loadComponent: () =>
               import('./features/projects/pages/details/details.component').then(m => m.ProjectDetailsComponent),
+            canDeactivate: [
+              (component: { canDeactivate?: () => Promise<boolean> | boolean }) =>
+                component?.canDeactivate ? component.canDeactivate() : true,
+            ],
           },
           {
             path: ':id/sessions/:sessionId',

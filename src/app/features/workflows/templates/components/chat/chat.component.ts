@@ -178,6 +178,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly _artifactsPanelOpen = signal(false);
   private readonly _selectedFileReference = signal<string>('all');
   private readonly _isLoadingArtifacts = signal(false);
+  private readonly _systemPromptPanelOpen = signal(false);
+  private readonly _systemPrompt = signal<string>('');
 
   // ============================================================================
   // PRIVATE PROPERTIES
@@ -207,6 +209,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   artifactsPanelOpen$ = computed(() => this._artifactsPanelOpen());
   selectedFileReference$ = computed(() => this._selectedFileReference());
   isLoadingArtifacts$ = computed(() => this._isLoadingArtifacts());
+  systemPromptPanelOpen$ = computed(() => this._systemPromptPanelOpen());
+  systemPrompt$ = computed(() => this._systemPrompt());
   groupedFiles$ = computed(() => {
     const filesArray = this._files();
     const groups = new Map<string, FileItem[]>();
@@ -507,6 +511,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleArtifactsPanel(): void {
     const nextOpen = !this._artifactsPanelOpen();
+    if (nextOpen) {
+      this._systemPromptPanelOpen.set(false); // Close system prompt panel
+    }
     this._artifactsPanelOpen.set(nextOpen);
     if (nextOpen) {
       this.loadSessionArtifacts();
@@ -515,6 +522,32 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   closeArtifactsPanel(): void {
     this._artifactsPanelOpen.set(false);
+  }
+
+  toggleSystemPromptPanel(): void {
+    const nextOpen = !this._systemPromptPanelOpen();
+    if (nextOpen) {
+      this._artifactsPanelOpen.set(false); // Close artifacts panel
+    }
+    this._systemPromptPanelOpen.set(nextOpen);
+  }
+
+  closeSystemPromptPanel(): void {
+    this._systemPromptPanelOpen.set(false);
+  }
+
+  onSystemPromptSend(data: ChatInputData): void {
+    if (!data.message?.trim()) {
+      return;
+    }
+    this._systemPrompt.set(data.message);
+    this.toast.show(this.translate.instant('chatTpl.systemPromptSaved'));
+    this.closeSystemPromptPanel();
+  }
+
+  saveSystemPrompt(): void {
+    // Deprecated - kept for backwards compatibility
+    this.toast.show(this.translate.instant('chatTpl.systemPromptSaved'));
   }
 
   onFileReferenceChange(nextValue: string): void {

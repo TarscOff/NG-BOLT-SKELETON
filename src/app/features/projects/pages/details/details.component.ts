@@ -3,10 +3,12 @@ import {
     Component,
     computed,
     DestroyRef,
+    HostListener,
     inject,
     OnDestroy,
     OnInit,
     signal,
+    viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -33,7 +35,7 @@ import { ConfirmDialogComponent, SeoComponent } from '@cadai/pxs-ng-core/shared'
 import { KeycloakService, LayoutService, ToastService, ToolbarActionsService } from '@cadai/pxs-ng-core/services';
 import { UserRole } from '@cadai/pxs-ng-core/enums';
 import { ConfirmDialogData, ToolbarAction } from '@cadai/pxs-ng-core/interfaces';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateTime } from 'luxon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -93,6 +95,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     private readonly keycloak = inject(KeycloakService);
     private dialog = inject(MatDialog);
 
+    /** Cancels the previous toolbar favorite subscription when switching tab modes */
+    private readonly _toolbarSwitch$ = new Subject<void>();
+
     // State
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
@@ -109,6 +114,20 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
     // Admin signal for template
     readonly isAdmin = signal(false);
+
+    // Template canvas reference (signal-based so computed tracks availability)
+    readonly templateCanvas = viewChild<ProjectTemplateCanvasComponent>('templateCanvas');
+
+    // Observable for save-template button disabled state (must be created in injection context)
+    private readonly saveDisabled$ = toObservable(computed(() => !this.templateCanvas()?.canSave()));
+
+    // Track current tab for showing Save/Publish buttons
+    readonly currentTabIndex = signal<number>(0);
+    readonly isConfigurationTab = computed(() => {
+        const enabledCount = this.enabledTemplateAssignments().length;
+        // Configuration tab index = enabledCount + 2 (Sessions + Artifacts tabs)
+        return this.currentTabIndex() === enabledCount + 2 && this.isAdmin();
+    });
 
     // ======== TEMPLATE WORKFLOWS (Tier 3) ========
     
@@ -183,6 +202,86 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             [group]: !state[group]
         }));
     }
+
+    /** Returns true when the template-canvas has unsaved changes */
+    private hasUnsavedChanges(): boolean {
+        return this.templateCanvas()?.isDirty() ?? false;
+    }
+
+    /** Warn the user before closing / refreshing the browser tab */
+    @HostListener('window:beforeunload', ['$event'])
+    async onBeforeUnload(event: BeforeUnloadEvent): Promise<void> {
+        // Note: beforeunload cannot be async, so we use the synchronous check
+        if (await this.hasUnsavedChanges()) {
+            event.preventDefault();
+        }
+    }
+
+    /**
+     * Shows a confirmation dialog when there are unsaved canvas changes.
+     * Returns true if the user confirms (discard), false if they cancel.
+     */
+    async confirmUnsavedChanges(): Promise<boolean> {
+        if (!(await this.hasUnsavedChanges())) return true;
+
+        const confirmed = await firstValueFrom(
+            this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+                ConfirmDialogComponent,
+                {
+                    data: {
+                        title: this.translateService.instant('workflow.unsaved_changes_title'),
+                        message: this.translateService.instant('workflow.unsaved_changes_message'),
+                    }
+                }
+            ).afterClosed()
+        );
+
+        if (confirmed) {
+            this.handleSaveTemplate();
+        }
+        return !!confirmed;
+    }
+
+    /** Called by the Angular router canDeactivate guard */
+    canDeactivate(): Promise<boolean> | boolean {
+        return this.confirmUnsavedChanges();
+    }
+
+    /** Guard to prevent re-entrant calls when currentTabIndex signal updates the MatTabGroup selectedIndex */
+    private _isHandlingTabChange = false;
+
+    async onTabChange(index: number): Promise<void> {
+        if (this._isHandlingTabChange) return;
+        this._isHandlingTabChange = true;
+
+        try {
+            const previousIndex = this.currentTabIndex();
+
+            // If leaving the configuration tab and there are unsaved changes, confirm first
+            if (this.isConfigurationTab()) {
+                // MatTabGroup already moved internally. Accept the new index first so
+                // Angular registers the value change…
+                this.currentTabIndex.set(index);
+
+                // …then wait one microtask so change detection processes the new value,
+                // and revert back. Angular now sees a *real* change and forces the
+                // MatTabGroup back to the configuration tab.
+                await new Promise<void>(resolve => setTimeout(resolve));
+                this.currentTabIndex.set(previousIndex);
+
+                const confirmed = await this.confirmUnsavedChanges();
+                if (!confirmed) {
+                    return; // User cancelled — stay on configuration tab
+                }
+            }
+
+            this.currentTabIndex.set(index);
+            this.updateToolbarForTab();
+        } finally {
+            this._isHandlingTabChange = false;
+        }
+    }
+    
     private readonly loading$ = toObservable(this.loading);
     private readonly favoriteSessionUrls = toSignal(
         this.favoritesFacade.favorites$,
@@ -237,6 +336,127 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     private initAdminStatus(): void {
         const { roles } = this.keycloak.getUserCtx();
         this.isAdmin.set(roles.includes(UserRole.ROLE_admin));
+    }
+
+    private updateToolbarForTab(): void {
+        if (this.isConfigurationTab()) {
+            this.setupTemplateToolbarActions();
+        } else {
+            this.updateToolbarWithFavorites();
+        }
+    }
+
+    private setupTemplateToolbarActions(): void {
+        // Cancel any previous toolbar subscription (prevents overwrite from updateToolbarWithFavorites)
+        this._toolbarSwitch$.next();
+
+        const url = this.currentUrl();
+        if (!url) return;
+
+        const back: ToolbarAction = {
+            id: 'back',
+            icon: 'arrow_back',
+            tooltip: this.translateService.instant("common.back"),
+            class: "error",
+            variant: "flat",
+            label: this.translateService.instant("common.back"),
+            click: async () => {
+                if (await this.confirmUnsavedChanges()) {
+                    this.router.navigate(['/genai-projects']);
+                }
+            },
+        };
+
+        const newSession: ToolbarAction = {
+            id: 'new-session',
+            icon: 'add',
+            tooltip: this.translateService.instant("new-session"),
+            class: "primary",
+            variant: "flat",
+            label: this.translateService.instant("new-session"),
+            disabled$: this.loading$,
+            click: async () => {
+                const projectId = this.project()?.project_id;
+                if (projectId) {
+                    this.loading.set(true);
+                    try {
+                        const createdSession = await firstValueFrom(
+                            this.projectsService.createProjectsSessions(projectId)
+                        );
+                        if (createdSession?.session_id) {
+                            this.router.navigate([
+                                '/genai-projects',
+                                projectId,
+                                'sessions',
+                                createdSession.session_id
+                            ]);
+                        }
+                    } catch (error) {
+                        this.error.set(
+                            this.translateService.instant('projects.error.failed-to-create-session')
+                        );
+                        this.toast.showError(
+                            this.translateService.instant('projects.error.failed-to-create-session') +
+                            (error instanceof Error ? `: ${error.message}` : '')
+                        );
+                    } finally {
+                        this.loading.set(false);
+                    }
+                }
+            },
+        };
+
+        const saveTemplate: ToolbarAction = {
+            id: 'save-template',
+            icon: 'save',
+            tooltip: this.translateService.instant("templates.project_canvas.save_template"),
+            class: "primary",
+            variant: "flat",
+            label: this.translateService.instant("templates.project_canvas.save_template"),
+            disabled$: this.saveDisabled$,
+            click: () => this.handleSaveTemplate(),
+        };
+
+        // Set toolbar immediately so the save button appears right away
+        // (will be refined with correct favorite state when subscription emits)
+        this.toolbarService.scope(this.destroyRef, [back, newSession, saveTemplate]);
+
+        this.favoritesFacade.loadFavorites();
+
+        this.favoritesFacade.isFavorite(url).pipe(
+            takeUntil(this._toolbarSwitch$),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(isFavorited => {
+            const favoriteAction: ToolbarAction = isFavorited
+                ? {
+                    id: 'unfavorite',
+                    icon: 'favorite',
+                    tooltip: 'remove_favorite',
+                    class: "error",
+                    variant: "icon",
+                    label: this.translateService.instant("remove_favorite"),
+                    click: () => this.handleRemoveFavorite(),
+                }
+                : {
+                    id: 'favorite',
+                    icon: 'favorite_border',
+                    tooltip: 'add_favorite',
+                    class: "primary",
+                    variant: "icon",
+                    label: this.translateService.instant("add_favorite"),
+                    click: () => this.handleAddFavorite(),
+                };
+
+            this.toolbarService.scope(this.destroyRef, [back, newSession, saveTemplate, favoriteAction]);
+        });
+    }
+
+    private handleSaveTemplate(): void {
+        const canvas = this.templateCanvas();
+        if (canvas) {
+            // Call saveTemplate() which handles both canvas and upload mode
+            canvas.saveTemplate();
+        }
     }
 
     ngOnInit(): void {
@@ -295,6 +515,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
 
     private updateToolbarWithFavorites(): void {
+        // Cancel any previous toolbar subscription (prevents overwrite from setupTemplateToolbarActions)
+        this._toolbarSwitch$.next();
+
         const url = this.currentUrl();
         if (!url) return;
 
@@ -350,6 +573,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         this.favoritesFacade.loadFavorites();
 
         this.favoritesFacade.isFavorite(url).pipe(
+            takeUntil(this._toolbarSwitch$),
             takeUntilDestroyed(this.destroyRef)
         ).subscribe(isFavorited => {
             const favoriteAction: ToolbarAction = isFavorited
@@ -384,7 +608,11 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             class: "error",
             variant: "flat",
             label: this.translateService.instant("common.back"),
-            click: () => this.router.navigate(['/genai-projects']),
+            click: async () => {
+                if (await this.confirmUnsavedChanges()) {
+                    this.router.navigate(['/genai-projects']);
+                }
+            },
         };
 
         const newSession: ToolbarAction = {
