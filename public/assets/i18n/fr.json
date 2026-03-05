@@ -1319,7 +1319,10 @@
       "valid_json_message": "Format JSON valide",
       "invalid_json_message": "Format JSON invalide",
       "template_assignment": "Affectation de template (JSON)",
-      "assignment_placeholder": "Ajouter le code du template (JSON)"
+      "assignment_placeholder": "Ajouter le code du template (JSON)",
+      "upload_assignment": "Télécharger le fichier avec l'affectation du template (JSON)",
+      "upload_success": "Affectation du template téléchargée avec succès",
+      "upload_error": "Échec du téléchargement de l'affectation du template. Veuillez vérifier le fichier et réessayer."
     },
     "list": {
       "title": "Templates de Workflows",

@@ -1294,7 +1294,10 @@
       "valid_json_message": "Valid JSON format",
       "invalid_json_message": "Invalid JSON format",
       "template_assignment": "Template assignment (JSON)",
-      "assignment_placeholder": "Add template code (JSON)"
+      "assignment_placeholder": "Add template code (JSON)",
+      "upload_assignment": "Upload file with template assignment (JSON)",
+      "upload_success": "Template assignment uploaded successfully",
+      "upload_error": "Failed to upload template assignment. Please check the file and try again."
     },
     "list": {
       "title": "Template Workflows",

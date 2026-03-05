@@ -917,6 +917,7 @@ mat-list-item.historyItem {
 .run-templates-container {
   display: flex;
   flex-direction: column;
+  height: -webkit-fill-available;
   padding: 0;
   margin-top: 12px;
   overflow: hidden;

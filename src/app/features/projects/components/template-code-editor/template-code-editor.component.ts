@@ -36,10 +36,7 @@ import { TemplateAssignment } from '@shared/types';
             <!-- Assignment Editor -->
             <div class="code-editor-section">
                 <div class="editor-header">
-                    <h3>
-                        <mat-icon>assignment</mat-icon>
-                        {{ 'templates.code_editor.template_assignment' | translate }}
-                    </h3>
+                    <h3>{{ 'templates.code_editor.template_assignment' | translate }}</h3>
                     <button
                         mat-icon-button
                         color="primary"
@@ -104,7 +101,7 @@ import { TemplateAssignment } from '@shared/types';
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 0;
+            margin-top: 1rem;
 
             h3 {
                 display: flex;
@@ -477,11 +474,11 @@ export class TemplateCodeEditorComponent implements OnInit {
             const content = e.target?.result as string;
             if (content) {
                 this.assignmentControl.setValue(content);
-                this.toast.show(this.translateService.instant('templates.code_editor.file_loaded', { name: file.name }));
+                this.toast.show(this.translateService.instant('templates.code_editor.upload_success'));
             }
         };
         reader.onerror = () => {
-            this.toast.showError(this.translateService.instant('templates.code_editor.file_read_error'));
+            this.toast.showError(this.translateService.instant('templates.code_editor.upload_error'));
         };
         reader.readAsText(file);
 
