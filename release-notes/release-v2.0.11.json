@@ -1,0 +1,123 @@
+{
+  "version": "2.0.11",
+  "tag": "v2.0.11",
+  "previousTag": "v2.0.10",
+  "date": "2026-03-05T08:58:43.433Z",
+  "stats": {
+    "features": 2,
+    "fixes": 0,
+    "perf": 0,
+    "refactor": 0,
+    "docs": 0,
+    "chores": 2,
+    "tests": 0,
+    "others": 1,
+    "breaking": 0
+  },
+  "sections": {
+    "features": [
+      {
+        "hash": "591ff0f",
+        "type": "feat",
+        "scope": "uploadFile",
+        "subject": "update read me with template upload file changes  adjust height of project session",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "874dca8",
+        "type": "feat",
+        "scope": "templateUploadFiles",
+        "subject": "add the upload file template + create a code editor component",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "fixes": [],
+    "perf": [],
+    "refactor": [],
+    "docs": [],
+    "chores": [
+      {
+        "hash": "0e80c00",
+        "type": "chore",
+        "scope": "release",
+        "subject": "v2.0.11 – CI release develop",
+        "breaking": false,
+        "notes": []
+      },
+      {
+        "hash": "fcdb8db",
+        "type": "chore",
+        "scope": "release",
+        "subject": "add JSON notes for v2.0.10",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "tests": [],
+    "others": [
+      {
+        "hash": "d69a515",
+        "type": "other",
+        "scope": null,
+        "subject": "Merge branch 'feature/template-upload-files' into 'develop'",
+        "breaking": false,
+        "notes": []
+      }
+    ],
+    "breaking": []
+  },
+  "commits": [
+    {
+      "hash": "0e80c008030adb4b246403cc109b6a3b611a9b47",
+      "shortHash": "0e80c00",
+      "type": "chore",
+      "scope": "release",
+      "subject": "v2.0.11 – CI release develop",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "d69a515a939279a453df10a4e06a7ec3f2785530",
+      "shortHash": "d69a515",
+      "type": "other",
+      "scope": null,
+      "subject": "Merge branch 'feature/template-upload-files' into 'develop'",
+      "breaking": false,
+      "notes": [],
+      "body": "feat(uploadFile): update read me with template upload file changes  adjust...\n\nSee merge request genai/frontend/frontend-generic!8"
+    },
+    {
+      "hash": "591ff0f095cd7420e6a07ed5da9b7e520a902ad5",
+      "shortHash": "591ff0f",
+      "type": "feat",
+      "scope": "uploadFile",
+      "subject": "update read me with template upload file changes  adjust height of project session",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "874dca8ceff55212be40197d2e4f5cfd55e304b1",
+      "shortHash": "874dca8",
+      "type": "feat",
+      "scope": "templateUploadFiles",
+      "subject": "add the upload file template + create a code editor component",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    },
+    {
+      "hash": "fcdb8db29ca2279732001b726995f5e9ad0074db",
+      "shortHash": "fcdb8db",
+      "type": "chore",
+      "scope": "release",
+      "subject": "add JSON notes for v2.0.10",
+      "breaking": false,
+      "notes": [],
+      "body": ""
+    }
+  ]
+}
