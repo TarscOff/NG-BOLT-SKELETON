@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.11](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.10...v2.0.11) (2026-03-05)
+
+
+### Features
+
+* **templateUploadFiles:** add the upload file template + create a code editor component ([874dca8](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/874dca8ceff55212be40197d2e4f5cfd55e304b1))
+* **uploadFile:** update read me with template upload file changes  adjust height of project session ([591ff0f](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/commit/591ff0f095cd7420e6a07ed5da9b7e520a902ad5))
+
 ### [2.0.10](https://teamhub-se.telindus.lu/genai/frontend/frontend-generic/compare/v2.0.9...v2.0.10) (2026-02-16)
 
 
