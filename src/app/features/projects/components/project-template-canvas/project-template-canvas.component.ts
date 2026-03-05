@@ -22,6 +22,8 @@ import {
     ViewChild,
     DestroyRef,
     HostListener,
+    effect,
+    untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl, FormGroup, FormBuilder } from '@angular/forms';
@@ -30,13 +32,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { CdkDragDrop, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { firstValueFrom, debounceTime } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime } from 'rxjs';
 
 // ng-draw-flow
 import {
@@ -50,6 +52,7 @@ import {
     dfPanZoomOptionsProvider,
     DfEvent,
     DfConnectionPoint,
+    DfDataNode,
 } from '@ng-draw-flow/core';
 
 // Store and services
@@ -63,8 +66,9 @@ import {
 } from '@features/workflows/templates/interfaces/template-workflow.interface';
 import { TemplateAssignment, PortDataScopeConfig, DataScope } from '@shared/types/workflow.types';
 import { ToastService, FieldConfigService } from '@cadai/pxs-ng-core/services';
-import { ConfirmDialogComponent, DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
-import { ConfirmDialogData, FieldConfig } from '@cadai/pxs-ng-core/interfaces';
+import { DynamicFormComponent } from '@cadai/pxs-ng-core/shared';
+import { FieldConfig } from '@cadai/pxs-ng-core/interfaces';
+import { TemplateCodeEditorComponent } from '../template-code-editor/template-code-editor.component';
 
 // Node components
 import { ProjectTemplateNodeComponent } from './project-template-node.component';
@@ -73,6 +77,7 @@ import {
     UIComponentType,
     getProjectUiPorts,
 } from './project-ui-node.component';
+import { MatTabsModule } from '@angular/material/tabs';
 
 // ============================================================================
 // INTERFACES
@@ -96,6 +101,11 @@ interface CanvasUiNodeState {
     position: { x: number; y: number };
 }
 
+interface CanvasTemplateNodeState {
+    id: string;
+    position: { x: number; y: number };
+}
+
 interface CanvasConnectionState {
     sourceNodeId: string;
     sourceConnectorId: string;
@@ -105,9 +115,12 @@ interface CanvasConnectionState {
 
 interface ProjectCanvasConfiguration {
     uiNodes: CanvasUiNodeState[];
+    templateNodes: CanvasTemplateNodeState[];
     connections: CanvasConnectionState[];
     viewMode?: 'single' | 'tabs';
 }
+
+type DfNodeWithPosition = DfDataNode & { point?: { x: number; y: number } };
 
 // ============================================================================
 // COMPONENT
@@ -132,10 +145,15 @@ interface ProjectCanvasConfiguration {
         DragDropModule,
         NgDrawFlowComponent,
         DynamicFormComponent,
+        TemplateCodeEditorComponent,
+        MatTabsModule
     ],
     providers: [
         dfPanZoomOptionsProvider({
             panSize: 20000,
+            minZoom: 0.1,
+            maxZoom: 3,
+            zoomStep: 0.1,
         }),
         provideNgDrawFlowConfigs({
             nodes: {
@@ -271,11 +289,27 @@ interface ProjectCanvasConfiguration {
                 </div>
             </mat-sidenav>
 
-            <!-- Canvas Content Area -->
-            <mat-sidenav-content class="canvas-pane">
+            <!-- Template Assignment Area -->
+            <mat-sidenav-content class="template-assignment" [class.canvas-mode]="assignmentMethod() === 'canvas'">
+                <!-- Assignment Method Tabs -->
+                <mat-tab-group class="assignment-method-tabs" [selectedIndex]="assignmentMethod() === 'canvas' ? 0 : 1" (selectedIndexChange)="assignmentMethod.set($event === 0 ? 'canvas' : 'upload')">
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <mat-icon>dashboard</mat-icon>
+                            {{ 'projects.wizard.method.canvas' | translate }}
+                        </ng-template>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <mat-icon>upload_file</mat-icon>
+                            {{ 'projects.wizard.method.upload' | translate }}
+                        </ng-template>
+                    </mat-tab>
+                </mat-tab-group>
+               
                 <!-- Canvas Actions Bar -->
-                @if (!isLoading()) {
-                    <div class="canvas-pane_actions">
+                @if (!isLoading() && assignmentMethod() === 'canvas') {
+                    <div class="template-assignment_actions">
                         <button mat-fab extended
                                 class="palette-toggle"
                                 color="primary"
@@ -286,7 +320,7 @@ interface ProjectCanvasConfiguration {
                             {{ 'toolbox' | translate }}
                         </button>
 
-                        <div class="canvas-info">
+                        <div class="template-assignment-info">
                             <span class="template-count">
                                 {{ templateAssignments().length }} {{ 'templates.assigned' | translate }}
                             </span>
@@ -312,9 +346,21 @@ interface ProjectCanvasConfiguration {
 
                         <button mat-icon-button
                                 color="primary"
+                                (click)="zoomIn()"
+                                [matTooltip]="'templates.canvas.zoom_in' | translate">
+                            <mat-icon>add</mat-icon>
+                        </button>
+                        <button mat-icon-button
+                                color="primary"
+                                (click)="zoomOut()"
+                                [matTooltip]="'templates.canvas.zoom_out' | translate">
+                            <mat-icon>remove</mat-icon>
+                        </button>
+                        <button mat-icon-button
+                                color="primary"
                                 (click)="resetView()"
                                 [matTooltip]="'templates.canvas.reset_view' | translate">
-                            <mat-icon>fit_screen</mat-icon>
+                            <mat-icon>center_focus_strong</mat-icon>
                         </button>
                     </div>
                 }
@@ -328,53 +374,74 @@ interface ProjectCanvasConfiguration {
                         </div>
                     </div>
                 } @else {
-                    <!-- Canvas Wrapper with ng-draw-flow -->
-                    <div class="canvas-wrap">
-                        <ng-draw-flow
-                            #flowRef
-                            class="project-canvas"
-                            [formControl]="flowControl"
-                            (connectionCreated)="onConnectionCreated($event)"
-                            (connectionDeleted)="onConnectionDeleted($event)"
-                            (nodeDeleted)="onNodeDeleted($event)"
-                            cdkDropList
-                            #canvasList="cdkDropList"
-                            [cdkDropListConnectedTo]="[paletteList]"
-                            [cdkDropListData]="{}"
-                            (cdkDropListDropped)="onDrop($any($event))">
-                        </ng-draw-flow>
+                    <!-- Conditional Content: Canvas or Upload -->
+                    @if (assignmentMethod() === 'canvas') {
+                        <!-- Canvas Wrapper with ng-draw-flow -->
+                        <div class="canvas-wrap">
+                            <ng-draw-flow
+                                #flowRef
+                                class="project-canvas"
+                                [formControl]="flowControl"
+                                (connectionCreated)="onConnectionCreated($event)"
+                                (connectionDeleted)="onConnectionDeleted($event)"
+                                (nodeDeleted)="onNodeDeleted($event)"
+                                (nodeMoved)="onNodeMoved($event)"
+                                (scale)="onScale($event)"
+                                cdkDropList
+                                #canvasList="cdkDropList"
+                                [cdkDropListConnectedTo]="[paletteList]"
+                                [cdkDropListData]="{}"
+                                (cdkDropListDropped)="onDrop($any($event))">
+                            </ng-draw-flow>
 
-                        <!-- Empty State Hint -->
-                        @if (isCanvasEmpty()) {
-                            <div class="empty-canvas-hint">
-                                <mat-icon>dashboard_customize</mat-icon>
-                                <h3>{{ 'templates.project_canvas.drag_hint_title' | translate }}</h3>
-                                <p>{{ 'templates.project_canvas.drag_hint_desc' | translate }}</p>
-                            </div>
-                        }
-                    </div>
+                            <!-- Empty State Hint -->
+                            @if (isCanvasEmpty()) {
+                                <div class="empty-canvas-hint">
+                                    <mat-icon>dashboard_customize</mat-icon>
+                                    <h3>{{ 'templates.project_canvas.drag_hint_title' | translate }}</h3>
+                                    <p>{{ 'templates.project_canvas.drag_hint_desc' | translate }}</p>
+                                </div>
+                            }
+                        </div>
+                    } @else {
+                        <!-- Upload Mode -->
+                        <div class="upload-mode-wrap">
+                            <app-template-code-editor
+                                [projectId]="projectId"
+                                [initialAssignment]="uploadedAssignmentJson()"
+                                (assignmentParsed)="onAssignmentUploaded($event)"
+                                (assignmentStringChanged)="onAssignmentStringChanged($event)"
+                                (validationStateChange)="onUploadValidationChange($event)">
+                            </app-template-code-editor>
+                        </div>
+                    }
                 }
             </mat-sidenav-content>
         </mat-sidenav-container>
     `,
     styles: [`
         :host {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
             height: 100%;
-            min-height: 640px;
-            min-width: 0;
         }
 
         .project-canvas-container {
             height: 100%;
             min-height: 640px;
             background: transparent;
+            flex: 1;
 
             ::ng-deep .mat-drawer-container {
                 background: transparent;
             }
 
             ::ng-deep .mat-drawer-content {
+                height: calc(100% - 16px);
+                padding: 16px 16px 0 16px;
+                display: flex;
+                flex-direction: column;
                 overflow: hidden;
             }
         }
@@ -589,17 +656,17 @@ interface ProjectCanvasConfiguration {
             }
         }
 
-        .canvas-pane {
+        .canvas-mode {
             position: absolute;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: calc(100% - 20px);
             min-height: 0;
             overflow: hidden;
             width: 100%;
         }
 
-        .canvas-pane_actions {
+        .template-assignment_actions {
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -609,7 +676,7 @@ interface ProjectCanvasConfiguration {
             margin-bottom: 12px;
             padding: 10px 12px;
 
-            .canvas-info {
+            .template-assignment-info {
                 flex: 1;
                 display: flex;
                 gap: 16px;
@@ -665,6 +732,14 @@ interface ProjectCanvasConfiguration {
             }
         }
 
+        .upload-mode-wrap {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
         .loading-overlay {
             flex: 1;
             display: flex;
@@ -710,6 +785,22 @@ interface ProjectCanvasConfiguration {
                 max-width: 400px;
             }
         }
+
+        .assignment-method-tabs {
+            ::ng-deep {
+                .mat-mdc-tab-labels {
+                    border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
+                }
+
+                .mat-mdc-tab-label {
+                    min-width: 120px;
+
+                    .mat-icon {
+                        margin-right: 8px;
+                    }
+                }
+            }
+        }
     `],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -727,7 +818,6 @@ export class ProjectTemplateCanvasComponent implements OnInit {
     @ViewChild('canvasList') canvasList!: CdkDropList;
 
     // Services
-    private readonly dialog = inject(MatDialog);
     private readonly toast = inject(ToastService);
     private readonly translateService = inject(TranslateService);
     private readonly templateWorkflowsStore = inject(TemplateWorkflowsStore);
@@ -740,14 +830,60 @@ export class ProjectTemplateCanvasComponent implements OnInit {
     readonly showPalette = signal(false);
     readonly isPaletteDragging = signal(false);
     readonly paletteFilter = signal('');
+    private readonly zoom = signal<number>(1);
     readonly viewMode = signal<'single' | 'tabs'>('single');
+    readonly assignmentMethod = signal<'canvas' | 'upload'>('canvas');
+
+    // Upload state
+    readonly canCreateFromUpload = signal(false);
+    readonly uploadedAssignment = signal<TemplateAssignment[] | null>(null);
+    readonly uploadedAssignmentJson = signal<string>(''); // Current editor content
+    private readonly _initialUploadJson = signal<string>(''); // Initial editor content (for dirty tracking)
 
     readonly templateAssignments = signal<TemplateAssignment[]>([]);
     readonly availableTemplates = signal<TemplateWorkflow[]>([]);
 
     // Track UI nodes separately
     private readonly _uiNodes = signal<{ id: string; type: UIComponentType; position: { x: number; y: number } }[]>([]);
+    private readonly _templateNodePositions = signal<Map<string, { x: number; y: number }>>(new Map());
     private readonly _canvasConnections = signal<DfDataConnection[]>([]);
+    private _skipNextRestore = false; // Flag to prevent restore after manual canvas updates
+    private _initialLoadDone = false; // Flag to center the view only on first load
+    private readonly _pendingTemplatePositions = new Map<string, { x: number; y: number }>(); // Drop positions for templates pending store assignment
+
+    // Tracks node position changes (bumped on every node move to trigger dirty detection)
+    private readonly _nodePositionVersion = signal(0);
+
+    // Dirty tracking for Save/Publish buttons
+    private readonly _initialState = signal<string>('');
+    private readonly _currentState = computed(() => {
+        return JSON.stringify({
+            assignments: this.templateAssignments(),
+            uiNodes: this._uiNodes(),
+            connections: this._canvasConnections(),
+            nodePositionVersion: this._nodePositionVersion(),
+            viewMode: this.viewMode(),
+        });
+    });
+
+    readonly isDirty = computed(() => {
+        const method = this.assignmentMethod();
+        if (method === 'canvas') return this._initialState() !== this._currentState();
+        if (method === 'upload') return this._initialUploadJson() !== this.uploadedAssignmentJson();
+        return false;
+    });
+    
+    /** True when there are unsaved changes and the component is ready to save */
+    readonly canSave = computed(() => {
+        if (this.isLoading()) return false;
+        const hasChanges = this.isDirty();
+        if (this.assignmentMethod() === 'canvas') {
+            return hasChanges && this.templateAssignments().length > 0;
+        }
+        return hasChanges;
+    });
+    
+    readonly cannotSave$ = toObservable(computed(() => !this.canSave())); // Inverted for disabled$ property
 
     // Computed
     readonly uiNodeCount = computed(() => this._uiNodes().length);
@@ -797,6 +933,20 @@ export class ProjectTemplateCanvasComponent implements OnInit {
     // FormControl for ng-draw-flow
     readonly flowControl = new FormControl<DfDataModel>({ nodes: [], connections: [] });
 
+    // Watch for assignment method changes to sync canvas to JSON
+    constructor() {
+        effect(() => {
+            const method = this.assignmentMethod();
+            if (method === 'upload') {
+                // Switching to upload mode - sync current canvas state to JSON editor.
+                // untracked() prevents canvas signals (templateAssignments, _uiNodes, etc.)
+                // from being tracked by this effect — without it the effect would re-run
+                // on ANY canvas change and overwrite the user's typed JSON.
+                untracked(() => this.syncCanvasToJson());
+            }
+        }, { allowSignalWrites: true });
+    }
+
     // Listen for node action events from child nodes
     @HostListener('document:nodeAction', ['$event'])
     onNodeAction(event: Event): void {
@@ -826,6 +976,185 @@ export class ProjectTemplateCanvasComponent implements OnInit {
     ngOnInit(): void {
         this.initPaletteForm();
         this.loadData();
+    }
+
+    // Upload event handlers
+    onAssignmentUploaded(assignment: TemplateAssignment[] | null): void {
+        // uploadedAssignmentJson is kept in sync via onAssignmentStringChanged on every keystroke
+        this.uploadedAssignment.set(assignment);
+    }
+
+    onAssignmentStringChanged(jsonString: string): void {
+        // Update the JSON string immediately when user types (even if invalid)
+        // This ensures dirty detection works for all edits, including clearing the editor
+        this.uploadedAssignmentJson.set(jsonString);
+    }
+
+    onUploadValidationChange(canCreate: boolean): void {
+        this.canCreateFromUpload.set(canCreate);
+    }
+
+    saveTemplate(): void {
+        if (this.assignmentMethod() === 'canvas') {
+            this.persistCanvasConfiguration();
+        } else {
+            this.saveFromUploadMode();
+        }
+    }
+
+    private saveFromUploadMode(): void {
+        const assignments = this.uploadedAssignment();
+        const jsonString = this.uploadedAssignmentJson();
+        
+        // Empty editor means the user wants to clear all assignments
+        if (!jsonString.trim()) {
+            this.templateAssignments().forEach(assignment => {
+                this.templateWorkflowsStore.removeAssignment({
+                    projectId: this.projectId,
+                    assignmentId: assignment.id,
+                });
+            });
+            this._uiNodes.set([]);
+            this._canvasConnections.set([]);
+            this.toast.show(this.translateService.instant('templates.cleared-success'));
+            this.resetDirtyState();
+            return;
+        }
+        
+        if (!assignments || !Array.isArray(assignments) || assignments.length === 0) {
+            this.toast.showError(this.translateService.instant('templates.error.no_assignment'));
+            return;
+        }
+
+        assignments.forEach(assignment => {
+            const existingAssignment = this.templateAssignments().find(
+                a => a.templateId === assignment.templateId
+            );
+            if (existingAssignment) {
+                this.templateWorkflowsStore.updateAssignment({
+                    projectId: this.projectId,
+                    assignmentId: existingAssignment.id,
+                    changes: {
+                        templateName: assignment.templateName,
+                        portDataScopes: assignment.portDataScopes || [],
+                        configuration: assignment.configuration,
+                    },
+                });
+            } else {
+                this.templateWorkflowsStore.assignTemplate({
+                    projectId: this.projectId,
+                    templateId: assignment.templateId,
+                    templateName: assignment.templateName,
+                    portDataScopes: assignment.portDataScopes || [],
+                    configuration: assignment.configuration,
+                });
+            }
+        });
+        
+        this.toast.show(this.translateService.instant('templates.saved-success'));
+        this.resetDirtyState();
+    }
+
+    /** Resets dirty-tracking baselines after a successful save in either mode. */
+    private resetDirtyState(): void {
+        this._initialState.set(this._currentState());
+        this._initialUploadJson.set(this.uploadedAssignmentJson());
+    }
+
+    private syncCanvasToJson(): void {
+        const assignments = this.templateAssignments();
+        
+        if (assignments.length === 0) {
+            this.uploadedAssignmentJson.set('');
+            return;
+        }
+
+        const currentUiNodes = this._uiNodes();
+        const currentConnections = this._canvasConnections();
+        
+        const assignmentsJson = assignments.map(assignment => {
+            const assignmentConnections = currentConnections.filter(conn =>
+                conn.source.nodeId === assignment.id || conn.target.nodeId === assignment.id
+            );
+            
+            const configuration = {
+                projectCanvas: {
+                    uiNodes: currentUiNodes.map(node => ({
+                        id: node.id,
+                        type: node.type,
+                        position: node.position,
+                    })),
+                    connections: assignmentConnections.map(conn => ({
+                        sourceNodeId: conn.source.nodeId,
+                        sourceConnectorId: conn.source.connectorId,
+                        targetNodeId: conn.target.nodeId,
+                        targetConnectorId: conn.target.connectorId,
+                    })),
+                    viewMode: this.viewMode(),
+                },
+                uiTemplate: this.buildUiTemplate(assignment, currentUiNodes, assignmentConnections),
+            };
+
+            return {
+                templateId: assignment.templateId,
+                templateName: assignment.templateName,
+                portDataScopes: assignment.portDataScopes || [],
+                configuration,
+            };
+        });
+
+        this.uploadedAssignmentJson.set(JSON.stringify(assignmentsJson, null, 2));
+    }
+
+    /**
+     * Builds the uiTemplate configuration for a given assignment.
+     * Filters `uiNodes` to those connected via `connections`, then derives
+     * bindings from the connection graph. Used by both canvas-save and JSON-sync paths.
+     */
+    private buildUiTemplate(
+        assignment: TemplateAssignment,
+        uiNodes: CanvasUiNodeState[],
+        connections: DfDataConnection[]
+    ): { layout: TemplateLayoutType; components: UIComponentConfig[] } {
+        const connectedUiNodeIds = new Set<string>();
+        for (const conn of connections) {
+            if (this.isUiNode(conn.source.nodeId)) connectedUiNodeIds.add(conn.source.nodeId);
+            if (this.isUiNode(conn.target.nodeId)) connectedUiNodeIds.add(conn.target.nodeId);
+        }
+
+        const components = uiNodes
+            .filter(node => connectedUiNodeIds.has(node.id))
+            .map(node => {
+                const paletteItem = this.uiComponentItems.find(item => item.uiType === node.type);
+                const bindings: UIComponentConfig['bindings'] = [];
+
+                for (const conn of connections) {
+                    if (conn.source.nodeId === assignment.id && conn.target.nodeId === node.id) {
+                        bindings.push({
+                            componentProperty: this.parseUiInputPortId(conn.target.connectorId),
+                            workflowPath: this.parseTemplateOutputPortPath(conn.source.connectorId),
+                        });
+                    }
+                    if (conn.source.nodeId === node.id && conn.target.nodeId === assignment.id) {
+                        bindings.push({
+                            componentProperty: this.parseUiOutputPortId(conn.source.connectorId),
+                            workflowPath: this.parseTemplateInputPortPath(conn.target.connectorId),
+                        });
+                    }
+                }
+
+                return {
+                    id: node.id,
+                    type: node.type,
+                    label: paletteItem?.label ?? node.type,
+                    bindings,
+                };
+            });
+
+        return {
+            layout: this.viewMode() === 'tabs' ? 'standalone-tabs' : 'standalone-single',
+            components,
+        };
     }
 
     private initPaletteForm(): void {
@@ -874,9 +1203,35 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             .subscribe(assignments => {
                 this.templateAssignments.set(assignments);
                 this.repairAssignmentPortScopes(assignments);
-                this.restoreCanvasStateFromAssignments(assignments);
+
+                const shouldRestore = !this._skipNextRestore;
+
+                if (shouldRestore) {
+                    this.restoreCanvasStateFromAssignments(assignments);
+                } else {
+                    this._skipNextRestore = false;
+                }
+                
                 this.updateCanvasModel();
+                
+                // Update initial state AFTER canvas model is updated to avoid false dirty state
+                if (shouldRestore) {
+                    this._initialState.set(this._currentState());
+                    // Also sync to JSON and set initial upload JSON on first load
+                    this.syncCanvasToJson();
+                    this._initialUploadJson.set(this.uploadedAssignmentJson());
+                }
+                
                 this.isLoading.set(false);
+                
+                // Center the view on the template nodes only on initial load
+                if (!this._initialLoadDone && assignments.length > 0) {
+                    this._initialLoadDone = true;
+                    // Use requestAnimationFrame + timeout to ensure canvas is fully rendered
+                    requestAnimationFrame(() => {
+                        setTimeout(() => this.resetView(), 300);
+                    });
+                }
             });
     }
 
@@ -903,12 +1258,17 @@ export class ProjectTemplateCanvasComponent implements OnInit {
         const nodeOutputPortIds = new Map<string, Set<string>>();
 
         // Create nodes for each assigned template
+        const restoredTemplatePositions = this._templateNodePositions();
         assignments.forEach((assignment, index) => {
             const template = templates.find(t => t.id === assignment.templateId);
-            // Use saved position or calculate default
+            // Use saved position from restored config, or from current canvas model, or pending drop position, or calculate default
             const defaultX = 100 + (index % 3) * 350;
             const defaultY = 100 + Math.floor(index / 3) * 300;
-            const position = nodePositions[assignment.id] ?? { x: defaultX, y: defaultY };
+            const pendingPos = this._pendingTemplatePositions.get(assignment.templateId);
+            if (pendingPos) {
+                this._pendingTemplatePositions.delete(assignment.templateId);
+            }
+            const position = nodePositions[assignment.id] ?? restoredTemplatePositions.get(assignment.id) ?? pendingPos ?? { x: defaultX, y: defaultY };
 
             const resolvedPorts = template
                 ? this.resolveTemplatePorts(template)
@@ -977,19 +1337,24 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             const validNodeIds = new Set(nodes.map(n => n.id));
             const uniqueConnections = new Map<string, DfDataConnection>();
             const validConnections = sourceConnections.filter(
-                conn =>
-                    !!conn &&
-                    !!conn.source &&
-                    !!conn.target &&
-                    !!conn.source.nodeId &&
-                    !!conn.source.connectorId &&
-                    !!conn.target.nodeId &&
-                    !!conn.target.connectorId &&
-                    validNodeIds.has(conn.source.nodeId) &&
-                    validNodeIds.has(conn.target.nodeId) &&
-                    (nodeOutputPortIds.get(conn.source.nodeId)?.has(conn.source.connectorId) ?? false) &&
-                    (nodeInputPortIds.get(conn.target.nodeId)?.has(conn.target.connectorId) ?? false) &&
-                    this.isTemplateUiConnection(conn)
+                conn => {
+                    const checks = {
+                        hasConn: !!conn,
+                        hasSource: !!conn?.source,
+                        hasTarget: !!conn?.target,
+                        hasSourceNodeId: !!conn?.source?.nodeId,
+                        hasSourceConnectorId: !!conn?.source?.connectorId,
+                        hasTargetNodeId: !!conn?.target?.nodeId,
+                        hasTargetConnectorId: !!conn?.target?.connectorId,
+                        sourceNodeExists: validNodeIds.has(conn?.source?.nodeId ?? ''),
+                        targetNodeExists: validNodeIds.has(conn?.target?.nodeId ?? ''),
+                        sourcePortExists: nodeOutputPortIds.get(conn?.source?.nodeId ?? '')?.has(conn?.source?.connectorId ?? '') ?? false,
+                        targetPortExists: nodeInputPortIds.get(conn?.target?.nodeId ?? '')?.has(conn?.target?.connectorId ?? '') ?? false,
+                        isTemplateUi: conn ? this.isTemplateUiConnection(conn) : false,
+                    };
+                    const isValid = Object.values(checks).every(v => v);
+                    return isValid;
+                }
             );
             for (const connection of validConnections) {
                 const key = this.connectionKey(connection);
@@ -1041,19 +1406,30 @@ export class ProjectTemplateCanvasComponent implements OnInit {
 
         const sourceNodeId = connection.source?.nodeId;
         const targetNodeId = connection.target?.nodeId;
-        if (!sourceNodeId || !targetNodeId) return false;
+        if (!sourceNodeId || !targetNodeId) {
+            return false;
+        }
+        
         const templateToUi = this.isTemplateNode(sourceNodeId) && this.isUiNode(targetNodeId);
         const templateNodeId = templateToUi ? sourceNodeId : targetNodeId;
-        return this.isTemplateAssignmentEnabled(templateNodeId);
+        const isEnabled = this.isTemplateAssignmentEnabled(templateNodeId);
+        return isEnabled;
     }
 
     private isTemplateUiConnection(connection: DfDataConnection): boolean {
         const sourceNodeId = connection.source?.nodeId;
         const targetNodeId = connection.target?.nodeId;
-        if (!sourceNodeId || !targetNodeId) return false;
+        if (!sourceNodeId || !targetNodeId) {
+            return false;
+        }
 
-        const templateToUi = this.isTemplateNode(sourceNodeId) && this.isUiNode(targetNodeId);
-        const uiToTemplate = this.isUiNode(sourceNodeId) && this.isTemplateNode(targetNodeId);
+        const isSourceTemplate = this.isTemplateNode(sourceNodeId);
+        const isSourceUi = this.isUiNode(sourceNodeId);
+        const isTargetTemplate = this.isTemplateNode(targetNodeId);
+        const isTargetUi = this.isUiNode(targetNodeId);
+
+        const templateToUi = isSourceTemplate && isTargetUi;
+        const uiToTemplate = isSourceUi && isTargetTemplate;
 
         return templateToUi || uiToTemplate;
     }
@@ -1143,8 +1519,11 @@ export class ProjectTemplateCanvasComponent implements OnInit {
 
     private restoreCanvasStateFromAssignments(assignments: TemplateAssignment[]): void {
         const uiNodesById = new Map<string, CanvasUiNodeState>();
+        const templateNodePositions = new Map<string, { x: number; y: number }>();
         const connectionsByKey = new Map<string, DfDataConnection>();
         let restoredViewMode: 'single' | 'tabs' | null = null;
+
+        const currentAssignmentIds = new Set(assignments.map(a => a.id));
 
         for (const assignment of assignments) {
             const canvasConfig = this.readProjectCanvasConfiguration(assignment);
@@ -1159,7 +1538,30 @@ export class ProjectTemplateCanvasComponent implements OnInit {
                 }
             }
 
-            for (const connection of canvasConfig.connections) {
+            // Restore template node positions
+            if (canvasConfig.templateNodes) {
+                for (const templateNode of canvasConfig.templateNodes) {
+                    if (templateNode.id === assignment.id) {
+                        templateNodePositions.set(assignment.id, templateNode.position);
+                    }
+                }
+            }
+
+            // Remap template node IDs in connections
+            const remappedConnections = canvasConfig.connections.map(conn => {
+                let sourceNodeId = conn.sourceNodeId;
+                let targetNodeId = conn.targetNodeId;
+
+                const isSourceOldTemplate = this.isTemplateNodeId(sourceNodeId) && !currentAssignmentIds.has(sourceNodeId);
+                const isTargetOldTemplate = this.isTemplateNodeId(targetNodeId) && !currentAssignmentIds.has(targetNodeId);
+
+                if (isSourceOldTemplate) sourceNodeId = assignment.id;
+                if (isTargetOldTemplate) targetNodeId = assignment.id;
+
+                return { ...conn, sourceNodeId, targetNodeId };
+            });
+
+            for (const connection of remappedConnections) {
                 const normalized: DfDataConnection = {
                     source: {
                         nodeId: connection.sourceNodeId,
@@ -1180,10 +1582,18 @@ export class ProjectTemplateCanvasComponent implements OnInit {
         }
 
         this._uiNodes.set([...uiNodesById.values()]);
+        this._templateNodePositions.set(templateNodePositions);
         this._canvasConnections.set([...connectionsByKey.values()]);
         if (restoredViewMode) {
             this.viewMode.set(restoredViewMode);
         }
+    }
+
+    private isTemplateNodeId(nodeId: string): boolean {
+        // Template nodes: start with "tpl-assign-", match current assignment IDs, or are placeholder "TEMPLATE_NODE"
+        return nodeId === 'TEMPLATE_NODE' || 
+               nodeId.startsWith('tpl-assign-') || 
+               this.templateAssignments().some(a => a.id === nodeId);
     }
 
     private readProjectCanvasConfiguration(assignment: TemplateAssignment): ProjectCanvasConfiguration | null {
@@ -1193,8 +1603,8 @@ export class ProjectTemplateCanvasComponent implements OnInit {
         const projectCanvas = record['projectCanvas'];
         if (!projectCanvas || typeof projectCanvas !== 'object') return null;
         const canvasRecord = projectCanvas as Record<string, unknown>;
-
         const rawNodes = Array.isArray(canvasRecord['uiNodes']) ? canvasRecord['uiNodes'] : [];
+        const rawTemplateNodes = Array.isArray(canvasRecord['templateNodes']) ? canvasRecord['templateNodes'] : [];
         const rawConnections = Array.isArray(canvasRecord['connections']) ? canvasRecord['connections'] : [];
         const viewMode = canvasRecord['viewMode'] === 'tabs' ? 'tabs' : 'single';
 
@@ -1212,6 +1622,19 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             })
             .filter((node): node is CanvasUiNodeState => !!node);
 
+        const templateNodes: CanvasTemplateNodeState[] = rawTemplateNodes
+            .map(raw => {
+                if (!raw || typeof raw !== 'object') return null;
+                const node = raw as Record<string, unknown>;
+                const id = typeof node['id'] === 'string' ? node['id'] : null;
+                const position = node['position'] as Record<string, unknown> | undefined;
+                const x = typeof position?.['x'] === 'number' ? position['x'] : null;
+                const y = typeof position?.['y'] === 'number' ? position['y'] : null;
+                if (!id || x === null || y === null) return null;
+                return { id, position: { x, y } };
+            })
+            .filter((node): node is CanvasTemplateNodeState => !!node);
+
         const connections: CanvasConnectionState[] = rawConnections
             .map(raw => {
                 if (!raw || typeof raw !== 'object') return null;
@@ -1225,15 +1648,23 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             })
             .filter((connection): connection is CanvasConnectionState => !!connection);
 
-        return { uiNodes, connections, viewMode };
+        return { uiNodes, templateNodes, connections, viewMode };
     }
 
-    private persistCanvasConfiguration(): void {
+    persistCanvasConfiguration(): void {
         const assignments = this.templateAssignments();
         if (!assignments.length) return;
 
         const uiNodes = this._uiNodes();
         const allConnections = this._canvasConnections();
+
+        const currentModel = this.flowControl.value;
+        const templateNodePositions = new Map<string, { x: number; y: number }>();
+        currentModel?.nodes?.forEach(node => {
+            if ('position' in node && node.position && assignments.some(a => a.id === node.id)) {
+                templateNodePositions.set(node.id, node.position);
+            }
+        });
 
         for (const assignment of assignments) {
             const assignmentConnections = allConnections.filter(connection =>
@@ -1242,17 +1673,20 @@ export class ProjectTemplateCanvasComponent implements OnInit {
 
             const uiNodeIds = new Set<string>();
             for (const connection of assignmentConnections) {
-                if (this.isUiNode(connection.source.nodeId)) {
-                    uiNodeIds.add(connection.source.nodeId);
-                }
-                if (this.isUiNode(connection.target.nodeId)) {
-                    uiNodeIds.add(connection.target.nodeId);
-                }
+                if (this.isUiNode(connection.source.nodeId)) uiNodeIds.add(connection.source.nodeId);
+                if (this.isUiNode(connection.target.nodeId)) uiNodeIds.add(connection.target.nodeId);
             }
 
             const assignmentUiNodes = uiNodes.filter(node => uiNodeIds.has(node.id));
+
+            const templateNodePosition = templateNodePositions.get(assignment.id);
+            const templateNodes: CanvasTemplateNodeState[] = templateNodePosition
+                ? [{ id: assignment.id, position: templateNodePosition }]
+                : [];
+
             const projectCanvas: ProjectCanvasConfiguration = {
                 uiNodes: assignmentUiNodes,
+                templateNodes,
                 connections: assignmentConnections.map(connection => ({
                     sourceNodeId: connection.source.nodeId,
                     sourceConnectorId: connection.source.connectorId,
@@ -1262,91 +1696,50 @@ export class ProjectTemplateCanvasComponent implements OnInit {
                 viewMode: this.viewMode(),
             };
 
-            const uiTemplate = this.buildUiTemplateOverrideForAssignment(
-                assignment,
-                assignmentUiNodes,
-                assignmentConnections
-            );
+            const uiTemplate = this.buildUiTemplate(assignment, assignmentUiNodes, assignmentConnections);
 
-            const currentConfiguration = (assignment.configuration ?? {}) as Record<string, unknown>;
+            // Deep clone to prevent reference mutation after store update
+            const currentConfiguration = JSON.parse(JSON.stringify(assignment.configuration ?? {})) as Record<string, unknown>;
             const nextConfiguration: Record<string, unknown> = {
                 ...currentConfiguration,
                 projectCanvas,
                 uiTemplate,
             };
 
-            if (JSON.stringify(currentConfiguration) === JSON.stringify(nextConfiguration)) {
-                continue;
-            }
+            if (JSON.stringify(currentConfiguration) === JSON.stringify(nextConfiguration)) continue;
 
             this.templateWorkflowsStore.updateAssignment({
                 projectId: this.projectId,
                 assignmentId: assignment.id,
-                changes: {
-                    configuration: nextConfiguration,
-                },
+                changes: { configuration: nextConfiguration },
             });
         }
-    }
 
-    private buildUiTemplateOverrideForAssignment(
-        assignment: TemplateAssignment,
-        assignmentUiNodes: CanvasUiNodeState[],
-        assignmentConnections: DfDataConnection[]
-    ): { layout: TemplateLayoutType; components: UIComponentConfig[] } {
-        const components = assignmentUiNodes.map(node => {
-            const paletteItem = this.uiComponentItems.find(item => item.uiType === node.type);
-            const bindings: UIComponentConfig['bindings'] = [];
-
-            for (const connection of assignmentConnections) {
-                if (connection.source.nodeId === assignment.id && connection.target.nodeId === node.id) {
-                    bindings.push({
-                        componentProperty: this.parseUiInputPortId(connection.target.connectorId),
-                        workflowPath: this.parseTemplateOutputPortPath(connection.source.connectorId),
-                    });
-                }
-
-                if (connection.source.nodeId === node.id && connection.target.nodeId === assignment.id) {
-                    bindings.push({
-                        componentProperty: this.parseUiOutputPortId(connection.source.connectorId),
-                        workflowPath: this.parseTemplateInputPortPath(connection.target.connectorId),
-                    });
-                }
-            }
-
-            return {
-                id: node.id,
-                type: node.type,
-                label: paletteItem?.label ?? node.type,
-                bindings,
-            };
-        });
-
-        return {
-            layout: this.viewMode() === 'tabs' ? 'standalone-tabs' : 'standalone-single',
-            components,
-        };
+        this.syncCanvasToJson();
+        this.resetDirtyState();
     }
 
     onDrop(event: CdkDragDrop<unknown, unknown, PaletteItem>): void {
         const item = event.item.data;
         if (!item) return;
 
-        const dropElement = event.container.element.nativeElement;
-        const rect = dropElement.getBoundingClientRect();
-        const x = event.dropPoint.x - rect.left + 100;
-        const y = event.dropPoint.y - rect.top + 100;
+        const position = this.screenToCanvasPosition(event.dropPoint.x, event.dropPoint.y)
 
         if (item.type === 'template' && item.templateId) {
-            this.addTemplateToCanvas(item.templateId);
+            this.addTemplateToCanvas(item.templateId, position);
         } else if (item.type === 'ui-component' && item.uiType) {
-            this.addUIComponentToCanvas(item.uiType, { x, y });
+            this.addUIComponentToCanvas(item.uiType, position);
         }
     }
 
-    private addTemplateToCanvas(templateId: string): void {
+    private addTemplateToCanvas(templateId: string, position?: { x: number; y: number }): void {
         const template = this.availableTemplates().find(t => t.id === templateId);
         if (!template) return;
+
+        // Store pending position so updateCanvasModel can place the node at the drop location
+        if (position) {
+            this._pendingTemplatePositions.set(templateId, position);
+        }
 
         this.templateWorkflowsStore.assignTemplate({
             projectId: this.projectId,
@@ -1639,7 +2032,7 @@ export class ProjectTemplateCanvasComponent implements OnInit {
 
         this._uiNodes.update(nodes => [...nodes, newNode]);
         this.updateCanvasModel();
-        this.persistCanvasConfiguration();
+        // this.persistCanvasConfiguration();
 
         const uiItem = this.uiComponentItems.find(i => i.uiType === uiType);
         this.toast.show(
@@ -1663,12 +2056,14 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             )
         );
         this.updateCanvasModel();
-        this.persistCanvasConfiguration();
+        this._skipNextRestore = true; // Prevent restore from overwriting our manual change
+        // this.persistCanvasConfiguration();
     }
 
     onConnectionCreated(event: DfEvent<DfDataConnection>): void {
         const connection = this.readConnectionFromEvent(event);
         if (!connection) return;
+
         if (!this.isCanvasConnectionPatternValid(connection)) {
             this.updateCanvasModel();
             return;
@@ -1676,14 +2071,16 @@ export class ProjectTemplateCanvasComponent implements OnInit {
 
         const existing = this._canvasConnections();
         const key = this.connectionKey(connection);
-        if (existing.some(item => this.connectionKey(item) === key)) {
+        const isDuplicate = existing.some(item => this.connectionKey(item) === key);
+
+        if (isDuplicate) {
             this.updateCanvasModel();
             return;
         }
 
         this._canvasConnections.set([...existing, connection]);
         this.updateCanvasModel();
-        this.persistCanvasConfiguration();
+        this._skipNextRestore = true; // Prevent restore from overwriting our manual change
     }
 
     onConnectionDeleted(event: DfEvent<DfDataConnection>): void {
@@ -1694,7 +2091,18 @@ export class ProjectTemplateCanvasComponent implements OnInit {
             connections.filter(item => this.connectionKey(item) !== key)
         );
         this.updateCanvasModel();
-        this.persistCanvasConfiguration();
+        this._skipNextRestore = true; // Prevent restore from overwriting our manual change
+        //this.persistCanvasConfiguration();
+    }
+
+    onNodeMoved(event: DfEvent<DfNodeWithPosition>): void {
+        const target = event.target;
+        const position = target?.position ?? target?.point;
+        if (!target?.id || !position) return;
+
+        // Bump version signal to mark canvas as dirty and enable Save button
+        this._nodePositionVersion.update(v => v + 1);
+        this._skipNextRestore = true;
     }
 
     private readConnectionFromEvent(event: DfEvent<DfDataConnection>): DfDataConnection | null {
@@ -1856,28 +2264,21 @@ export class ProjectTemplateCanvasComponent implements OnInit {
         }));
     }
 
-    async removeTemplate(assignment: TemplateAssignment): Promise<void> {
-        const confirmed = await firstValueFrom(
-            this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
-                ConfirmDialogComponent,
-                {
-                    data: {
-                        title: this.translateService.instant('templates.confirm-remove-title'),
-                        message: this.translateService.instant('templates.confirm-remove-message', {
-                            name: assignment.templateName,
-                        }),
-                    },
-                }
-            ).afterClosed()
+    removeTemplate(assignment: TemplateAssignment): void {
+        // Remove connections associated with this template
+        this._canvasConnections.update(connections =>
+            connections.filter(connection =>
+                connection.source.nodeId !== assignment.id && connection.target.nodeId !== assignment.id
+            )
         );
-
-        if (!confirmed) return;
 
         this.templateWorkflowsStore.removeAssignment({
             projectId: this.projectId,
             assignmentId: assignment.id,
         });
 
+        this.updateCanvasModel();
+        this._skipNextRestore = true;
         this.toast.show(this.translateService.instant('templates.removed-success'));
         this.templateRemoved.emit(assignment.id);
     }
@@ -1885,7 +2286,7 @@ export class ProjectTemplateCanvasComponent implements OnInit {
     setViewMode(mode: 'single' | 'tabs'): void {
         if (this.viewMode() === mode) return;
         this.viewMode.set(mode);
-        this.persistCanvasConfiguration();
+        //this.persistCanvasConfiguration();
     }
 
     togglePalette(): void {
@@ -1894,9 +2295,153 @@ export class ProjectTemplateCanvasComponent implements OnInit {
         }
     }
 
-    resetView(): void {
-        if (this.drawFlowRef?.resetPosition) {
-            this.drawFlowRef.resetPosition();
+    /** Handle scale change from DrawFlow panzoom */
+    onScale(z: number): void {
+        this.zoom.set(z);
+    }
+
+    /**
+     * Convert screen (mouse/drop) coordinates to canvas node-model coordinates,
+     * accounting for the panzoom transform (pan offset + zoom scale).
+     *
+     * The panzoom wrapper uses `transform-origin: center`, so its
+     * `translate(x, y) scale(zoom)` is applied around the centre of the
+     * viewport.  The relationship between viewport-relative position and
+     * node-model position is:
+     *
+     *   viewportX = viewportWidth/2 + (nodeX * zoom) + panX
+     *
+     * Solving for nodeX:
+     *
+     *   nodeX = (viewportRelX − viewportWidth/2 − panX) / zoom
+     */
+    private screenToCanvasPosition(screenX: number, screenY: number): { x: number; y: number } {
+        const canvasEl = document.querySelector('.project-canvas') as HTMLElement | undefined;
+        if (!canvasEl) {
+            return { x: screenX, y: screenY };
         }
+
+        const rect = canvasEl.getBoundingClientRect();
+        const viewportWidth = canvasEl.clientWidth;
+        const viewportHeight = canvasEl.clientHeight;
+
+        const panzoom = (this.drawFlowRef as unknown as {
+            panzoom?: {
+                panZoomService?: { panzoomModel?: { zoom?: number; x?: number; y?: number } };
+                coordinates$?: { value?: { x: number; y: number } };
+            };
+        })?.panzoom;
+
+        // Read zoom from panzoom model, fallback to tracked signal
+        const model = panzoom?.panZoomService?.panzoomModel;
+        const currentZoom = model?.zoom ?? this.zoom() ?? 1;
+
+        // Read pan offset from coordinates$ BehaviorSubject or panzoom model
+        const coords = panzoom?.coordinates$?.value;
+        const panX = coords?.x ?? model?.x ?? 0;
+        const panY = coords?.y ?? model?.y ?? 0;
+
+        // Position relative to the canvas viewport element
+        const relX = screenX - rect.left;
+        const relY = screenY - rect.top;
+
+        // Undo the panzoom transform (which uses transform-origin: center)
+        const canvasX = (relX - viewportWidth / 2 - panX) / currentZoom;
+        const canvasY = (relY - viewportHeight / 2 - panY) / currentZoom;
+
+        return { x: Math.round(canvasX), y: Math.round(canvasY) };
+    }
+
+    zoomIn(): void {
+        const flowAny = this.drawFlowRef as unknown as { panzoom?: { zoomIn?: () => void } } | undefined;
+        flowAny?.panzoom?.zoomIn?.();
+    }
+
+    zoomOut(): void {
+        const flowAny = this.drawFlowRef as unknown as { panzoom?: { zoomOut?: () => void } } | undefined;
+        flowAny?.panzoom?.zoomOut?.();
+    }
+
+    resetView(): void {
+        const currentModel = this.flowControl.value;
+        const nodes = currentModel?.nodes ?? [];
+        
+        if (!nodes.length) {
+            // No nodes, just reset to default
+            if (this.drawFlowRef?.resetPosition) {
+                this.drawFlowRef.resetPosition();
+            }
+            return;
+        }
+
+        const flow = this.drawFlowRef as unknown as {
+            resetPosition?: () => void;
+            panzoom?: unknown;
+        } | undefined;
+        
+        if (!flow) return;
+
+        const panzoom = flow.panzoom as {
+            panZoomService?: { panzoomModel?: { zoom?: number } };
+            panZoomOptions?: { minZoom?: number; maxZoom?: number };
+            setZoom?: (zoom: number) => void;
+            getGuardedCoordinates?: (x: number, y: number) => { x: number; y: number };
+            coordinates$?: { next: (value: { x: number; y: number }) => void };
+        } | undefined;
+        
+        if (!panzoom) return;
+
+        // Calculate bounding box of all nodes
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        const approxNodeWidth = 280;
+        const approxNodeHeight = 180;
+
+        nodes.forEach(node => {
+            // Access position from the node object (it's a top-level property)
+            const nodeWithPos = node as { position?: { x: number; y: number } };
+            const x = nodeWithPos.position?.x ?? 0;
+            const y = nodeWithPos.position?.y ?? 0;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x + approxNodeWidth);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y + approxNodeHeight);
+        });
+
+        // Get viewport dimensions
+        const canvasElement = document.querySelector('.project-canvas') as HTMLElement;
+        const viewportWidth = canvasElement?.clientWidth ?? 800;
+        const viewportHeight = canvasElement?.clientHeight ?? 600;
+        
+        if (viewportWidth < 32 || viewportHeight < 32) return;
+
+        const contentWidth = Math.max(1, maxX - minX);
+        const contentHeight = Math.max(1, maxY - minY);
+
+        // Calculate zoom to fit content with padding
+        const padding = nodes.length <= 2 ? 80 : 120;
+        const fitScaleX = viewportWidth > 0 ? (viewportWidth - padding) / contentWidth : 1;
+        const fitScaleY = viewportHeight > 0 ? (viewportHeight - padding) / contentHeight : 1;
+        const fitScale = Math.max(0.05, Math.min(fitScaleX, fitScaleY));
+        const focusFactor = 0.92;
+        
+        const minZoom = panzoom.panZoomOptions?.minZoom ?? 0.1;
+        const maxZoom = panzoom.panZoomOptions?.maxZoom ?? 3;
+        const targetZoom = Math.max(minZoom, Math.min(maxZoom, fitScale * focusFactor));
+        
+        panzoom.setZoom?.(targetZoom);
+
+        // Center the content in viewport
+        const effectiveZoom = panzoom.panZoomService?.panzoomModel?.zoom ?? (targetZoom || 1);
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+        const desiredPanX = (viewportWidth / 2) - (centerX * effectiveZoom);
+        const desiredPanY = (viewportHeight / 2) - (centerY * effectiveZoom);
+        
+        const guardedPan = panzoom.getGuardedCoordinates
+            ? panzoom.getGuardedCoordinates(desiredPanX, desiredPanY)
+            : { x: desiredPanX, y: desiredPanY };
+        
+        panzoom.coordinates$?.next(guardedPan);
     }
 }

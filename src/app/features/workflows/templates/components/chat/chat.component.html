@@ -1,4 +1,5 @@
 <mat-sidenav-container class="chat-shell">
+  <!-- Artifacts Panel -->
   <mat-sidenav
     mode="side"
     position="start"
@@ -87,6 +88,39 @@
     </div>
   </mat-sidenav>
 
+  <!-- System Prompt Panel -->
+  <mat-sidenav
+    mode="side"
+    position="end"
+    [opened]="systemPromptPanelOpen$()"
+    (closed)="closeSystemPromptPanel()"
+    class="system-prompt-panel">
+    <div class="panel-header">
+      <h2>{{ 'chatTpl.systemPrompt.title' | translate }}</h2>
+      <div class="button-group">
+        <button mat-icon-button color="error" (click)="closeSystemPromptPanel()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-content">
+      <div class="system-prompt-input">
+        <app-chat-input-tpl
+          [disabled]="disabled"
+          [maxLength]="2000"
+          [placeholder]="'chatTpl.systemPrompt.placeholder'"
+          [enableAttachments]="false"
+          [acceptedFileTypes]="''"
+          [maxFiles]="0"
+          [allowMultipleFiles]="false"
+          [loading]="false"
+          (send)="onSystemPromptSend($event)">
+        </app-chat-input-tpl>
+      </div>
+    </div>
+  </mat-sidenav>
+
   <mat-sidenav-content class="chat-sidenav-content">
     <div class="chat-container" [class.dark]="(isDark$ | async)">
       <!-- Header -->
@@ -98,13 +132,20 @@
         <div class="chat-header-actions">
           <button
             mat-icon-button
+            [matTooltip]="'chatTpl.systemPrompt.title' | translate"
+            (click)="toggleSystemPromptPanel()"
+            [disabled]="disabled">
+            <mat-icon>settings</mat-icon>
+          </button>
+          <button
+            mat-icon-button
             [matTooltip]="'workflow.runPanel.artifacts' | translate"
             (click)="toggleArtifactsPanel()"
             [disabled]="!sessionId$()">
             <mat-icon>{{ artifactsPanelOpen$() ? 'folder_open' : 'folder' }}</mat-icon>
           </button>
           @if (filesCount$() > 0) {
-          <span class="files-count">{{ filesCount$() }}</span>
+            <span class="files-count">{{ filesCount$() }}</span>
           }
           <button mat-icon-button [matTooltip]="'chatTpl.scrollToBottom' | translate" (click)="scrollToBottom()"
             [disabled]="disabled" class="success">
@@ -112,7 +153,6 @@
           </button>
           <button mat-icon-button [matTooltip]="'chatTpl.clear' | translate" (click)="clearChat()"
             [disabled]="true" class="error">
-            <!-- [disabled]="disabled || isEmpty()" -->
             <mat-icon>delete_sweep</mat-icon>
           </button>
         </div>
@@ -173,7 +213,7 @@
           </div>
           <div class="tasks-list">
             @if (workflowStatus$()?.tasks?.length === 0) {
-            <p style="padding: 0.5rem;">{{ 'chatTpl.waitingForTasks' | translate }}</p>
+              <p style="padding: 0.5rem;">{{ 'chatTpl.waitingForTasks' | translate }}</p>
             }
             @for (task of workflowStatus$()?.tasks; track trackByTaskId($index, task)) {
             <div class="task-item" [class]="task.task_status">

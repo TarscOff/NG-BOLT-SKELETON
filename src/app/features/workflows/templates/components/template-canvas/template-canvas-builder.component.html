@@ -109,7 +109,7 @@
     <mat-sidenav-content class="canvas-pane">
         <!-- Canvas Actions Bar -->
         @if (!isLoading()) {
-        <div class="canvas-pane_actions">
+            <div class="canvas-pane_actions">
             <button mat-fab extended 
                     class="palette-toggle" 
                     color="primary"
@@ -142,11 +142,12 @@
         } @else {
         <!-- Canvas Wrapper with ng-draw-flow -->
         <div class="canvas-wrap">
+            @for (key of [flowKey()]; track key) {
             <ng-draw-flow 
                 #flowEl 
                 #flow 
                 class="template-canvas" 
-                [formControl]="flowControl"
+                [ngModel]="flowModel()"
                 (nodeMoved)="onNodeMoved($event)"
                 (connectionCreated)="onConnectionCreated($event)" 
                 (connectionDeleted)="onConnectionDeleted($event)"
@@ -169,6 +170,7 @@
             
             <!-- Help Text -->
             <p class="help-text">{{ 'workflow_help' | translate }}</p>
+            }
         </div>
         }
     </mat-sidenav-content>

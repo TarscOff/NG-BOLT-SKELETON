@@ -290,6 +290,44 @@
 }
 
 // ============================================================================
+// MODE TOGGLE
+// ============================================================================
+.mode-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--mat-sys-surface-variant) 30%, transparent);
+
+    button {
+        height: 36px;
+        font-size: 12px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+
+        mat-icon {
+            font-size: 1.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+    }
+}
+
+// ============================================================================
+// UPLOAD MODE
+// ============================================================================
+
+.upload-mode-container {
+    padding: 1rem;
+    overflow-y: auto;
+    height: calc(100vh - 180px);
+}
+
+// ============================================================================
 // CANVAS PANE
 // ============================================================================
 

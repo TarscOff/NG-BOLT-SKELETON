@@ -1328,6 +1328,9 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const action = ev.item?.data as ActionDefinitionLite | undefined;
     if (!action) return;
 
+    // Convert screen drop coordinates to canvas model coordinates
+    const position = this.screenToCanvasPosition(ev.dropPoint.x, ev.dropPoint.y);
+
     const actionPorts = action.params?.['ports'] as WorkflowNode['ports'] | undefined;
     const actionPortsMap = action.params?.['ports_map'] as Record<string, { required?: boolean; readonly?: boolean }> | undefined;
     const id = crypto?.randomUUID() ?? this.genId('n');
@@ -1346,6 +1349,8 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
     const node: WorkflowNode = {
       id,
       type: nodeType,
+      x: position.x,
+      y: position.y,
       data: {
         label: (action.params?.['label'] as string | undefined) ?? this.humanLabelFor(action.type),
         aiType: aiType as InspectorActionType,
@@ -2541,6 +2546,58 @@ export class WorkflowCanvasDfComponent implements OnInit, OnDestroy, AfterViewIn
         this.paletteForm.enable({ emitEvent: false });
       }
     }
+  }
+
+  /**
+   * Convert screen (mouse/drop) coordinates to canvas node-model coordinates,
+   * accounting for the panzoom transform (pan offset + zoom scale).
+   *
+   * The panzoom wrapper uses transform-origin: center, so its
+   * translate(x, y) scale(zoom) is applied around the centre of the
+   * viewport.  The relationship is:
+   *
+   *   viewportX = viewportWidth/2 + (nodeX * zoom) + panX
+   *
+   * Solving for nodeX:
+   *
+   *   nodeX = (viewportRelX − viewportWidth/2 − panX) / zoom
+   */
+  private screenToCanvasPosition(screenX: number, screenY: number): { x: number; y: number } {
+    const canvasEl = this.flowElementRef?.nativeElement
+      ?? document.querySelector('.pxs-wf-canvas') as HTMLElement | undefined;
+    if (!canvasEl) {
+      return { x: screenX, y: screenY };
+    }
+
+    const rect = canvasEl.getBoundingClientRect();
+    const viewportWidth = canvasEl.clientWidth;
+    const viewportHeight = canvasEl.clientHeight;
+
+    const panzoom = (this.flow as unknown as {
+      panzoom?: {
+        panZoomService?: { panzoomModel?: { zoom?: number; x?: number; y?: number } };
+        coordinates$?: { value?: { x: number; y: number } };
+      };
+    })?.panzoom;
+
+    // Read zoom from panzoom model, fallback to tracked signal
+    const model = panzoom?.panZoomService?.panzoomModel;
+    const currentZoom = model?.zoom ?? this.zoom() ?? 1;
+
+    // Read pan offset from coordinates$ BehaviorSubject or panzoom model
+    const coords = panzoom?.coordinates$?.value;
+    const panX = coords?.x ?? model?.x ?? 0;
+    const panY = coords?.y ?? model?.y ?? 0;
+
+    // Position relative to the canvas viewport element
+    const relX = screenX - rect.left;
+    const relY = screenY - rect.top;
+
+    // Undo the panzoom transform (which uses transform-origin: center)
+    const canvasX = (relX - viewportWidth / 2 - panX) / currentZoom;
+    const canvasY = (relY - viewportHeight / 2 - panY) / currentZoom;
+
+    return { x: Math.round(canvasX), y: Math.round(canvasY) };
   }
 
   /**

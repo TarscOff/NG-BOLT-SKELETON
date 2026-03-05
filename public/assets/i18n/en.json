@@ -533,7 +533,13 @@
     "send": "Send message",
     "title": "Chat",
     "typing": "Typing...",
-    "waitingForTasks": "Waiting for ongoing tasks to complete..."
+    "waitingForTasks": "Waiting for ongoing tasks to complete...",
+    "systemPrompt": {
+      "title": "System Prompt",
+      "label": "System prompt",
+      "placeholder": "System prompt"
+    }
+
   },
   "chat_history": "Chat history",
   "clear_all": "Clear all",
@@ -946,11 +952,54 @@
       "design_help": "Drag templates and UI components, then bind ports for runtime behavior.",
       "requirements": {
         "metadata_invalid": "Complete project metadata before creating.",
-        "assign_template": "Assign at least one template to continue."
+        "assign_template": "Assign at least one template to continue.",
+        "upload_files": "Upload and create a template to continue."
       },
       "assigned_templates": "assigned template(s)",
+      "method": {
+        "canvas": "Visual Canvas",
+        "upload": "Upload Files"
+      },
+      "upload": {
+        "title": "Upload Template Files",
+        "subtitle": "Upload JSON files to create a new template for this project",
+        "configuration_file": "Configuration File",
+        "configuration_desc": "Main template configuration including metadata and settings",
+        "structure_file": "Structure File",
+        "structure_desc": "Template structure with nodes, connections, and data flow",
+        "select_file": "Select File",
+        "file_uploaded": "{{name}} uploaded successfully",
+        "file_invalid": "{{name}} contains invalid JSON",
+        "review_files": "Review & Edit Files",
+        "json_placeholder": "Enter or paste valid JSON...",
+        "format": "Format JSON",
+        "template_name": "Template Name",
+        "template_name_placeholder": "Enter a name for this template",
+        "template_description": "Description",
+        "template_description_placeholder": "Optional description",
+        "create_template": "Create Template from Files",
+        "template_created": "Template created successfully",
+        "template_assigned": "{{name}} assigned to project",
+        "validation": {
+          "form_incomplete": "Please fill out all required template fields",
+          "missing_file": "{{file}} is required",
+          "invalid_file": "{{file}} contains errors",
+          "files_required": "Missing required files: {{files}}"
+        },
+        "error": {
+          "invalid_json": "Invalid JSON format",
+          "missing_name": "Configuration must include a 'name' field",
+          "missing_structure": "Structure must include 'nodes' or 'components'",
+          "parse_failed": "Failed to parse JSON content",
+          "create_failed": "Failed to create template",
+          "missing_files": "Required files are missing",
+          "invalid_files": "One or more files contain invalid JSON"
+        }
+      },
+      "ready_to_create": "Ready to create project",
       "create": "Create Project",
       "assign_required": "Assign at least one template before creating the project.",
+      "upload_files_required": "Upload files and create a template before creating the project.",
       "success": "Project created successfully."
     },
     "delete": {
@@ -1238,7 +1287,17 @@
       "ui_node": "UI Component",
       "search_placeholder": "Search...",
       "drag_hint_title": "Drag & Drop Templates",
-      "drag_hint_desc": "Drag templates and UI components from the toolbox to build your project workflow"
+      "drag_hint_desc": "Drag templates and UI components from the toolbox to build your project workflow",
+      "save_template": "Save Template"
+    },
+    "code_editor": {
+      "valid_json_message": "Valid JSON format",
+      "invalid_json_message": "Invalid JSON format",
+      "template_assignment": "Template assignment (JSON)",
+      "assignment_placeholder": "Add template code (JSON)",
+      "upload_assignment": "Upload file with template assignment (JSON)",
+      "upload_success": "Template assignment uploaded successfully",
+      "upload_error": "Failed to upload template assignment. Please check the file and try again."
     },
     "list": {
       "title": "Template Workflows",
@@ -1319,7 +1378,11 @@
       "idle": "Ready",
       "running": "Running",
       "completed": "Completed",
-      "error": "Error"
+      "error": "Error",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "published": "Published",
+      "draft": "Draft"
     },
     "scope": {
       "project": "Project",
@@ -1373,16 +1436,6 @@
       "both": "Both Session & Project",
       "no_ports": "No data ports to configure",
       "updated_success": "Data scopes updated successfully"
-    },
-    "status": {
-      "idle": "Ready",
-      "running": "Running",
-      "completed": "Completed",
-      "error": "Error",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "published": "Published",
-      "draft": "Draft"
     },
     "tab_title": "Templates",
     "run_templates": "Run Templates",

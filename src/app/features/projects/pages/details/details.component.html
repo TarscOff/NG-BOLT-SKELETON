@@ -36,7 +36,7 @@
         </mat-card-header>
 
         <mat-card-content>
-            <mat-tab-group [fitInkBarToContent]="true">
+            <mat-tab-group [fitInkBarToContent]="true" [selectedIndex]="currentTabIndex()" (selectedIndexChange)="onTabChange($event)">
 
                 <!-- ACTIVATED RUNTIME TABS (Flat: same level as Sessions/Artifacts/Configuration) -->
                 @for (assignment of enabledTemplateAssignments(); track trackTemplateAssignment($index, assignment)) {
@@ -479,6 +479,7 @@
 
                     <div class="templates-container">
                         <app-project-template-canvas 
+                            #templateCanvas
                             [projectId]="project()?.project_id ?? ''"
                             [projectName]="project()?.name">
                         </app-project-template-canvas>

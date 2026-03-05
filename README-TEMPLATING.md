@@ -1,6 +1,6 @@
 # Templating and Runtime Wiring
 
-_Last updated: 2026-02-12_
+_Last updated: 2026-03-05_
 
 This document describes the current Tier-3 template/runtime implementation.
 
@@ -13,6 +13,7 @@ This README covers:
 3. Session runtime rendering behavior
 4. Binding contracts per UI component
 5. Trigger constraint propagation to runtime config
+6. Template assignment file upload and validation
 
 ## Key Source Files
 
@@ -21,6 +22,7 @@ This README covers:
 - `src/app/features/projects/components/project-template-canvas/project-template-canvas.component.ts`
 - `src/app/features/projects/components/project-template-canvas/project-ui-node.component.ts`
 - `src/app/features/projects/components/template-execution-panel/template-execution-panel.component.ts`
+- `src/app/features/projects/components/template-code-editor/template-code-editor.component.ts`
 - `src/app/features/workflows/templates/components/result/runtime-result/runtime-result.component.ts`
 
 ## Model: Template vs Assignment
@@ -79,6 +81,111 @@ Disable cascade logic:
   - it is linked to exactly one template
   - that linked template is disabled
 - Shared UI nodes remain active
+
+## Template Assignment File Upload
+
+### Code Editor Component (`TemplateCodeEditorComponent`)
+
+Purpose:
+- Import template assignments from JSON files
+- Validate assignment structure and configuration
+- Provide real-time validation feedback
+
+Key features:
+- Drag & drop or browse to upload `.json` files
+- Real-time JSON parsing and validation
+- Visual error/success indicators
+- Supports array of template assignments
+
+### Assignment Structure Requirements
+
+Each template assignment must include:
+
+```json
+[
+  {
+    "templateId": "string (required)",
+    "templateName": "string (required)",
+    "portDataScopes": [
+      {
+        "portId": "string (required)",
+        "scope": "session | project | both (required)"
+      }
+    ],
+    "configuration": {
+      "projectCanvas": {
+        "uiNodes": [...],
+        "connections": [...],
+        "viewMode": "single | tabs"
+      },
+      "uiTemplate": {
+        "layout": "standalone-single | standalone-tabs",
+        "components": [...]
+      }
+    }
+  }
+]
+```
+
+### Validation Rules
+
+**Assignment-level validation:**
+- Root must be an array of template assignments
+- At least one assignment required
+- Each assignment must have `templateId`, `templateName`, `portDataScopes`, and `configuration`
+
+**Port data scopes validation:**
+- Each scope must have `portId` (string) and `scope` (string)
+- Valid scope values: `session`, `project`, `both`
+
+**Configuration validation:**
+- `configuration` object required for each assignment
+
+**Project Canvas validation (if present):**
+- `uiNodes`: array with validated structure
+  - Each node must have `id` (string), `type` (string), `position` (object with numeric `x` and `y`)
+- `connections`: array with validated structure
+  - Each connection must have `sourceNodeId`, `sourceConnectorId`, `targetNodeId`, `targetConnectorId` (all strings)
+- `viewMode`: must be `single` or `tabs`
+
+**UI Template validation (if present):**
+- `layout`: must be `standalone-single` or `standalone-tabs`
+- `components`: array with validated structure
+  - Each component must have `id` (string) and `type` (string)
+  - `bindings`: must be an array if present
+
+### Usage in Project Wizard
+
+The project wizard now supports two methods for template assignment:
+
+1. **Visual Canvas** (default): Use drag-and-drop UI to design template connections
+2. **Upload Files**: Import pre-configured template assignment JSON
+
+Upload workflow:
+- Select configuration and structure files
+- Review and edit JSON in code editor
+- Validate structure before project creation
+- Assign validated template to project
+
+### Error Messages
+
+Validation provides detailed error messages with context:
+- `Assignment [index]: field description` format for array-level errors
+- Property path included for nested validation failures
+- Type mismatches clearly identified
+- Required field violations highlighted
+
+### Integration Points
+
+The code editor component integrates with:
+- Project creation wizard (`ProjectWizardComponent`)
+- Project details page (`ProjectDetailsComponent`)
+- Template assignment store (`ProjectTemplateAssignmentsStore`)
+
+Outputs:
+- `assignmentParsed`: emits validated `TemplateAssignment[]` or `null`
+- `assignmentStringChanged`: emits raw JSON string on every change
+- `validationStateChange`: emits boolean validation status
 
 ## Runtime Session Panel
 

@@ -917,6 +917,7 @@ mat-list-item.historyItem {
 .run-templates-container {
   display: flex;
   flex-direction: column;
+  height: -webkit-fill-available;
   padding: 0;
   margin-top: 12px;
   overflow: hidden;
@@ -926,11 +927,42 @@ mat-list-item.historyItem {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 300px);
+  height: -webkit-fill-available;
   min-height: 600px;
   overflow: hidden;
   gap: 1rem;
   position: relative;
   isolation: isolate;
+
+  .assignment-method-tabs {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    ::ng-deep {
+      .mat-mdc-tab-body-wrapper {
+        flex: 1;
+        min-height: 0;
+      }
+
+      .mat-mdc-tab-body-content {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .mat-mdc-tab-labels {
+        border-bottom: 1px solid color-mix(in srgb, var(--mat-neutral) 20%, transparent);
+      }
+
+      .mat-mdc-tab-label {
+        min-width: 120px;
+
+        .mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
 }
 
 .templates-header {
